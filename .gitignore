@@ -1,0 +1,5 @@
+.env
+.svelte-kit
+build
+data
+node_modules
