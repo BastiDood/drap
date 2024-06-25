@@ -43,6 +43,7 @@
             {#each unselectedDraftees as draftee (draftee.id)}
                 <div 
                     class="bg-red-300 m-2 p-2 w-60"
+                    draggable=true
                     on:dragstart={handleDragStart}
                     on:dragend={handleDragEnd}
                 >
@@ -60,6 +61,7 @@
             {#each selectedDraftees as draftee (draftee.id)}
                     <div 
                         class="bg-red-300 m-2 p-2 w-60"
+                        draggable=true
                         on:dragstart={handleDragStart}
                         on:dragend={handleDragEnd}
                     >
