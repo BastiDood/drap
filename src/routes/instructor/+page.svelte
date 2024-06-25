@@ -12,9 +12,9 @@
         {name: "Angelica Raborar", id: "2020-XXXXX", email: "araborar@up.edu.ph"},
     ]
 
-    let selected_draftees: Student[] = {
-
-    }
+    let selected_draftees: Student[] = [
+        
+    ]
 
 </script>
 
