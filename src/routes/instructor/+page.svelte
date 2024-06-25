@@ -10,7 +10,7 @@
     let unselectedDraftees: Student[] = [
         {name: "Victor Edwin Reyes", id: "2021-01588", email: "vereyes2@up.edu.ph"},
         {name: "Sebastian Luis Ortiz", id: "2020-XXXXX", email: "slortiz@up.edu.ph"},
-        {name: "Angelica Raborar", id: "2020-XXXXX", email: "araborar@up.edu.ph"},
+        {name: "Angelica Raborar", id: "2020-YYYYY", email: "araborar@up.edu.ph"},
     ]
     
     let selectedDraftees: Student[] = [
