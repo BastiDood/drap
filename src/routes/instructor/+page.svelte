@@ -5,14 +5,14 @@
     export let data: PageData
 
     // student status refers to whether the student has been selected for the draft or not
-    type StudentStatus = "selected" | "unselected"
+    type StudentStatus = "drafted" | "undrafted"
     type Student = {name: string, id: string, email: string, status: StudentStatus}
 
     // dummy data, expectation is for it to be loaded from page data
     let draftees: Student[] = [
-        {name: "Victor Edwin Reyes", id: "2021-01588", email: "vereyes2@up.edu.ph", status: "selected"},
-        {name: "Sebastian Luis Ortiz", id: "2020-XXXXX", email: "slortiz@up.edu.ph", status: "unselected"},
-        {name: "Angelica Raborar", id: "2020-YYYYY", email: "araborar@up.edu.ph", status: "unselected"},
+        {name: "Victor Edwin Reyes", id: "2021-01588", email: "vereyes2@up.edu.ph", status: "drafted"},
+        {name: "Sebastian Luis Ortiz", id: "2020-XXXXX", email: "slortiz@up.edu.ph", status: "undrafted"},
+        {name: "Angelica Raborar", id: "2020-YYYYY", email: "araborar@up.edu.ph", status: "undrafted"},
     ]
 
     // callback for toggling status on click, note that this must be provided with the new status and id of the element to be changed
@@ -33,9 +33,9 @@
                 Unselected Draftees
                 <div>
                     {#each draftees as draftee (draftee.id)}
-                        {#if draftee.status == "unselected"}
+                        {#if draftee.status == "undrafted"}
                             <div class="bg-red-400 flex flex-row m-4 p-2">
-                                <button class="btn-icon variant-filled place-self-center m-4" on:click|preventDefault={() => changeStatusForID("selected", draftee.id)}>
+                                <button class="btn-icon variant-filled place-self-center m-4" on:click|preventDefault={() => changeStatusForID("drafted", draftee.id)}>
                                     ✔️
                                 </button>
                                 <span>
@@ -55,9 +55,9 @@
                 Selected Draftees
                 <div>
                     {#each draftees as draftee (draftee.id)}
-                        {#if draftee.status == "selected"}
+                        {#if draftee.status == "drafted"}
                             <div class="bg-green-400 flex flex-row m-4 p-2">
-                                <button class="btn-icon variant-filled place-self-center m-4" on:click|preventDefault={() => changeStatusForID("unselected", draftee.id)}>
+                                <button class="btn-icon variant-filled place-self-center m-4" on:click|preventDefault={() => changeStatusForID("undrafted", draftee.id)}>
                                     ❌
                                 </button>
                                 <span>
