@@ -19,8 +19,9 @@
 
     // these functions are drag event handlers, all event modifiers should be in on directives
 
-    function handleDragStart(e: DragEvent) {
+    function handleDragStudentStart(e: DragEvent, transferObject: Student) {
         assert(e.dataTransfer)
+        e.dataTransfer.setData("json", JSON.stringify(transferObject))
         e.dataTransfer.dropEffect = "move"
     }
 
@@ -44,7 +45,7 @@
                 <div 
                     class="bg-red-300 m-2 p-2 w-60"
                     draggable=true
-                    on:dragstart={handleDragStart}
+                    on:dragstart={(e) => handleDragStudentStart(e, draftee)}
                     on:dragend={handleDragEnd}
                 >
                     <p>{draftee.name}</p>
@@ -62,7 +63,7 @@
                     <div 
                         class="bg-red-300 m-2 p-2 w-60"
                         draggable=true
-                        on:dragstart={handleDragStart}
+                        on:dragstart={(e) => handleDragStudentStart(e, draftee)}
                         on:dragend={handleDragEnd}
                     >
                     <p>{draftee.name}</p>
