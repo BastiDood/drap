@@ -38,10 +38,14 @@
 <div class="w-auto m-10">
     <h3 class="h3">Drag and Drop desired draftees for this draft round</h3>
     <div class = "grid grid-cols-5 w-auto my-6">
-        <div class="col-span-2 border-primary-900">
+        <div class="col-span-2 border-primary-900" on:drop={(e) => handleDragDropIntoList(e, unselectedDraftees)}>
             Unselected Draftees
             {#each unselectedDraftees as draftee (draftee.id)}
-                <div class="bg-red-300 m-2 p-2 w-60">
+                <div 
+                    class="bg-red-300 m-2 p-2 w-60"
+                    on:dragstart={handleDragStart}
+                    on:dragend={handleDragEnd}
+                >
                     <p>{draftee.name}</p>
                     <p>{draftee.id}</p>
                     <p>{draftee.email}</p>
@@ -51,10 +55,14 @@
         <div class="col-span-1 border-secondary-900">
             Controls
         </div>
-        <div class="col-span-2 border-error-500">
+        <div class="col-span-2 border-error-500" on:drop={(e) => handleDragDropIntoList(e, selectedDraftees)}>
             Selected Draftees
             {#each selectedDraftees as draftee (draftee.id)}
-                <div class="bg-green-300 m-2 p-2 w-60">
+                    <div 
+                        class="bg-red-300 m-2 p-2 w-60"
+                        on:dragstart={handleDragStart}
+                        on:dragend={handleDragEnd}
+                    >
                     <p>{draftee.name}</p>
                     <p>{draftee.id}</p>
                     <p>{draftee.email}</p>
