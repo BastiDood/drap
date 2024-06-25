@@ -2,6 +2,14 @@
     import type { PageData } from './$types';
     
     export let data: PageData;
+
+    type Student = {name: string, id: string, email: string}
+
+    let draftees: Student[] = [
+        {name: "Victor Edwin Reyes", id: "2021-01588", email: "vereyes2@up.edu.ph"},
+        {name: "Sebastian Luis Ortiz", id: "2020-XXXXX", email: "slortiz@up.edu.ph"},
+        {name: "Angelica Raborar", id: "2020-XXXXX", email: "araborar@up.edu.ph"},
+    ]
 </script>
 
 <div class="w-auto m-10">
