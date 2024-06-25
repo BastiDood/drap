@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { PageData } from './$types'
+    import type { PageData } from './src/routes/instructor/$types'
     
     export let data: PageData
 
@@ -17,13 +17,19 @@
     <h3 class="h3">Select desired draftees for this draft round</h3>
     <div class = "grid grid-cols-5 w-auto my-6">
         <div class="col-span-2 border-primary-900-50-token">
-            Div 1
+            Unselected Draftees
+            <div>
+                
+            </div>
         </div>
         <div class="col-span-1 border-secondary-900-50-token">
-            Div 2
+            Controls
         </div>
         <div class="col-span-2 border-error-500-400-token">
-            Div 3
+            Selected Draftees
+            <div>
+
+            </div>
         </div>
     </div>
 </div>
