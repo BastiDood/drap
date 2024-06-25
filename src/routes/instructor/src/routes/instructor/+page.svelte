@@ -9,7 +9,7 @@
     let draftees: Student[] = [
         {name: "Victor Edwin Reyes", id: "2021-01588", email: "vereyes2@up.edu.ph", status: "unselected"},
         {name: "Sebastian Luis Ortiz", id: "2020-XXXXX", email: "slortiz@up.edu.ph", status: "unselected"},
-        {name: "Angelica Raborar", id: "2020-XXXXX", email: "araborar@up.edu.ph", status: "unselected"},
+        {name: "Angelica Raborar", id: "2020-YYYYY", email: "araborar@up.edu.ph", status: "unselected"},
     ]
 </script>
 
