@@ -13,7 +13,7 @@
     ]
 
     let selected_draftees: Student[] = [
-        
+
     ]
 
 </script>
@@ -23,12 +23,26 @@
     <div class = "grid grid-cols-5 w-auto my-6">
         <div class="col-span-2 border-primary-900">
             Unselected Draftees
+            {#each unselected_draftees as draftee (draftee.id)}
+                <div class="bg-red-300 m-2 p-2 w-60">
+                    <p>{draftee.name}</p>
+                    <p>{draftee.id}</p>
+                    <p>{draftee.email}</p>
+                </div>
+            {/each}
         </div>
         <div class="col-span-1 border-secondary-900">
             Controls
         </div>
         <div class="col-span-2 border-error-500">
             Selected Draftees
+            {#each selected_draftees as draftee (draftee.id)}
+                <div class="bg-red-300">
+                    <p>{draftee.name}</p>
+                    <p>{draftee.id}</p>
+                    <p>{draftee.email}</p>
+                </div>
+            {/each}
         </div>
     </div>
 </div>
