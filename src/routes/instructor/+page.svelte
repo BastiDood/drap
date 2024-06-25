@@ -4,13 +4,11 @@
     
     export let data: PageData;
 
-    type StudentStatus = "selected" | "unselected" | "dragging"
+    type StudentStatus = "selected" | "unselected"
     type Student = {name: string, id: string, email: string, status: StudentStatus}
 
     // these draftee lists are expected to be provided from the page data on load
-    let draftees: Student[] = []
-    
-    $: draftees = [
+    let draftees: Student[] = [
         {name: "Victor Edwin Reyes", id: "2021-01588", email: "vereyes2@up.edu.ph", status: "unselected"},
         {name: "Sebastian Luis Ortiz", id: "2020-XXXXX", email: "slortiz@up.edu.ph", status: "unselected"},
         {name: "Angelica Raborar", id: "2020-YYYYY", email: "araborar@up.edu.ph", status: "unselected"},
@@ -20,8 +18,8 @@
 
     function handleDragStudentStart(e: DragEvent, transferObject: Student) {
         assert(e.dataTransfer)
-        transferObject.status = "dragging"
-        e.dataTransfer.setData("json", JSON.stringify(transferObject))
+        e.dataTransfer.clearData()
+        e.dataTransfer.setData("plain/text", transferObject.id)
         e.dataTransfer.dropEffect = "move"
     }
 
@@ -32,7 +30,11 @@
     // handles a drag and drop into an element with an associated drafteesList (must be an array of students)
     function handleDragDropIntoList(e: DragEvent, newStatus: StudentStatus) {
         assert(e.dataTransfer)
-        let transferObject = e.dataTransfer.getData("json")
+        let transferID: string = e.dataTransfer.getData("plain/text")
+        let transferObject: Student | undefined = draftees.find((val) => val.id == transferID)
+        assert(transferObject != '')
+        transferObject.status = newStatus
+        draftees = draftees
     }
 
 </script>
