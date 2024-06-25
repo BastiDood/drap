@@ -19,16 +19,56 @@
         <div class="col-span-2 border-primary-900-50-token">
             Unselected Draftees
             <div>
-                
+                {#each draftees as draftee (draftee.id)}
+                    {#if draftee.status == "unselected"}
+                        <label class="bg-red-400 flex flex-row m-4 p-2" for="{draftee.id}">
+                            <input
+                                class="mx-4"
+                                type="checkbox"
+                                value="{draftee.id}"
+                                id="{draftee.id}"
+                            />
+                            <span>
+                                <p>{draftee.name}</p>
+                                <p>{draftee.id}</p>
+                                <p>{draftee.email}</p>
+                            </span>
+                        </label>
+                    {/if}
+                {/each}
             </div>
         </div>
-        <div class="col-span-1 border-secondary-900-50-token">
+        <div class="col-span-1 flex flex-col border-secondary-900-50-token h-auto">
             Controls
+            <div class="flex flex-col h-full place-content-center">
+            <button class="btn-icon variant-filled place-self-center m-1">
+                Draft
+            </button>
+            <button class="btn-icon variant-filled place-self-center m-1">
+                Undraft
+            </button>
+            </div>
         </div>
         <div class="col-span-2 border-error-500-400-token">
             Selected Draftees
             <div>
-
+                {#each draftees as draftee (draftee.id)}
+                    {#if draftee.status == "selected"}
+                        <label class="bg-green-400 flex flex-row m-4 p-2" for="{draftee.id}">
+                            <input
+                                class="mx-4"
+                                type="checkbox"
+                                value="{draftee.id}"
+                                id="{draftee.id}"
+                            />
+                            <span>
+                                <p>{draftee.name}</p>
+                                <p>{draftee.id}</p>
+                                <p>{draftee.email}</p>
+                            </span>
+                        </label>
+                    {/if}
+                {/each}
             </div>
         </div>
     </div>
