@@ -37,7 +37,7 @@
         <div class="col-span-2 border-error-500">
             Selected Draftees
             {#each selected_draftees as draftee (draftee.id)}
-                <div class="bg-red-300">
+                <div class="bg-green-300 m-2 p-2 w-60">
                     <p>{draftee.name}</p>
                     <p>{draftee.id}</p>
                     <p>{draftee.email}</p>
