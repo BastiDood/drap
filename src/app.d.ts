@@ -1,5 +1,6 @@
 declare namespace App {
-	interface Locals {
-		logger: import('pino').Logger;
-	}
+    import type { Logger } from 'pino';
+    interface Locals {
+        logger: Logger;
+    }
 }
