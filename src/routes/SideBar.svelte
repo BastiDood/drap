@@ -1,6 +1,6 @@
 <script>
+    import { AcademicCap, Home } from '@steeze-ui/heroicons';
     import { AppRail, AppRailAnchor, LightSwitch } from '@skeletonlabs/skeleton';
-    import { Home } from '@steeze-ui/heroicons';
     import { Icon } from '@steeze-ui/svelte-icon';
     import { page } from '$app/stores';
     $: ({ pathname } = $page.url);
@@ -13,5 +13,9 @@
     <AppRailAnchor href="/" selected={pathname === '/'}>
         <Icon src={Home} slot="lead" class="h-8" />
         <span>Home</span>
+    </AppRailAnchor>
+    <AppRailAnchor href="/student" selected={pathname === '/student'}>
+        <Icon src={AcademicCap} slot="lead" class="h-8" />
+        <span>Student</span>
     </AppRailAnchor>
 </AppRail>
