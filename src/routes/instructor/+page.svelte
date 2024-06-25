@@ -4,19 +4,23 @@
     
     export let data: PageData
 
+    // student status refers to whether the student has been selected for the draft or not
     type StudentStatus = "selected" | "unselected"
     type Student = {name: string, id: string, email: string, status: StudentStatus}
 
+    // dummy data, expectation is for it to be loaded from page data
     let draftees: Student[] = [
         {name: "Victor Edwin Reyes", id: "2021-01588", email: "vereyes2@up.edu.ph", status: "selected"},
         {name: "Sebastian Luis Ortiz", id: "2020-XXXXX", email: "slortiz@up.edu.ph", status: "unselected"},
         {name: "Angelica Raborar", id: "2020-YYYYY", email: "araborar@up.edu.ph", status: "unselected"},
     ]
 
+    // callback for toggling status on click, note that this must be provided with the new status and id of the element to be changed
     function changeStatusForID(newStatus: StudentStatus, id: string) {
         let student = draftees.find((val) => id == val.id)
         assert(student != undefined)
         student.status = newStatus
+        // to ensure reactivity for #each directives referencing draftees
         draftees = draftees
     }
 </script>
