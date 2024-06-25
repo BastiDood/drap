@@ -4,23 +4,23 @@
     
     export let data: PageData;
 
-    type Student = {name: string, id: string, email: string}
+    type StudentStatus = "selected" | "unselected" | "dragging"
+    type Student = {name: string, id: string, email: string, status: StudentStatus}
 
     // these draftee lists are expected to be provided from the page data on load
-    let unselectedDraftees: Student[] = [
-        {name: "Victor Edwin Reyes", id: "2021-01588", email: "vereyes2@up.edu.ph"},
-        {name: "Sebastian Luis Ortiz", id: "2020-XXXXX", email: "slortiz@up.edu.ph"},
-        {name: "Angelica Raborar", id: "2020-YYYYY", email: "araborar@up.edu.ph"},
-    ]
+    let draftees: Student[] = []
     
-    let selectedDraftees: Student[] = [
-
+    $: draftees = [
+        {name: "Victor Edwin Reyes", id: "2021-01588", email: "vereyes2@up.edu.ph", status: "unselected"},
+        {name: "Sebastian Luis Ortiz", id: "2020-XXXXX", email: "slortiz@up.edu.ph", status: "unselected"},
+        {name: "Angelica Raborar", id: "2020-YYYYY", email: "araborar@up.edu.ph", status: "unselected"},
     ]
 
     // these functions are drag event handlers, all event modifiers should be in on directives
 
     function handleDragStudentStart(e: DragEvent, transferObject: Student) {
         assert(e.dataTransfer)
+        transferObject.status = "dragging"
         e.dataTransfer.setData("json", JSON.stringify(transferObject))
         e.dataTransfer.dropEffect = "move"
     }
@@ -30,8 +30,9 @@
     }
 
     // handles a drag and drop into an element with an associated drafteesList (must be an array of students)
-    function handleDragDropIntoList(e: DragEvent, drafteesList: Student[]) {
-
+    function handleDragDropIntoList(e: DragEvent, newStatus: StudentStatus) {
+        assert(e.dataTransfer)
+        let transferObject = e.dataTransfer.getData("json")
     }
 
 </script>
@@ -39,9 +40,9 @@
 <div class="w-auto m-10">
     <h3 class="h3">Drag and Drop desired draftees for this draft round</h3>
     <div class = "grid grid-cols-5 w-auto my-6">
-        <div class="col-span-2 border-primary-900" on:dragover|preventDefault on:drop={(e) => handleDragDropIntoList(e, unselectedDraftees)}>
+        <div class="col-span-2 border-primary-900" on:dragover|preventDefault on:drop={(e) => handleDragDropIntoList(e, "unselected")}>
             Unselected Draftees
-            {#each unselectedDraftees as draftee (draftee.id)}
+            {#each draftees as draftee (draftee.id)}
                 <div 
                     class="bg-red-300 m-2 p-2 w-60"
                     draggable=true
@@ -57,9 +58,9 @@
         <div class="col-span-1 border-secondary-900">
             Controls
         </div>
-        <div class="col-span-2 border-error-500" on:dragover|preventDefault on:drop={(e) => handleDragDropIntoList(e, selectedDraftees)}>
+        <div class="col-span-2 border-error-500" on:dragover|preventDefault on:drop={(e) => handleDragDropIntoList(e, "selected")}>
             Selected Draftees
-            {#each selectedDraftees as draftee (draftee.id)}
+            {#each draftees as draftee (draftee.id)}
                     <div 
                         class="bg-red-300 m-2 p-2 w-60"
                         draggable=true
