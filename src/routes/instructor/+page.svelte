@@ -43,16 +43,18 @@
         <div class="col-span-2 border-primary-900" on:dragover|preventDefault on:drop={(e) => handleDragDropIntoList(e, "unselected")}>
             Unselected Draftees
             {#each draftees as draftee (draftee.id)}
-                <div 
-                    class="bg-red-300 m-2 p-2 w-60"
-                    draggable=true
-                    on:dragstart={(e) => handleDragStudentStart(e, draftee)}
-                    on:dragend={handleDragEnd}
-                >
-                    <p>{draftee.name}</p>
-                    <p>{draftee.id}</p>
-                    <p>{draftee.email}</p>
-                </div>
+                {#if draftee.status == "unselected"}
+                    <div 
+                        class="bg-red-300 m-2 p-2 w-60"
+                        draggable=true
+                        on:dragstart={(e) => handleDragStudentStart(e, draftee)}
+                        on:dragend={handleDragEnd}
+                    >
+                        <p>{draftee.name}</p>
+                        <p>{draftee.id}</p>
+                        <p>{draftee.email}</p>
+                    </div>
+                {/if}
             {/each}
         </div>
         <div class="col-span-1 border-secondary-900">
@@ -61,16 +63,18 @@
         <div class="col-span-2 border-error-500" on:dragover|preventDefault on:drop={(e) => handleDragDropIntoList(e, "selected")}>
             Selected Draftees
             {#each draftees as draftee (draftee.id)}
+                {#if draftee.status == "selected"}
                     <div 
                         class="bg-red-300 m-2 p-2 w-60"
                         draggable=true
                         on:dragstart={(e) => handleDragStudentStart(e, draftee)}
                         on:dragend={handleDragEnd}
                     >
-                    <p>{draftee.name}</p>
-                    <p>{draftee.id}</p>
-                    <p>{draftee.email}</p>
-                </div>
+                        <p>{draftee.name}</p>
+                        <p>{draftee.id}</p>
+                        <p>{draftee.email}</p>
+                    </div>
+                {/if}
             {/each}
         </div>
     </div>
