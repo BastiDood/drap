@@ -1,5 +1,6 @@
 <script lang="ts">
-    import type { PageData } from './src/routes/instructor/$types'
+    import { assert } from '$lib/assert'
+    import type { PageData } from './$types'
     
     export let data: PageData
 
@@ -13,7 +14,10 @@
     ]
 
     function changeStatusForID(newStatus: StudentStatus, id: string) {
-    
+        let student = draftees.find((val) => id == val.id)
+        assert(student != undefined)
+        student.status = newStatus
+        draftees = draftees
     }
 </script>
 
@@ -26,7 +30,7 @@
                 {#each draftees as draftee (draftee.id)}
                     {#if draftee.status == "unselected"}
                         <div class="bg-red-400 flex flex-row m-4 p-2">
-                            <button class="btn-icon variant-filled place-self-center m-4">
+                            <button class="btn-icon variant-filled place-self-center m-4" on:click|preventDefault={() => changeStatusForID("selected", draftee.id)}>
                                 ✔️
                             </button>
                             <span>
@@ -48,7 +52,7 @@
                 {#each draftees as draftee (draftee.id)}
                     {#if draftee.status == "selected"}
                         <div class="bg-green-400 flex flex-row m-4 p-2">
-                            <button class="btn-icon variant-filled place-self-center m-4">
+                            <button class="btn-icon variant-filled place-self-center m-4" on:click|preventDefault={() => changeStatusForID("unselected", draftee.id)}>
                                 ❌
                             </button>
                             <span>
