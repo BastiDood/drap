@@ -32,7 +32,7 @@
         assert(e.dataTransfer)
         let transferID: string = e.dataTransfer.getData("plain/text")
         let transferObject: Student | undefined = draftees.find((val) => val.id == transferID)
-        assert(transferObject != '')
+        assert(transferObject)
         transferObject.status = newStatus
         draftees = draftees
     }
