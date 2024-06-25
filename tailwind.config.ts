@@ -4,7 +4,7 @@ import { skeleton } from '@skeletonlabs/tw-plugin';
 import typo from '@tailwindcss/typography';
 
 export default {
-    darkMode: 'class',
+    darkMode: 'selector',
     content: [
         './src/**/*.{css,html,js,svelte,ts}',
         // eslint-disable-next-line no-undef
