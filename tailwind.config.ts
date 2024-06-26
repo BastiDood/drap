@@ -45,17 +45,17 @@ const theme = {
         '--color-secondary-700': '92 13 14', // #5c0d0e
         '--color-secondary-800': '74 10 11', // #4a0a0b
         '--color-secondary-900': '60 8 9', // #3c0809
-        // tertiary | #afd19f
-        '--color-tertiary-50': '243 248 241', // #f3f8f1
-        '--color-tertiary-100': '239 246 236', // #eff6ec
-        '--color-tertiary-200': '235 244 231', // #ebf4e7
-        '--color-tertiary-300': '223 237 217', // #dfedd9
-        '--color-tertiary-400': '199 223 188', // #c7dfbc
-        '--color-tertiary-500': '175 209 159', // #afd19f
-        '--color-tertiary-600': '158 188 143', // #9ebc8f
-        '--color-tertiary-700': '131 157 119', // #839d77
-        '--color-tertiary-800': '105 125 95', // #697d5f
-        '--color-tertiary-900': '86 102 78', // #56664e
+        // tertiary | #F5AB29
+        '--color-tertiary-50': '254 242 223', // #fef2df
+        '--color-tertiary-100': '253 238 212', // #fdeed4
+        '--color-tertiary-200': '253 234 202', // #fdeaca
+        '--color-tertiary-300': '251 221 169', // #fbdda9
+        '--color-tertiary-400': '248 196 105', // #f8c469
+        '--color-tertiary-500': '245 171 41', // #F5AB29
+        '--color-tertiary-600': '221 154 37', // #dd9a25
+        '--color-tertiary-700': '184 128 31', // #b8801f
+        '--color-tertiary-800': '147 103 25', // #936719
+        '--color-tertiary-900': '120 84 20', // #785414
         // success | #84cc16
         '--color-success-50': '237 247 220', // #edf7dc
         '--color-success-100': '230 245 208', // #e6f5d0
