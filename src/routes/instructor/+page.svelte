@@ -22,10 +22,10 @@
 
 </script>
 
-<div class="w-auto m-10">
-    <h3 class="h3">Select desired draftees for this draft round</h3>
+<section class="space-y-4">
+    <h1 class="h1">Select desired draftees for this draft round</h1>
     <form method="post">
-        <div class="m-2">
+        <div class="m-8">
             <ListBox multiple rounded="rounded">
                 {#each students as student}
                     <ListBoxItem bind:group={draftees} name="medium" value={student.id}>
@@ -37,11 +37,9 @@
                     </ListBoxItem>
                 {/each}
             </ListBox>
+            <button type="submit" class="btn variant-filled">
+                Save Selection
+            </button>
         </div>
-
-
-        <button type="submit" class="btn variant-filled">
-            Save Selection
-        </button>
     </form>
-</div>
+</section>
