@@ -12,7 +12,7 @@ const fetchJwks = createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/
 export async function GET({ fetch, locals: { db }, cookies, url: { searchParams } }) {
     // TODO: check if the session already exists
     const sid = cookies.get('sid');
-    if (!sid) redirect(301, '/auth/login');
+    if (!sid) redirect(301, '/');
 
     const state = searchParams.get('state');
     if (state === null) error(400);
@@ -31,11 +31,9 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
         grant_type: 'authorization_code',
     });
 
-    const jwk = await fetchJwks();
     await db.begin(async db => {
         const pending = await db.deletePendingSession(sid);
-        if (pending === null) redirect(301, '/auth/login');
-        const { nonce, expiration } = pending;
+        if (pending === null) error(400);
 
         const res = await fetch('https://oauth2.googleapis.com/token', {
             method: 'POST',
@@ -48,18 +46,19 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
 
         const json = await res.json();
         const { id_token } = parse(TokenResponse, json);
-        const { payload } = await jwtVerify(id_token, jwk, {
+        const { payload } = await jwtVerify(id_token, fetchJwks, {
             issuer: 'https://accounts.google.com',
             audience: GOOGLE.OAUTH_CLIENT_ID,
         });
 
         const token = parse(IdToken, payload);
         ok(token.email_verified);
-        strictEqual(Buffer.from(token.nonce, 'base64url').compare(nonce), 0);
+        strictEqual(Buffer.from(token.nonce, 'base64url').compare(pending.nonce), 0);
 
-        await db.upsertOpenIdUser(token.sub, token.email, token.given_name, token.family_name, token.picture);
-        await db.insertValidSession(sid, token.sub, expiration);
+        // Insert user as uninitialized by default
+        await db.upsertUser(token.sub, token.email, token.given_name, token.family_name, token.picture);
+        await db.insertValidSession(sid, token.sub, pending.expiration);
     });
 
-    redirect(301, '/dashboard');
+    redirect(301, '/');
 }
