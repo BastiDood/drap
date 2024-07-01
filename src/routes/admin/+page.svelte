@@ -1,20 +1,5 @@
 <script lang="ts">
-  import LabQuotaInput from './LabQuotaInput.svelte';
-
-    import type { PageData } from './$types';
-
-    let availableLabs = [
-        { id: 0, acronym: "ndsl", name: 'Networks and Distributed Systems Laboratory' },
-        { id: 1, name: 'Computer Vision & Machine Intelligence Laboratory' },
-        { id: 2, name: 'Service Science & Software Engineering Laboratory' },
-        { id: 3, name: 'Algorithms & Complexity Laboratory' },
-        { id: 4, name: 'Web Science Laboratory' },
-        { id: 5, name: 'Computer Security Laboratory' },
-        { id: 6, name: 'System Modelling and Simulation Laboratory' },
-        { id: 7, name: 'Scientific Computing Laboratory' },
-    ];
-
-    export let data: PageData;
+    import LabQuotaInput from './LabQuotaInput.svelte';
 </script>
 
 <section class="space-y-4">
