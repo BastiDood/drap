@@ -7,66 +7,62 @@ CREATE EXTENSION pgcrypto;
 CREATE DOMAIN GoogleUserId AS VARCHAR(255);
 CREATE DOMAIN Expiration AS TIMESTAMPTZ CHECK(VALUE > NOW());
 
+CREATE TYPE UserLogin AS ENUM ('student', 'faculty', 'admin');
+
 CREATE SCHEMA drap
     CREATE TABLE users (
-        student_number BIGINT,
+        student_number BIGINT UNIQUE,
         is_admin BOOLEAN NOT NULL DEFAULT FALSE,
-        is_faculty BOOLEAN NOT NULL DEFAULT FALSE,
         email TEXT NOT NULL UNIQUE,
-        user_id TEXT NOT NULL,
+        user_id TEXT NOT NULL PRIMARY KEY,
         given_name TEXT NOT NULL,
         family_name TEXT NOT NULL,
-        avatar TEXT NOT NULL,
-        PRIMARY KEY (user_id),
-        CHECK (
-            student_number IS NULL AND (is_admin OR is_faculty)
-            OR
-            student_number IS NOT NULL AND NOT (is_admin OR is_faculty)
-        )
+        avatar TEXT NOT NULL
     )
     CREATE TABLE pendings (
-        session_id UUID NOT NULL DEFAULT gen_random_uuid(),
+        session_id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
         expiration Expiration NOT NULL DEFAULT NOW() + INTERVAL '15 minutes',
-        nonce BYTEA NOT NULL DEFAULT gen_random_bytes(64),
-        PRIMARY KEY (session_id)
+        nonce BYTEA NOT NULL DEFAULT gen_random_bytes(64)
     )
     CREATE TABLE sessions (
-        session_id UUID NOT NULL,
+        session_id UUID NOT NULL PRIMARY KEY,
         expiration Expiration NOT NULL,
-        user_id GoogleUserId NOT NULL REFERENCES users (user_id),
-        PRIMARY KEY (session_id)
+        user_id GoogleUserId NOT NULL REFERENCES users (user_id)
     )
     CREATE TABLE labs (
-        lab_id SMALLINT GENERATED ALWAYS AS IDENTITY NOT NULL,
+        lab_id SMALLINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
         lab_name TEXT NOT NULL,
-        quota SMALLINT NOT NULL,
-        PRIMARY KEY (lab_id)
-    )
-    CREATE TABLE lab_invites (
-        invite_id SMALLINT GENERATED ALWAYS AS IDENTITY NOT NULL,
-        lab_id SMALLINT NOT NULL REFERENCES labs (lab_id),
-        email TEXT NOT NULL,
-        PRIMARY KEY (invite_id)
+        quota SMALLINT NOT NULL
     )
     CREATE TABLE lab_members (
-        member_id TEXT NOT NULL REFERENCES users (user_id),
         lab_id SMALLINT NOT NULL REFERENCES labs (lab_id),
-        PRIMARY KEY (member_id)
+        member_id TEXT NOT NULL REFERENCES users (user_id),
+        PRIMARY KEY (lab_id, member_id)
+    )
+    CREATE TABLE lab_invites (
+        invite_id SMALLINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
+        inviter_admin_id TEXT NOT NULL REFERENCES users (user_id),
+        lab_id SMALLINT NOT NULL REFERENCES labs (lab_id),
+        email TEXT NOT NULL,
+        UNIQUE (lab_id, email)
+    )
+    CREATE TABLE admin_invites (
+        invite_id SMALLINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
+        inviter_admin_id TEXT NOT NULL REFERENCES users (user_id),
+        email TEXT UNIQUE NOT NULL
     )
     CREATE TABLE drafts (
-        draft_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
+        draft_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
         curr_round SMALLINT NOT NULL,
         max_rounds SMALLINT NOT NULL,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        PRIMARY KEY (draft_id)
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
     CREATE TABLE faculty_choices (
-        choice_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
+        choice_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         round SMALLINT NOT NULL,
         faculty_id TEXT NOT NULL REFERENCES users (user_id),
-        lab_id SMALLINT NOT NULL REFERENCES labs (lab_id),
-        PRIMARY KEY (choice_id)
+        lab_id SMALLINT NOT NULL REFERENCES labs (lab_id)
     )
     CREATE TABLE student_ranks (
         draft_id BIGINT NOT NULL REFERENCES drafts (draft_id),
