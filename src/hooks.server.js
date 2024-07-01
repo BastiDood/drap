@@ -2,6 +2,7 @@ import { Database } from '$lib/server/database';
 import { env } from '$env/dynamic/private';
 import pino from 'pino';
 import postgres from 'postgres';
+import process from 'node:process';
 
 const logger = pino();
 
