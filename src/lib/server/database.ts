@@ -22,6 +22,7 @@ export class Database implements Loggable {
         return this.#logger;
     }
 
+    /** Begins a transaction. */
     begin<T>(fn: (db: Database) => Promise<T>) {
         return this.sql.begin(sql => fn(new Database(sql, this.#logger)));
     }
