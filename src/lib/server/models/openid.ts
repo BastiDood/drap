@@ -1,6 +1,6 @@
 import { type InferOutput, object, pipe, string, url } from 'valibot';
 
-const DiscoveryDocument = object({
+export const DiscoveryDocument = object({
     issuer: pipe(string(), url()),
     authorization_endpoint: pipe(string(), url()),
     token_endpoint: pipe(string(), url()),
