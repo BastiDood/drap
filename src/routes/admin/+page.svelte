@@ -17,4 +17,13 @@
 
 <section class="space-y-4">
     <h1 class="h1">Set the quota for each laboratory for this draft process</h1>
+    <form method="post">
+        <div class="space-y-2">
+            {#each availableLabs as {id, name}, idx (id)}
+                <div class="card w-full cursor-pointer appearance-none p-4">
+                    {name}
+                </div>
+            {/each}
+        </div>
+    </form>
 </section>
