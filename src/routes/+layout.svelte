@@ -6,13 +6,12 @@
     // eslint-disable-next-line init-declarations
     export let data;
     $: ({ user } = data);
-    $: avatar = user?.avatar ?? null;
 
     initializeStores();
 </script>
 
 <Toast />
 <AppShell>
-    <SideBar slot="sidebarLeft" {avatar} />
+    <SideBar slot="sidebarLeft" {user} />
     <div class="h-full p-4"><slot /></div>
 </AppShell>

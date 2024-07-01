@@ -53,9 +53,10 @@ CREATE SCHEMA drap
     )
     CREATE TABLE drafts (
         draft_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
-        curr_round SMALLINT NOT NULL,
+        curr_round SMALLINT NOT NULL DEFAULT 0,
         max_rounds SMALLINT NOT NULL,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        CONSTRAINT curr_round_within_bounds CHECK (curr_round BETWEEN 0 AND max_rounds)
     )
     CREATE TABLE faculty_choices (
         choice_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,

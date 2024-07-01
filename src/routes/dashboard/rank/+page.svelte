@@ -16,6 +16,7 @@
         { id: 7, name: 'System Modelling & Simulation Laboratory' },
         { id: 8, name: 'Web Science Laboratory' },
     ];
+
     let selectedLabs = [] as typeof availableLabs;
 
     function selectLab(index: number) {
