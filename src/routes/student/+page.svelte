@@ -6,14 +6,15 @@
     import { slide } from 'svelte/transition';
 
     let availableLabs = [
-        { id: 0, name: 'Networks and Distributed Systems Laboratory' },
-        { id: 1, name: 'Computer Vision & Machine Intelligence Laboratory' },
-        { id: 2, name: 'Service Science & Software Engineering Laboratory' },
-        { id: 3, name: 'Algorithms & Complexity Laboratory' },
-        { id: 4, name: 'Web Science Laboratory' },
-        { id: 5, name: 'Computer Security Laboratory' },
-        { id: 6, name: 'System Modelling and Simulation Laboratory' },
-        { id: 7, name: 'Scientific Computing Laboratory' },
+        { id: 0, name: 'Algorithms & Complexity Laboratory' },
+        { id: 1, name: 'Automata, Combinatorics, & Logic Research Laboratory' },
+        { id: 2, name: 'Computer Security Laboratory' },
+        { id: 3, name: 'Computer Vision & Machine Intelligence Laboratory' },
+        { id: 4, name: 'Networks & Distributed Systems Laboratory' },
+        { id: 5, name: 'Scientific Computing Laboratory' },
+        { id: 6, name: 'Service Science & Software Engineering Laboratory' },
+        { id: 7, name: 'System Modelling & Simulation Laboratory' },
+        { id: 8, name: 'Web Science Laboratory' },
     ];
     let selectedLabs = [] as typeof availableLabs;
 

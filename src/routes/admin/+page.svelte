@@ -15,14 +15,15 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <LabQuotaInput name="ndsl">Networks and Distributed Systems Laboratory</LabQuotaInput>
-                    <LabQuotaInput name="cvmig">Computer Vision & Machine Intelligence Laboratory</LabQuotaInput>
-                    <LabQuotaInput name="s3">Service Science & Software Engineering Laboratory</LabQuotaInput>
-                    <LabQuotaInput name="acl">Algorithms & Complexity Laboratory</LabQuotaInput>
-                    <LabQuotaInput name="wsl">Web Science Laboratory</LabQuotaInput>
+                    <LabQuotaInput name="acl">Algorithms &amp; Complexity Laboratory</LabQuotaInput>
+                    <LabQuotaInput name="aclrl">Automata, Combinatorics, &amp; Logic Research Laboratory</LabQuotaInput>
                     <LabQuotaInput name="csl">Computer Security Laboratory</LabQuotaInput>
-                    <LabQuotaInput name="smsl">System Modelling and Simulation Laboratory</LabQuotaInput>
+                    <LabQuotaInput name="cvmil">Computer Vision &amp; Machine Intelligence Laboratory</LabQuotaInput>
+                    <LabQuotaInput name="ndsl">Networks &amp; Distributed Systems Laboratory</LabQuotaInput>
                     <LabQuotaInput name="scl">Scientific Computing Laboratory</LabQuotaInput>
+                    <LabQuotaInput name="s3">Service Science &amp; Software Engineering Laboratory</LabQuotaInput>
+                    <LabQuotaInput name="smsl">System Modelling &amp; Simulation Laboratory</LabQuotaInput>
+                    <LabQuotaInput name="wsl">Web Science Laboratory</LabQuotaInput>
                 </tbody>
             </table>
         </div>
