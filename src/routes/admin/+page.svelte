@@ -1,10 +1,11 @@
 <script lang="ts">
     import LabQuotaInput from './LabQuotaInput.svelte';
+    import { enhance } from '$app/forms';
 </script>
 
 <section class="space-y-4">
-    <h1 class="h1">Set the quota for each laboratory for this draft process</h1>
-    <form method="post">
+    <h1 class="h1">Lab Quotas</h1>
+    <form method="post" use:enhance>
         <div class="table-container my-4">
             <table class="table table-hover table-comfortable">
                 <thead>
@@ -25,7 +26,7 @@
                 </tbody>
             </table>
         </div>
-
-        <button type="submit" class="variant-filled btn"> Save Selection </button>
+        <!-- TODO: Set up form actions. -->
+        <button type="submit" class="variant-filled btn">Save Selection</button>
     </form>
 </section>
