@@ -2,7 +2,7 @@ import { type Loggable, timed } from '$lib/decorators';
 import { Pending, Session } from '$lib/server/models/session';
 import { parse, pick } from 'valibot';
 import type { Logger } from 'pino';
-import type { User } from '$lib/models/user';
+import { User } from '$lib/models/user';
 import assert from 'node:assert/strict';
 import postgres from 'postgres';
 
@@ -29,7 +29,7 @@ export class Database implements Loggable {
 
     @timed async generatePendingSession() {
         const sql = this.#sql;
-        const [first, ...rest] = await sql`INSERT INTO drap.pendings VALUES RETURNING session_id, expiration, nonce`;
+        const [first, ...rest] = await sql`INSERT INTO drap.pendings DEFAULT VALUES RETURNING session_id, expiration, nonce`;
         assert(rest.length === 0);
         return parse(Pending, first);
     }
@@ -51,6 +51,14 @@ export class Database implements Loggable {
         const { count } =
             await sql`INSERT INTO drap.sessions (session_id, user_id, expiration) VALUES (${sid}, ${uid}, ${expiration})`;
         return count;
+    }
+
+    @timed async getUserFromValidSession(sid: Session['session_id']) {
+        const sql = this.#sql;
+        const [first, ...rest] =
+            await sql`SELECT u.* FROM drap.sessions JOIN drap.users u USING (user_id) WHERE session_id = ${sid}`;
+        assert(rest.length === 0);
+        return typeof first === 'undefined' ? null : parse(User, first);
     }
 
     @timed async deleteValidSession(sid: Session['session_id']) {

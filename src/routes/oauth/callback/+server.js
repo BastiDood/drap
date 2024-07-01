@@ -12,7 +12,7 @@ const fetchJwks = createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/
 export async function GET({ fetch, locals: { db }, cookies, url: { searchParams } }) {
     // TODO: check if the session already exists
     const sid = cookies.get('sid');
-    if (!sid) redirect(301, '/');
+    if (!sid) redirect(302, '/');
 
     const state = searchParams.get('state');
     if (state === null) error(400);
@@ -31,7 +31,7 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
         grant_type: 'authorization_code',
     });
 
-    await db.begin(async db => {
+    const expires = await db.begin(async db => {
         const pending = await db.deletePendingSession(sid);
         if (pending === null) error(400);
 
@@ -57,8 +57,10 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
 
         // Insert user as uninitialized by default
         await db.upsertUser(token.sub, token.email, token.given_name, token.family_name, token.picture);
-        await db.insertValidSession(sid, token.sub, pending.expiration);
+        await db.insertValidSession(sid, token.sub, token.exp);
+        return token.exp;
     });
 
-    redirect(301, '/');
+    cookies.set('sid', sid, { path: '/', httpOnly: true, sameSite: 'lax', expires });
+    redirect(302, '/dashboard/');
 }

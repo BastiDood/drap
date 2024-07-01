@@ -21,5 +21,5 @@ export async function GET({ locals: { db }, cookies }) {
         scope: OAUTH_SCOPE_STRING,
     });
 
-    redirect(301, `https://accounts.google.com/o/oauth2/v2/auth?${params}`);
+    redirect(302, `https://accounts.google.com/o/oauth2/v2/auth?${params}`);
 }
