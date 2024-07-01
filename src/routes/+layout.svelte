@@ -13,5 +13,5 @@
 <Toast />
 <AppShell>
     <SideBar slot="sidebarLeft" {user} />
-    <div class="h-full p-4"><slot /></div>
+    <div class="h-full space-y-4 p-4"><slot /></div>
 </AppShell>

@@ -54,51 +54,49 @@
     }
 </script>
 
-<section class="space-y-4">
-    <h1 class="h1 mb-2">Draft Registration</h1>
-    <div class="space-y-2">
-        {#each availableLabs as { id, name }, idx (id)}
+<h1 class="h1 mb-2">Draft Registration</h1>
+<div class="space-y-2">
+    {#each availableLabs as { id, name }, idx (id)}
+        <button
+            class="card w-full cursor-pointer appearance-none p-4"
+            transition:slide={{ duration: 120 }}
+            on:click={selectLab.bind(null, idx)}>{name}</button
+        >
+    {:else}
+        <WarningAlert>No more labs left.</WarningAlert>
+    {/each}
+</div>
+<hr class="!border-primary-400-500-token !border-t-4" />
+<div class="space-y-2">
+    {#each selectedLabs as { id, name }, idx (id)}
+        <div
+            class="card grid grid-cols-[1fr_auto_auto_auto] items-center gap-2 p-4"
+            transition:slide={{ duration: 120 }}
+        >
+            <span>{name}</span>
             <button
-                class="card w-full cursor-pointer appearance-none p-4"
-                transition:slide={{ duration: 120 }}
-                on:click={selectLab.bind(null, idx)}>{name}</button
+                type="button"
+                class="variant-filled-success btn-icon btn-icon-sm"
+                on:click={moveLabUp.bind(null, idx)}
             >
-        {:else}
-            <WarningAlert>No more labs left.</WarningAlert>
-        {/each}
-    </div>
-    <hr class="!border-primary-400-500-token !border-t-4" />
-    <div class="space-y-2">
-        {#each selectedLabs as { id, name }, idx (id)}
-            <div
-                class="card grid grid-cols-[1fr_auto_auto_auto] items-center gap-2 p-4"
-                transition:slide={{ duration: 120 }}
+                <Icon src={ArrowUp} class="size-6" />
+            </button>
+            <button
+                type="button"
+                class="variant-filled-warning btn-icon btn-icon-sm"
+                on:click={moveLabDown.bind(null, idx)}
             >
-                <span>{name}</span>
-                <button
-                    type="button"
-                    class="variant-filled-success btn-icon btn-icon-sm"
-                    on:click={moveLabUp.bind(null, idx)}
-                >
-                    <Icon src={ArrowUp} class="size-6" />
-                </button>
-                <button
-                    type="button"
-                    class="variant-filled-warning btn-icon btn-icon-sm"
-                    on:click={moveLabDown.bind(null, idx)}
-                >
-                    <Icon src={ArrowDown} class="size-6" />
-                </button>
-                <button
-                    type="button"
-                    class="variant-filled-error btn-icon btn-icon-sm"
-                    on:click={resetSelection.bind(null, idx)}
-                >
-                    <Icon src={XMark} class="size-6" />
-                </button>
-            </div>
-        {:else}
-            <WarningAlert>No labs selected yet.</WarningAlert>
-        {/each}
-    </div>
-</section>
+                <Icon src={ArrowDown} class="size-6" />
+            </button>
+            <button
+                type="button"
+                class="variant-filled-error btn-icon btn-icon-sm"
+                on:click={resetSelection.bind(null, idx)}
+            >
+                <Icon src={XMark} class="size-6" />
+            </button>
+        </div>
+    {:else}
+        <WarningAlert>No labs selected yet.</WarningAlert>
+    {/each}
+</div>
