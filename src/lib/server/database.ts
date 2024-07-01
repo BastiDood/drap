@@ -4,18 +4,17 @@ import { parse, pick } from 'valibot';
 import type { Logger } from 'pino';
 import type { User } from '$lib/models/user';
 import assert from 'node:assert/strict';
-import { env } from '$env/dynamic/private';
 import postgres from 'postgres';
 
-const sql = postgres(env.POSTGRES_URL, { ssl: 'prefer' });
-process.once('sveltekit:shutdown', () => sql.end());
-
-const DeletedSession = pick(Session, ['user_id', 'expiration']);
+const DeletedPendingSession = pick(Pending, ['nonce', 'expiration']);
+const DeletedValidSession = pick(Session, ['user_id', 'expiration']);
 
 export class Database implements Loggable {
+    sql: postgres.Sql;
     #logger: Logger;
 
-    constructor(logger: Logger) {
+    constructor(sql: postgres.Sql, logger: Logger) {
+        this.sql = sql;
         this.#logger = logger;
     }
 
@@ -23,23 +22,41 @@ export class Database implements Loggable {
         return this.#logger;
     }
 
+    begin<T>(fn: (db: Database) => Promise<T>) {
+        return this.sql.begin(sql => fn(new Database(sql, this.#logger)));
+    }
+
     // eslint-disable-next-line class-methods-use-this
     @timed async generatePendingSession() {
-        const [first, ...rest] = await sql`INSERT INTO pendings DEFAULT VALUES RETURNING session_id`;
+        const [first, ...rest] = await this.sql`INSERT INTO pendings DEFAULT VALUES RETURNING session_id`;
         assert(rest.length === 0);
         return parse(Pending, first);
     }
 
+    @timed async deletePendingSession(sid: Pending['session_id']) {
+        const [first, ...rest] = await this
+            .sql`DELETE FROM pendings WHERE session_id = ${sid} RETURNING expiration, nonce`;
+        assert(rest.length === 0);
+        return typeof first === 'undefined' ? null : parse(DeletedPendingSession, first);
+    }
+
     // eslint-disable-next-line class-methods-use-this
-    @timed async upgradePendingSession(
+    @timed async insertValidSession(
         sid: Pending['session_id'],
         uid: Session['user_id'],
         expiration: Session['expiration'],
     ) {
-        const [first, ...rest] =
-            await sql`INSERT INTO sessions (session_id, user_id, expiration) DELETE FROM pendings WHERE session_id = ${sid} RETURNING session_id, ${uid}, ${expiration}`;
+        const { count } = await this
+            .sql`INSERT INTO sessions (session_id, user_id, expiration) VALUES (${sid}, ${uid}, ${expiration})`;
+        return count;
+    }
+
+    // eslint-disable-next-line class-methods-use-this
+    @timed async deleteValidSession(sid: Session['session_id']) {
+        const [first, ...rest] = await this
+            .sql`DELETE FROM sessions WHERE session_id = ${sid} RETURNING session_id, expiration`;
         assert(rest.length === 0);
-        return typeof first === 'undefined' ? null : parse(Pending, first);
+        return typeof first === 'undefined' ? null : parse(DeletedValidSession, first);
     }
 
     // eslint-disable-next-line class-methods-use-this
@@ -50,16 +67,8 @@ export class Database implements Loggable {
         family: User['family_name'],
         avatar: User['avatar'],
     ) {
-        const { count } =
-            await sql`INSERT INTO users (user_id, email, given_name, family_name, avatar) VALUES (${uid}, ${email}, ${given}, ${family}, ${avatar}) ON CONFLICT (user_id) DO UPDATE SET email = ${email}, given_name = ${given}, family_name = ${family}, avatar = ${avatar}`;
+        const { count } = await this
+            .sql`INSERT INTO users (user_id, email, given_name, family_name, avatar) VALUES (${uid}, ${email}, ${given}, ${family}, ${avatar}) ON CONFLICT (user_id) DO UPDATE SET email = ${email}, given_name = ${given}, family_name = ${family}, avatar = ${avatar}`;
         return count;
-    }
-
-    // eslint-disable-next-line class-methods-use-this
-    @timed async deleteSession(sid: Session['session_id']) {
-        const [first, ...rest] =
-            await sql`DELETE FROM sessions WHERE session_id = ${sid} RETURNING session_id, expiration`;
-        assert(rest.length === 0);
-        return typeof first === 'undefined' ? null : parse(DeletedSession, first);
     }
 }
