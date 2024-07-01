@@ -1,20 +1,17 @@
 <script lang="ts">
     import { ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
-    
+
     // student status refers to whether the student has been selected for the draft or not
-    type Student = {name: string, id: string, email: string}
+    type Student = { name: string; id: string; email: string };
 
     // dummy data, expectation is for it to be loaded from page data
     const students: Student[] = [
-        {name: "Victor Edwin Reyes", id: "2021-01588", email: "vereyes2@up.edu.ph"},
-        {name: "Sebastian Luis Ortiz", id: "2020-XXXXX", email: "slortiz@up.edu.ph"},
-        {name: "Angelica Raborar", id: "2020-YYYYY", email: "araborar@up.edu.ph"},
-    ]
+        { name: 'Victor Edwin Reyes', id: '2021-01588', email: 'vereyes2@up.edu.ph' },
+        { name: 'Sebastian Luis Ortiz', id: '2020-XXXXX', email: 'slortiz@up.edu.ph' },
+        { name: 'Angelica Raborar', id: '2020-YYYYY', email: 'araborar@up.edu.ph' },
+    ];
 
-    let draftees: string[] = [
-
-    ]
-
+    let draftees: string[] = [];
 </script>
 
 <section class="space-y-4">
@@ -32,9 +29,7 @@
                     </ListBoxItem>
                 {/each}
             </ListBox>
-            <button type="submit" class="btn variant-filled">
-                Save Selection
-            </button>
+            <button type="submit" class="variant-filled btn"> Save Selection </button>
         </div>
     </form>
 </section>

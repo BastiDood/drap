@@ -6,7 +6,7 @@
     <h1 class="h1">Set the quota for each laboratory for this draft process</h1>
     <form method="post">
         <div class="table-container my-4">
-            <table class="table table-comfortable table-hover">
+            <table class="table table-hover table-comfortable">
                 <thead>
                     <tr>
                         <th>Laboratory</th>
@@ -26,8 +26,6 @@
             </table>
         </div>
 
-        <button type="submit" class="btn variant-filled">
-            Save Selection
-        </button>
+        <button type="submit" class="variant-filled btn"> Save Selection </button>
     </form>
 </section>
