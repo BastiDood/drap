@@ -1,5 +1,5 @@
 <script>
-    import { AcademicCap, Beaker, Home } from '@steeze-ui/heroicons';
+    import { AcademicCap, Beaker, BuildingLibrary, Home } from '@steeze-ui/heroicons';
     import { AppRail, AppRailAnchor, LightSwitch } from '@skeletonlabs/skeleton';
     import { Icon } from '@steeze-ui/svelte-icon';
     import { page } from '$app/stores';
@@ -21,5 +21,9 @@
     <AppRailAnchor href="/instructor" selected={pathname === '/instructor'}>
         <Icon src={Beaker} slot="lead" class="h-8" />
         <span>Instructor</span>
+    </AppRailAnchor>
+    <AppRailAnchor href="/admin" selected={pathname === '/admin'}>
+        <Icon src={BuildingLibrary} slot="lead" class="h-8" />
+        <span>Admin</span>
     </AppRailAnchor>
 </AppRail>
