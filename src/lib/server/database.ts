@@ -29,7 +29,8 @@ export class Database implements Loggable {
 
     @timed async generatePendingSession() {
         const sql = this.#sql;
-        const [first, ...rest] = await sql`INSERT INTO drap.pendings DEFAULT VALUES RETURNING session_id, expiration, nonce`;
+        const [first, ...rest] =
+            await sql`INSERT INTO drap.pendings DEFAULT VALUES RETURNING session_id, expiration, nonce`;
         assert(rest.length === 0);
         return parse(Pending, first);
     }
