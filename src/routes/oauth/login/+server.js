@@ -3,8 +3,6 @@ import { OAUTH_SCOPE_STRING } from '$lib/server/models/oauth';
 import { env } from '$env/dynamic/private';
 import { redirect } from '@sveltejs/kit';
 
-export const prerender = false;
-
 export async function GET({ locals: { db }, cookies }) {
     // TODO: Check if already logged in
     const { session_id, nonce, expiration } = await db.generatePendingSession();

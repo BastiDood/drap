@@ -1,7 +1,5 @@
 import { error } from '@sveltejs/kit';
 
-export const prerender = false;
-
 export async function DELETE({ locals: { db }, cookies }) {
     const sid = cookies.get('sid');
     cookies.delete('sid', { path: '/', httpOnly: true, sameSite: 'lax' });

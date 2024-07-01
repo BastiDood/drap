@@ -6,8 +6,6 @@ import { Buffer } from 'node:buffer';
 import { env } from '$env/dynamic/private';
 import { parse } from 'valibot';
 
-export const prerender = false;
-
 const fetchJwks = createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'));
 
 // eslint-disable-next-line func-style
