@@ -7,6 +7,34 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@skeletonlabs/skeleton':
+        specifier: ^2.10.1
+        version: 2.10.1(svelte@4.2.18)
+      '@steeze-ui/heroicons':
+        specifier: ^2.3.0
+        version: 2.3.0
+      '@steeze-ui/svelte-icon':
+        specifier: ^1.5.0
+        version: 1.5.0(svelte@4.2.18)
+      '@sveltejs/kit':
+        specifier: ^2.5.17
+        version: 2.5.18(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.3.2(@types/node@20.14.9)))(svelte@4.2.18)(vite@5.3.2(@types/node@20.14.9))
+      jose:
+        specifier: ^5.6.2
+        version: 5.6.2
+      pino:
+        specifier: ^9.2.0
+        version: 9.2.0
+      postgres:
+        specifier: ^3.4.4
+        version: 3.4.4
+      svelte:
+        specifier: ^4.2.18
+        version: 4.2.18
+      valibot:
+        specifier: ^0.35.0
+        version: 0.35.0
     devDependencies:
       '@linthtml/linthtml':
         specifier: ^0.9.6
@@ -14,24 +42,12 @@ importers:
       '@linthtml/linthtml-config-recommended':
         specifier: ^0.1.0
         version: 0.1.0(@linthtml/linthtml@0.9.6)
-      '@skeletonlabs/skeleton':
-        specifier: ^2.10.1
-        version: 2.10.1(svelte@4.2.18)
       '@skeletonlabs/tw-plugin':
         specifier: ^0.4.0
         version: 0.4.0(tailwindcss@3.4.4)
-      '@steeze-ui/heroicons':
-        specifier: ^2.3.0
-        version: 2.3.0
-      '@steeze-ui/svelte-icon':
-        specifier: ^1.5.0
-        version: 1.5.0(svelte@4.2.18)
       '@sveltejs/adapter-node':
         specifier: ^5.2.0
         version: 5.2.0(@sveltejs/kit@2.5.18(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.3.2(@types/node@20.14.9)))(svelte@4.2.18)(vite@5.3.2(@types/node@20.14.9)))
-      '@sveltejs/kit':
-        specifier: ^2.5.17
-        version: 2.5.18(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.3.2(@types/node@20.14.9)))(svelte@4.2.18)(vite@5.3.2(@types/node@20.14.9))
       '@sveltejs/vite-plugin-svelte':
         specifier: ^3.1.1
         version: 3.1.1(svelte@4.2.18)(vite@5.3.2(@types/node@20.14.9))
@@ -62,15 +78,6 @@ importers:
       eslint-plugin-svelte:
         specifier: ^2.41.0
         version: 2.41.0(eslint@8.57.0)(svelte@4.2.18)
-      jose:
-        specifier: ^5.6.2
-        version: 5.6.2
-      pino:
-        specifier: ^9.2.0
-        version: 9.2.0
-      postgres:
-        specifier: ^3.4.4
-        version: 3.4.4
       prettier:
         specifier: ^3.3.2
         version: 3.3.2
@@ -89,9 +96,6 @@ importers:
       stylelint-config-tailwindcss:
         specifier: ^0.0.7
         version: 0.0.7(stylelint@16.6.1(typescript@5.5.2))(tailwindcss@3.4.4)
-      svelte:
-        specifier: ^4.2.18
-        version: 4.2.18
       svelte-check:
         specifier: ^3.8.2
         version: 3.8.4(postcss-load-config@4.0.2(postcss@8.4.39))(postcss@8.4.39)(svelte@4.2.18)
@@ -101,9 +105,6 @@ importers:
       typescript:
         specifier: ^5.5.2
         version: 5.5.2
-      valibot:
-        specifier: ^0.35.0
-        version: 0.35.0
       vite:
         specifier: ^5.3.1
         version: 5.3.2(@types/node@20.14.9)
