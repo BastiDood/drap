@@ -1,4 +1,6 @@
 <script lang="ts">
+  import LabQuotaInput from './LabQuotaInput.svelte';
+
     import type { PageData } from './$types';
 
     let availableLabs = [
@@ -27,12 +29,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {#each availableLabs as {id, name}, idx (id)}
-                        <tr>
-                            <td>{name}</td>
-                            <td><input type="number" required min=0 placeholder="Quota" class="input variant-form-material py-1 px-2"/></td>
-                        </tr> 
-                    {/each}
+                    <LabQuotaInput name="ndsl">Networks and Distributed Systems Laboratory</LabQuotaInput>
+                    <LabQuotaInput name="cvmig">Computer Vision & Machine Intelligence Laboratory</LabQuotaInput>
+                    <LabQuotaInput name="s3">Service Science & Software Engineering Laboratory</LabQuotaInput>
+                    <LabQuotaInput name="acl">Algorithms & Complexity Laboratory</LabQuotaInput>
+                    <LabQuotaInput name="wsl">Web Science Laboratory</LabQuotaInput>
+                    <LabQuotaInput name="csl">Computer Security Laboratory</LabQuotaInput>
+                    <LabQuotaInput name="smsl">System Modelling and Simulation Laboratory</LabQuotaInput>
+                    <LabQuotaInput name="scl">Scientific Computing Laboratory</LabQuotaInput>
                 </tbody>
             </table>
         </div>
