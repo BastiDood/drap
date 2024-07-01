@@ -1,12 +1,12 @@
 import { Database } from '$lib/server/database';
-import { env } from '$env/dynamic/private';
+import POSTGRES from '$lib/server/env/postgres';
 import pino from 'pino';
 import postgres from 'postgres';
 import process from 'node:process';
 
 const logger = pino();
 
-const sql = postgres(env.POSTGRES_URL, { ssl: 'prefer' });
+const sql = postgres(POSTGRES.URL, { ssl: 'prefer' });
 process.once('sveltekit:shutdown', () => sql.end());
 
 export async function handle({ event, resolve }) {

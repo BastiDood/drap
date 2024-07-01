@@ -3,7 +3,7 @@ import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { error, redirect } from '@sveltejs/kit';
 import { ok, strictEqual } from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
-import { env } from '$env/dynamic/private';
+import GOOGLE from '$lib/server/env/google';
 import { parse } from 'valibot';
 
 const fetchJwks = createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'));
@@ -25,9 +25,9 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
 
     const body = new URLSearchParams({
         code: parse(AuthorizationCode, code),
-        client_id: env.GOOGLE_OAUTH_CLIENT_ID,
-        client_secret: env.GOOGLE_OAUTH_CLIENT_SECRET,
-        redirect_uri: env.GOOGLE_OAUTH_REDIRECT,
+        client_id: GOOGLE.OAUTH_CLIENT_ID,
+        client_secret: GOOGLE.OAUTH_CLIENT_SECRET,
+        redirect_uri: GOOGLE.OAUTH_REDIRECT_URI,
         grant_type: 'authorization_code',
     });
 
@@ -50,7 +50,7 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
         const { id_token } = parse(TokenResponse, json);
         const { payload } = await jwtVerify(id_token, jwk, {
             issuer: 'https://accounts.google.com',
-            audience: env.GOOGLE_OAUTH_CLIENT_ID,
+            audience: GOOGLE.OAUTH_CLIENT_ID,
         });
 
         const token = parse(IdToken, payload);
