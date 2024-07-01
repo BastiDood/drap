@@ -14,6 +14,7 @@ export async function GET({ locals: { db }, cookies }) {
         client_id: GOOGLE.OAUTH_CLIENT_ID,
         redirect_uri: GOOGLE.OAUTH_REDIRECT_URI,
         nonce: Buffer.from(nonce).toString('base64url'),
+        hd: 'up.edu.ph',
         access_type: 'online',
         response_type: 'code',
         prompt: 'select_account',

@@ -43,7 +43,7 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
             body,
         });
 
-        // TODO: provide better status code
+        // TODO: Provide better status code.
         ok(res.ok);
 
         const json = await res.json();

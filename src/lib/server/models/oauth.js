@@ -19,7 +19,6 @@ const OAUTH_SCOPES = [
     'openid',
     'https://www.googleapis.com/auth/userinfo.profile',
     'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.name',
 ];
 export const OAUTH_SCOPE_STRING = OAUTH_SCOPES.join(' ');
 export const OAUTH_TOKEN_TYPE = 'Bearer';
@@ -62,6 +61,8 @@ export const IdToken = object({
     azp: string(),
     // Access token hash.
     at_hash: string(),
+    // The domain associated with the Google Workspace or Cloud organization of the user.
+    hd: literal('up.edu.ph'),
     email: pipe(string(), email()),
     email_verified: boolean(),
     given_name: string(),
