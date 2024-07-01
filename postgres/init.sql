@@ -46,6 +46,11 @@ CREATE SCHEMA drap
         email TEXT NOT NULL,
         PRIMARY KEY (invite_id)
     )
+    CREATE TABLE lab_members (
+        member_id TEXT NOT NULL REFERENCES users (user_id),
+        lab_id SMALLINT NOT NULL REFERENCES labs (lab_id),
+        PRIMARY KEY (member_id)
+    )
     CREATE TABLE drafts (
         draft_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL,
         curr_round SMALLINT NOT NULL,
