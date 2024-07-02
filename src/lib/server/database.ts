@@ -9,11 +9,13 @@ import postgres from 'postgres';
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration']);
 const DeletedValidSession = pick(Session, ['user_id', 'expiration']);
 
+export type Sql = postgres.Sql<{ bigint: bigint; }>;
+
 export class Database implements Loggable {
-    #sql: postgres.Sql;
+    #sql: Sql;
     #logger: Logger;
 
-    constructor(sql: postgres.Sql, logger: Logger) {
+    constructor(sql: Sql, logger: Logger) {
         this.#sql = sql;
         this.#logger = logger;
     }

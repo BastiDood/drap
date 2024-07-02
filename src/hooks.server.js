@@ -6,7 +6,7 @@ import process from 'node:process';
 
 const logger = pino();
 
-const sql = postgres(POSTGRES.URL, { ssl: 'prefer' });
+const sql = postgres(POSTGRES.URL, { ssl: 'prefer', types: { bigint: postgres.BigInt } });
 process.once('sveltekit:shutdown', () => sql.end());
 
 export async function handle({ event, resolve }) {
