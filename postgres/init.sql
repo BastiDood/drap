@@ -10,7 +10,7 @@ CREATE DOMAIN Expiration AS TIMESTAMPTZ CHECK(VALUE > NOW());
 CREATE SCHEMA drap
     CREATE TABLE labs (
         lab_id TEXT NOT NULL PRIMARY KEY,
-        lab_name TEXT NOT NULL,
+        lab_name TEXT UNIQUE NOT NULL,
         quota SMALLINT NOT NULL DEFAULT 0
     )
     CREATE TABLE users (

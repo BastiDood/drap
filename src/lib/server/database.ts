@@ -1,6 +1,7 @@
 import { type Loggable, timed } from '$lib/decorators';
 import { Pending, Session } from '$lib/server/models/session';
-import { parse, pick } from 'valibot';
+import { array, parse, pick } from 'valibot';
+import { Lab } from '$lib/models/lab';
 import type { Logger } from 'pino';
 import { User } from '$lib/models/user';
 import postgres from 'postgres';
@@ -8,6 +9,7 @@ import { strictEqual } from 'node:assert/strict';
 
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
+const RegisteredLabs = array(pick(Lab, ['lab_id', 'lab_name']));
 
 export type Sql = postgres.Sql<{ bigint: bigint }>;
 
@@ -102,5 +104,11 @@ export class Database implements Loggable {
         const { count } =
             await sql`UPDATE drap.users AS u SET student_number = coalesce(u.student_number, ${studentNumber}), given_name = ${given}, family_name = ${family} FROM drap.sessions s WHERE session_id = ${sid} AND s.email = u.email`;
         return count;
+    }
+
+    @timed async getLabRegistry() {
+        const sql = this.#sql;
+        const labs = await sql`SELECT lab_id, lab_name FROM drap.labs ORDER BY lab_name`;
+        return parse(RegisteredLabs, labs);
     }
 }

@@ -19,15 +19,24 @@
         <Icon src={Home} slot="lead" class="h-8" />
         <span>Home</span>
     </AppRailAnchor>
-    {#if user !== null}
+    {#if user !== null && user.user_id !== null}
         <AppRailAnchor href="/profile/" selected={pathname === '/profile/'}>
             <Icon src={UserCircle} slot="lead" class="h-8" />
             <span>Profile</span>
         </AppRailAnchor>
-        <AppRailAnchor href="/dashboard/rank/" selected={pathname === '/dashboard/rank/'}>
-            <Icon src={QueueList} slot="lead" class="h-8" />
-            <span>Rank</span>
-        </AppRailAnchor>
+        {#if user.lab_id === null}
+            {#if user.is_admin}
+                <!-- TODO: Registered Admin -->
+            {:else}
+                <!-- Registered User -->
+                <AppRailAnchor href="/dashboard/rank/" selected={pathname === '/dashboard/rank/'}>
+                    <Icon src={QueueList} slot="lead" class="h-8" />
+                    <span>Rank</span>
+                </AppRailAnchor>
+            {/if}
+        {:else if user.is_admin}
+            <!-- TODO: Registered Faculty -->
+        {/if}
     {/if}
     <div slot="trail" class="my-4 flex aspect-square flex-col items-center justify-center gap-2">
         {#if user !== null}
