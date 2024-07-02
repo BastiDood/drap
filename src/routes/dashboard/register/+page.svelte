@@ -1,6 +1,10 @@
 <script>
     import { AcademicCap, Beaker, ShieldExclamation } from '@steeze-ui/heroicons';
     import { Icon } from '@steeze-ui/svelte-icon';
+
+    // eslint-disable-next-line init-declarations
+    export let data;
+    $: ({ user } = data);
 </script>
 
 <h1 class="h1">Welcome to DRAP.</h1>
