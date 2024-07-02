@@ -1,11 +1,13 @@
 import { type Loggable, timed } from '$lib/decorators';
-import { Pending, Session } from '$lib/server/models/session';
 import { array, parse, pick } from 'valibot';
-import { Lab } from '$lib/models/lab';
 import type { Logger } from 'pino';
-import { User } from '$lib/models/user';
 import postgres from 'postgres';
 import { strictEqual } from 'node:assert/strict';
+
+import { Pending, Session } from '$lib/server/models/session';
+import { Draft } from '$lib/models/draft';
+import { Lab } from '$lib/models/lab';
+import { User } from '$lib/models/user';
 
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
@@ -110,5 +112,13 @@ export class Database implements Loggable {
         const sql = this.#sql;
         const labs = await sql`SELECT lab_id, lab_name FROM drap.labs ORDER BY lab_name`;
         return parse(RegisteredLabs, labs);
+    }
+
+    @timed async getLatestDraft() {
+        const sql = this.#sql;
+        const [first, ...rest] =
+            await sql`SELECT max(draft_id), curr_round, max_rounds, created_at FROM drap.drafts GROUP BY draft_id`;
+        strictEqual(rest.length, 0);
+        return typeof first === 'undefined' ? null : parse(Draft, first);
     }
 }
