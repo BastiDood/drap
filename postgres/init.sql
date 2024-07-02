@@ -30,9 +30,9 @@ CREATE SCHEMA drap
         user_id GoogleUserId NOT NULL REFERENCES users (user_id)
     )
     CREATE TABLE labs (
-        lab_id SMALLINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
+        lab_id TEXT NOT NULL PRIMARY KEY,
         lab_name TEXT NOT NULL,
-        quota SMALLINT NOT NULL
+        quota SMALLINT NOT NULL DEFAULT 0
     )
     CREATE TABLE lab_members (
         lab_id SMALLINT NOT NULL REFERENCES labs (lab_id),
@@ -41,13 +41,7 @@ CREATE SCHEMA drap
     )
     CREATE TABLE lab_invites (
         invite_id SMALLINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
-        inviter_admin_id TEXT NOT NULL REFERENCES users (user_id),
-        lab_id SMALLINT NOT NULL REFERENCES labs (lab_id),
-        email TEXT NOT NULL,
-        UNIQUE (lab_id, email)
-    )
-    CREATE TABLE admin_invites (
-        invite_id SMALLINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
+        lab_id SMALLINT REFERENCES labs (lab_id), -- NULL => Admin Invite
         inviter_admin_id TEXT NOT NULL REFERENCES users (user_id),
         email TEXT UNIQUE NOT NULL
     )
@@ -73,3 +67,14 @@ CREATE SCHEMA drap
         user_id TEXT NOT NULL REFERENCES users (user_id),
         PRIMARY KEY (draft_id, user_id)
     );
+
+INSERT INTO drap.labs (lab_id, lab_name) VALUES
+    ('acl', 'Algorithms & Complexity Laboratory'),
+    ('aclrl', 'Automata, Combinatorics, & Logic Research Laboratory'),
+    ('csl', 'Computer Security Laboratory'),
+    ('cvmil', 'Computer Vision & Machine Intelligence Laboratory'),
+    ('ndsl', 'Networks & Distributed Systems Laboratory'),
+    ('scl', 'Scientific Computing Laboratory'),
+    ('s3', 'Service Science & Software Engineering Laboratory'),
+    ('smsl', 'System Modelling & Simulation Laboratory'),
+    ('wsl', 'Web Science Laboratory');
