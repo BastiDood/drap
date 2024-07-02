@@ -6,11 +6,10 @@ import { User } from '$lib/models/user';
 import postgres from 'postgres';
 import { strictEqual } from 'node:assert/strict';
 
-const InitializedUser = pick(User, ['student_number', 'lab_id']);
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
 
-export type Sql = postgres.Sql<{ bigint: bigint; }>;
+export type Sql = postgres.Sql<{ bigint: bigint }>;
 
 export class Database implements Loggable {
     #sql: Sql;
@@ -75,10 +74,9 @@ export class Database implements Loggable {
 
     @timed async initUser(email: User['email']) {
         const sql = this.#sql;
-        const [first, ...rest] =
+        const { count } =
             await sql`INSERT INTO drap.users (email) VALUES (${email}) ON CONFLICT (email) DO NOTHING RETURNING student_number, lab_id`;
-        strictEqual(rest.length, 0);
-        return parse(InitializedUser, first);
+        return count;
     }
 
     @timed async upsertOpenIdUser(
@@ -91,6 +89,18 @@ export class Database implements Loggable {
         const sql = this.#sql;
         const { count } =
             await sql`INSERT INTO drap.users AS u (email, user_id, given_name, family_name, avatar) VALUES (${email}, ${uid}, ${given}, ${family}, ${avatar}) ON CONFLICT (email) DO UPDATE SET user_id = ${uid}, given_name = coalesce(nullif(trim(u.given_name), ''), ${given}), family_name = coalesce(nullif(trim(u.family_name), ''), ${family}), avatar = ${avatar}`;
+        return count;
+    }
+
+    @timed async updateProfileBySession(
+        sid: Session['session_id'],
+        studentNumber: User['student_number'],
+        given: User['given_name'],
+        family: User['family_name'],
+    ) {
+        const sql = this.#sql;
+        const { count } =
+            await sql`UPDATE drap.users AS u SET student_number = coalesce(u.student_number, ${studentNumber}), given_name = ${given}, family_name = ${family} FROM drap.sessions s WHERE session_id = ${sid} AND s.email = u.email`;
         return count;
     }
 }

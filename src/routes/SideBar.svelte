@@ -1,6 +1,6 @@
 <script lang="ts">
     import { AppRail, AppRailAnchor, Avatar, LightSwitch } from '@skeletonlabs/skeleton';
-    import { ClipboardDocumentList, Home, QueueList, UserCircle } from '@steeze-ui/heroicons';
+    import { Home, QueueList, UserCircle } from '@steeze-ui/heroicons';
     import { Icon } from '@steeze-ui/svelte-icon';
     import type { User } from '$lib/models/user';
     import { page } from '$app/stores';
