@@ -1,22 +1,23 @@
 import {
     type InferOutput,
     bigint,
+    boolean,
+    email,
     maxLength,
     minLength,
     nullable,
     object,
     pipe,
     string,
-    transform,
-    unknown,
     url,
 } from 'valibot';
 
 export const User = object({
+    is_admin: boolean(),
     student_number: nullable(bigint()),
-    is_admin: pipe(unknown(), transform(Boolean)),
-    email: string(),
-    user_id: pipe(string(), minLength(1), maxLength(255)),
+    lab_id: nullable(string()), // TODO: Refer to the `Lab` schema.
+    email: pipe(string(), email()),
+    user_id: nullable(pipe(string(), minLength(1), maxLength(255))),
     given_name: string(),
     family_name: string(),
     avatar: pipe(string(), url()),

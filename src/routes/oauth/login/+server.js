@@ -17,7 +17,6 @@ export async function GET({ locals: { db }, cookies }) {
         hd: 'up.edu.ph',
         access_type: 'online',
         response_type: 'code',
-        prompt: 'select_account',
         scope: OAUTH_SCOPE_STRING,
     });
 

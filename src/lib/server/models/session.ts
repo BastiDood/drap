@@ -9,5 +9,5 @@ const CommonSchema = object({
 export const Pending = object({ ...CommonSchema.entries, nonce: instance(Uint8Array) });
 export type Pending = InferOutput<typeof Pending>;
 
-export const Session = object({ ...CommonSchema.entries, user_id: User.entries.user_id });
+export const Session = object({ ...CommonSchema.entries, email: User.entries.email });
 export type Session = InferOutput<typeof Session>;
