@@ -1,4 +1,5 @@
 <script>
+    import WarningAlert from '$lib/alerts/Warning.svelte';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
     import { getToastStore } from '@skeletonlabs/skeleton';
@@ -13,6 +14,9 @@
 </script>
 
 <h1 class="h1">User Profile</h1>
+{#if student_number === null}
+    <WarningAlert>The student number may only be set once.</WarningAlert>
+{/if}
 <form
     method="post"
     use:enhance={({ submitter }) => {
