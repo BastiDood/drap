@@ -11,6 +11,11 @@ CREATE TYPE UserLogin AS ENUM ('student', 'faculty', 'admin');
 
 CREATE SCHEMA drap
     CREATE TABLE users (
+        -- match student_number, is_admin:
+        --     case NULL, FALSE: Uninitialized
+        --     case 0, FALSE:    Faculty
+        --     case _, FALSE:    Student
+        --     case _, TRUE:     Admin
         student_number BIGINT UNIQUE,
         is_admin BOOLEAN NOT NULL DEFAULT FALSE,
         email TEXT NOT NULL UNIQUE,
@@ -35,14 +40,14 @@ CREATE SCHEMA drap
         quota SMALLINT NOT NULL DEFAULT 0
     )
     CREATE TABLE lab_members (
-        lab_id SMALLINT NOT NULL REFERENCES labs (lab_id),
+        lab_id TEXT NOT NULL REFERENCES labs (lab_id),
         member_id TEXT NOT NULL REFERENCES users (user_id),
         PRIMARY KEY (lab_id, member_id)
     )
-    CREATE TABLE lab_invites (
+    CREATE TABLE invites (
         invite_id SMALLINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
-        lab_id SMALLINT REFERENCES labs (lab_id), -- NULL => Admin Invite
         inviter_admin_id TEXT NOT NULL REFERENCES users (user_id),
+        lab_id TEXT REFERENCES labs (lab_id), -- NULL => Admin Invite
         email TEXT UNIQUE NOT NULL
     )
     CREATE TABLE drafts (
@@ -57,14 +62,14 @@ CREATE SCHEMA drap
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         round SMALLINT NOT NULL,
         faculty_id TEXT NOT NULL REFERENCES users (user_id),
-        lab_id SMALLINT NOT NULL REFERENCES labs (lab_id)
+        lab_id TEXT NOT NULL REFERENCES labs (lab_id)
     )
     CREATE TABLE student_ranks (
         draft_id BIGINT NOT NULL REFERENCES drafts (draft_id),
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         chosen_by BIGINT UNIQUE REFERENCES faculty_choices (choice_id),
-        labs SMALLINT[] NOT NULL, -- REFERENCES (EACH ELEMENT OF labs) labs (lab_id)
         user_id TEXT NOT NULL REFERENCES users (user_id),
+        labs TEXT[] NOT NULL, -- REFERENCES (EACH ELEMENT OF labs) labs (lab_id)
         PRIMARY KEY (draft_id, user_id)
     );
 
