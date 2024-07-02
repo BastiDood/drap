@@ -32,7 +32,7 @@
     {:else if user.student_number === 0n}
         <!-- TODO: Laboratory Head -->
     {:else}
-        <!-- TODO: Student -->
+        <!-- Student -->
         <AppRailAnchor href="/dashboard/rank/" selected={pathname === '/dashboard/register/'}>
             <Icon src={QueueList} slot="lead" class="h-8" />
             <span>Rank</span>
