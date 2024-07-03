@@ -1,4 +1,4 @@
-import { array, bigint, isoTimestamp, number, object, pipe, string } from 'valibot';
+import { type InferOutput, array, bigint, isoTimestamp, number, object, pipe, string } from 'valibot';
 
 export const StudentRank = object({
     draft_id: bigint(),
@@ -7,3 +7,5 @@ export const StudentRank = object({
     labs: array(number()),
     user_id: string(),
 });
+
+export type StudentRank = InferOutput<typeof StudentRank>
