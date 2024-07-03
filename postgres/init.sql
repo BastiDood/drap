@@ -54,7 +54,7 @@ CREATE SCHEMA drap
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         round SMALLINT NOT NULL,
         faculty_email TEXT NOT NULL REFERENCES users (email),
-        lab_id TEXT NOT NULL REFERENCES labs (lab_id)
+        lab_id TEXT NOT NULL REFERENCES labs (lab_id),
         CONSTRAINT non_negative_round CHECK (round > 0)
     )
     CREATE TABLE student_ranks (
