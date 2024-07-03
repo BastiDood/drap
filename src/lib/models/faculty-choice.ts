@@ -1,4 +1,4 @@
-import { type InferOutput, bigint, date, number, object, pipe, safeInteger, string } from 'valibot';
+import { type InferOutput, bigint, date, number, object, pipe, safeInteger } from 'valibot';
 import { Lab } from './lab';
 import { User } from './user';
 
