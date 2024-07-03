@@ -8,4 +8,4 @@ export const StudentRank = object({
     user_id: string(),
 });
 
-export type StudentRank = InferOutput<typeof StudentRank>
+export type StudentRank = InferOutput<typeof StudentRank>;
