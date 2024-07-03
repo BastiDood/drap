@@ -1,10 +1,13 @@
-import { type InferOutput, array, bigint, date, number, object, string } from 'valibot';
+import { type InferOutput, array, date, object, string } from 'valibot';
+import { Draft } from './draft';
+import { FacultyChoice } from './faculty-choice';
+import { Lab } from './lab';
 
 export const StudentRank = object({
-    draft_id: bigint(),
+    draft_id: Draft.entries.draft_id,
     created_at: date(),
-    chosen_by: bigint(),
-    labs: array(number()),
+    chosen_by: FacultyChoice.entries.choice_id,
+    labs: array(Lab.entries.lab_id),
     user_id: string(),
 });
 
