@@ -6,7 +6,7 @@ export const FacultyChoice = object({
     choice_id: bigint(),
     created_at: date(),
     round: pipe(number(), safeInteger(), minValue(0)),
-    faculty_id: User,
+    faculty_email: User.entries.email,
     lab_id: Lab.entries.lab_id,
 });
 

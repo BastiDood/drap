@@ -8,7 +8,7 @@ export const StudentRank = object({
     created_at: date(),
     chosen_by: FacultyChoice.entries.choice_id,
     labs: array(Lab.entries.lab_id),
-    user_id: string(),
+    email: User.entries.email,
 });
 
 export type StudentRank = InferOutput<typeof StudentRank>;
