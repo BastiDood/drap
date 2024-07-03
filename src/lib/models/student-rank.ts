@@ -1,7 +1,7 @@
 import { type InferOutput, array, date, object, string } from 'valibot';
-import { Draft } from './draft';
-import { FacultyChoice } from './faculty-choice';
-import { Lab } from './lab';
+import { Draft } from '$lib/models/draft';
+import { FacultyChoice } from '$lib/models/faculty-choice';
+import { Lab } from '$lib/models/lab';
 
 export const StudentRank = object({
     draft_id: Draft.entries.draft_id,

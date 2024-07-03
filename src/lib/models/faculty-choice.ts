@@ -1,6 +1,6 @@
 import { type InferOutput, bigint, date, number, object, pipe, safeInteger } from 'valibot';
-import { Lab } from './lab';
-import { User } from './user';
+import { Lab } from '$lib/models/lab';
+import { User } from '$lib/models/user';
 
 export const FacultyChoice = object({
     choice_id: bigint(),
