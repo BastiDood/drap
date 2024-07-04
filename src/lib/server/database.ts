@@ -143,7 +143,15 @@ export class Database implements Loggable {
         round: FacultyChoice['round'],
         faculty_email: FacultyChoice['faculty_email'],
         lab_id: FacultyChoice['lab_id'],
+        draft_id: StudentRank['draft_id'],
+        target_email: StudentRank['email']
     ) {
         const sql = this.#sql;
+        const { count: count1 } = 
+            await sql`INSERT INTO drap.faculty_choices AS c (choice_id, created_at, round, faculty_email, lab_id) VALUES (${choice_id}, ${created_at}, ${round}, ${faculty_email}, ${lab_id})`;
+        const { count: count2 } = 
+            await sql`UPDATE drap.student_ranks AS u SET chosen_by = ${choice_id} WHERE email = ${target_email} AND draft_id = ${draft_id}`
+
+        return [count1, count2]
     }
 }
