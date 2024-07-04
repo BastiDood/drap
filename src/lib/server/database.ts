@@ -141,7 +141,7 @@ export class Database implements Loggable {
     ) {
         const sql = this.#sql;
         const { count } = 
-            await sql`UPDATE drap.drafts AS d SET curr_round = ${curr_round}`;
+            await sql`UPDATE drap.drafts AS d SET curr_round = ${curr_round} WHERE draft_id = ${draft_id}`;
         return count;
     }
 
