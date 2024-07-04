@@ -1,5 +1,5 @@
 import { type Loggable, timed } from '$lib/decorators';
-import { array, parse, pick } from 'valibot';
+import { array, date, parse, pick } from 'valibot';
 import type { Logger } from 'pino';
 import postgres from 'postgres';
 import { strictEqual } from 'node:assert/strict';
@@ -135,5 +135,15 @@ export class Database implements Loggable {
         const { count } = 
             await sql`INSERT INTO drap.student_ranks AS u (draft_id, chosen_by, created_at, email, labs) VALUES (${draft_id}, ${chosen_by}, ${created_at}, ${email}, ${labs}) ON CONFLICT (email) DO UPDATE SET labs = ${labs}`;
         return count;
+    }
+
+    @timed async insertFacultyChoice(
+        choice_id: FacultyChoice['choice_id'],
+        created_at: FacultyChoice['created_at'],
+        round: FacultyChoice['round'],
+        faculty_email: FacultyChoice['faculty_email'],
+        lab_id: FacultyChoice['lab_id'],
+    ) {
+        const sql = this.#sql;
     }
 }
