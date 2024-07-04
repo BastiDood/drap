@@ -6,7 +6,9 @@ import { strictEqual } from 'node:assert/strict';
 
 import { Pending, Session } from '$lib/server/models/session';
 import { Draft } from '$lib/models/draft';
+import type { FacultyChoice } from '$lib/models/faculty-choice';
 import { Lab } from '$lib/models/lab';
+import type { StudentRank } from '$lib/models/student-rank';
 import { User } from '$lib/models/user';
 
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration']);
@@ -120,5 +122,18 @@ export class Database implements Loggable {
             await sql`SELECT max(draft_id), curr_round, max_rounds, created_at FROM drap.drafts GROUP BY draft_id`;
         strictEqual(rest.length, 0);
         return typeof first === 'undefined' ? null : parse(Draft, first);
+    }
+
+    @timed async upsertStudentRanking(
+        draft_id: Draft['draft_id'],
+        chosen_by: StudentRank['chosen_by'],
+        created_at: StudentRank['created_at'],
+        email: User['email'],
+        labs: StudentRank['labs'],
+    ) {
+        const sql = this.#sql;
+        const { count } = 
+            await sql`INSERT INTO drap.student_ranks AS u (draft_id, chosen_by, created_at, email, labs) VALUES (${draft_id}, ${chosen_by}, ${created_at}, ${email}, ${labs}) ON CONFLICT (email) DO UPDATE SET labs = ${labs}`;
+        return count;
     }
 }
