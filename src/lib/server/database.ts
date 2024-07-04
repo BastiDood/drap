@@ -8,7 +8,7 @@ import { Pending, Session } from '$lib/server/models/session';
 import { Draft } from '$lib/models/draft';
 import type { FacultyChoice } from '$lib/models/faculty-choice';
 import { Lab } from '$lib/models/lab';
-import type { StudentRank } from '$lib/models/student-rank';
+import { StudentRank } from '$lib/models/student-rank';
 import { User } from '$lib/models/user';
 
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration']);
@@ -143,6 +143,16 @@ export class Database implements Loggable {
         const { count } = 
             await sql`UPDATE drap.drafts AS d SET curr_round = ${curr_round} WHERE draft_id = ${draft_id}`;
         return count;
+    }
+
+    // get the emails of undrafted students (based on their student_ranks) for a given draft_id
+    @timed async getUndraftedStudents(
+        draft_id: Draft['draft_id'],
+    ) {
+        const sql = this.#sql;
+        const results = 
+            await sql`SELECT email FROM drap.student_ranks WHERE draft_id = ${draft_id} AND chosen_by = NULL`;
+        return typeof results[0] === 'undefined' ? null : results.map((val) => parse(StudentRank, val));
     }
 
     @timed async upsertStudentRanking(
