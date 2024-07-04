@@ -124,6 +124,27 @@ export class Database implements Loggable {
         return typeof first === 'undefined' ? null : parse(Draft, first);
     }
 
+    @timed async initDraft(
+        draft_id: Draft['draft_id'],
+        max_rounds: Draft['max_rounds'],
+        created_at: Draft['created_at']
+    ) {
+        const sql = this.#sql;
+        const { count } = 
+            await sql`INSERT INTO drap.drafts AS d (draft_id, curr_round, max_rounds, created_at) VALUES (${draft_id}, 0, ${max_rounds}, ${created_at})`;
+        return count;
+    }
+
+    @timed async updateDraftRound(
+        draft_id: Draft['draft_id'],
+        curr_round: Draft['curr_round']
+    ) {
+        const sql = this.#sql;
+        const { count } = 
+            await sql`UPDATE drap.drafts AS d SET curr_round = ${curr_round}`;
+        return count;
+    }
+
     @timed async upsertStudentRanking(
         draft_id: Draft['draft_id'],
         chosen_by: StudentRank['chosen_by'],
