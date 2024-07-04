@@ -137,6 +137,7 @@ export class Database implements Loggable {
         return count;
     }
 
+    // the operation of inserting a faculty choice must necessarily occur with the updating of a student_rank entry's chosen_by field; note the two return values for this function
     @timed async insertFacultyChoice(
         choice_id: FacultyChoice['choice_id'],
         created_at: FacultyChoice['created_at'],
