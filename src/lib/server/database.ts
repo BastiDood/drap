@@ -1,21 +1,31 @@
 import { type Loggable, timed } from '$lib/decorators';
-import { array, date, parse, pick } from 'valibot';
+import { array, parse, pick, pipe, transform } from 'valibot';
 import type { Logger } from 'pino';
 import postgres from 'postgres';
 import { strictEqual } from 'node:assert/strict';
 
 import { Pending, Session } from '$lib/server/models/session';
 import { Draft } from '$lib/models/draft';
-import type { FacultyChoice } from '$lib/models/faculty-choice';
+import { FacultyChoice } from '$lib/models/faculty-choice';
 import { Lab } from '$lib/models/lab';
 import { StudentRank } from '$lib/models/student-rank';
 import { User } from '$lib/models/user';
 
+const CreatedDraft = pick(Draft, ['draft_id', 'created_at']);
+const CreatedFacultyChoice = pick(FacultyChoice, ['choice_id', 'created_at']);
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
+const Emails = array(
+    pipe(
+        pick(User, ['email']),
+        transform(({ email }) => email),
+    ),
+);
+const IncrementedDraftRound = pick(Draft, ['curr_round']);
 const RegisteredLabs = array(pick(Lab, ['lab_id', 'lab_name']));
+const StudentChosen = pick(StudentRank, ['chosen_by']);
 
-export type Sql = postgres.Sql<{ bigint: bigint }>;
+export type Sql = postgres.Sql<{ bigint: bigint; }>;
 
 export class Database implements Loggable {
     #sql: Sql;
@@ -124,35 +134,27 @@ export class Database implements Loggable {
         return typeof first === 'undefined' ? null : parse(Draft, first);
     }
 
-    @timed async initDraft(
-        draft_id: Draft['draft_id'],
-        max_rounds: Draft['max_rounds'],
-        created_at: Draft['created_at']
-    ) {
+    @timed async initDraft(rounds: Draft['max_rounds']) {
         const sql = this.#sql;
-        const { count } = 
-            await sql`INSERT INTO drap.drafts AS d (draft_id, curr_round, max_rounds, created_at) VALUES (${draft_id}, 0, ${max_rounds}, ${created_at})`;
-        return count;
+        const [first, ...rest] =
+            await sql`INSERT INTO drap.drafts (max_rounds) VALUES (${rounds}) RETURNING draft_id, created_at`;
+        strictEqual(rest.length, 0);
+        return parse(CreatedDraft, first);
     }
 
-    @timed async updateDraftRound(
-        draft_id: Draft['draft_id'],
-        curr_round: Draft['curr_round']
-    ) {
+    @timed async incrementDraftRound(draft_id: Draft['draft_id']) {
         const sql = this.#sql;
-        const { count } = 
-            await sql`UPDATE drap.drafts AS d SET curr_round = ${curr_round} WHERE draft_id = ${draft_id}`;
-        return count;
+        const [first, ...rest] =
+            await sql`UPDATE drap.drafts SET curr_round = curr_round + 1 WHERE draft_id = ${draft_id} RETURNING curr_round`;
+        strictEqual(rest.length, 0);
+        return typeof first === 'undefined' ? null : parse(IncrementedDraftRound, first).curr_round;
     }
 
-    // get the emails of undrafted students (based on their student_ranks) for a given draft_id
-    @timed async getUndraftedStudents(
-        draft_id: Draft['draft_id'],
-    ) {
+    @timed async getUndraftedStudents(draft_id: Draft['draft_id']) {
         const sql = this.#sql;
-        const results = 
-            await sql`SELECT email FROM drap.student_ranks WHERE draft_id = ${draft_id} AND chosen_by = NULL`;
-        return typeof results[0] === 'undefined' ? null : results.map((val) => parse(StudentRank, val));
+        const ranks =
+            await sql`SELECT email FROM drap.student_ranks WHERE draft_id = ${draft_id} AND chosen_by IS NULL`;
+        return parse(Emails, ranks);
     }
 
     @timed async upsertStudentRanking(
@@ -163,27 +165,36 @@ export class Database implements Loggable {
         labs: StudentRank['labs'],
     ) {
         const sql = this.#sql;
-        const { count } = 
+        const { count } =
             await sql`INSERT INTO drap.student_ranks AS u (draft_id, chosen_by, created_at, email, labs) VALUES (${draft_id}, ${chosen_by}, ${created_at}, ${email}, ${labs}) ON CONFLICT (email) DO UPDATE SET labs = ${labs}`;
         return count;
     }
 
-    // the operation of inserting a faculty choice must necessarily occur with the updating of a student_rank entry's chosen_by field; note the two return values for this function
+    /**
+     * The operation of inserting a faculty choice must necessarily occur
+     * with the updating of a student_rank entry's chosen_by field; note
+     * the two return values for this function.
+     */
     @timed async insertFacultyChoice(
-        choice_id: FacultyChoice['choice_id'],
-        created_at: FacultyChoice['created_at'],
+        draftId: StudentRank['draft_id'],
+        labId: FacultyChoice['lab_id'],
         round: FacultyChoice['round'],
-        faculty_email: FacultyChoice['faculty_email'],
-        lab_id: FacultyChoice['lab_id'],
-        draft_id: StudentRank['draft_id'],
-        target_email: StudentRank['email']
+        facultyEmail: FacultyChoice['faculty_email'],
+        studentEmail: StudentRank['email'],
     ) {
         const sql = this.#sql;
-        const { count: count1 } = 
-            await sql`INSERT INTO drap.faculty_choices AS c (choice_id, created_at, round, faculty_email, lab_id) VALUES (${choice_id}, ${created_at}, ${round}, ${faculty_email}, ${lab_id})`;
-        const { count: count2 } = 
-            await sql`UPDATE drap.student_ranks AS u SET chosen_by = ${choice_id} WHERE email = ${target_email} AND draft_id = ${draft_id}`
+        const [choice, ...choices] =
+            await sql`INSERT INTO drap.faculty_choices (round, faculty_email, lab_id) VALUES (${round}, ${facultyEmail}, ${labId}) RETURNING choice_id, created_at`;
+        strictEqual(choices.length, 0);
 
-        return [count1, count2]
+        const { choice_id: choiceId, created_at: createdAt } = parse(CreatedFacultyChoice, choice);
+        const [rank, ...ranks] =
+            await sql`UPDATE drap.student_ranks r SET chosen_by = coalesce(r.chosen_by, ${choiceId}) WHERE email = ${studentEmail} AND draft_id = ${draftId} RETURNING chosen_by`;
+        strictEqual(ranks.length, 0);
+        if (typeof rank === 'undefined') return null;
+
+        const { chosen_by } = parse(StudentChosen, rank);
+        strictEqual(chosen_by, choiceId, 'student was already previously chosen');
+        return { choiceId, createdAt };
     }
 }
