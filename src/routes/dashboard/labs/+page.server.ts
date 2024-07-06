@@ -1,4 +1,5 @@
 import { error } from '@sveltejs/kit';
+import { validateString } from '$lib/forms';
 
 export async function load({ locals: { db }, parent }) {
     const { user } = await parent();
@@ -14,7 +15,15 @@ function* mapRowTuples(data: FormData) {
 }
 
 export const actions = {
-    async default({ locals: { db }, request }) {
+    async lab({ locals: { db }, request }) {
+        // TODO: Validate whether this user has permission to this action.
+        const data = await request.formData();
+        const id = validateString(data.get('id'));
+        const lab = validateString(data.get('name'));
+        const result = await db.insertNewLab(id, lab);
+        db.logger.info({ id: result });
+    },
+    async quota({ locals: { db }, request }) {
         // TODO: Validate whether this user has permission to this action.
         const data = await request.formData();
         await db.updateLabQuotas(mapRowTuples(data));

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { AppRail, AppRailAnchor, Avatar, LightSwitch } from '@skeletonlabs/skeleton';
-    import { Home, QueueList, ShieldExclamation, UserCircle } from '@steeze-ui/heroicons';
+    import { Beaker, Home, QueueList, UserCircle } from '@steeze-ui/heroicons';
     import { Icon } from '@steeze-ui/svelte-icon';
     import type { User } from '$lib/models/user';
     import { page } from '$app/stores';
@@ -27,9 +27,9 @@
         {#if user.lab_id === null}
             {#if user.is_admin}
                 <!-- Registered Admin -->
-                <AppRailAnchor href="/dashboard/admin/" selected={pathname === '/dashboard/admin/'}>
-                    <Icon src={ShieldExclamation} slot="lead" class="h-8" />
-                    <span>Admin</span>
+                <AppRailAnchor href="/dashboard/labs/" selected={pathname === '/dashboard/labs/'}>
+                    <Icon src={Beaker} slot="lead" class="h-8" />
+                    <span>Labs</span>
                 </AppRailAnchor>
             {:else}
                 <!-- Registered User -->

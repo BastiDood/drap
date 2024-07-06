@@ -14,6 +14,62 @@
     <h1 class="h1">Lab Quotas</h1>
     <form
         method="post"
+        action="?/lab"
+        use:enhance={({ submitter }) => {
+            assert(submitter !== null);
+            assert(submitter instanceof HTMLButtonElement);
+            submitter.disabled = true;
+            return async ({ update, result }) => {
+                submitter.disabled = false;
+                await update();
+                switch (result.type) {
+                    case 'success':
+                        toast.trigger({
+                            message: 'Created new laboratory.',
+                            background: 'variant-filled-success',
+                        });
+                        break;
+                    case 'failure':
+                    case 'error':
+                        toast.trigger({
+                            message: 'Failed to create a new laboratory.',
+                            background: 'variant-filled-error',
+                        });
+                        break;
+                    default:
+                        break;
+                }
+            };
+        }}
+    >
+        <div class="card space-y-4 p-4">
+            <label>
+                <span>Lab ID</span>
+                <input
+                    type="text"
+                    required
+                    name="id"
+                    placeholder="dcs"
+                    pattern="[a-z0-9]+"
+                    class="input variant-form-material px-2 py-1"
+                />
+            </label>
+            <label>
+                <span>Lab Name</span>
+                <input
+                    type="text"
+                    required
+                    name="name"
+                    placeholder="Department of Computer Science"
+                    class="input variant-form-material px-2 py-1"
+                />
+            </label>
+            <button type="submit" class="variant-filled-primary btn">Create Lab</button>
+        </div>
+    </form>
+    <form
+        method="post"
+        action="?/quota"
         use:enhance={({ submitter }) => {
             assert(submitter !== null);
             assert(submitter instanceof HTMLButtonElement);
@@ -68,7 +124,6 @@
                 </tbody>
             </table>
         </div>
-        <!-- TODO: Set up form actions. -->
-        <button type="submit" class="variant-filled-primary btn">Save Selection</button>
+        <button type="submit" class="variant-filled-primary btn">Update Lab Quota</button>
     </form>
 </section>

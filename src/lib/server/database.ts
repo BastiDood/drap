@@ -12,6 +12,7 @@ import { StudentRank } from '$lib/models/student-rank';
 import { User } from '$lib/models/user';
 
 const AvailableLabs = array(pick(Lab, ['lab_id', 'lab_name']));
+const CreatedLab = pick(Lab, ['lab_id']);
 const CreatedDraft = pick(Draft, ['draft_id', 'created_at']);
 const CreatedFacultyChoice = pick(FacultyChoice, ['choice_id', 'created_at']);
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration']);
@@ -26,7 +27,7 @@ const IncrementedDraftRound = pick(Draft, ['curr_round']);
 const RegisteredLabs = array(Lab);
 const StudentChosen = pick(StudentRank, ['chosen_by']);
 
-export type Sql = postgres.Sql<{ bigint: bigint; }>;
+export type Sql = postgres.Sql<{ bigint: bigint }>;
 
 export class Database implements Loggable {
     #sql: Sql;
@@ -119,6 +120,14 @@ export class Database implements Loggable {
         const { count } =
             await sql`UPDATE drap.users AS u SET student_number = coalesce(u.student_number, ${studentNumber}), given_name = ${given}, family_name = ${family} FROM drap.sessions s WHERE session_id = ${sid} AND s.email = u.email`;
         return count;
+    }
+
+    @timed async insertNewLab(id: Lab['lab_id'], name: Lab['lab_name']) {
+        const sql = this.#sql;
+        const [first, ...rest] =
+            await sql`INSERT INTO drap.labs (lab_id, lab_name) VALUES (${id}, ${name}) RETURNING lab_id`;
+        strictEqual(rest.length, 0);
+        return parse(CreatedLab, first).lab_id;
     }
 
     @timed async getAvailableLabs() {
