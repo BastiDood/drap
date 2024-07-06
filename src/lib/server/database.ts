@@ -153,7 +153,7 @@ export class Database implements Loggable {
     @timed async getLatestDraft() {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`SELECT max(draft_id), curr_round, max_rounds, created_at FROM drap.drafts GROUP BY draft_id`;
+            await sql`SELECT max(draft_id) draft_id, curr_round, max_rounds, created_at FROM drap.drafts WHERE curr_round < max_rounds GROUP BY draft_id`;
         strictEqual(rest.length, 0);
         return typeof first === 'undefined' ? null : parse(Draft, first);
     }
