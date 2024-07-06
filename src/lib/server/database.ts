@@ -25,7 +25,7 @@ const IncrementedDraftRound = pick(Draft, ['curr_round']);
 const RegisteredLabs = array(pick(Lab, ['lab_id', 'lab_name']));
 const StudentChosen = pick(StudentRank, ['chosen_by']);
 
-export type Sql = postgres.Sql<{ bigint: bigint; }>;
+export type Sql = postgres.Sql<{ bigint: bigint }>;
 
 export class Database implements Loggable {
     #sql: Sql;
