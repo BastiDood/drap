@@ -22,7 +22,7 @@ const Emails = array(
     ),
 );
 const IncrementedDraftRound = pick(Draft, ['curr_round']);
-const RegisteredLabs = array(pick(Lab, ['lab_id', 'lab_name']));
+const RegisteredLabs = array(Lab);
 const StudentChosen = pick(StudentRank, ['chosen_by']);
 
 export type Sql = postgres.Sql<{ bigint: bigint }>;
@@ -122,7 +122,7 @@ export class Database implements Loggable {
 
     @timed async getLabRegistry() {
         const sql = this.#sql;
-        const labs = await sql`SELECT lab_id, lab_name FROM drap.labs ORDER BY lab_name`;
+        const labs = await sql`SELECT lab_id, lab_name, quota FROM drap.labs ORDER BY lab_name`;
         return parse(RegisteredLabs, labs);
     }
 
