@@ -1,12 +1,12 @@
 <script lang="ts">
     import { AppRail, AppRailAnchor, Avatar, LightSwitch } from '@skeletonlabs/skeleton';
-    import { Home, QueueList, UserCircle } from '@steeze-ui/heroicons';
+    import { Home, QueueList, ShieldExclamation, UserCircle } from '@steeze-ui/heroicons';
     import { Icon } from '@steeze-ui/svelte-icon';
     import type { User } from '$lib/models/user';
     import { page } from '$app/stores';
 
     // eslint-disable-next-line init-declarations
-    export let user: User | null;
+    export let user: User | undefined;
 
     $: ({ pathname } = $page.url);
 </script>
@@ -19,14 +19,18 @@
         <Icon src={Home} slot="lead" class="h-8" />
         <span>Home</span>
     </AppRailAnchor>
-    {#if user !== null && user.user_id !== null}
+    {#if typeof user !== 'undefined' && user.user_id !== null}
         <AppRailAnchor href="/profile/" selected={pathname === '/profile/'}>
             <Icon src={UserCircle} slot="lead" class="h-8" />
             <span>Profile</span>
         </AppRailAnchor>
         {#if user.lab_id === null}
             {#if user.is_admin}
-                <!-- TODO: Registered Admin -->
+                <!-- Registered Admin -->
+                <AppRailAnchor href="/dashboard/admin/" selected={pathname === '/dashboard/admin/'}>
+                    <Icon src={ShieldExclamation} slot="lead" class="h-8" />
+                    <span>Admin</span>
+                </AppRailAnchor>
             {:else}
                 <!-- Registered User -->
                 <AppRailAnchor href="/dashboard/rank/" selected={pathname === '/dashboard/rank/'}>
@@ -39,7 +43,7 @@
         {/if}
     {/if}
     <div slot="trail" class="my-4 flex aspect-square flex-col items-center justify-center gap-2">
-        {#if user !== null}
+        {#if typeof user !== 'undefined'}
             <Avatar src={user.avatar} />
         {/if}
     </div>
