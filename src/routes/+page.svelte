@@ -8,7 +8,7 @@
 </script>
 
 <h1 class="h1">DRAP: Draft Ranking Automated Processor</h1>
-{#if user === null}
+{#if typeof user === 'undefined'}
     <a href="/oauth/login/" rel="external" class="variant-filled-primary btn">
         <Icon src={Google} class="size-4" />
         <span>Sign in with Google</span>
