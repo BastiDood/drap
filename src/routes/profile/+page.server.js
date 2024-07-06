@@ -1,23 +1,11 @@
-import { error, redirect } from '@sveltejs/kit';
+import { maybeValidateBigInt, validateString } from '$lib/forms';
+import { redirect } from '@sveltejs/kit';
 
 export async function load({ parent }) {
     const { user } = await parent();
     if (typeof user === 'undefined') redirect(302, '/oauth/login/');
     // TODO: Bounce already initialized users.
     return { user };
-}
-
-/** @param {FormDataEntryValue | null} param */
-function validateString(param) {
-    if (param === null || param instanceof File) error(400);
-    return param;
-}
-
-/** @param {FormDataEntryValue | null} param */
-function maybeValidateBigInt(param) {
-    if (param instanceof File) error(400);
-    if (param === null || param.length === 0) return null;
-    return BigInt(param);
 }
 
 export const actions = {

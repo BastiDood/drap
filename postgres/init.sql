@@ -11,7 +11,7 @@ CREATE SCHEMA drap
     CREATE TABLE labs (
         lab_id TEXT NOT NULL PRIMARY KEY,
         lab_name TEXT UNIQUE NOT NULL,
-        quota SMALLINT NOT NULL DEFAULT 0
+        quota SMALLINT NOT NULL DEFAULT 0 CHECK (quota >= 0)
     )
     CREATE TABLE users (
         -- match is_admin, user_id, lab_id:

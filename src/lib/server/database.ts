@@ -126,6 +126,14 @@ export class Database implements Loggable {
         return parse(RegisteredLabs, labs);
     }
 
+    @timed async updateLabQuotas(quota: Iterable<[Lab['lab_id'], Lab['quota']]>) {
+        const sql = this.#sql;
+        const values = sql(Array.from(quota));
+        const { count } =
+            await sql`UPDATE drap.labs l SET quota = d.quota::SMALLINT FROM (VALUES ${values}) d (lab_id, quota) WHERE l.lab_id = d.lab_id`;
+        return count;
+    }
+
     @timed async getLatestDraft() {
         const sql = this.#sql;
         const [first, ...rest] =
