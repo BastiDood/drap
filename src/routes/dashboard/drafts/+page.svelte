@@ -52,5 +52,5 @@
         </label>
     </form>
 {:else}
-    <!-- TODO: Create New Draft -->
+    <!-- TODO: Display Draft Information -->
 {/if}

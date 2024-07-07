@@ -41,9 +41,9 @@
                 </AppRailAnchor>
             {:else}
                 <!-- Registered User -->
-                <AppRailAnchor href="/dashboard/rank/" selected={pathname === '/dashboard/rank/'}>
+                <AppRailAnchor href="/dashboard/ranks/" selected={pathname === '/dashboard/ranks/'}>
                     <Icon src={QueueList} slot="lead" class="h-8" />
-                    <span>Rank</span>
+                    <span>Ranks</span>
                 </AppRailAnchor>
             {/if}
         {:else if user.is_admin}

@@ -1,10 +1,12 @@
 <script lang="ts">
     import { ArrowDown, ArrowUp, XMark } from '@steeze-ui/heroicons';
     import { Icon } from '@steeze-ui/svelte-icon';
-    import WarningAlert from '$lib/alerts/Warning.svelte';
     import { assert } from '$lib/assert';
-    import { getToastStore } from '@skeletonlabs/skeleton';
+    import { format } from 'date-fns';
     import { slide } from 'svelte/transition';
+
+    import ErrorAlert from '$lib/alerts/Error.svelte';
+    import WarningAlert from '$lib/alerts/Warning.svelte';
 
     // eslint-disable-next-line init-declarations
     export let data;
@@ -12,18 +14,9 @@
 
     let selectedLabs = [] as typeof availableLabs;
 
-    const toast = getToastStore();
-
     function selectLab(index: number) {
         assert(draft !== null);
-        if (selectedLabs.length >= draft.max_rounds) {
-            toast.trigger({
-                message: 'Maximum selected labs reached.',
-                background: 'variant-filled-error',
-            });
-            return;
-        }
-
+        if (selectedLabs.length >= draft.max_rounds) return;
         selectedLabs.push(...availableLabs.splice(index, 1));
         availableLabs = availableLabs;
         selectedLabs = selectedLabs;
@@ -62,22 +55,32 @@
     }
 </script>
 
-<h1 class="h1 mb-2">Draft Registration</h1>
 {#if draft === null}
-    <WarningAlert>There is no active draft at the moment. Please check again later.</WarningAlert>
+    <ErrorAlert>There is no active draft at the moment. Please check again later.</ErrorAlert>
 {:else}
-    <div class="space-y-2">
-        {#each availableLabs as { lab_id, lab_name }, idx (lab_id)}
-            <button
-                class="card w-full cursor-pointer appearance-none p-4"
-                transition:slide={{ duration: 120 }}
-                on:click={selectLab.bind(null, idx)}>{lab_name}</button
-            >
-        {:else}
-            <WarningAlert>No more labs left.</WarningAlert>
-        {/each}
+    {@const { draft_id, curr_round, max_rounds, active_period_start } = draft}
+    {@const start = format(active_period_start, 'PPPpp')}
+    {@const remaining = max_rounds - selectedLabs.length}
+    {@const hasRemaining = remaining > 0}
+    {@const cardVariant = hasRemaining ? 'variant-ghost-primary' : 'variant-ghost-secondary'}
+    {@const cardCursor = hasRemaining ? 'cursor-pointer' : 'cursor-not-allowed'}
+    {@const cardOpacity = hasRemaining ? 'opacity-100' : 'opacity-50'}
+    <h1 class="h1 mb-8">Draft &num;{draft_id}</h1>
+    <div class="card {cardVariant} prose max-w-none p-4 transition dark:prose-invert">
+        <p>
+            This draft is currently on Round <strong>{curr_round}</strong> of <strong>{max_rounds}</strong>. The zeroth
+            round started last <strong>{start}</strong>.
+        </p>
+        <p>Lab preferences are ordered by preference from top (most preferred) to bottom (least preferred).</p>
+        <p>
+            {#if hasRemaining}
+                You may select up to <strong>{remaining}</strong> labs left.
+            {:else}
+                You may no longer select any more labs.
+            {/if}
+        </p>
     </div>
-    <hr class="!border-primary-400-500-token !border-t-4" />
+    <hr class="!border-surface-400-500-token !border-t-4" />
     <div class="space-y-2">
         {#each selectedLabs as { lab_id, lab_name }, idx (lab_id)}
             <div
@@ -109,6 +112,18 @@
             </div>
         {:else}
             <WarningAlert>No labs selected yet.</WarningAlert>
+        {/each}
+    </div>
+    <hr class="!border-surface-400-500-token !border-t-4" />
+    <div class="space-y-2">
+        {#each availableLabs as { lab_id, lab_name }, idx (lab_id)}
+            <button
+                class="card w-full {cardCursor} appearance-none p-4 {cardOpacity} transition"
+                transition:slide={{ duration: 120 }}
+                on:click={selectLab.bind(null, idx)}>{lab_name}</button
+            >
+        {:else}
+            <ErrorAlert>No more labs with remaining slots left.</ErrorAlert>
         {/each}
     </div>
 {/if}
