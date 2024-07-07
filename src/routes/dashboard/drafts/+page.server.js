@@ -4,7 +4,7 @@ import { validateString } from '$lib/forms';
 export async function load({ locals: { db }, parent }) {
     const { user } = await parent();
     if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
-    return { draft: await db.getLatestDraft() };
+    return { draft: await db.getLatestNewDraftId() };
 }
 
 export const actions = {

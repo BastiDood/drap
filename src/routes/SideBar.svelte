@@ -41,7 +41,7 @@
                 </AppRailAnchor>
             {:else}
                 <!-- Registered User -->
-                <AppRailAnchor href="/dashboard/ranks/" selected={pathname === '/dashboard/ranks/'}>
+                <AppRailAnchor href="/dashboard/ranks/" selected={pathname.startsWith('/dashboard/ranks/')}>
                     <Icon src={QueueList} slot="lead" class="h-8" />
                     <span>Ranks</span>
                 </AppRailAnchor>

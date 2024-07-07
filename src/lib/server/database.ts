@@ -24,8 +24,9 @@ const Emails = array(
     ),
 );
 const IncrementedDraftRound = pick(Draft, ['curr_round']);
-const LatestDraft = pick(Draft, ['draft_id', 'curr_round', 'max_rounds', 'active_period_start']);
+const LatestNewDraft = pick(Draft, ['draft_id']);
 const RegisteredLabs = array(Lab);
+const QueriedDraft = pick(Draft, ['curr_round', 'max_rounds', 'active_period_start', 'active_period_end']);
 const QueriedFaculty = array(
     object({
         ...pick(User, ['email', 'given_name', 'family_name', 'avatar', 'user_id']).entries,
@@ -53,7 +54,7 @@ export class Database implements Loggable {
 
     /** Begins a transaction. */
     begin<T>(fn: (db: Database) => Promise<T>) {
-        return this.#sql.begin(sql => fn(new Database(sql, this.#logger)));
+        return this.#sql.begin('ISOLATION LEVEL REPEATABLE READ', sql => fn(new Database(sql, this.#logger)));
     }
 
     @timed async generatePendingSession() {
@@ -102,7 +103,7 @@ export class Database implements Loggable {
     @timed async initUser(email: User['email']) {
         const sql = this.#sql;
         const { count } =
-            await sql`INSERT INTO drap.users (email) VALUES (${email}) ON CONFLICT (email) DO NOTHING RETURNING student_number, lab_id`;
+            await sql`INSERT INTO drap.users (email) VALUES (${email}) ON CONFLICT ON CONSTRAINT users_pkey DO NOTHING RETURNING student_number, lab_id`;
         return count;
     }
 
@@ -115,7 +116,7 @@ export class Database implements Loggable {
     ) {
         const sql = this.#sql;
         const { count } =
-            await sql`INSERT INTO drap.users AS u (email, user_id, given_name, family_name, avatar) VALUES (${email}, ${uid}, ${given}, ${family}, ${avatar}) ON CONFLICT (email) DO UPDATE SET user_id = ${uid}, given_name = coalesce(nullif(trim(u.given_name), ''), ${given}), family_name = coalesce(nullif(trim(u.family_name), ''), ${family}), avatar = ${avatar}`;
+            await sql`INSERT INTO drap.users AS u (email, user_id, given_name, family_name, avatar) VALUES (${email}, ${uid}, ${given}, ${family}, ${avatar}) ON CONFLICT ON CONSTRAINT users_pkey DO UPDATE SET user_id = ${uid}, given_name = coalesce(nullif(trim(u.given_name), ''), ${given}), family_name = coalesce(nullif(trim(u.family_name), ''), ${family}), avatar = ${avatar}`;
         return count;
     }
 
@@ -166,12 +167,20 @@ export class Database implements Loggable {
         return parse(QueriedFaculty, users);
     }
 
-    @timed async getLatestDraft() {
+    @timed async getDraftById(id: Draft['draft_id']) {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`SELECT draft_id, curr_round, max_rounds, lower(active_period) active_period_start FROM drap.drafts WHERE upper_inf(active_period)`;
+            await sql`SELECT curr_round, max_rounds, lower(active_period) active_period_start, CASE WHEN upper_inf(active_period) THEN NULL ELSE upper(active_period) END active_period_end FROM drap.drafts WHERE draft_id = ${id}`;
         strictEqual(rest.length, 0);
-        return typeof first === 'undefined' ? null : parse(LatestDraft, first);
+        return typeof first === 'undefined' ? null : parse(QueriedDraft, first);
+    }
+
+    @timed async getLatestNewDraftId() {
+        const sql = this.#sql;
+        const [first, ...rest] =
+            await sql`SELECT draft_id FROM drap.drafts WHERE upper_inf(active_period) AND curr_round = 0`;
+        strictEqual(rest.length, 0);
+        return typeof first === 'undefined' ? null : parse(LatestNewDraft, first).draft_id;
     }
 
     @timed async initDraft(rounds: Draft['max_rounds']) {
@@ -197,17 +206,18 @@ export class Database implements Loggable {
         return parse(Emails, ranks);
     }
 
-    @timed async upsertStudentRanking(
-        draft_id: Draft['draft_id'],
-        chosen_by: StudentRank['chosen_by'],
-        created_at: StudentRank['created_at'],
-        email: User['email'],
-        labs: StudentRank['labs'],
-    ) {
+    @timed async insertStudentRanking(draft_id: Draft['draft_id'], email: User['email'], labs: StudentRank['labs']) {
         const sql = this.#sql;
         const { count } =
-            await sql`INSERT INTO drap.student_ranks AS u (draft_id, chosen_by, created_at, email, labs) VALUES (${draft_id}, ${chosen_by}, ${created_at}, ${email}, ${labs}) ON CONFLICT (email) DO UPDATE SET labs = ${labs}`;
-        return count;
+            await sql`INSERT INTO drap.student_ranks (draft_id, email, labs) VALUES (${draft_id}, ${email}, ${labs}) ON CONFLICT ON CONSTRAINT student_ranks_pkey DO NOTHING`;
+        switch (count) {
+            case 0:
+                return false;
+            case 1:
+                return true;
+            default:
+                fail('insertStudentRanking => unexpected insertion count');
+        }
     }
 
     /**
@@ -241,8 +251,7 @@ export class Database implements Loggable {
     @timed async inviteNewFacultyOrStaff(email: User['email'], lab: User['lab_id']) {
         const sql = this.#sql;
         const { count } =
-            await sql`INSERT INTO drap.users (email, lab_id, is_admin) VALUES (${email}, ${lab}, TRUE) ON CONFLICT DO NOTHING`;
-        this.#logger.info({ count });
+            await sql`INSERT INTO drap.users (email, lab_id, is_admin) VALUES (${email}, ${lab}, TRUE) ON CONFLICT ON CONSTRAINT users_pkey DO NOTHING`;
         switch (count) {
             case 0:
                 return false;
