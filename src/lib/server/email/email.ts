@@ -1,10 +1,10 @@
 import GOOGLE from "$lib/server/env/google"
 import { SignJWT } from "jose";
-import { createSecretKey } from "crypto";
+import { createPrivateKey } from "crypto";
 
 // this function gets an OAuth access token from Google's OAuth servers on behalf of the service account
-async function getServiceAccountToken() {
-    const secretKey = createSecretKey(GOOGLE.SERVICE_SECRET, 'utf-8')
+export async function getServiceAccountToken() {
+    const secretKey = createPrivateKey(GOOGLE.SERVICE_SECRET)
     
     const token = await new SignJWT({
         scope: GOOGLE.SERVICE_SCOPE  
@@ -18,6 +18,7 @@ async function getServiceAccountToken() {
         .setExpirationTime("1 hour")
         .setIssuer(GOOGLE.SERVICE_ISSUER)
         .sign(secretKey)
+    
 }
 
 // this function sends an email to the provided email address with the given body via the GMail REST API

@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { env } from '$env/dynamic/private';
 
-const { GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_REDIRECT_URI, GOOGLE_SERVICE_ISSUER, GOOGLE_SERVICE_SECRET, GOOGLE_SERVICE_SECRET_ID, GOOGLE_SERVICE_SCOPE } = env;
+const { GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET, GOOGLE_OAUTH_REDIRECT_URI, GOOGLE_SERVICE_ISSUER, GOOGLE_SERVICE_SECRET_ID, GOOGLE_SERVICE_SCOPE } = env;
+let { GOOGLE_SERVICE_SECRET } = env
 assert(typeof GOOGLE_OAUTH_CLIENT_ID !== 'undefined');
 assert(typeof GOOGLE_OAUTH_CLIENT_SECRET !== 'undefined');
 assert(typeof GOOGLE_OAUTH_REDIRECT_URI !== 'undefined');
@@ -9,6 +10,8 @@ assert(typeof GOOGLE_SERVICE_ISSUER !== 'undefined');
 assert(typeof GOOGLE_SERVICE_SECRET !== 'undefined');
 assert(typeof GOOGLE_SERVICE_SECRET_ID !== 'undefined');
 assert(typeof GOOGLE_SERVICE_SCOPE !== 'undefined');
+
+GOOGLE_SERVICE_SECRET = GOOGLE_SERVICE_SECRET.split(String.raw`\n`).join('\n')
 
 export default {
     OAUTH_CLIENT_ID: GOOGLE_OAUTH_CLIENT_ID,
