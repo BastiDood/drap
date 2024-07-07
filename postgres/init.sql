@@ -20,7 +20,7 @@ CREATE SCHEMA drap
         --     case FALSE, _, NULL:    Registered User
         --     case FALSE, _, _:       Drafted Researcher
         --     case TRUE, NULL, NULL:  Invited Admin
-        --     case TRUE, NULL, _:     ???
+        --     case TRUE, NULL, _:     Invited Faculty
         --     case TRUE, _, NULL:     Registered Admin
         --     case TRUE, _, _:        Registered Faculty
         is_admin BOOLEAN NOT NULL DEFAULT FALSE,

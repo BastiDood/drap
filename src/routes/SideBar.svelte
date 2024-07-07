@@ -1,6 +1,6 @@
 <script lang="ts">
     import { AppRail, AppRailAnchor, Avatar, LightSwitch } from '@skeletonlabs/skeleton';
-    import { Beaker, ClipboardDocumentList, Home, QueueList, UserCircle } from '@steeze-ui/heroicons';
+    import { Beaker, ClipboardDocumentList, Home, QueueList, UserCircle, Users } from '@steeze-ui/heroicons';
     import { Icon } from '@steeze-ui/svelte-icon';
     import type { User } from '$lib/models/user';
     import { page } from '$app/stores';
@@ -30,6 +30,10 @@
                 <AppRailAnchor href="/dashboard/drafts/" selected={pathname === '/dashboard/drafts/'}>
                     <Icon src={ClipboardDocumentList} slot="lead" class="h-8" />
                     <span>Drafts</span>
+                </AppRailAnchor>
+                <AppRailAnchor href="/dashboard/users/" selected={pathname === '/dashboard/users/'}>
+                    <Icon src={Users} slot="lead" class="h-8" />
+                    <span>Users</span>
                 </AppRailAnchor>
                 <AppRailAnchor href="/dashboard/labs/" selected={pathname === '/dashboard/labs/'}>
                     <Icon src={Beaker} slot="lead" class="h-8" />

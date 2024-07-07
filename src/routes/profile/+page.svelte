@@ -34,7 +34,6 @@
                     });
                     break;
                 case 'failure':
-                case 'error':
                     toast.trigger({
                         message: 'Failed to update your profile.',
                         background: 'variant-filled-error',

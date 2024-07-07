@@ -30,7 +30,6 @@
                         });
                         break;
                     case 'failure':
-                    case 'error':
                         toast.trigger({
                             message: 'Failed to create a new laboratory.',
                             background: 'variant-filled-error',
@@ -85,7 +84,6 @@
                         });
                         break;
                     case 'failure':
-                    case 'error':
                         toast.trigger({
                             message: 'Failed to update the lab quotas.',
                             background: 'variant-filled-error',

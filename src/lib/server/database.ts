@@ -1,8 +1,8 @@
 import { type Loggable, timed } from '$lib/decorators';
-import { array, parse, pick, pipe, transform } from 'valibot';
+import { array, object, parse, pick, pipe, transform } from 'valibot';
+import { fail, strictEqual } from 'node:assert/strict';
 import type { Logger } from 'pino';
 import postgres from 'postgres';
-import { strictEqual } from 'node:assert/strict';
 
 import { Pending, Session } from '$lib/server/models/session';
 import { Draft } from '$lib/models/draft';
@@ -25,6 +25,12 @@ const Emails = array(
 );
 const IncrementedDraftRound = pick(Draft, ['curr_round']);
 const RegisteredLabs = array(Lab);
+const RegisteredFaculty = array(
+    object({
+        ...pick(User, ['email', 'given_name', 'family_name', 'avatar']).entries,
+        ...pick(Lab, ['lab_name']).entries,
+    }),
+);
 const StudentChosen = pick(StudentRank, ['chosen_by']);
 
 export type Sql = postgres.Sql<{ bigint: bigint }>;
@@ -150,6 +156,13 @@ export class Database implements Loggable {
         return count;
     }
 
+    @timed async getRegisteredFaculty() {
+        const sql = this.#sql;
+        const users =
+            await sql`SELECT email, given_name, family_name, avatar, lab_name FROM drap.users JOIN drap.labs USING (lab_id) WHERE is_admin AND user_id IS NOT NULL AND lab_id IS NOT NULL`;
+        return parse(RegisteredFaculty, users);
+    }
+
     @timed async getLatestDraft() {
         const sql = this.#sql;
         const [first, ...rest] =
@@ -220,5 +233,20 @@ export class Database implements Loggable {
         const { chosen_by } = parse(StudentChosen, rank);
         strictEqual(chosen_by, choiceId, 'student was already previously chosen');
         return { choiceId, createdAt };
+    }
+
+    @timed async inviteNewUser(email: User['email'], lab: User['lab_id']) {
+        const sql = this.#sql;
+        const { count } =
+            await sql`INSERT INTO drap.users (email, lab_id, is_admin) VALUES (${email}, ${lab}, TRUE) ON CONFLICT DO NOTHING`;
+        this.#logger.info({ count });
+        switch (count) {
+            case 0:
+                return false;
+            case 1:
+                return true;
+            default:
+                fail('inviteNewUser => unexpected insertion count');
+        }
     }
 }
