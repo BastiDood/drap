@@ -63,5 +63,5 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
     });
 
     cookies.set('sid', sid, { path: '/', httpOnly: true, sameSite: 'lax', expires });
-    redirect(302, '/dashboard/');
+    redirect(302, '/');
 }
