@@ -13,7 +13,7 @@ import { User } from '$lib/models/user';
 
 const AvailableLabs = array(pick(Lab, ['lab_id', 'lab_name']));
 const CreatedLab = pick(Lab, ['lab_id']);
-const CreatedDraft = pick(Draft, ['draft_id', 'created_at']);
+const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
 const CreatedFacultyChoice = pick(FacultyChoice, ['choice_id', 'created_at']);
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
@@ -24,6 +24,7 @@ const Emails = array(
     ),
 );
 const IncrementedDraftRound = pick(Draft, ['curr_round']);
+const LatestDraft = pick(Draft, ['draft_id', 'curr_round', 'max_rounds', 'active_period_start']);
 const RegisteredLabs = array(Lab);
 const QueriedFaculty = array(
     object({
@@ -168,15 +169,15 @@ export class Database implements Loggable {
     @timed async getLatestDraft() {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`SELECT max(draft_id) draft_id, curr_round, max_rounds, created_at FROM drap.drafts WHERE curr_round < max_rounds GROUP BY draft_id`;
+            await sql`SELECT draft_id, curr_round, max_rounds, lower(active_period) active_period_start FROM drap.drafts WHERE upper_inf(active_period)`;
         strictEqual(rest.length, 0);
-        return typeof first === 'undefined' ? null : parse(Draft, first);
+        return typeof first === 'undefined' ? null : parse(LatestDraft, first);
     }
 
     @timed async initDraft(rounds: Draft['max_rounds']) {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`INSERT INTO drap.drafts (max_rounds) VALUES (${rounds}) RETURNING draft_id, created_at`;
+            await sql`INSERT INTO drap.drafts (max_rounds) VALUES (${rounds}) RETURNING draft_id, lower(active_period) active_period_start`;
         strictEqual(rest.length, 0);
         return parse(CreatedDraft, first);
     }

@@ -46,8 +46,9 @@ CREATE SCHEMA drap
         draft_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
         curr_round SMALLINT NOT NULL DEFAULT 0,
         max_rounds SMALLINT NOT NULL,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        CONSTRAINT curr_round_within_bounds CHECK (curr_round BETWEEN 0 AND max_rounds)
+        active_period TSTZRANGE NOT NULL DEFAULT TSTZRANGE '[now,)',
+        CONSTRAINT curr_round_within_bounds CHECK (curr_round BETWEEN 0 AND max_rounds),
+        CONSTRAINT overlapping_draft_periods EXCLUDE USING gist (active_period WITH &&)
     )
     CREATE TABLE faculty_choices (
         choice_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
