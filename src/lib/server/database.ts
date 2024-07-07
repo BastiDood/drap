@@ -1,5 +1,5 @@
+import { type InferOutput, array, nullable, object, parse, pick, pipe, transform } from 'valibot';
 import { type Loggable, timed } from '$lib/decorators';
-import { array, object, parse, pick, pipe, transform } from 'valibot';
 import { fail, strictEqual } from 'node:assert/strict';
 import type { Logger } from 'pino';
 import postgres from 'postgres';
@@ -25,13 +25,15 @@ const Emails = array(
 );
 const IncrementedDraftRound = pick(Draft, ['curr_round']);
 const RegisteredLabs = array(Lab);
-const RegisteredFaculty = array(
+const QueriedFaculty = array(
     object({
-        ...pick(User, ['email', 'given_name', 'family_name', 'avatar']).entries,
-        ...pick(Lab, ['lab_name']).entries,
+        ...pick(User, ['email', 'given_name', 'family_name', 'avatar', 'user_id']).entries,
+        lab_name: nullable(Lab.entries.lab_name),
     }),
 );
 const StudentChosen = pick(StudentRank, ['chosen_by']);
+
+export type QueriedFaculty = InferOutput<typeof QueriedFaculty>;
 
 export type Sql = postgres.Sql<{ bigint: bigint }>;
 
@@ -156,11 +158,11 @@ export class Database implements Loggable {
         return count;
     }
 
-    @timed async getRegisteredFaculty() {
+    @timed async getFacultyAndStaff() {
         const sql = this.#sql;
         const users =
-            await sql`SELECT email, given_name, family_name, avatar, lab_name FROM drap.users JOIN drap.labs USING (lab_id) WHERE is_admin AND user_id IS NOT NULL AND lab_id IS NOT NULL`;
-        return parse(RegisteredFaculty, users);
+            await sql`SELECT email, given_name, family_name, avatar, user_id, lab_name FROM drap.users LEFT JOIN drap.labs USING (lab_id) WHERE is_admin`;
+        return parse(QueriedFaculty, users);
     }
 
     @timed async getLatestDraft() {
@@ -235,7 +237,7 @@ export class Database implements Loggable {
         return { choiceId, createdAt };
     }
 
-    @timed async inviteNewUser(email: User['email'], lab: User['lab_id']) {
+    @timed async inviteNewFacultyOrStaff(email: User['email'], lab: User['lab_id']) {
         const sql = this.#sql;
         const { count } =
             await sql`INSERT INTO drap.users (email, lab_id, is_admin) VALUES (${email}, ${lab}, TRUE) ON CONFLICT DO NOTHING`;
