@@ -21,6 +21,7 @@
         "@steeze-ui/heroicons": "^2.3.0",
         "@steeze-ui/svelte-icon": "^1.5.0",
         "@sveltejs/kit": "^2.5.18",
+        "date-fns": "^3.6.0",
         "jose": "^5.6.3",
         "just-group-by": "^2.2.0",
         "pino": "^9.2.0",
