@@ -20,10 +20,10 @@ export async function GET({ locals: { db }, cookies }) {
         redirect_uri: GOOGLE.OAUTH_REDIRECT_URI,
         nonce: Buffer.from(nonce).toString('base64url'),
         hd: 'up.edu.ph',
-        access_type: 'online',
+        access_type: 'offline',
         response_type: 'code',
         scope: OAUTH_SCOPE_STRING,
     });
 
-    redirect(302, `https://accounts.google.com/o/oauth2/v2/auth?${params}`);
+    redirect(302, `https://accounts.google.com/o/oauth2/v2/auth?${params}&prompt=consent`);
 }
