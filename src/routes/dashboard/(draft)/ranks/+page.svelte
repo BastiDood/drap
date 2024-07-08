@@ -22,10 +22,9 @@
     {#if curr_round === 0}
         <div class="card prose max-w-none p-4 dark:prose-invert">
             <p>
-                This draft is currently on Round <strong>{curr_round}</strong> of <strong>{max_rounds}</strong>. It
-                opened last
-                <strong>{startDate}</strong>
-                at <strong>{startTime}</strong>.
+                <strong>Draft &num;{draft_id}</strong> is currently on Round <strong>{curr_round}</strong>
+                of <strong>{max_rounds}</strong>. It opened last <strong>{startDate}</strong> at
+                <strong>{startTime}</strong>.
             </p>
         </div>
         {#if Array.isArray(info)}
