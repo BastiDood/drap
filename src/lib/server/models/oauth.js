@@ -5,6 +5,7 @@ import {
     literal,
     maxLength,
     minLength,
+    nullable,
     number,
     object,
     pipe,
@@ -29,6 +30,7 @@ export const AuthorizationCode = pipe(string(), minLength(1), maxLength(256));
 export const TokenResponse = object({
     // JSON Web Token token containing the user's ID token.
     id_token: string(),
+    access_token: string(),
     // Always set to `OAUTH_SCOPE` for now.
     scope: pipe(
         string(),
@@ -38,6 +40,8 @@ export const TokenResponse = object({
     token_type: literal(OAUTH_TOKEN_TYPE),
     // Remaining lifetime in seconds.
     expires_in: pipe(number(), safeInteger()),
+    // Refresh token, will not always be given with every TokenResponse (requires prompt=consent&access_type=offline)
+    refresh_token: nullable(string())
 });
 
 const UnixTimeSecs = pipe(
