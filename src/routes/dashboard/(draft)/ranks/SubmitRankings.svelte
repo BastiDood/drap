@@ -12,6 +12,8 @@
     import WarningAlert from '$lib/alerts/Warning.svelte';
 
     // eslint-disable-next-line init-declarations
+    export let draftId: Draft['draft_id'];
+    // eslint-disable-next-line init-declarations
     export let maxRounds: Draft['max_rounds'];
     // eslint-disable-next-line init-declarations
     export let availableLabs: AvailableLabs;
@@ -94,6 +96,7 @@
         };
     }}
 >
+    <input type="hidden" name="draft" value={draftId} />
     <div class="card {cardVariant} prose max-w-none p-4 transition dark:prose-invert">
         <p>Lab preferences are ordered by preference from top (most preferred) to bottom (least preferred).</p>
         <p>

@@ -24,7 +24,9 @@ const Emails = array(
     ),
 );
 const IncrementedDraftRound = pick(Draft, ['curr_round']);
-const LatestNewDraft = pick(Draft, ['draft_id']);
+const LatestDraft = pick(Draft, ['draft_id', 'curr_round', 'max_rounds', 'active_period_start']);
+const LatestNewDraft = pick(Draft, ['draft_id', 'max_rounds', 'active_period_start']);
+const LatestNewDraftId = pick(Draft, ['draft_id']);
 const RegisteredLabs = array(Lab);
 const QueriedDraft = pick(Draft, ['curr_round', 'max_rounds', 'active_period_start', 'active_period_end']);
 const QueriedFaculty = array(
@@ -180,12 +182,39 @@ export class Database implements Loggable {
         return typeof first === 'undefined' ? null : parse(QueriedDraft, first);
     }
 
+    @timed async getLatestDraft() {
+        const sql = this.#sql;
+        const [first, ...rest] =
+            await sql`SELECT draft_id, max_rounds, lower(active_period) active_period_start, CASE WHEN upper_inf(active_period) THEN NULL ELSE upper(active_period) END active_period_end FROM drap.drafts WHERE upper_inf(active_period)`;
+        strictEqual(rest.length, 0);
+        return typeof first === 'undefined' ? null : parse(LatestDraft, first);
+    }
+
+    /** @deprecated */
+    @timed async getLatestNewDraft() {
+        const sql = this.#sql;
+        const [first, ...rest] =
+            await sql`SELECT draft_id, max_rounds, lower(active_period) active_period_start, CASE WHEN upper_inf(active_period) THEN NULL ELSE upper(active_period) END active_period_end FROM drap.drafts WHERE upper_inf(active_period) AND curr_round = 0`;
+        strictEqual(rest.length, 0);
+        return typeof first === 'undefined' ? null : parse(LatestNewDraft, first);
+    }
+
+    /** @deprecated */
+    @timed async getLatestOngoingDraft() {
+        const sql = this.#sql;
+        const [first, ...rest] =
+            await sql`SELECT draft_id, curr_round, max_rounds, lower(active_period) active_period_start, CASE WHEN upper_inf(active_period) THEN NULL ELSE upper(active_period) END active_period_end FROM drap.drafts WHERE upper_inf(active_period) AND curr_round > 0`;
+        strictEqual(rest.length, 0);
+        return typeof first === 'undefined' ? null : parse(LatestNewDraft, first);
+    }
+
+    /** @deprecated */
     @timed async getLatestNewDraftId() {
         const sql = this.#sql;
         const [first, ...rest] =
             await sql`SELECT draft_id FROM drap.drafts WHERE upper_inf(active_period) AND curr_round = 0`;
         strictEqual(rest.length, 0);
-        return typeof first === 'undefined' ? null : parse(LatestNewDraft, first).draft_id;
+        return typeof first === 'undefined' ? null : parse(LatestNewDraftId, first).draft_id;
     }
 
     @timed async initDraft(rounds: Draft['max_rounds']) {
