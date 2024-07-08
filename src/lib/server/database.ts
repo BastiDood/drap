@@ -33,8 +33,13 @@ const QueriedFaculty = array(
         lab_name: nullable(Lab.entries.lab_name),
     }),
 );
+const QueriedStudentRank = object({
+    ...pick(StudentRank, ['chosen_by', 'created_at']).entries,
+    labs: array(Lab.entries.lab_name),
+});
 const StudentChosen = pick(StudentRank, ['chosen_by']);
 
+export type AvailableLabs = InferOutput<typeof AvailableLabs>;
 export type QueriedFaculty = InferOutput<typeof QueriedFaculty>;
 
 export type Sql = postgres.Sql<{ bigint: bigint }>;
@@ -206,10 +211,10 @@ export class Database implements Loggable {
         return parse(Emails, ranks);
     }
 
-    @timed async insertStudentRanking(draft_id: Draft['draft_id'], email: User['email'], labs: StudentRank['labs']) {
+    @timed async insertStudentRanking(id: Draft['draft_id'], email: User['email'], labs: StudentRank['labs']) {
         const sql = this.#sql;
         const { count } =
-            await sql`INSERT INTO drap.student_ranks (draft_id, email, labs) VALUES (${draft_id}, ${email}, ${labs}) ON CONFLICT ON CONSTRAINT student_ranks_pkey DO NOTHING`;
+            await sql`INSERT INTO drap.student_ranks (draft_id, email, labs) VALUES (${id}, ${email}, ${labs}) ON CONFLICT ON CONSTRAINT student_ranks_pkey DO NOTHING`;
         switch (count) {
             case 0:
                 return false;
@@ -218,6 +223,14 @@ export class Database implements Loggable {
             default:
                 fail('insertStudentRanking => unexpected insertion count');
         }
+    }
+
+    @timed async getStudentRankings(id: StudentRank['draft_id'], email: StudentRank['email']) {
+        const sql = this.#sql;
+        const [first, ...rest] =
+            await sql`SELECT chosen_by, created_at, array_agg(lab_name) labs FROM drap.labs JOIN (SELECT chosen_by, created_at, unnest(labs) lab_id FROM drap.student_ranks WHERE draft_id = ${id} AND email = ${email}) ranks USING (lab_id) GROUP BY chosen_by, created_at`;
+        strictEqual(rest.length, 0);
+        return typeof first === 'undefined' ? null : parse(QueriedStudentRank, first);
     }
 
     /**
