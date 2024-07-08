@@ -78,7 +78,7 @@ CREATE SCHEMA drap
         FOREIGN KEY (draft_id, round, lab_id) REFERENCES faculty_choices (draft_id, round, lab_id),
         UNIQUE (draft_id, student_email)
     CREATE TABLE designated_sender (
-        email REFERENCES user.email,
+        email REFERENCES user.email
     );
 
 INSERT INTO drap.labs (lab_id, lab_name) VALUES
