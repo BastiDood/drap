@@ -9,6 +9,7 @@ import { Pending, Session } from '$lib/server/models/session';
 import { Draft } from '$lib/models/draft';
 import { Lab } from '$lib/models/lab';
 import { StudentRank } from '$lib/models/student-rank';
+import { TokenResponse } from '$lib/server/models/oauth';
 import { User } from '$lib/models/user';
 
 const AvailableLabs = array(pick(Lab, ['lab_id', 'lab_name']));
@@ -134,10 +135,12 @@ export class Database implements Loggable {
         given: User['given_name'],
         family: User['family_name'],
         avatar: User['avatar'],
+        access_token: string,
+        refresh_token: string | undefined
     ) {
         const sql = this.#sql;
         const { count } =
-            await sql`INSERT INTO drap.users AS u (email, user_id, given_name, family_name, avatar) VALUES (${email}, ${uid}, ${given}, ${family}, ${avatar}) ON CONFLICT ON CONSTRAINT users_pkey DO UPDATE SET user_id = EXCLUDED.user_id, given_name = coalesce(nullif(trim(u.given_name), ''), EXCLUDED.given_name), family_name = coalesce(nullif(trim(u.family_name), ''), EXCLUDED.family_name), avatar = EXCLUDED.avatar`;
+            await sql`INSERT INTO drap.users AS u (email, user_id, given_name, family_name, avatar, access_token, refresh_token) VALUES (${email}, ${uid}, ${given}, ${family}, ${avatar}, ${access_token}, ${refresh_token ?? 'NULL'}) ON CONFLICT ON CONSTRAINT users_pkey DO UPDATE SET user_id = ${uid}, given_name = coalesce(nullif(trim(u.given_name), ''), ${given}), family_name = coalesce(nullif(trim(u.family_name), ''), ${family}), avatar = ${avatar}`;
         return count;
     }
 
