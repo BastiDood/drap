@@ -26,6 +26,7 @@ const DraftEvents = array(
     }),
 );
 const DraftMaxRounds = pick(Draft, ['max_rounds']);
+const EmailerCredentails = pick(User, ['email', 'access_token', 'refresh_token']);
 const IncrementedDraftRound = pick(Draft, ['curr_round', 'max_rounds']);
 const LabQuota = pick(Lab, ['quota']);
 const LatestDraft = pick(Draft, ['draft_id', 'curr_round', 'max_rounds', 'active_period_start']);
@@ -367,6 +368,21 @@ export class Database implements Loggable {
             await sql`SELECT created_at, array_agg(lab_name ORDER BY idx) labs FROM (SELECT generate_subscripts(labs, 1) idx, created_at, unnest(labs) lab_id FROM drap.student_ranks WHERE draft_id = ${draft} AND email = ${email}) _ JOIN drap.labs USING (lab_id) GROUP BY created_at`;
         strictEqual(rest.length, 0);
         return typeof first === 'undefined' ? null : parse(QueriedStudentRank, first);
+    }
+
+    @timed async getEmailerCredentials() {
+        const sql = this.#sql;
+        const [first, ...rest] = 
+            await sql`SELECT * FROM drap.designated_sender`
+        strictEqual(rest.length, 0);
+        
+        if (typeof first === 'undefined') return;
+
+        const { email } = first;
+        const [firstUser, ...restUsers] = 
+            await sql`SELECT (email, access_token, refresh_token) FROM drap.users WHERE email = ${email}`;
+        strictEqual(restUsers.length, 0);
+        return typeof firstUser === 'undefined' ? null : parse(EmailerCredentails, firstUser)
     }
 
     @timed async insertFacultyChoice(
