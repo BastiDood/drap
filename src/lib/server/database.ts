@@ -1,4 +1,4 @@
-import { type InferOutput, array, bigint, boolean, nullable, object, parse, pick } from 'valibot';
+import { type InferOutput, array, bigint, boolean, nullable, object, parse, pick, pipe, string, transform } from 'valibot';
 import { type Loggable, timed } from '$lib/decorators';
 import { fail, strictEqual } from 'node:assert/strict';
 import type { Logger } from 'pino';
@@ -26,7 +26,13 @@ const DraftEvents = array(
     }),
 );
 const DraftMaxRounds = pick(Draft, ['max_rounds']);
-const EmailerCredentails = pick(User, ['email', 'access_token', 'refresh_token']);
+
+const EmailerCredentails = object({
+    'email': string(),
+    'access_token': string(),
+    'refresh_token': nullable(string())
+});
+
 const IncrementedDraftRound = pick(Draft, ['curr_round', 'max_rounds']);
 const LabQuota = pick(Lab, ['quota']);
 const LatestDraft = pick(Draft, ['draft_id', 'curr_round', 'max_rounds', 'active_period_start']);
@@ -380,7 +386,7 @@ export class Database implements Loggable {
 
         const { email } = first;
         const [firstUser, ...restUsers] = 
-            await sql`SELECT (email, access_token, refresh_token) FROM drap.users WHERE email = ${email}`;
+            await sql`SELECT email, access_token, refresh_token FROM drap.users WHERE email = ${email}`;
         strictEqual(restUsers.length, 0);
         return typeof firstUser === 'undefined' ? null : parse(EmailerCredentails, firstUser)
     }
