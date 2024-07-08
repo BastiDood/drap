@@ -1,3 +1,7 @@
+import { error } from '@sveltejs/kit';
+
 export async function load({ locals: { db } }) {
-    return { draft: await db.getLatestDraft() };
+    const draft = await db.getLatestDraft();
+    if (draft === null) error(499);
+    return { draft };
 }
