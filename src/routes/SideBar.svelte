@@ -1,6 +1,14 @@
 <script lang="ts">
+    import {
+        AcademicCap,
+        Beaker,
+        ClipboardDocumentList,
+        Home,
+        QueueList,
+        UserCircle,
+        Users,
+    } from '@steeze-ui/heroicons';
     import { AppRail, AppRailAnchor, Avatar, LightSwitch } from '@skeletonlabs/skeleton';
-    import { Beaker, ClipboardDocumentList, Home, QueueList, UserCircle, Users } from '@steeze-ui/heroicons';
     import { Icon } from '@steeze-ui/svelte-icon';
     import type { User } from '$lib/models/user';
     import { page } from '$app/stores';
@@ -47,7 +55,11 @@
                 </AppRailAnchor>
             {/if}
         {:else if user.is_admin}
-            <!-- TODO: Registered Faculty -->
+            <!-- Registered Faculty -->
+            <AppRailAnchor href="/dashboard/students/" selected={pathname === '/dashboard/students/'}>
+                <Icon src={AcademicCap} slot="lead" class="h-8" />
+                <span>Students</span>
+            </AppRailAnchor>
         {/if}
     {/if}
     <div slot="trail" class="my-4 flex aspect-square flex-col items-center justify-center gap-2">
