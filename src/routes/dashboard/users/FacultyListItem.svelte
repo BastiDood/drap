@@ -11,7 +11,7 @@
     <a href="mailto:{email}">
         <Avatar src={avatar} width="w-14" />
         <span class="flex flex-col">
-            <strong>{family_name.toUpperCase()}, {given_name}</strong>
+            <strong><span class="uppercase">{family_name}</span>, {given_name}</strong>
             {#if lab_name !== null}
                 <span class="text-sm opacity-50">{lab_name}</span>
             {/if}
