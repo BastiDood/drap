@@ -9,7 +9,6 @@ import { Pending, Session } from '$lib/server/models/session';
 import { Draft } from '$lib/models/draft';
 import { Lab } from '$lib/models/lab';
 import { StudentRank } from '$lib/models/student-rank';
-import { TokenResponse } from '$lib/server/models/oauth';
 import { User } from '$lib/models/user';
 
 const AvailableLabs = array(pick(Lab, ['lab_id', 'lab_name']));
@@ -122,10 +121,10 @@ export class Database implements Loggable {
         return typeof first === 'undefined' ? null : parse(DeletedValidSession, first);
     }
 
-    @timed async initUser(email: User['email']) {
+    @timed async initUser(email: User['email'], access_token: string) {
         const sql = this.#sql;
         const { count } =
-            await sql`INSERT INTO drap.users (email) VALUES (${email}) ON CONFLICT ON CONSTRAINT users_pkey DO NOTHING RETURNING student_number, lab_id`;
+            await sql`INSERT INTO drap.users (email, access_token) VALUES (${email}, ${access_token}) ON CONFLICT ON CONSTRAINT users_pkey DO NOTHING RETURNING student_number, lab_id`;
         return count;
     }
 
