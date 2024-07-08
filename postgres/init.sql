@@ -31,6 +31,8 @@ CREATE SCHEMA drap
         given_name TEXT NOT NULL DEFAULT '',
         family_name TEXT NOT NULL DEFAULT '',
         avatar TEXT NOT NULL DEFAULT ''
+        access_token TEXT NOT NULL
+        refresh_token TEXT
     )
     CREATE TABLE pendings (
         session_id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
