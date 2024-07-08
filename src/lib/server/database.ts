@@ -1,4 +1,4 @@
-import { type InferOutput, array, bigint, boolean, nullable, object, parse, pick, pipe, string, transform } from 'valibot';
+import { type InferOutput, array, bigint, boolean, nullable, object, parse, pick, string } from 'valibot';
 import { type Loggable, timed } from '$lib/decorators';
 import { fail, strictEqual } from 'node:assert/strict';
 import type { Logger } from 'pino';
@@ -28,6 +28,7 @@ const DraftEvents = array(
 const DraftMaxRounds = pick(Draft, ['max_rounds']);
 
 const EmailerCredentails = object({
+    'user_id': string(),
     'email': string(),
     'access_token': string(),
     'refresh_token': nullable(string())
@@ -60,6 +61,7 @@ const TaggedStudentsWithLabs = array(
 const UserEmails = array(pick(User, ['email']));
 
 export type AvailableLabs = InferOutput<typeof AvailableLabs>;
+export type EmailerCredentials = InferOutput<typeof EmailerCredentails>
 export type QueriedFaculty = InferOutput<typeof QueriedFaculty>;
 export type RegisteredLabs = InferOutput<typeof RegisteredLabs>;
 export type StudentsWithLabPreference = InferOutput<typeof StudentsWithLabPreference>;
@@ -146,7 +148,7 @@ export class Database implements Loggable {
     ) {
         const sql = this.#sql;
         const { count } =
-            await sql`INSERT INTO drap.users AS u (email, user_id, given_name, family_name, avatar, access_token, refresh_token) VALUES (${email}, ${uid}, ${given}, ${family}, ${avatar}, ${access_token}, ${refresh_token ?? 'NULL'}) ON CONFLICT ON CONSTRAINT users_pkey DO UPDATE SET user_id = ${uid}, given_name = coalesce(nullif(trim(u.given_name), ''), ${given}), family_name = coalesce(nullif(trim(u.family_name), ''), ${family}), avatar = ${avatar}`;
+            await sql`INSERT INTO drap.users AS u (email, user_id, given_name, family_name, avatar, access_token, refresh_token) VALUES (${email}, ${uid}, ${given}, ${family}, ${avatar}, ${access_token}, ${refresh_token ?? 'NULL'}) ON CONFLICT ON CONSTRAINT users_pkey DO UPDATE SET user_id = ${uid}, given_name = coalesce(nullif(trim(u.given_name), ''), ${given}), family_name = coalesce(nullif(trim(u.family_name), ''), ${family}), avatar = ${avatar}, access_token = ${access_token}, refresh_token = ${refresh_token ?? "NULL"}`;
         return count;
     }
 
@@ -386,7 +388,7 @@ export class Database implements Loggable {
 
         const { email } = first;
         const [firstUser, ...restUsers] = 
-            await sql`SELECT email, access_token, refresh_token FROM drap.users WHERE email = ${email}`;
+            await sql`SELECT user_id, email, access_token, refresh_token FROM drap.users WHERE email = ${email}`;
         strictEqual(restUsers.length, 0);
         return typeof firstUser === 'undefined' ? null : parse(EmailerCredentails, firstUser)
     }
