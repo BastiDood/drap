@@ -43,7 +43,7 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
         ok(res.ok);
 
         const json = await res.json();
-        const { id_token } = parse(TokenResponse, json);
+        const { id_token, access_token, refresh_token } = parse(TokenResponse, json);
         const { payload } = await jwtVerify(id_token, fetchJwks, {
             issuer: 'https://accounts.google.com',
             audience: GOOGLE.OAUTH_CLIENT_ID,
@@ -54,12 +54,12 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
         strictEqual(Buffer.from(token.nonce, 'base64url').compare(pending.nonce), 0);
 
         // Insert user as uninitialized by default
-        await db.initUser(token.email);
-        await db.upsertOpenIdUser(token.email, token.sub, token.given_name, token.family_name, token.picture);
+        await db.initUser(token.email, access_token);
+        await db.upsertOpenIdUser(token.email, token.sub, token.given_name, token.family_name, token.picture, access_token, refresh_token);
         await db.insertValidSession(sid, token.email, token.exp);
         return token.exp;
     });
 
     cookies.set('sid', sid, { path: '/', httpOnly: true, sameSite: 'lax', expires });
-    redirect(302, '/');
+    redirect(302, '/dashboard/');
 }
