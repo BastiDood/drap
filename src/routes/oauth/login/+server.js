@@ -24,7 +24,7 @@ export async function GET({ locals: { db }, cookies, url: { searchParams } }) {
         hd: 'up.edu.ph',
         access_type: isNewSender ? 'offline' : 'online',
         response_type: 'code',
-        scope: OAUTH_SCOPE_STRING.concat(isNewSender ? ' https://mail.google.com/' : ''),
+        scope: OAUTH_SCOPE_STRING.concat(isNewSender ? ' https://mail.google.com/' : '' ),
         prompt: isNewSender ? 'consent' : ''
     });
 
