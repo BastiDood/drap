@@ -4,7 +4,7 @@ import { createTransport } from "nodemailer";
 
 // this function sends an email to the provided email address with the given body via nodemailer using the access token of the designated admin sender
 export async function sendEmailTo(to: string, subject: string, body: string, db: Database) {
-    const credentials = await db.getEmailerCredentials()
+    const credentials = await db.getDesignatedSender()
 
     if (!credentials) throw Error();
 
