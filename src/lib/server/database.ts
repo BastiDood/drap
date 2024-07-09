@@ -10,6 +10,7 @@ import { Draft } from '$lib/models/draft';
 import { Lab } from '$lib/models/lab';
 import { StudentRank } from '$lib/models/student-rank';
 import { User } from '$lib/models/user';
+import { notEqual } from 'node:assert';
 
 const AvailableLabs = array(pick(Lab, ['lab_id', 'lab_name']));
 const BooleanResult = object({ result: boolean() });
@@ -19,6 +20,7 @@ const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
 const DesignatedSender = object({
+    'expires_at': string(),
     'email': string(),
     'access_token': string(),
     'refresh_token': nullable(string())
@@ -70,7 +72,7 @@ const TaggedStudentsWithLabs = array(
 const UserEmails = array(pick(User, ['email']));
 
 export type AvailableLabs = InferOutput<typeof AvailableLabs>;
-export type EmailerCredentials = InferOutput<typeof DesignatedSender>
+export type DesignatedSender = InferOutput<typeof DesignatedSender>
 export type QueriedFaculty = InferOutput<typeof QueriedFaculty>;
 export type RegisteredLabs = InferOutput<typeof RegisteredLabs>;
 export type StudentsWithLabPreference = InferOutput<typeof StudentsWithLabPreference>;
@@ -400,6 +402,36 @@ export class Database implements Loggable {
             await sql`SELECT user_id, email, access_token, refresh_token FROM drap.users WHERE email = ${email}`;
         strictEqual(restUsers.length, 0);
         return typeof firstUser === 'undefined' ? null : parse(EmailerCredentails, firstUser)
+    }
+
+    @timed async deleteDesignatedSender() {
+        const sql = this.#sql;
+        const count = await sql`DELETE FROM drap.designated_sender`
+        return count;
+    }
+
+    @timed async insertDesignatedSender(
+        expires_at: DesignatedSender['expires_at'],
+        email: DesignatedSender['email'],
+        access_token: DesignatedSender['access_token'],
+        refresh_token: DesignatedSender['refresh_token']
+    ) {
+        const sql = this.#sql;
+        const count = await sql`INSERT INTO drap.designated_sender (expires_at, email, access_token, refresh_token) VALUES (${expires_at}, ${email}, ${access_token}, ${refresh_token})`
+        return count;
+    }
+
+    @timed async updateDesignatedSender(
+        email: DesignatedSender['email'],
+        expires_at: DesignatedSender['expires_at'],
+        access_token: DesignatedSender['access_token']
+    ) {
+        const sql = this.#sql;
+        const [first, ...rest] = 
+            await sql`UPDATE drap.designated_sender SET expires_at = ${expires_at}, access_token = ${access_token} WHERE email = ${email}`
+        notEqual(typeof first, 'undefined')    
+        strictEqual(rest.length, 0);
+        return parse(DesignatedSender, first);
     }
 
     /**
