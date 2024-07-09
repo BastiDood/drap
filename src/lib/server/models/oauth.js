@@ -20,7 +20,6 @@ const OAUTH_SCOPES = [
     'openid',
     'https://www.googleapis.com/auth/userinfo.profile',
     'https://www.googleapis.com/auth/userinfo.email',
-    'https://mail.google.com/'
 ];
 export const OAUTH_SCOPE_STRING = OAUTH_SCOPES.join(' ');
 export const OAUTH_TOKEN_TYPE = 'Bearer';
