@@ -79,6 +79,7 @@ CREATE SCHEMA drap
         email TEXT NOT NULL REFERENCES users (email),
         access_token TEXT NOT NULL,
         refresh_token TEXT NOT NULL,
+        expires_at SMALLINT NOT NULL,
     );
 
 INSERT INTO drap.labs (lab_id, lab_name) VALUES
