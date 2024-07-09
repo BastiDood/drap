@@ -31,8 +31,6 @@ CREATE SCHEMA drap
         given_name TEXT NOT NULL DEFAULT '',
         family_name TEXT NOT NULL DEFAULT '',
         avatar TEXT NOT NULL DEFAULT '',
-        access_token TEXT NOT NULL,
-        refresh_token TEXT
     )
     CREATE TABLE pendings (
         session_id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -78,7 +76,9 @@ CREATE SCHEMA drap
         FOREIGN KEY (draft_id, round, lab_id) REFERENCES faculty_choices (draft_id, round, lab_id),
         UNIQUE (draft_id, student_email)
     CREATE TABLE designated_sender (
-        email TEXT NOT NULL REFERENCES users (email)
+        email TEXT NOT NULL REFERENCES users (email),
+        access_token TEXT NOT NULL,
+        refresh_token TEXT NOT NULL,
     );
 
 INSERT INTO drap.labs (lab_id, lab_name) VALUES
