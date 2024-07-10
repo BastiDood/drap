@@ -77,9 +77,9 @@ CREATE SCHEMA drap
         UNIQUE (draft_id, student_email)
     CREATE TABLE designated_sender (
         email TEXT NOT NULL REFERENCES users (email),
-        access_token TEXT NOT NULL,
-        refresh_token TEXT NOT NULL,
-        expires_at SMALLINT NOT NULL,
+        access_token TEXT,
+        refresh_token TEXT,
+        expires_at SMALLINT,
     );
 
 INSERT INTO drap.labs (lab_id, lab_name) VALUES
