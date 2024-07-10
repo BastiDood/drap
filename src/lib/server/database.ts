@@ -410,25 +410,25 @@ export class Database implements Loggable {
         return count;
     }
 
-    @timed async insertDesignatedSender(
-        expires_at: DesignatedSender['expires_at'],
+    @timed async initDesignatedSender(
         email: DesignatedSender['email'],
-        access_token: DesignatedSender['access_token'],
-        refresh_token: DesignatedSender['refresh_token']
     ) {
         const sql = this.#sql;
-        const count = await sql`INSERT INTO drap.designated_sender (expires_at, email, access_token, refresh_token) VALUES (${expires_at}, ${email}, ${access_token}, ${refresh_token})`
+        const count = await sql`INSERT INTO drap.designated_sender (email) VALUES (${email})`
         return count;
     }
 
     @timed async updateDesignatedSender(
         email: DesignatedSender['email'],
         expires_at: DesignatedSender['expires_at'],
-        access_token: DesignatedSender['access_token']
+        access_token: DesignatedSender['access_token'],
+        refresh_token: DesignatedSender['refresh_token'] = null
     ) {
         const sql = this.#sql;
         const [first, ...rest] = 
-            await sql`UPDATE drap.designated_sender SET expires_at = ${expires_at}, access_token = ${access_token} WHERE email = ${email}`
+            refresh_token ? 
+                await sql`UPDATE drap.designated_sender SET expires_at = ${expires_at}, access_token = ${access_token}, refresh_token = ${refresh_token} WHERE email = ${email}` 
+                : await sql`UPDATE drap.designated_sender SET expires_at = ${expires_at}, access_token = ${access_token} WHERE email = ${email}`
         notEqual(typeof first, 'undefined')    
         strictEqual(rest.length, 0);
         return parse(DesignatedSender, first);
