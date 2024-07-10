@@ -142,10 +142,10 @@ export class Database implements Loggable {
         return typeof first === 'undefined' ? null : parse(DeletedValidSession, first);
     }
 
-    @timed async initUser(email: User['email'], access_token: string) {
+    @timed async initUser(email: User['email']) {
         const sql = this.#sql;
         const { count } =
-            await sql`INSERT INTO drap.users (email, access_token) VALUES (${email}, ${access_token}) ON CONFLICT ON CONSTRAINT users_pkey DO NOTHING RETURNING student_number, lab_id`;
+            await sql`INSERT INTO drap.users (email) VALUES (${email}) ON CONFLICT ON CONSTRAINT users_pkey DO NOTHING RETURNING student_number, lab_id`;
         return count;
     }
 
@@ -155,12 +155,10 @@ export class Database implements Loggable {
         given: User['given_name'],
         family: User['family_name'],
         avatar: User['avatar'],
-        access_token: string,
-        refresh_token: string | undefined
     ) {
         const sql = this.#sql;
         const { count } =
-            await sql`INSERT INTO drap.users AS u (email, user_id, given_name, family_name, avatar, access_token, refresh_token) VALUES (${email}, ${uid}, ${given}, ${family}, ${avatar}, ${access_token}, ${refresh_token ?? 'NULL'}) ON CONFLICT ON CONSTRAINT users_pkey DO UPDATE SET user_id = ${uid}, given_name = coalesce(nullif(trim(u.given_name), ''), ${given}), family_name = coalesce(nullif(trim(u.family_name), ''), ${family}), avatar = ${avatar}, access_token = ${access_token}, refresh_token = ${refresh_token ?? "NULL"}`;
+            await sql`INSERT INTO drap.users AS u (email, user_id, given_name, family_name, avatar) VALUES (${email}, ${uid}, ${given}, ${family}, ${avatar}) ON CONFLICT ON CONSTRAINT users_pkey DO UPDATE SET user_id = ${uid}, given_name = coalesce(nullif(trim(u.given_name), ''), ${given}), family_name = coalesce(nullif(trim(u.family_name), ''), ${family}), avatar = ${avatar}`;
         return count;
     }
 

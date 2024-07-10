@@ -54,8 +54,8 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
         strictEqual(Buffer.from(token.nonce, 'base64url').compare(pending.nonce), 0);
 
         // Insert user as uninitialized by default
-        await db.initUser(token.email, access_token);
-        await db.upsertOpenIdUser(token.email, token.sub, token.given_name, token.family_name, token.picture, access_token, refresh_token);
+        await db.initUser(token.email);
+        await db.upsertOpenIdUser(token.email, token.sub, token.given_name, token.family_name, token.picture);
         await db.insertValidSession(sid, token.email, token.exp);
         return token.exp;
     });
