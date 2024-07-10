@@ -24,6 +24,7 @@ export const actions = {
             if (count <= 0) error(403);
             const result = await db.incrementDraftRound(draft);
             if (result === null) error(404);
+            // TODO: Check if all labs have no more pending work.
         });
     },
 };

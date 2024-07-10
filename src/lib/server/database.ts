@@ -1,4 +1,4 @@
-import { type InferOutput, array, bigint, nullable, object, parse, pick, pipe, transform } from 'valibot';
+import { type InferOutput, array, bigint, boolean, nullable, object, parse, pick, pipe, transform } from 'valibot';
 import { type Loggable, timed } from '$lib/decorators';
 import { fail, strictEqual } from 'node:assert/strict';
 import type { Logger } from 'pino';
@@ -224,17 +224,19 @@ export class Database implements Loggable {
         lab: StudentRank['labs'][number],
     ) {
         const sql = this.#sql;
-        const [[first, ...rest], users] = await sql.begin(
+        const [[first, ...rest], available, selected] = await sql.begin(
             sql =>
                 [
                     sql`SELECT lab_name, quota FROM drap.labs WHERE lab_id = ${lab}`,
                     sql`SELECT email, given_name, family_name, avatar, student_number FROM drap.student_ranks JOIN drap.drafts USING (draft_id) JOIN drap.users USING (email) WHERE draft_id = ${draft} AND chosen_by IS NULL AND labs[curr_round] = ${lab}`,
+                    sql`SELECT email, given_name, family_name, avatar, student_number FROM drap.student_ranks JOIN drap.drafts USING (draft_id) JOIN drap.users USING (email) JOIN drap.faculty_choices fc ON choice_id = chosen_by WHERE draft_id = ${draft} AND fc.lab_id = ${lab} AND labs[curr_round] = ${lab}`,
                 ] as const,
         );
         strictEqual(rest.length, 0);
         return {
             lab: typeof first === 'undefined' ? null : parse(QueriedLab, first),
-            students: parse(StudentsWithLabPreference, users),
+            students: parse(StudentsWithLabPreference, available),
+            researchers: parse(StudentsWithLabPreference, selected),
         };
     }
 
