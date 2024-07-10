@@ -10,9 +10,8 @@
     let draftees: string[] = [];
 </script>
 
-<form method="post" class="space-y-4" use:enhance>
-    <!-- TODO: Check lab quota. -->
-    {#if students.length > 0}
+{#if students.length > 0}
+    <form method="post" class="space-y-4" use:enhance>
         <ListBox multiple rounded="rounded">
             {#each students as { email, given_name, family_name, avatar, student_number } (email)}
                 <ListBoxItem bind:group={draftees} name="students" value={email}>
@@ -31,11 +30,9 @@
         </ListBox>
         <!-- TODO: Set up form actions. -->
         <button type="submit" class="variant-filled-primary btn">Submit</button>
-    {:else}
-        <WarningAlert
-            >No students have selected this lab in this round. Press "Acknowledge" to proceed to the next round of the
-            draft.</WarningAlert
-        >
-        <button type="submit" class="variant-filled-secondary btn">Acknowledge</button>
-    {/if}
-</form>
+    </form>
+{:else}
+    <WarningAlert
+        >No students have selected this lab in this round. No action is required until the next round.</WarningAlert
+    >
+{/if}
