@@ -34,6 +34,7 @@ const QueriedFaculty = array(
         lab_name: nullable(Lab.entries.lab_name),
     }),
 );
+const QueriedLab = pick(Lab, ['lab_name', 'quota']);
 const QueriedStudentRank = object({
     ...pick(StudentRank, ['chosen_by', 'created_at']).entries,
     labs: array(Lab.entries.lab_name),
@@ -218,11 +219,23 @@ export class Database implements Loggable {
         return parse(StudentsWithLabs, users);
     }
 
-    @timed async getStudentsInDraftWithLabPreference(draft: Draft['draft_id'], lab: StudentRank['labs'][number]) {
+    @timed async getLabAndRemainingStudentsInDraftWithLabPreference(
+        draft: Draft['draft_id'],
+        lab: StudentRank['labs'][number],
+    ) {
         const sql = this.#sql;
-        const users =
-            await sql`SELECT email, given_name, family_name, avatar, student_number FROM drap.student_ranks JOIN drap.drafts USING (draft_id) JOIN drap.users USING (email) WHERE draft_id = ${draft} AND labs[curr_round] = ${lab}`;
-        return parse(StudentsWithLabPreference, users);
+        const [[first, ...rest], users] = await sql.begin(
+            sql =>
+                [
+                    sql`SELECT lab_name, quota FROM drap.labs WHERE lab_id = ${lab}`,
+                    sql`SELECT email, given_name, family_name, avatar, student_number FROM drap.student_ranks JOIN drap.drafts USING (draft_id) JOIN drap.users USING (email) WHERE draft_id = ${draft} AND chosen_by IS NULL AND labs[curr_round] = ${lab}`,
+                ] as const,
+        );
+        strictEqual(rest.length, 0);
+        return {
+            lab: typeof first === 'undefined' ? null : parse(QueriedLab, first),
+            students: parse(StudentsWithLabPreference, users),
+        };
     }
 
     @timed async initDraft(rounds: Draft['max_rounds']) {
