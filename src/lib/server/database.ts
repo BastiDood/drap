@@ -1,4 +1,4 @@
-import { type InferOutput, array, bigint, boolean, nullable, object, parse, pick, pipe, transform } from 'valibot';
+import { type InferOutput, array, bigint, nullable, object, parse, pick, pipe, transform } from 'valibot';
 import { type Loggable, timed } from '$lib/decorators';
 import { fail, strictEqual } from 'node:assert/strict';
 import type { Logger } from 'pino';

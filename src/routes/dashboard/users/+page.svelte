@@ -1,6 +1,6 @@
 <script>
-    import ListItem from './ListItem.svelte';
     import { Icon } from '@steeze-ui/svelte-icon';
+    import ListItem from './ListItem.svelte';
     import { PaperAirplane } from '@steeze-ui/heroicons';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
