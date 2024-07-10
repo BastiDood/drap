@@ -1,4 +1,4 @@
-import { type InferOutput, array, nullable, object, parse, pick, pipe, transform } from 'valibot';
+import { type InferOutput, array, bigint, nullable, object, parse, pick, pipe, transform } from 'valibot';
 import { type Loggable, timed } from '$lib/decorators';
 import { fail, strictEqual } from 'node:assert/strict';
 import type { Logger } from 'pino';
@@ -12,6 +12,7 @@ import { StudentRank } from '$lib/models/student-rank';
 import { User } from '$lib/models/user';
 
 const AvailableLabs = array(pick(Lab, ['lab_id', 'lab_name']));
+const CountResult = object({ count: bigint() });
 const CreatedLab = pick(Lab, ['lab_id']);
 const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
 const CreatedFacultyChoice = pick(FacultyChoice, ['choice_id', 'created_at']);
@@ -195,14 +196,21 @@ export class Database implements Loggable {
         return typeof first === 'undefined' ? null : parse(LatestDraft, first);
     }
 
-    @timed async getStudentsInLatestDraft(draft: Draft['draft_id']) {
+    @timed async getStudentCountInDraft(draft: Draft['draft_id']) {
+        const sql = this.#sql;
+        const [first, ...rest] = await sql`SELECT count(email) FROM drap.student_ranks WHERE draft_id = ${draft}`;
+        strictEqual(rest.length, 0);
+        return parse(CountResult, first).count;
+    }
+
+    @timed async getStudentsInDraft(draft: Draft['draft_id']) {
         const sql = this.#sql;
         const users =
             await sql`SELECT email, given_name, family_name, avatar, student_number, labs FROM drap.student_ranks JOIN drap.drafts USING (draft_id) JOIN drap.users USING (email) WHERE draft_id = ${draft}`;
         return parse(StudentsWithLabs, users);
     }
 
-    @timed async getStudentsInLatestDraftWithLabPreference(draft: Draft['draft_id'], lab: StudentRank['labs'][number]) {
+    @timed async getStudentsInDraftWithLabPreference(draft: Draft['draft_id'], lab: StudentRank['labs'][number]) {
         const sql = this.#sql;
         const users =
             await sql`SELECT email, given_name, family_name, avatar, student_number FROM drap.student_ranks JOIN drap.drafts USING (draft_id) JOIN drap.users USING (email) WHERE draft_id = ${draft} AND labs[curr_round] = ${lab}`;
