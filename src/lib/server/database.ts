@@ -98,10 +98,10 @@ export class Database implements Loggable {
         return this.#sql.begin('ISOLATION LEVEL REPEATABLE READ', sql => fn(new Database(sql, this.#logger)));
     }
 
-    @timed async generatePendingSession() {
+    @timed async generatePendingSession(new_sender: boolean = false) {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`INSERT INTO drap.pendings DEFAULT VALUES RETURNING session_id, expiration, nonce`;
+            await sql`INSERT INTO drap.pendings (is_new_sender) VALUES (${new_sender}) RETURNING session_id, expiration, nonce`;
         strictEqual(rest.length, 0);
         return parse(Pending, first);
     }
