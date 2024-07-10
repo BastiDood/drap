@@ -1,6 +1,6 @@
-import { type InferOutput, array, bigint, nullable, object, parse, pick, pipe, transform } from 'valibot';
+import { type InferOutput, array, bigint, nullable, object, parse, pick } from 'valibot';
 import { type Loggable, timed } from '$lib/decorators';
-import { fail, strictEqual } from 'node:assert/strict';
+import assert, { fail, strictEqual } from 'node:assert/strict';
 import type { Logger } from 'pino';
 import postgres from 'postgres';
 
@@ -18,14 +18,9 @@ const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
 const CreatedFacultyChoice = pick(FacultyChoice, ['choice_id', 'created_at']);
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
+const DraftCurrRound = pick(Draft, ['curr_round']);
 const DraftMaxRounds = pick(Draft, ['max_rounds']);
-const Emails = array(
-    pipe(
-        pick(User, ['email']),
-        transform(({ email }) => email),
-    ),
-);
-const IncrementedDraftRound = pick(Draft, ['curr_round']);
+const LabQuota = pick(Lab, ['quota']);
 const LatestDraft = pick(Draft, ['draft_id', 'curr_round', 'max_rounds', 'active_period_start']);
 const QueriedDraft = pick(Draft, ['curr_round', 'max_rounds', 'active_period_start', 'active_period_end']);
 const QueriedFaculty = array(
@@ -40,7 +35,7 @@ const QueriedStudentRank = object({
     labs: array(Lab.entries.lab_name),
 });
 const RegisteredLabs = array(Lab);
-const StudentChosen = pick(StudentRank, ['chosen_by']);
+const StudentsChosen = array(object({ chosen_by: StudentRank.entries.chosen_by.wrapped }));
 const StudentsWithLabPreference = array(pick(User, ['email', 'given_name', 'family_name', 'avatar', 'student_number']));
 const StudentsWithLabs = array(
     object({
@@ -223,8 +218,7 @@ export class Database implements Loggable {
         draft: Draft['draft_id'],
         lab: StudentRank['labs'][number],
     ) {
-        const sql = this.#sql;
-        const [[first, ...rest], available, selected] = await sql.begin(
+        const [[first, ...rest], available, selected] = await this.#sql.begin(
             sql =>
                 [
                     sql`SELECT lab_name, quota FROM drap.labs WHERE lab_id = ${lab}`,
@@ -237,6 +231,22 @@ export class Database implements Loggable {
             lab: typeof first === 'undefined' ? null : parse(QueriedLab, first),
             students: parse(StudentsWithLabPreference, available),
             researchers: parse(StudentsWithLabPreference, selected),
+        };
+    }
+
+    @timed async getLabQuotaAndSelectedStudentCountInDraft(draft: Draft['draft_id'], lab: StudentRank['labs'][number]) {
+        const [[quota, ...quotaRest], [selected, ...selectedRest]] = await this.#sql.begin(
+            sql =>
+                [
+                    sql`SELECT quota FROM drap.labs WHERE lab_id = ${lab}`,
+                    sql`SELECT count(choice_id) FROM drap.student_ranks JOIN drap.faculty_choices ON chosen_by = choice_id WHERE draft_id = ${draft} AND lab_id = ${lab}`,
+                ] as const,
+        );
+        strictEqual(quotaRest.length, 0);
+        strictEqual(selectedRest.length, 0);
+        return {
+            quota: typeof quota === 'undefined' ? null : parse(LabQuota, lab).quota,
+            selected: parse(CountResult, selected).count,
         };
     }
 
@@ -253,14 +263,7 @@ export class Database implements Loggable {
         const [first, ...rest] =
             await sql`UPDATE drap.drafts SET curr_round = curr_round + 1 WHERE draft_id = ${draft_id} RETURNING curr_round`;
         strictEqual(rest.length, 0);
-        return typeof first === 'undefined' ? null : parse(IncrementedDraftRound, first).curr_round;
-    }
-
-    @timed async getUndraftedStudents(draft_id: Draft['draft_id']) {
-        const sql = this.#sql;
-        const ranks =
-            await sql`SELECT email FROM drap.student_ranks WHERE draft_id = ${draft_id} AND chosen_by IS NULL`;
-        return parse(Emails, ranks);
+        return typeof first === 'undefined' ? null : parse(DraftCurrRound, first).curr_round;
     }
 
     @timed async insertStudentRanking(id: Draft['draft_id'], email: User['email'], labs: StudentRank['labs']) {
@@ -293,23 +296,22 @@ export class Database implements Loggable {
     @timed async insertFacultyChoice(
         draftId: StudentRank['draft_id'],
         labId: FacultyChoice['lab_id'],
-        round: FacultyChoice['round'],
         facultyEmail: FacultyChoice['faculty_email'],
-        studentEmail: StudentRank['email'],
+        studentEmails: StudentRank['email'][],
     ) {
+        // TODO: This multi-step query can be turned into a single statement.
         const sql = this.#sql;
         const [choice, ...choices] =
-            await sql`INSERT INTO drap.faculty_choices (round, faculty_email, lab_id) VALUES (${round}, ${facultyEmail}, ${labId}) RETURNING choice_id, created_at`;
+            await sql`INSERT INTO drap.faculty_choices (round, faculty_email, lab_id) SELECT curr_round, ${facultyEmail}, ${labId} FROM drap.drafts WHERE draft_id = ${draftId} RETURNING choice_id, created_at`;
         strictEqual(choices.length, 0);
-
         const { choice_id: choiceId, created_at: createdAt } = parse(CreatedFacultyChoice, choice);
-        const [rank, ...ranks] =
-            await sql`UPDATE drap.student_ranks r SET chosen_by = coalesce(r.chosen_by, ${choiceId}) WHERE email = ${studentEmail} AND draft_id = ${draftId} RETURNING chosen_by`;
-        strictEqual(ranks.length, 0);
-        if (typeof rank === 'undefined') return null;
 
-        const { chosen_by } = parse(StudentChosen, rank);
-        strictEqual(chosen_by, choiceId, 'student was already previously chosen');
+        const ranks =
+            await sql`UPDATE drap.student_ranks r SET chosen_by = coalesce(r.chosen_by, ${choiceId}) FROM (VALUES ${studentEmails}) _ (email) WHERE draft_id = ${draftId} AND email = _.email RETURNING chosen_by`;
+        strictEqual(ranks.length, 0);
+
+        const areAllFirstChosen = parse(StudentsChosen, ranks).every(({ chosen_by }) => chosen_by === choiceId);
+        assert(areAllFirstChosen, 'some students were already previously chosen');
         return { choiceId, createdAt };
     }
 

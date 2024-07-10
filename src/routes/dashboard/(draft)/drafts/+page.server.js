@@ -12,8 +12,8 @@ export const actions = {
         // TODO: Check if the user has permissions to start a new draft.
         const data = await request.formData();
         const rounds = parseInt(validateString(data.get('rounds')), 10);
-        const result = await db.initDraft(rounds);
-        db.logger.info(result);
+        const initDraft = await db.initDraft(rounds);
+        db.logger.info({ initDraft });
     },
     async start({ locals: { db }, request }) {
         // TODO: Check if the user has permissions to start a new draft.

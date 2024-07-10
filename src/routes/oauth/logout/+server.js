@@ -5,9 +5,9 @@ export async function DELETE({ locals: { db }, cookies }) {
     cookies.delete('sid', { path: '/', httpOnly: true, sameSite: 'lax' });
     if (typeof sid === 'undefined') error(401);
 
-    const result = await db.deleteValidSession(sid);
-    if (result === null) error(404);
+    const deleteValidSession = await db.deleteValidSession(sid);
+    if (deleteValidSession === null) error(404);
 
-    db.logger.info(result);
+    db.logger.info({ deleteValidSession });
     return new Response(null, { status: 204 });
 }

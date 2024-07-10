@@ -1,6 +1,7 @@
 <script lang="ts">
     import { Avatar, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
     import WarningAlert from '$lib/alerts/Warning.svelte';
+    import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
     import { getOrdinalSuffix } from './ordinal';
 
@@ -10,7 +11,6 @@
         draft: { draft_id, curr_round },
         students,
         researchers,
-        user: { lab_id },
         lab: { lab_name, quota },
     } = data);
 
@@ -61,10 +61,25 @@
                 heads and administrators will be notified when this happens.
             </p>
         </div>
-        <form method="post" class="flex min-w-max flex-col gap-1" use:enhance>
-            <!-- TODO: Set up form actions. -->
+        <form
+            method="post"
+            class="flex min-w-max flex-col gap-1"
+            use:enhance={({ formData, submitter, cancel }) => {
+                const count = formData.getAll('students').length;
+                if (!confirm(`Are you sure you want to select these ${count} students?`)) {
+                    cancel();
+                    return;
+                }
+                assert(submitter !== null);
+                assert(submitter instanceof HTMLButtonElement);
+                submitter.disabled = true;
+                return async ({ update }) => {
+                    submitter.disabled = false;
+                    await update();
+                };
+            }}
+        >
             <input type="hidden" name="draft" value={draft_id} />
-            <input type="hidden" name="lab" value={lab_id} />
             <button type="submit" class="variant-filled-primary btn w-full">Submit</button>
             <ListBox multiple rounded="rounded">
                 {#each students as { email, given_name, family_name, avatar, student_number } (email)}

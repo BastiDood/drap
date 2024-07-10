@@ -21,8 +21,8 @@ export const actions = {
         const data = await request.formData();
         const id = validateString(data.get('id'));
         const lab = validateString(data.get('name'));
-        const result = await db.insertNewLab(id, lab);
-        db.logger.info({ id: result });
+        const insertNewLab = await db.insertNewLab(id, lab);
+        db.logger.info({ insertNewLab });
     },
     async quota({ locals: { db }, request }) {
         // TODO: Validate whether this user has permission to this action.
