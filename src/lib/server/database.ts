@@ -17,7 +17,8 @@ const BooleanResult = object({ result: boolean() });
 const CountResult = object({ count: bigint() });
 const CreatedLab = pick(Lab, ['lab_id']);
 const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
-const DeletedPendingSession = pick(Pending, ['nonce', 'expiration']);
+const CreatedFacultyChoice = pick(FacultyChoice, ['choice_id', 'created_at']);
+const DeletedPendingSession = pick(Pending, ['nonce', 'expiration', 'is_new_sender']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
 const DesignatedSender = object({
     'expires_at': string(),
