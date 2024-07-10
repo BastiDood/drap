@@ -13,8 +13,6 @@ export async function GET({ locals: { db }, cookies, url: { searchParams } }) {
     const { session_id, nonce, expiration } = await db.generatePendingSession();
     cookies.set('sid', session_id, { path: '/', httpOnly: true, sameSite: 'lax', expires: expiration });
 
-    const isNewSender = Boolean(searchParams.get('new_sender'))
-
     const hashedSessionId = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(session_id));
     const params = new URLSearchParams({
         state: Buffer.from(hashedSessionId).toString('base64url'),
