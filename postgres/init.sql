@@ -80,7 +80,7 @@ CREATE SCHEMA drap
         email TEXT NOT NULL REFERENCES users (email),
         access_token TEXT,
         refresh_token TEXT,
-        expires_at DATE
+        expires_at TIMESTAMPTZ
     );
 
 INSERT INTO drap.labs (lab_id, lab_name) VALUES
