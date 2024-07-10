@@ -1,7 +1,6 @@
 import {
     boolean,
     email,
-    everyItem,
     literal,
     maxLength,
     minLength,
@@ -35,7 +34,6 @@ export const TokenResponse = object({
     scope: pipe(
         string(),
         transform(str => str.split(' ')),
-        everyItem(item => OAUTH_SCOPES.includes(item)),
     ),
     token_type: literal(OAUTH_TOKEN_TYPE),
     // Remaining lifetime in seconds.
