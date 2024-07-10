@@ -44,11 +44,11 @@ async function refreshAccessToken(refresh_token: string, email: string, db: Data
 // this function sends an email to the provided email address with the given body via nodemailer using the access token of the designated admin sender
 export async function sendEmailTo(to: string, subject: string, body: string, db: Database) {
     let credentials = await db.getDesignatedSender()
-    
+  
     if (!credentials) throw Error();
     if (!credentials.refresh_token) throw Error();
-
-    if (credentials?.expires_at > new Date()) credentials = await refreshAccessToken(credentials.refresh_token, credentials.email, db)
+  
+    if (credentials?.expires_at < new Date()) credentials = await refreshAccessToken(credentials.refresh_token, credentials.email, db)
     
     if (!credentials) throw Error();
     
