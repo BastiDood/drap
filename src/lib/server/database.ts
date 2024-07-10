@@ -110,7 +110,7 @@ export class Database implements Loggable {
     @timed async deletePendingSession(sid: Pending['session_id']) {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`DELETE FROM drap.pendings WHERE session_id = ${sid} RETURNING expiration, nonce`;
+            await sql`DELETE FROM drap.pendings WHERE session_id = ${sid} RETURNING expiration, nonce, is_new_sender`;
         strictEqual(rest.length, 0);
         return typeof first === 'undefined' ? null : parse(DeletedPendingSession, first);
     }
