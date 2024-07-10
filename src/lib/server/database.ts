@@ -426,8 +426,8 @@ export class Database implements Loggable {
         const sql = this.#sql;
         const [first, ...rest] = 
             refresh_token ? 
-                await sql`UPDATE drap.designated_sender SET expires_at = ${expires_at}, access_token = ${access_token}, refresh_token = ${refresh_token} WHERE email = ${email}` 
-                : await sql`UPDATE drap.designated_sender SET expires_at = ${expires_at}, access_token = ${access_token} WHERE email = ${email}`
+                await sql`UPDATE drap.designated_sender SET expires_at = ${expires_at}, access_token = ${access_token}, refresh_token = ${refresh_token} WHERE email = ${email} RETURNING *` 
+                : await sql`UPDATE drap.designated_sender SET expires_at = ${expires_at}, access_token = ${access_token} WHERE email = ${email} RETURNING *`
         notEqual(typeof first, 'undefined')    
         strictEqual(rest.length, 0);
         return parse(DesignatedSender, first);
