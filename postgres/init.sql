@@ -50,21 +50,31 @@ CREATE SCHEMA drap
         CONSTRAINT curr_round_within_bounds CHECK (curr_round BETWEEN 0 AND max_rounds),
         CONSTRAINT overlapping_draft_periods EXCLUDE USING gist (active_period WITH &&)
     )
-    CREATE TABLE faculty_choices (
-        choice_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
-        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        round SMALLINT NOT NULL,
-        faculty_email TEXT NOT NULL REFERENCES users (email),
-        lab_id TEXT NOT NULL REFERENCES labs (lab_id),
-        CONSTRAINT non_negative_round CHECK (round > 0)
-    )
     CREATE TABLE student_ranks (
         draft_id BIGINT NOT NULL REFERENCES drafts (draft_id),
-        chosen_by BIGINT UNIQUE REFERENCES faculty_choices (choice_id),
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         email TEXT NOT NULL REFERENCES users (email),
         labs TEXT[] NOT NULL, -- REFERENCES (EACH ELEMENT OF labs) labs (lab_id)
         PRIMARY KEY (draft_id, email)
+    )
+    CREATE TABLE faculty_choices (
+        draft_id BIGINT NOT NULL REFERENCES drafts (draft_id),
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        round SMALLINT NOT NULL CONSTRAINT non_negative_round CHECK (round > 0),
+        lab_id TEXT NOT NULL REFERENCES labs (lab_id),
+        faculty_email TEXT NOT NULL REFERENCES users (email),
+        PRIMARY KEY (draft_id, round, faculty_email),
+        UNIQUE (draft_id, round, lab_id)
+    )
+    CREATE TABLE faculty_choices_emails (
+        choice_email_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
+        draft_id BIGINT NOT NULL REFERENCES drafts (draft_id),
+        round SMALLINT NOT NULL CONSTRAINT non_negative_round CHECK (round > 0),
+        faculty_email TEXT NOT NULL REFERENCES users (email),
+        student_email TEXT NOT NULL REFERENCES users (email),
+        FOREIGN KEY (draft_id, round, faculty_email) REFERENCES faculty_choices (draft_id, round, faculty_email),
+        CONSTRAINT faculty_student_mutex CHECK (faculty_email <> student_email),
+        UNIQUE (draft_id, student_email)
     );
 
 INSERT INTO drap.labs (lab_id, lab_name) VALUES

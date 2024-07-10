@@ -1,6 +1,6 @@
 import { type InferOutput, array, bigint, nullable, object, parse, pick } from 'valibot';
 import { type Loggable, timed } from '$lib/decorators';
-import assert, { fail, strictEqual } from 'node:assert/strict';
+import { fail, strictEqual } from 'node:assert/strict';
 import type { Logger } from 'pino';
 import postgres from 'postgres';
 
@@ -15,7 +15,6 @@ const AvailableLabs = array(pick(Lab, ['lab_id', 'lab_name']));
 const CountResult = object({ count: bigint() });
 const CreatedLab = pick(Lab, ['lab_id']);
 const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
-const CreatedFacultyChoice = pick(FacultyChoice, ['choice_id', 'created_at']);
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
 const DraftCurrRound = pick(Draft, ['curr_round']);
@@ -31,11 +30,10 @@ const QueriedFaculty = array(
 );
 const QueriedLab = pick(Lab, ['lab_name', 'quota']);
 const QueriedStudentRank = object({
-    ...pick(StudentRank, ['chosen_by', 'created_at']).entries,
+    ...pick(StudentRank, ['created_at']).entries,
     labs: array(Lab.entries.lab_name),
 });
 const RegisteredLabs = array(Lab);
-const StudentsChosen = array(object({ chosen_by: StudentRank.entries.chosen_by.wrapped }));
 const StudentsWithLabPreference = array(pick(User, ['email', 'given_name', 'family_name', 'avatar', 'student_number']));
 const StudentsWithLabs = array(
     object({
@@ -222,8 +220,8 @@ export class Database implements Loggable {
             sql =>
                 [
                     sql`SELECT lab_name, quota FROM drap.labs WHERE lab_id = ${lab}`,
-                    sql`SELECT email, given_name, family_name, avatar, student_number FROM drap.student_ranks JOIN drap.drafts USING (draft_id) JOIN drap.users USING (email) WHERE draft_id = ${draft} AND chosen_by IS NULL AND labs[curr_round] = ${lab}`,
-                    sql`SELECT email, given_name, family_name, avatar, student_number FROM drap.student_ranks JOIN drap.drafts USING (draft_id) JOIN drap.users USING (email) JOIN drap.faculty_choices fc ON choice_id = chosen_by WHERE draft_id = ${draft} AND fc.lab_id = ${lab} AND labs[curr_round] = ${lab}`,
+                    sql`SELECT email, given_name, family_name, avatar, student_number FROM drap.faculty_choices JOIN drap.faculty_choices_emails USING (draft_id, round, faculty_email) RIGHT JOIN drap.student_ranks ON student_email = email JOIN drap.drafts USING (draft_id) JOIN drap.users USING (email) WHERE draft_id = ${draft} AND student_email IS NULL AND labs[curr_round] = ${lab}`,
+                    sql`SELECT email, given_name, family_name, avatar, student_number FROM drap.faculty_choices_emails JOIN drap.faculty_choices USING (draft_id, round, faculty_email) JOIN drap.users ON student_email = email WHERE draft_id = ${draft} AND lab_id = ${lab}`,
                 ] as const,
         );
         strictEqual(rest.length, 0);
@@ -239,7 +237,7 @@ export class Database implements Loggable {
             sql =>
                 [
                     sql`SELECT quota FROM drap.labs WHERE lab_id = ${lab}`,
-                    sql`SELECT count(choice_id) FROM drap.student_ranks JOIN drap.faculty_choices ON chosen_by = choice_id WHERE draft_id = ${draft} AND lab_id = ${lab}`,
+                    sql`SELECT count(student_email) FROM drap.faculty_choices_emails JOIN drap.faculty_choices USING (draft_id, round, faculty_email) WHERE draft_id = ${draft} AND lab_id = ${lab}`,
                 ] as const,
         );
         strictEqual(quotaRest.length, 0);
@@ -283,7 +281,7 @@ export class Database implements Loggable {
     @timed async getStudentRankings(id: StudentRank['draft_id'], email: StudentRank['email']) {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`SELECT chosen_by, created_at, array_agg(lab_name) labs FROM drap.labs JOIN (SELECT chosen_by, created_at, unnest(labs) lab_id FROM drap.student_ranks WHERE draft_id = ${id} AND email = ${email}) ranks USING (lab_id) GROUP BY chosen_by, created_at`;
+            await sql`SELECT created_at, array_agg(lab_name) labs FROM drap.labs JOIN (SELECT created_at, unnest(labs) lab_id FROM drap.student_ranks WHERE draft_id = ${id} AND email = ${email}) ranks USING (lab_id) GROUP BY chosen_by, created_at`;
         strictEqual(rest.length, 0);
         return typeof first === 'undefined' ? null : parse(QueriedStudentRank, first);
     }
@@ -299,20 +297,10 @@ export class Database implements Loggable {
         facultyEmail: FacultyChoice['faculty_email'],
         studentEmails: StudentRank['email'][],
     ) {
-        // TODO: This multi-step query can be turned into a single statement.
         const sql = this.#sql;
-        const [choice, ...choices] =
-            await sql`INSERT INTO drap.faculty_choices (round, faculty_email, lab_id) SELECT curr_round, ${facultyEmail}, ${labId} FROM drap.drafts WHERE draft_id = ${draftId} RETURNING choice_id, created_at`;
-        strictEqual(choices.length, 0);
-        const { choice_id: choiceId, created_at: createdAt } = parse(CreatedFacultyChoice, choice);
-
-        const ranks =
-            await sql`UPDATE drap.student_ranks r SET chosen_by = coalesce(r.chosen_by, ${choiceId}) FROM (VALUES ${studentEmails}) _ (email) WHERE draft_id = ${draftId} AND email = _.email RETURNING chosen_by`;
-        strictEqual(ranks.length, 0);
-
-        const areAllFirstChosen = parse(StudentsChosen, ranks).every(({ chosen_by }) => chosen_by === choiceId);
-        assert(areAllFirstChosen, 'some students were already previously chosen');
-        return { choiceId, createdAt };
+        const { count } =
+            await sql`INSERT INTO drap.faculty_choices_emails (draft_id, round, faculty_email, student_email) SELECT draft_id, round, faculty_email, _.email FROM (INSERT INTO drap.faculty_choices (draft_id, round, faculty_email, lab_id) SELECT draft_id, curr_round, ${facultyEmail}, ${labId} FROM drap.drafts WHERE draft_id = ${draftId} RETURNING draft_id, round, faculty_email) fc, (VALUES ${studentEmails}) _ (email)`;
+        strictEqual(studentEmails.length, count);
     }
 
     @timed async inviteNewFacultyOrStaff(email: User['email'], lab: User['lab_id']) {
