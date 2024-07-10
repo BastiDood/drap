@@ -43,7 +43,7 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
         ok(res.ok);
 
         const json = await res.json();
-        const { id_token, access_token, refresh_token, expires_in } = parse(TokenResponse, json);
+        const { id_token, access_token, refresh_token } = parse(TokenResponse, json);
         const { payload } = await jwtVerify(id_token, fetchJwks, {
             issuer: 'https://accounts.google.com',
             audience: GOOGLE.OAUTH_CLIENT_ID,
@@ -59,7 +59,7 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
             await db.initDesignatedSender(token.email)
             await db.updateDesignatedSender(
                 token.email,
-                expires_in,
+                token.exp,
                 access_token,
                 refresh_token
             )

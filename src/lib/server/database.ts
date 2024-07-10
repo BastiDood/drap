@@ -1,4 +1,4 @@
-import { type InferOutput, array, bigint, boolean, nullable, number, object, parse, pick, pipe, string, transform } from 'valibot';
+import { type InferOutput, array, bigint, boolean, date, nullable, object, parse, pick, pipe, string, transform } from 'valibot';
 import { type Loggable, timed } from '$lib/decorators';
 import { fail, strictEqual } from 'node:assert/strict';
 import type { Logger } from 'pino';
@@ -21,7 +21,7 @@ const CreatedFacultyChoice = pick(FacultyChoice, ['choice_id', 'created_at']);
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration', 'is_new_sender']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
 const DesignatedSender = object({
-    'expires_at': number(),
+    'expires_at': date(),
     'email': string(),
     'access_token': string(),
     'refresh_token': nullable(string())
