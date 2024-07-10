@@ -25,7 +25,6 @@ const Emails = array(
 );
 const IncrementedDraftRound = pick(Draft, ['curr_round']);
 const LatestDraft = pick(Draft, ['draft_id', 'curr_round', 'max_rounds', 'active_period_start']);
-const LatestNewDraftId = pick(Draft, ['draft_id']);
 const QueriedDraft = pick(Draft, ['curr_round', 'max_rounds', 'active_period_start', 'active_period_end']);
 const QueriedFaculty = array(
     object({
@@ -40,6 +39,12 @@ const QueriedStudentRank = object({
 const RegisteredLabs = array(Lab);
 const StudentChosen = pick(StudentRank, ['chosen_by']);
 const StudentsWithLabPreference = array(pick(User, ['email', 'given_name', 'family_name', 'avatar', 'student_number']));
+const StudentsWithLabs = array(
+    object({
+        ...pick(User, ['email', 'given_name', 'family_name', 'avatar', 'student_number']).entries,
+        ...pick(StudentRank, ['labs']).entries,
+    }),
+);
 
 export type AvailableLabs = InferOutput<typeof AvailableLabs>;
 export type QueriedFaculty = InferOutput<typeof QueriedFaculty>;
@@ -190,12 +195,11 @@ export class Database implements Loggable {
         return typeof first === 'undefined' ? null : parse(LatestDraft, first);
     }
 
-    @timed async getLatestNewDraftId() {
+    @timed async getStudentsInLatestDraft(draft: Draft['draft_id']) {
         const sql = this.#sql;
-        const [first, ...rest] =
-            await sql`SELECT draft_id FROM drap.drafts WHERE upper_inf(active_period) AND curr_round = 0`;
-        strictEqual(rest.length, 0);
-        return typeof first === 'undefined' ? null : parse(LatestNewDraftId, first).draft_id;
+        const users =
+            await sql`SELECT email, given_name, family_name, avatar, student_number, labs FROM drap.student_ranks JOIN drap.drafts USING (draft_id) JOIN drap.users USING (email) WHERE draft_id = ${draft}`;
+        return parse(StudentsWithLabs, users);
     }
 
     @timed async getStudentsInLatestDraftWithLabPreference(draft: Draft['draft_id'], lab: StudentRank['labs'][number]) {
