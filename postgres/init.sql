@@ -30,18 +30,18 @@ CREATE SCHEMA drap
         email TEXT NOT NULL PRIMARY KEY,
         given_name TEXT NOT NULL DEFAULT '',
         family_name TEXT NOT NULL DEFAULT '',
-        avatar TEXT NOT NULL DEFAULT '',
+        avatar TEXT NOT NULL DEFAULT ''
     )
     CREATE TABLE pendings (
         session_id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
         expiration Expiration NOT NULL DEFAULT NOW() + INTERVAL '15 minutes',
-        nonce BYTEA NOT NULL DEFAULT gen_random_bytes(64)
+        nonce BYTEA NOT NULL DEFAULT gen_random_bytes(64),
+        is_new_sender BOOLEAN NOT NULL DEFAULT FALSE
     )
     CREATE TABLE sessions (
         session_id UUID NOT NULL PRIMARY KEY,
         expiration Expiration NOT NULL,
-        email TEXT NOT NULL REFERENCES users (email),
-        is_new_sender BOOLEAN NOT NULL DEFAULT FALSE
+        email TEXT NOT NULL REFERENCES users (email)
     )
     CREATE TABLE drafts (
         draft_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
@@ -80,7 +80,7 @@ CREATE SCHEMA drap
         email TEXT NOT NULL REFERENCES users (email),
         access_token TEXT,
         refresh_token TEXT,
-        expires_at DATE,
+        expires_at DATE
     );
 
 INSERT INTO drap.labs (lab_id, lab_name) VALUES
