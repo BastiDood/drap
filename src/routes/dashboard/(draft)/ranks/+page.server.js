@@ -19,10 +19,14 @@ export const actions = {
         if (user.is_admin || user.user_id === null || user.lab_id !== null || user.student_number === null) error(403);
 
         const data = await request.formData();
-        const id = BigInt(validateString(data.get('draft')));
+        const draft = BigInt(validateString(data.get('draft')));
         const labs = data.getAll('labs').map(validateString);
 
-        if (await db.insertStudentRanking(id, user.email, labs)) return;
+        const maxRounds = await db.getMaxRoundInDraft(draft);
+        if (maxRounds === null) error(404);
+        if (labs.length !== maxRounds) error(400);
+
+        if (await db.insertStudentRanking(draft, user.email, labs)) return;
         return fail(403);
     },
 };

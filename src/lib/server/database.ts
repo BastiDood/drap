@@ -18,6 +18,7 @@ const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
 const CreatedFacultyChoice = pick(FacultyChoice, ['choice_id', 'created_at']);
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
+const DraftMaxRounds = pick(Draft, ['max_rounds']);
 const Emails = array(
     pipe(
         pick(User, ['email']),
@@ -194,6 +195,13 @@ export class Database implements Loggable {
             await sql`SELECT draft_id, curr_round, max_rounds, lower(active_period) active_period_start, CASE WHEN upper_inf(active_period) THEN NULL ELSE upper(active_period) END active_period_end FROM drap.drafts WHERE upper_inf(active_period)`;
         strictEqual(rest.length, 0);
         return typeof first === 'undefined' ? null : parse(LatestDraft, first);
+    }
+
+    @timed async getMaxRoundInDraft(draft: Draft['draft_id']) {
+        const sql = this.#sql;
+        const [first, ...rest] = await sql`SELECT max_rounds FROM drap.drafts WHERE draft_id = ${draft}`;
+        strictEqual(rest.length, 0);
+        return typeof first === 'undefined' ? null : parse(DraftMaxRounds, first).max_rounds;
     }
 
     @timed async getStudentCountInDraft(draft: Draft['draft_id']) {
