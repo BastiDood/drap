@@ -40,7 +40,8 @@ CREATE SCHEMA drap
     CREATE TABLE sessions (
         session_id UUID NOT NULL PRIMARY KEY,
         expiration Expiration NOT NULL,
-        email TEXT NOT NULL REFERENCES users (email)
+        email TEXT NOT NULL REFERENCES users (email),
+        is_new_sender BOOLEAN NOT NULL DEFAULT FALSE
     )
     CREATE TABLE drafts (
         draft_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
