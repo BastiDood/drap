@@ -70,7 +70,11 @@
 <form
     method="post"
     class="space-y-4"
-    use:enhance={({ submitter }) => {
+    use:enhance={({ submitter, cancel }) => {
+        if (!confirm(`Are you sure you want to select ${selectedLabs.length} labs?`)) {
+            cancel();
+            return;
+        }
         assert(submitter !== null);
         assert(submitter instanceof HTMLButtonElement);
         submitter.disabled = true;
@@ -106,9 +110,7 @@
                 You may no longer select any more labs.
             {/if}
         </p>
-        <button type="submit" disabled={hasRemaining} class="variant-filled-primary btn disabled:!variant-ghost-primary"
-            >Submit Lab Preferences</button
-        >
+        <button type="submit" class="variant-filled-primary btn">Submit Lab Preferences</button>
     </div>
     <hr class="!border-surface-400-500-token !border-t-4" />
     {#each selectedLabs as { lab_id, lab_name }, idx (lab_id)}

@@ -23,7 +23,7 @@ export const actions = {
 
         const maxRounds = await db.getMaxRoundInDraft(draft);
         if (maxRounds === null) error(404);
-        if (labs.length !== maxRounds) error(400);
+        if (labs.length > maxRounds) error(400);
 
         if (await db.insertStudentRanking(draft, user.email, labs)) return;
         return fail(403);
