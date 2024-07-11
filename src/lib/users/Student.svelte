@@ -21,7 +21,7 @@
                     <span class="variant-ghost-tertiary badge text-xs">{lab}</span>
                 {/each}
             {:else}
-                <span class="variant-ghost-primary badge text-xs">{lab_id}</span>
+                <span class="variant-ghost-primary badge text-xs uppercase">{lab_id}</span>
             {/if}
         </div>
     </div>
