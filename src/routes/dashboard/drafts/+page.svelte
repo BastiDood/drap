@@ -1,5 +1,7 @@
 <script>
+    import { ArrowRight } from '@steeze-ui/heroicons';
     import ErrorAlert from '$lib/alerts/Error.svelte';
+    import { Icon } from '@steeze-ui/svelte-icon';
     import Student from '$lib/users/Student.svelte';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
@@ -30,40 +32,59 @@
     </p>
 </div>
 {#if curr_round > max_rounds}
-    <div class="prose max-w-none dark:prose-invert">
-        <h3>Lottery</h3>
-        <p>
-            Draft &num;{draft_id} is almost done! The final stage is the lottery phase, where the remaining undrafted students
-            are randomly assigned to their labs. Before the system automatically randomizes anything, administrators are
-            given a final chance to manually intervene with the draft results.
-        </p>
-        <ul>
-            <li>
-                The <strong>"Already Drafted"</strong> section features an <em>immutable</em> list of students who have already
-                been drafted into their respective labs. These are considered final.
-            </li>
-            <li>
-                Meanwhile, the <strong>"Eligible for Lottery"</strong> section
-            </li>
-        </ul>
-    </div>
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <nav class="card list-nav variant-ghost-success space-y-4 p-4">
-            <h3 class="h3">Already Drafted</h3>
-            <ul class="list">
-                {#each selected as user (user.email)}
-                    <li><Student {user} /></li>
-                {/each}
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-[auto_1fr]">
+        <div class="prose dark:prose-invert">
+            <h3>Lottery</h3>
+            <p>
+                Draft &num;{draft_id} is almost done! The final stage is the lottery phase, where the remaining undrafted
+                students are randomly assigned to their labs. Before the system automatically randomizes anything, administrators
+                are given a final chance to manually intervene with the draft results.
+            </p>
+            <ul>
+                <li>
+                    The <strong>"Eligible for Lottery"</strong> section features a list of the remaining undrafted students.
+                    At this point, administrators may negotiate with the lab heads how to manually assign and distribute
+                    these students fairly among interested labs.
+                </li>
+                <li>
+                    Meanwhile, the <strong>"Already Drafted"</strong> section features an <em>immutable</em> list of students
+                    who have already been drafted into their respective labs. These are considered final.
+                </li>
             </ul>
-        </nav>
-        <nav class="card list-nav variant-ghost-warning space-y-4 p-4">
-            <h3 class="h3">Eligible for Lottery</h3>
-            <ul class="list">
-                {#each available as user (user.email)}
-                    <li><Student {user} /></li>
-                {/each}
-            </ul>
-        </nav>
+            <p>
+                When ready, administrators can press the <strong>"Conclude Draft"</strong> button to proceed with the randomization
+                stage. The list of students will be randomly shuffled and distributed among the labs in a round-robin fashion.
+                To uphold fairness, it is important that uneven distributions are manually resolved beforehand.
+            </p>
+            <p>
+                After the randomization stage, the draft process is officially complete. All students, lab heads, and
+                administrators are notified of the final results.
+            </p>
+        </div>
+        <div class="min-w-max space-y-2">
+            <form action="?/conclude" method="post" use:enhance>
+                <button type="submit" class="variant-filled-primary btn btn-lg w-full">
+                    <Icon src={ArrowRight} class="size-8" />
+                    <span>Conclude Draft</span>
+                </button>
+            </form>
+            <nav class="card list-nav variant-ghost-warning space-y-4 p-4">
+                <h3 class="h3">Eligible for Lottery</h3>
+                <ul class="list">
+                    {#each available as user (user.email)}
+                        <li><Student {user} /></li>
+                    {/each}
+                </ul>
+            </nav>
+            <nav class="card list-nav variant-ghost-success space-y-4 p-4">
+                <h3 class="h3">Already Drafted</h3>
+                <ul class="list">
+                    {#each selected as user (user.email)}
+                        <li><Student {user} /></li>
+                    {/each}
+                </ul>
+            </nav>
+        </div>
     </div>
 {:else if curr_round > 0}
     <!-- TODO: Ongoing Draft -->
