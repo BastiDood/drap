@@ -26,11 +26,13 @@ export const actions = {
             assert(labCount > 0);
             if (studentCount <= 0) error(403);
 
-            const result = await db.incrementDraftRound(draft);
-            assert(result !== null);
+            const incrementDraftRound = await db.incrementDraftRound(draft);
+            assert(incrementDraftRound !== null);
+            db.logger.info({ incrementDraftRound });
 
             const ackCount = await db.autoAcknowledgeLabsWithoutPreferences(draft);
             assert(ackCount < labCount);
+            db.logger.info({ autoAcknowledgeLabsWithoutPreferences: ackCount });
         });
     },
 };
