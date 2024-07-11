@@ -296,7 +296,7 @@ export class Database implements Loggable {
     @timed async getStudentRankings(id: StudentRank['draft_id'], email: StudentRank['email']) {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`SELECT created_at, array_agg(lab_name) labs FROM drap.labs JOIN (SELECT created_at, unnest(labs) lab_id FROM drap.student_ranks WHERE draft_id = ${id} AND email = ${email}) ranks USING (lab_id) GROUP BY chosen_by, created_at`;
+            await sql`SELECT created_at, array_agg(lab_name) labs FROM drap.labs JOIN (SELECT created_at, unnest(labs) lab_id FROM drap.student_ranks WHERE draft_id = ${id} AND email = ${email}) ranks USING (lab_id) GROUP BY created_at`;
         strictEqual(rest.length, 0);
         return typeof first === 'undefined' ? null : parse(QueriedStudentRank, first);
     }
