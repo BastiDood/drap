@@ -4,7 +4,12 @@ import { OAUTH_SCOPE_STRING } from '$lib/server/models/oauth';
 import { redirect } from '@sveltejs/kit';
 
 export async function GET({ locals: { db }, cookies }) {
-    // TODO: Check if already logged in
+    const sid = cookies.get('sid');
+    if (typeof sid !== 'undefined') {
+        const user = await db.getUserFromValidSession(sid);
+        if (user !== null) redirect(302, '/');
+    }
+
     const { session_id, nonce, expiration } = await db.generatePendingSession();
     cookies.set('sid', session_id, { path: '/', httpOnly: true, sameSite: 'lax', expires: expiration });
 

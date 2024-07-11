@@ -7,7 +7,7 @@ export async function load({ locals: { db }, parent }) {
     const { user } = await parent();
     if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
 
-    const draft = await db.getLatestDraft();
+    const draft = await db.getActiveDraft();
     if (draft === null) error(499);
 
     const students = await db.getStudentsInDraftTaggedByLab(draft.draft_id);
@@ -16,15 +16,27 @@ export async function load({ locals: { db }, parent }) {
 }
 
 export const actions = {
-    async init({ locals: { db }, request }) {
-        // TODO: Check if the user has permissions to start a new draft.
+    async init({ locals: { db }, cookies, request }) {
+        const sid = cookies.get('sid');
+        if (typeof sid === 'undefined') error(401);
+
+        const user = await db.getUserFromValidSession(sid);
+        if (user === null) error(401);
+        if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
+
         const data = await request.formData();
         const rounds = parseInt(validateString(data.get('rounds')), 10);
         const initDraft = await db.initDraft(rounds);
         db.logger.info({ initDraft });
     },
-    async start({ locals: { db }, request }) {
-        // TODO: Check if the user has permissions to start a new draft.
+    async start({ locals: { db }, cookies, request }) {
+        const sid = cookies.get('sid');
+        if (typeof sid === 'undefined') error(401);
+
+        const user = await db.getUserFromValidSession(sid);
+        if (user === null) error(401);
+        if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
+
         const data = await request.formData();
         const draft = BigInt(validateString(data.get('draft')));
 

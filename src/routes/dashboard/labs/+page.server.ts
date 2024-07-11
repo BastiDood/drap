@@ -5,7 +5,7 @@ export async function load({ locals: { db }, parent }) {
     const { user } = await parent();
     if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
     // TODO: Migrate to SQL pipelining.
-    const [labs, draft] = await Promise.all([db.getLabRegistry(), db.getLatestDraft()]);
+    const [labs, draft] = await Promise.all([db.getLabRegistry(), db.getActiveDraft()]);
     return { labs, draft };
 }
 
@@ -17,18 +17,34 @@ function* mapRowTuples(data: FormData) {
 }
 
 export const actions = {
-    async lab({ locals: { db }, request }) {
-        // TODO: Validate whether this user has permission to this action.
-        // TODO: Check if a draft is currently active.
+    async lab({ locals: { db }, cookies, request }) {
+        const sid = cookies.get('sid');
+        if (typeof sid === 'undefined') error(401);
+
+        const user = await db.getUserFromValidSession(sid);
+        if (user === null) error(401);
+        if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
+
+        const draft = await db.getActiveDraft();
+        if (draft !== null) error(403);
+
         const data = await request.formData();
         const id = validateString(data.get('id'));
         const lab = validateString(data.get('name'));
         const insertNewLab = await db.insertNewLab(id, lab);
         db.logger.info({ insertNewLab });
     },
-    async quota({ locals: { db }, request }) {
-        // TODO: Validate whether this user has permission to this action.
-        // TODO: Check if a draft is currently active.
+    async quota({ locals: { db }, cookies, request }) {
+        const sid = cookies.get('sid');
+        if (typeof sid === 'undefined') error(401);
+
+        const user = await db.getUserFromValidSession(sid);
+        if (user === null) error(401);
+        if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
+
+        const draft = await db.getActiveDraft();
+        if (draft !== null) error(403);
+
         const data = await request.formData();
         await db.updateLabQuotas(mapRowTuples(data));
     },
