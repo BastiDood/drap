@@ -101,8 +101,25 @@
         </form>
     </div>
 {:else}
-    <!-- TODO: Show the currently drafted students under this lab. -->
+    <!-- [x]: Show the currently drafted students under this lab. -->
+    <!-- Resolved: Added disabled ListBox with already-selected researchers -->
+    <!-- TODO: Please verify if this works -->
     <WarningAlert
         >No students have selected this lab in this round. No action is required until the next round.</WarningAlert
     >
+    <h3>My Selected Researchers:</h3>
+    <ListBox multiple rounded="rounded" disabled>
+        {#each researchers as { email, given_name, family_name, avatar, student_number } (email)}
+            <ListBoxItem bind:group={draftees} name="students" value={email}>
+                <Avatar slot="lead" src={avatar} />
+                <div class="flex flex-col">
+                    <strong><span class="uppercase">{family_name}</span>, {given_name}</strong>
+                    {#if student_number !== null}
+                        <span class="text-sm opacity-50">{student_number}</span>
+                    {/if}
+                    <span class="text-xs opacity-50">{email}</span>
+                </div>
+            </ListBoxItem>
+        {/each}
+    </ListBox>
 {/if}
