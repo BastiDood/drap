@@ -17,8 +17,8 @@ const CreatedLab = pick(Lab, ['lab_id']);
 const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
-const DraftCurrRound = pick(Draft, ['curr_round']);
 const DraftMaxRounds = pick(Draft, ['max_rounds']);
+const IncrementedDraftRound = pick(Draft, ['curr_round', 'max_rounds']);
 const LabQuota = pick(Lab, ['quota']);
 const LatestDraft = pick(Draft, ['draft_id', 'curr_round', 'max_rounds', 'active_period_start']);
 const QueriedDraft = pick(Draft, ['curr_round', 'max_rounds', 'active_period_start', 'active_period_end']);
@@ -276,7 +276,7 @@ export class Database implements Loggable {
         const [first, ...rest] =
             await sql`UPDATE drap.drafts SET curr_round = curr_round + 1 WHERE draft_id = ${draft_id} RETURNING curr_round`;
         strictEqual(rest.length, 0);
-        return typeof first === 'undefined' ? null : parse(DraftCurrRound, first).curr_round;
+        return typeof first === 'undefined' ? null : parse(IncrementedDraftRound, first);
     }
 
     @timed async insertStudentRanking(id: Draft['draft_id'], email: User['email'], labs: StudentRank['labs']) {
@@ -301,11 +301,6 @@ export class Database implements Loggable {
         return typeof first === 'undefined' ? null : parse(QueriedStudentRank, first);
     }
 
-    /**
-     * The operation of inserting a faculty choice must necessarily occur
-     * with the updating of a student_rank entry's chosen_by field; note
-     * the two return values for this function.
-     */
     @timed async insertFacultyChoice(
         draftId: StudentRank['draft_id'],
         labId: FacultyChoice['lab_id'],
@@ -316,6 +311,14 @@ export class Database implements Loggable {
         const { count } =
             await sql`INSERT INTO drap.faculty_choices_emails (draft_id, round, faculty_email, student_email) SELECT draft_id, round, faculty_email, _.email FROM (INSERT INTO drap.faculty_choices (draft_id, round, faculty_email, lab_id) SELECT draft_id, curr_round, ${facultyEmail}, ${labId} FROM drap.drafts WHERE draft_id = ${draftId} RETURNING draft_id, round, faculty_email) fc, (VALUES ${studentEmails}) _ (email)`;
         strictEqual(studentEmails.length, count);
+    }
+
+    @timed async getPendingLabCountInDraft(draft: Draft['draft_id']) {
+        const sql = this.#sql;
+        const [first, ...rest] =
+            await sql`SELECT count(l.lab_id) FROM drap.drafts d JOIN drap.faculty_choices fc ON (d.draft_id, curr_round) = (fc.draft_id, round) RIGHT JOIN drap.labs l USING (lab_id) WHERE d.draft_id = ${draft} AND fc.lab_id IS NULL`;
+        strictEqual(rest.length, 0);
+        return parse(CountResult, first).count;
     }
 
     @timed async inviteNewFacultyOrStaff(email: User['email'], lab: User['lab_id']) {

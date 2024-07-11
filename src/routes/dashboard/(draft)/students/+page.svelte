@@ -98,6 +98,7 @@
         </form>
     </div>
 {:else}
+    <!-- TODO: Show the currently drafted students under this lab. -->
     <WarningAlert
         >No students have selected this lab in this round. No action is required until the next round.</WarningAlert
     >

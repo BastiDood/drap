@@ -12,7 +12,13 @@
 </script>
 
 {#if curr_round > 0}
-    <WarningAlert>A draft is currently ongoing. You may no longer register.</WarningAlert>
+    <WarningAlert>
+        {#if curr_round > max_rounds}
+            A lottery is ongoing. You may join again soon in the next draft.
+        {:else}
+            A draft is currently ongoing. You may no longer register.
+        {/if}
+    </WarningAlert>
 {:else if Array.isArray(info)}
     <SubmitRankings draftId={draft_id} maxRounds={max_rounds} availableLabs={info} />
 {:else}
@@ -21,8 +27,7 @@
     {@const creationTime = format(created_at, 'pp')}
     <div class="card variant-ghost-secondary prose max-w-none p-4 dark:prose-invert">
         <p>
-            You have already submitted your lab preferences for this draft last <strong>{creationDate}</strong>
-            at
+            You have already submitted your lab preferences for this draft last <strong>{creationDate}</strong> at
             <strong>{creationTime}</strong>.
         </p>
         <ol>

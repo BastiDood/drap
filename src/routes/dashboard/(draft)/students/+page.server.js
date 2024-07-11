@@ -36,10 +36,20 @@ export const actions = {
 
         const lab = user.lab_id;
         const faculty = user.email;
-        const insertFacultyChoice = await db.begin(db => db.insertFacultyChoice(draft, lab, faculty, students));
-        if (insertFacultyChoice === null) error(404);
-        db.logger.info({ insertFacultyChoice });
+        await db.begin(async db => {
+            await db.insertFacultyChoice(draft, lab, faculty, students);
+            // eslint-disable-next-line no-constant-condition
+            while (true) {
+                const count = await db.getPendingLabCountInDraft(draft);
+                if (count > 0) break;
 
-        // TODO: Check if we can proceed to the next draft round.
+                const round = await db.incrementDraftRound(draft);
+                assert(round !== null);
+                if (round.curr_round > round.max_rounds) break;
+
+                const autoAcknowledgeLabsWithoutPreferences = await db.autoAcknowledgeLabsWithoutPreferences(draft);
+                db.logger.info({ autoAcknowledgeLabsWithoutPreferences });
+            }
+        });
     },
 };
