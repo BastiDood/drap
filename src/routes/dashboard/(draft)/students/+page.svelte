@@ -83,8 +83,7 @@
         >
             <input type="hidden" name="draft" value={draft_id} />
             <button type="submit" class="variant-filled-primary btn w-full">Submit</button>
-            <!-- TODO: Review if this implementation of a quota check works -->
-            <ListBox multiple rounded="rounded" disabled={remainingDraftees > 0}>
+            <ListBox multiple rounded="rounded" disabled={remainingDraftees <= 0}>
                 {#each students as { email, given_name, family_name, avatar, student_number } (email)}
                     <ListBoxItem bind:group={draftees} name="students" value={email}>
                         <Avatar slot="lead" src={avatar} />
