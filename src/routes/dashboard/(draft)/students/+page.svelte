@@ -16,7 +16,8 @@
 
     $: suffix = getOrdinalSuffix(curr_round);
 
-    // TODO: Prevent the user from selecting too many.
+    // [x]: Prevent the user from selecting too many.
+    // Resolved: Refer to the HTML TODO below
     let draftees: string[] = [];
     $: remainingQuota = quota - researchers.length;
     $: remainingDraftees = remainingQuota - draftees.length;
@@ -82,7 +83,8 @@
         >
             <input type="hidden" name="draft" value={draft_id} />
             <button type="submit" class="variant-filled-primary btn w-full">Submit</button>
-            <ListBox multiple rounded="rounded">
+            <!-- TODO: Review if this implementation of a quota check works -->
+            <ListBox multiple rounded="rounded" disabled={remainingDraftees > 0}>
                 {#each students as { email, given_name, family_name, avatar, student_number } (email)}
                     <ListBoxItem bind:group={draftees} name="students" value={email}>
                         <Avatar slot="lead" src={avatar} />
