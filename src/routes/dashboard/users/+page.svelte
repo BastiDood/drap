@@ -1,6 +1,6 @@
 <script>
+    import Faculty from '$lib/users/Faculty.svelte';
     import { Icon } from '@steeze-ui/svelte-icon';
-    import ListItem from './ListItem.svelte';
     import { PaperAirplane } from '@steeze-ui/heroicons';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
@@ -79,7 +79,7 @@
             <h3 class="h3">Invited</h3>
             <ul>
                 {#each invitedHeads as head (head.email)}
-                    <ListItem user={head} />
+                    <li><Faculty user={head} /></li>
                 {/each}
             </ul>
         </nav>
@@ -87,7 +87,7 @@
             <h3 class="h3">Registered</h3>
             <ul>
                 {#each registeredHeads as head (head.email)}
-                    <ListItem user={head} />
+                    <li><Faculty user={head} /></li>
                 {/each}
             </ul>
         </nav>
@@ -140,7 +140,7 @@
             <h3 class="h3">Invited</h3>
             <ul>
                 {#each invitedAdmins as head (head.email)}
-                    <ListItem user={head} />
+                    <li><Faculty user={head} /></li>
                 {/each}
             </ul>
         </nav>
@@ -148,7 +148,7 @@
             <h3 class="h3">Registered</h3>
             <ul>
                 {#each registeredAdmins as head (head.email)}
-                    <ListItem user={head} />
+                    <li><Faculty user={head} /></li>
                 {/each}
             </ul>
         </nav>

@@ -1,15 +1,16 @@
 <script>
-    import { Avatar } from '@skeletonlabs/skeleton';
     import ErrorAlert from '$lib/alerts/Error.svelte';
+    import Student from '$lib/users/Student.svelte';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
     import { format } from 'date-fns';
 
-    // eslint-disable-next-line
+    // eslint-disable-next-line init-declarations
     export let data;
     $: ({
         draft: { draft_id, curr_round, max_rounds, active_period_start },
-        students,
+        available,
+        selected,
     } = data);
     $: startDate = format(active_period_start, 'PPP');
     $: startTime = format(active_period_start, 'pp');
@@ -28,14 +29,50 @@
         {/if}
     </p>
 </div>
-{#if curr_round > 0}
-    <!-- TODO -->
+{#if curr_round > max_rounds}
+    <div class="prose max-w-none dark:prose-invert">
+        <h3>Lottery</h3>
+        <p>
+            Draft &num;{draft_id} is almost done! The final stage is the lottery phase, where the remaining undrafted students
+            are randomly assigned to their labs. Before the system automatically randomizes anything, administrators are
+            given a final chance to manually intervene with the draft results.
+        </p>
+        <ul>
+            <li>
+                The <strong>"Already Drafted"</strong> section features an <em>immutable</em> list of students who have already
+                been drafted into their respective labs. These are considered final.
+            </li>
+            <li>
+                Meanwhile, the <strong>"Eligible for Lottery"</strong> section
+            </li>
+        </ul>
+    </div>
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <nav class="card list-nav variant-ghost-success space-y-4 p-4">
+            <h3 class="h3">Already Drafted</h3>
+            <ul class="list">
+                {#each selected as user (user.email)}
+                    <li><Student {user} /></li>
+                {/each}
+            </ul>
+        </nav>
+        <nav class="card list-nav variant-ghost-warning space-y-4 p-4">
+            <h3 class="h3">Eligible for Lottery</h3>
+            <ul class="list">
+                {#each available as user (user.email)}
+                    <li><Student {user} /></li>
+                {/each}
+            </ul>
+        </nav>
+    </div>
+{:else if curr_round > 0}
+    <!-- TODO: Ongoing Draft -->
 {:else}
     <div class="prose max-w-none dark:prose-invert">
         <h2>Registered Students</h2>
-        {#if students.length > 0}
+        {#if available.length > 0}
             <p>
-                There are currently <strong>{students.length}</strong> students who have registered for this draft.
+                There are currently <strong>{available.length}</strong> students who have registered for this draft.
                 Press the <strong>"Start Draft"</strong> button to close registration and start the draft automation.
                 Lab heads will be notified about the first round. The draft proceeds to the next round when all lab
                 heads have submitted their preferences. This process repeats until the configured maximum number of
@@ -49,7 +86,7 @@
             >
         {/if}
     </div>
-    {#if students.length > 0}
+    {#if available.length > 0}
         <form
             method="post"
             action="?/start"
@@ -72,24 +109,8 @@
         </form>
         <nav class="list-nav">
             <ul class="list">
-                {#each students as { email, given_name, family_name, avatar, student_number, labs } (email)}
-                    <li>
-                        <a href="mailto:{email}" class="grid w-full grid-cols-[auto_1fr] items-center gap-4 p-4">
-                            <Avatar src={avatar} width="w-20" />
-                            <div class="flex flex-col">
-                                <strong><span class="uppercase">{family_name}</span>, {given_name}</strong>
-                                {#if student_number !== null}
-                                    <span class="text-sm opacity-50">{student_number}</span>
-                                {/if}
-                                <span class="text-xs opacity-50">{email}</span>
-                                <div class="space-x-1">
-                                    {#each labs as lab (lab)}
-                                        <span class="variant-ghost-primary badge text-xs">{lab}</span>
-                                    {/each}
-                                </div>
-                            </div>
-                        </a>
-                    </li>
+                {#each available as user (user.email)}
+                    <li><Student {user} /></li>
                 {/each}
             </ul>
         </nav>

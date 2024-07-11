@@ -4,9 +4,9 @@ import { fail, strictEqual } from 'node:assert/strict';
 import type { Logger } from 'pino';
 import postgres from 'postgres';
 
+import { FacultyChoice, FacultyChoiceEmail } from '$lib/models/faculty-choice';
 import { Pending, Session } from '$lib/server/models/session';
 import { Draft } from '$lib/models/draft';
-import { FacultyChoice } from '$lib/models/faculty-choice';
 import { Lab } from '$lib/models/lab';
 import { StudentRank } from '$lib/models/student-rank';
 import { User } from '$lib/models/user';
@@ -35,15 +35,17 @@ const QueriedStudentRank = object({
 });
 const RegisteredLabs = array(Lab);
 const StudentsWithLabPreference = array(pick(User, ['email', 'given_name', 'family_name', 'avatar', 'student_number']));
-const StudentsWithLabs = array(
+const TaggedStudentsWithLabs = array(
     object({
         ...pick(User, ['email', 'given_name', 'family_name', 'avatar', 'student_number']).entries,
         ...pick(StudentRank, ['labs']).entries,
+        lab_id: nullable(FacultyChoiceEmail.entries.lab_id),
     }),
 );
 
 export type AvailableLabs = InferOutput<typeof AvailableLabs>;
 export type QueriedFaculty = InferOutput<typeof QueriedFaculty>;
+export type TaggedStudentsWithLabs = InferOutput<typeof TaggedStudentsWithLabs>;
 
 export type Sql = postgres.Sql<{ bigint: bigint }>;
 
@@ -211,11 +213,11 @@ export class Database implements Loggable {
         return typeof first === 'undefined' ? null : parse(DraftMaxRounds, first).max_rounds;
     }
 
-    @timed async getStudentsInDraft(draft: Draft['draft_id']) {
+    @timed async getStudentsInDraftTaggedByLab(draft: Draft['draft_id']) {
         const sql = this.#sql;
-        const users =
-            await sql`SELECT email, given_name, family_name, avatar, student_number, labs FROM drap.student_ranks JOIN drap.drafts USING (draft_id) JOIN drap.users USING (email) WHERE draft_id = ${draft}`;
-        return parse(StudentsWithLabs, users);
+        const students =
+            await sql`SELECT email, given_name, family_name, avatar, student_number, labs, fce.lab_id FROM drap.student_ranks sr JOIN drap.users u USING (email) LEFT JOIN drap.faculty_choices_emails fce ON u.email = student_email WHERE sr.draft_id = ${draft}`;
+        return parse(TaggedStudentsWithLabs, students);
     }
 
     @timed async getLabAndRemainingStudentsInDraftWithLabPreference(

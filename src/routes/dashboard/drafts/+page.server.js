@@ -1,13 +1,18 @@
 import assert from 'node:assert/strict';
 import { error } from '@sveltejs/kit';
+import groupBy from 'just-group-by';
 import { validateString } from '$lib/forms';
 
 export async function load({ locals: { db }, parent }) {
     const { user } = await parent();
     if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
+
     const draft = await db.getLatestDraft();
     if (draft === null) error(499);
-    return { draft, students: await db.getStudentsInDraft(draft.draft_id) };
+
+    const students = await db.getStudentsInDraftTaggedByLab(draft.draft_id);
+    const { available, selected } = groupBy(students, ({ lab_id }) => (lab_id === null ? 'available' : 'selected'));
+    return { draft, available: available ?? [], selected: selected ?? [] };
 }
 
 export const actions = {
