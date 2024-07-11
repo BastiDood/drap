@@ -4,7 +4,9 @@ import { validateString } from '$lib/forms';
 export async function load({ locals: { db }, parent }) {
     const { user } = await parent();
     if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
-    return { labs: await db.getLabRegistry() };
+    // TODO: Migrate to SQL pipelining.
+    const [labs, draft] = await Promise.all([db.getLabRegistry(), db.getLatestDraft()]);
+    return { labs, draft };
 }
 
 function* mapRowTuples(data: FormData) {

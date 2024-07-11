@@ -1,17 +1,18 @@
 <script lang="ts">
+    import WarningAlert from '$lib/alerts/Warning.svelte';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
+    import { format } from 'date-fns';
     import { getToastStore } from '@skeletonlabs/skeleton';
 
     // eslint-disable-next-line
     export let data;
-    $: ({ labs } = data);
+    $: ({ draft, labs } = data);
 
     const toast = getToastStore();
 </script>
 
-<section class="space-y-4">
-    <h1 class="h1">Lab Quotas</h1>
+{#if draft === null}
     <form
         method="post"
         action="?/lab"
@@ -124,4 +125,20 @@
         </div>
         <button type="submit" class="variant-filled-primary btn">Update Lab Quota</button>
     </form>
-</section>
+{:else}
+    {@const { draft_id, active_period_start, curr_round, max_rounds } = draft}
+    {@const startDate = format(active_period_start, 'PPP')}
+    {@const startTime = format(active_period_start, 'pp')}
+    <WarningAlert>
+        <span
+            >{#if curr_round > max_rounds}
+                <strong>Draft &num;{draft_id}</strong> started last <strong>{startDate}</strong> at
+                <strong>{startTime}</strong> and is now in lottery mode. It's still unsafe to update the lab quotas.
+            {:else}
+                <strong>Draft &num;{draft_id}</strong> started last <strong>{startDate}</strong> at
+                <strong>{startTime}</strong> and is now in Round <strong>{curr_round}</strong> of
+                <strong>{max_rounds}</strong>. It's unsafe to update the lab quotas while a draft is in progress.
+            {/if}</span
+        >
+    </WarningAlert>
+{/if}

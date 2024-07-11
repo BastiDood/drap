@@ -4,6 +4,7 @@ import { validateString } from '$lib/forms';
 export async function load({ locals: { db }, parent }) {
     const { user } = await parent();
     if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
+    // TODO: Migrate to SQL pipelining.
     const [labs, faculty] = await Promise.all([db.getLabRegistry(), db.getFacultyAndStaff()]);
     return { labs, faculty };
 }
