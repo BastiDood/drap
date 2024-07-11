@@ -15,7 +15,7 @@
 
 <h1 class="h1">User Profile</h1>
 {#if student_number === null}
-    <WarningAlert>The student number may only be set once.</WarningAlert>
+    <WarningAlert>The student number must be set. Note that this can only be done once.</WarningAlert>
 {/if}
 <form
     method="post"

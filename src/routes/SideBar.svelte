@@ -47,7 +47,7 @@
                     <Icon src={Beaker} slot="lead" class="h-8" />
                     <span>Labs</span>
                 </AppRailAnchor>
-            {:else}
+            {:else if user.student_number !== null}
                 <!-- Registered User -->
                 <AppRailAnchor href="/dashboard/ranks/" selected={pathname.startsWith('/dashboard/ranks/')}>
                     <Icon src={QueueList} slot="lead" class="h-8" />
