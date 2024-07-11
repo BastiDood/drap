@@ -8,11 +8,9 @@ import { parse } from 'valibot';
 
 const fetchJwks = createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'));
 
-// eslint-disable-next-line func-style
 export async function GET({ fetch, locals: { db }, cookies, url: { searchParams } }) {
-    // TODO: check if the session already exists
     const sid = cookies.get('sid');
-    if (!sid) redirect(302, '/');
+    if (typeof sid === 'undefined') redirect(302, '/oauth/login/');
 
     const state = searchParams.get('state');
     if (state === null) error(400);
@@ -33,7 +31,7 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
 
     const expires = await db.begin(async db => {
         const pending = await db.deletePendingSession(sid);
-        if (pending === null) error(400);
+        if (pending === null) redirect(302, '/oauth/login/');
 
         const res = await fetch('https://oauth2.googleapis.com/token', {
             method: 'POST',
