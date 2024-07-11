@@ -45,7 +45,7 @@ const StudentsWithLabs = array(
 export type AvailableLabs = InferOutput<typeof AvailableLabs>;
 export type QueriedFaculty = InferOutput<typeof QueriedFaculty>;
 
-export type Sql = postgres.Sql<{ bigint: bigint; }>;
+export type Sql = postgres.Sql<{ bigint: bigint }>;
 
 export class Database implements Loggable {
     #sql: Sql;
@@ -227,8 +227,8 @@ export class Database implements Loggable {
             sql =>
                 [
                     sql`SELECT lab_name, quota FROM drap.labs WHERE lab_id = ${lab}`,
-                    sql`SELECT email, given_name, family_name, avatar, student_number FROM drap.faculty_choices JOIN drap.faculty_choices_emails USING (draft_id, round, faculty_email) RIGHT JOIN drap.student_ranks ON student_email = email JOIN drap.drafts USING (draft_id) JOIN drap.users USING (email) WHERE draft_id = ${draft} AND student_email IS NULL AND labs[curr_round] = ${lab}`,
-                    sql`SELECT email, given_name, family_name, avatar, student_number FROM drap.faculty_choices_emails JOIN drap.faculty_choices USING (draft_id, round, faculty_email) JOIN drap.users ON student_email = email WHERE draft_id = ${draft} AND lab_id = ${lab}`,
+                    sql`SELECT email, given_name, family_name, avatar, student_number FROM drap.student_ranks LEFT JOIN drap.faculty_choices_emails USING (draft_id) JOIN drap.drafts USING (draft_id) JOIN drap.users USING (email) WHERE draft_id = ${draft} AND student_email IS NULL AND labs[curr_round] = ${lab}`,
+                    sql`SELECT email, given_name, family_name, avatar, student_number FROM drap.faculty_choices_emails fce JOIN drap.users ON student_email = email WHERE draft_id = ${draft} AND fce.lab_id = ${lab}`,
                 ] as const,
         );
         strictEqual(rest.length, 0);
