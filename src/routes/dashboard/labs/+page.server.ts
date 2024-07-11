@@ -17,8 +17,16 @@ function* mapRowTuples(data: FormData) {
 }
 
 export const actions = {
-    async lab({ locals: { db }, request }) {
-        // TODO: Validate whether this user has permission to this action.
+    async lab({ locals: { db }, cookies, request }) {
+        // [x]: Validate whether this user has permission to this action.
+        // Resolved: Check if is_admin. I'm assuming only admins have this permission...
+        const sid = cookies.get('sid');
+        if (typeof sid === 'undefined') error(401);
+
+        const user = await db.getUserFromValidSession(sid);
+        if (user === null) error(401);
+        if (!user.is_admin) error(403);
+
         // TODO: Check if a draft is currently active.
         const data = await request.formData();
         const id = validateString(data.get('id'));
@@ -27,7 +35,15 @@ export const actions = {
         db.logger.info({ insertNewLab });
     },
     async quota({ locals: { db }, request }) {
-        // TODO: Validate whether this user has permission to this action.
+        // [x]: Validate whether this user has permission to this action.
+        // Resolved: Check if is_admin. I'm assuming only admins have this permission...
+        const sid = cookies.get('sid');
+        if (typeof sid === 'undefined') error(401);
+
+        const user = await db.getUserFromValidSession(sid);
+        if (user === null) error(401);
+        if (!user.is_admin) error(403);
+
         // TODO: Check if a draft is currently active.
         const data = await request.formData();
         await db.updateLabQuotas(mapRowTuples(data));
