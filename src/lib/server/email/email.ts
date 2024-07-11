@@ -1,10 +1,10 @@
 import { IdToken, TokenResponse } from "$lib/server/models/oauth";
 import { createRemoteJWKSet, jwtVerify } from "jose";
+import { parse, pick } from "valibot";
 
 import type { Database } from "$lib/server/database";
 import GOOGLE from "$lib/server/env/google"
 import { createTransport } from "nodemailer";
-import { parse } from "valibot";
 
 // this function refreshes the access token and updates the db accordingly
 async function refreshAccessToken(refresh_token: string, email: string, db: Database) {
@@ -14,7 +14,7 @@ async function refreshAccessToken(refresh_token: string, email: string, db: Data
       refresh_token: refresh_token,
       client_id: GOOGLE.OAUTH_CLIENT_ID,
       client_secret: GOOGLE.OAUTH_CLIENT_SECRET,
-      grant_type: 'authorization_code',
+      grant_type: 'refresh_token',
     });
 
     const res = await fetch('https://oauth2.googleapis.com/token', {
@@ -23,14 +23,16 @@ async function refreshAccessToken(refresh_token: string, email: string, db: Data
       body,
     });
 
-    const { id_token, access_token } = parse(TokenResponse, await res.json());
-
+    const json = await res.json();
+    
+    const { id_token, access_token } = parse(TokenResponse, json);
+    
     const { payload } = await jwtVerify(id_token, fetchJwks, {
       issuer: 'https://accounts.google.com',
       audience: GOOGLE.OAUTH_CLIENT_ID,
     });
-
-    const token = parse(IdToken, payload);
+    
+    const token = parse(pick(IdToken, ['exp']), payload);
 
     db.updateDesignatedSender(
       email,
