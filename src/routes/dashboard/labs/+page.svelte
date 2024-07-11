@@ -133,11 +133,11 @@
         <span
             >{#if curr_round > max_rounds}
                 <strong>Draft &num;{draft_id}</strong> started last <strong>{startDate}</strong> at
-                <strong>{startTime}</strong> and is now in lottery mode. It's still unsafe to update the lab quotas.
+                <strong>{startTime}</strong> and is now in lottery mode. It's still unsafe to update the lab quota.
             {:else}
                 <strong>Draft &num;{draft_id}</strong> started last <strong>{startDate}</strong> at
                 <strong>{startTime}</strong> and is now in Round <strong>{curr_round}</strong> of
-                <strong>{max_rounds}</strong>. It's unsafe to update the lab quotas while a draft is in progress.
+                <strong>{max_rounds}</strong>. It's unsafe to update the lab quota while a draft is in progress.
             {/if}</span
         >
     </WarningAlert>
