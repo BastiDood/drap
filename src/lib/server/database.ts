@@ -252,13 +252,13 @@ export class Database implements Loggable {
             sql =>
                 [
                     sql`SELECT quota FROM drap.labs WHERE lab_id = ${lab}`,
-                    sql`SELECT count(student_email) FROM drap.faculty_choices_emails JOIN drap.faculty_choices USING (draft_id, round, faculty_email) WHERE draft_id = ${draft} AND lab_id = ${lab}`,
+                    sql`SELECT count(student_email) FROM drap.faculty_choices_emails fce WHERE draft_id = ${draft} AND fce.lab_id = ${lab}`,
                 ] as const,
         );
         strictEqual(quotaRest.length, 0);
         strictEqual(selectedRest.length, 0);
         return {
-            quota: typeof quota === 'undefined' ? null : parse(LabQuota, lab).quota,
+            quota: typeof quota === 'undefined' ? null : parse(LabQuota, quota).quota,
             selected: parse(CountResult, selected).count,
         };
     }
@@ -271,18 +271,18 @@ export class Database implements Loggable {
         return parse(CreatedDraft, first);
     }
 
-    @timed async incrementDraftRound(draft_id: Draft['draft_id']) {
+    @timed async incrementDraftRound(draft: Draft['draft_id']) {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`UPDATE drap.drafts SET curr_round = curr_round + 1 WHERE draft_id = ${draft_id} RETURNING curr_round, max_rounds`;
+            await sql`UPDATE drap.drafts SET curr_round = curr_round + 1 WHERE draft_id = ${draft} RETURNING curr_round, max_rounds`;
         strictEqual(rest.length, 0);
         return typeof first === 'undefined' ? null : parse(IncrementedDraftRound, first);
     }
 
-    @timed async insertStudentRanking(id: Draft['draft_id'], email: User['email'], labs: StudentRank['labs']) {
+    @timed async insertStudentRanking(draft: Draft['draft_id'], email: User['email'], labs: StudentRank['labs']) {
         const sql = this.#sql;
         const { count } =
-            await sql`INSERT INTO drap.student_ranks (draft_id, email, labs) VALUES (${id}, ${email}, ${labs}) ON CONFLICT ON CONSTRAINT student_ranks_pkey DO NOTHING`;
+            await sql`INSERT INTO drap.student_ranks (draft_id, email, labs) VALUES (${draft}, ${email}, ${labs}) ON CONFLICT ON CONSTRAINT student_ranks_pkey DO NOTHING`;
         switch (count) {
             case 0:
                 return false;
@@ -293,10 +293,10 @@ export class Database implements Loggable {
         }
     }
 
-    @timed async getStudentRankings(id: StudentRank['draft_id'], email: StudentRank['email']) {
+    @timed async getStudentRankings(draft: StudentRank['draft_id'], email: StudentRank['email']) {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`SELECT created_at, array_agg(lab_name) labs FROM drap.labs JOIN (SELECT created_at, unnest(labs) lab_id FROM drap.student_ranks WHERE draft_id = ${id} AND email = ${email}) ranks USING (lab_id) GROUP BY created_at`;
+            await sql`SELECT created_at, array_agg(lab_name) labs FROM drap.labs JOIN (SELECT created_at, unnest(labs) lab_id FROM drap.student_ranks WHERE draft_id = ${draft} AND email = ${email}) ranks USING (lab_id) GROUP BY created_at`;
         strictEqual(rest.length, 0);
         return typeof first === 'undefined' ? null : parse(QueriedStudentRank, first);
     }
@@ -308,8 +308,9 @@ export class Database implements Loggable {
         studentEmails: StudentRank['email'][],
     ) {
         const sql = this.#sql;
+        const emails = sql(studentEmails.map(email => [email] as const));
         const { count } =
-            await sql`INSERT INTO drap.faculty_choices_emails (draft_id, round, faculty_email, student_email) SELECT draft_id, round, faculty_email, _.email FROM (INSERT INTO drap.faculty_choices (draft_id, round, faculty_email, lab_id) SELECT draft_id, curr_round, ${facultyEmail}, ${labId} FROM drap.drafts WHERE draft_id = ${draftId} RETURNING draft_id, round, faculty_email) fc, (VALUES ${studentEmails}) _ (email)`;
+            await sql`WITH fc AS (INSERT INTO drap.faculty_choices (draft_id, round, lab_id, faculty_email) SELECT draft_id, curr_round, ${labId}, ${facultyEmail} FROM drap.drafts WHERE draft_id = ${draftId} RETURNING draft_id, round, lab_id) INSERT INTO drap.faculty_choices_emails (draft_id, round, lab_id, student_email) SELECT draft_id, round, lab_id, email FROM fc, (VALUES ${emails}) _ (email)`;
         strictEqual(studentEmails.length, count);
     }
 

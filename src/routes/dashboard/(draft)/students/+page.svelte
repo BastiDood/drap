@@ -16,6 +16,7 @@
 
     $: suffix = getOrdinalSuffix(curr_round);
 
+    // TODO: Prevent the user from selecting too many.
     let draftees: string[] = [];
     $: remainingQuota = quota - researchers.length;
     $: remainingDraftees = remainingQuota - draftees.length;
@@ -27,7 +28,7 @@
             <h2>Draft Picks</h2>
             <p>
                 Welcome to the draft! The <strong>{lab_name}</strong> has been allocated <strong>{quota}</strong> slots
-                in total. Note that <strong>{researchers.length}</strong> students (show below if any) have already been
+                in total. Note that <strong>{researchers.length}</strong> students (shown below if any) have already been
                 reserved in previous rounds.
             </p>
             <nav class="not-prose list-nav">

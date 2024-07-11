@@ -32,7 +32,7 @@ export const actions = {
         assert(quota !== null);
 
         const total = selected + BigInt(students.length);
-        if (quota < total) error(403);
+        if (total > quota) error(403);
 
         const lab = user.lab_id;
         const faculty = user.email;
