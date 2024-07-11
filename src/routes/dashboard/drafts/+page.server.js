@@ -7,7 +7,7 @@ export async function load({ locals: { db }, parent }) {
     const { user } = await parent();
     if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
 
-    const draft = await db.getLatestDraft();
+    const draft = await db.getActiveDraft();
     if (draft === null) error(499);
 
     const students = await db.getStudentsInDraftTaggedByLab(draft.draft_id);

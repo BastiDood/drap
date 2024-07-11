@@ -5,7 +5,7 @@ export async function load({ locals: { db }, parent }) {
     const { user } = await parent();
     if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
     // TODO: Migrate to SQL pipelining.
-    const [labs, draft] = await Promise.all([db.getLabRegistry(), db.getLatestDraft()]);
+    const [labs, draft] = await Promise.all([db.getLabRegistry(), db.getActiveDraft()]);
     return { labs, draft };
 }
 
@@ -29,7 +29,7 @@ export const actions = {
 
         // [x]: Check if a draft is currently active.
         // Resolved: Check the latestDraft, whose active period should be unbounded above, meaning it hasn't ended
-        if (db.getLatestDraft() === null) error(409);
+        if (db.getActiveDraft() === null) error(409);
 
         const data = await request.formData();
         const id = validateString(data.get('id'));
@@ -49,7 +49,7 @@ export const actions = {
 
         // [x]: Check if a draft is currently active.
         // Resolved: Check the latestDraft, whose active period should be unbounded above, meaning it hasn't ended
-        if (db.getLatestDraft() === null) error(409);
+        if (db.getActiveDraft() === null) error(409);
 
         const data = await request.formData();
         await db.updateLabQuotas(mapRowTuples(data));

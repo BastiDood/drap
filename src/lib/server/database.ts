@@ -198,7 +198,7 @@ export class Database implements Loggable {
         return typeof first === 'undefined' ? null : parse(QueriedDraft, first);
     }
 
-    @timed async getLatestDraft() {
+    @timed async getActiveDraft() {
         const sql = this.#sql;
         const [first, ...rest] =
             await sql`SELECT draft_id, curr_round, max_rounds, lower(active_period) active_period_start, CASE WHEN upper_inf(active_period) THEN NULL ELSE upper(active_period) END active_period_end FROM drap.drafts WHERE upper_inf(active_period)`;
