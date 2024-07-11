@@ -45,7 +45,7 @@ const StudentsWithLabs = array(
 export type AvailableLabs = InferOutput<typeof AvailableLabs>;
 export type QueriedFaculty = InferOutput<typeof QueriedFaculty>;
 
-export type Sql = postgres.Sql<{ bigint: bigint }>;
+export type Sql = postgres.Sql<{ bigint: bigint; }>;
 
 export class Database implements Loggable {
     #sql: Sql;
@@ -242,7 +242,7 @@ export class Database implements Loggable {
     @timed async autoAcknowledgeLabsWithoutPreferences(draft: Draft['draft_id']) {
         const sql = this.#sql;
         const { count } =
-            await sql`INSERT INTO faculty_choices (draft_id, round, lab_id) SELECT draft_id, curr_round, l.lab_id FROM drap.labs l LEFT JOIN (SELECT DISTINCT draft_id, curr_round, labs[curr_round] lab_id FROM drap.faculty_choices_emails RIGHT JOIN drap.student_ranks ON student_email = email JOIN drap.drafts USING (draft_id) WHERE draft_id = ${draft} AND student_email IS NULL) _ USING (lab_id) WHERE _.lab_id IS NULL`;
+            await sql`INSERT INTO drap.faculty_choices (draft_id, round, lab_id) WITH d AS (SELECT draft_id, curr_round FROM drap.drafts WHERE draft_id = ${draft}) SELECT draft_id, curr_round, lab_id FROM d, (SELECT lab_id FROM drap.labs EXCEPT SELECT labs[curr_round] lab_id FROM d JOIN drap.student_ranks USING (draft_id) LEFT JOIN drap.faculty_choices_emails fce ON email = student_email WHERE student_email IS NULL) _;`;
         return count;
     }
 
@@ -274,7 +274,7 @@ export class Database implements Loggable {
     @timed async incrementDraftRound(draft_id: Draft['draft_id']) {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`UPDATE drap.drafts SET curr_round = curr_round + 1 WHERE draft_id = ${draft_id} RETURNING curr_round`;
+            await sql`UPDATE drap.drafts SET curr_round = curr_round + 1 WHERE draft_id = ${draft_id} RETURNING curr_round, max_rounds`;
         strictEqual(rest.length, 0);
         return typeof first === 'undefined' ? null : parse(IncrementedDraftRound, first);
     }

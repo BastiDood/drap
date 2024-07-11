@@ -23,11 +23,11 @@ export const actions = {
         const data = await request.formData();
         const draft = BigInt(validateString(data.get('draft')));
 
-        await db.begin(async db => {
-            const { labCount, studentCount } = await db.getLabCountAndStudentCount(draft);
-            assert(labCount > 0);
-            if (studentCount <= 0) error(403);
+        const { labCount, studentCount } = await db.getLabCountAndStudentCount(draft);
+        assert(labCount > 0);
+        if (studentCount <= 0) error(403);
 
+        await db.begin(async db => {
             const incrementDraftRound = await db.incrementDraftRound(draft);
             assert(incrementDraftRound !== null);
             db.logger.info({ incrementDraftRound });

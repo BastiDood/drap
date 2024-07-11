@@ -15,16 +15,16 @@
     $: startTime = format(active_period_start, 'pp');
 </script>
 
+<div class="card prose max-w-none p-4 dark:prose-invert">
+    <p>
+        <strong>Draft &num;{draft_id}</strong> is currently on Round <strong>{curr_round}</strong>
+        of <strong>{max_rounds}</strong>. It opened last <strong>{startDate}</strong> at
+        <strong>{startTime}</strong>.
+    </p>
+</div>
 {#if curr_round > 0}
     <!-- TODO -->
 {:else}
-    <div class="card prose max-w-none p-4 dark:prose-invert">
-        <p>
-            <strong>Draft &num;{draft_id}</strong> is currently on Round <strong>{curr_round}</strong>
-            of <strong>{max_rounds}</strong>. It opened last <strong>{startDate}</strong> at
-            <strong>{startTime}</strong>.
-        </p>
-    </div>
     <div class="prose max-w-none dark:prose-invert">
         <h2>Registered Students</h2>
         {#if students.length > 0}
