@@ -60,14 +60,14 @@
                 After the randomization stage, the draft process is officially complete. All students, lab heads, and
                 administrators are notified of the final results.
             </p>
-        </div>
-        <div class="min-w-max space-y-2">
-            <form action="?/conclude" method="post" use:enhance>
+            <form action="?/conclude" method="post" class="not-prose" use:enhance>
                 <button type="submit" class="variant-filled-primary btn btn-lg w-full">
                     <Icon src={ArrowRight} class="size-8" />
                     <span>Conclude Draft</span>
                 </button>
             </form>
+        </div>
+        <div class="min-w-max space-y-2">
             <nav class="card list-nav variant-ghost-warning space-y-4 p-4">
                 <h3 class="h3">Eligible for Lottery</h3>
                 <ul class="list">
