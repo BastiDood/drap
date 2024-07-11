@@ -62,18 +62,17 @@ CREATE SCHEMA drap
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
         round SMALLINT NOT NULL CONSTRAINT non_negative_round CHECK (round > 0),
         lab_id TEXT NOT NULL REFERENCES labs (lab_id),
-        faculty_email TEXT NOT NULL REFERENCES users (email),
-        PRIMARY KEY (draft_id, round, faculty_email),
-        UNIQUE (draft_id, round, lab_id)
+        faculty_email TEXT REFERENCES users (email),
+        PRIMARY KEY (draft_id, round, lab_id)
     )
     CREATE TABLE faculty_choices_emails (
         choice_email_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
         draft_id BIGINT NOT NULL REFERENCES drafts (draft_id),
         round SMALLINT NOT NULL CONSTRAINT non_negative_round CHECK (round > 0),
-        faculty_email TEXT NOT NULL REFERENCES users (email),
+        lab_id TEXT NOT NULL REFERENCES labs (lab_id),
         student_email TEXT NOT NULL REFERENCES users (email),
-        FOREIGN KEY (draft_id, round, faculty_email) REFERENCES faculty_choices (draft_id, round, faculty_email),
-        CONSTRAINT faculty_student_mutex CHECK (faculty_email <> student_email),
+        -- TODO: How do we enforce `student_email <> faculty_email`?
+        FOREIGN KEY (draft_id, round, lab_id) REFERENCES faculty_choices (draft_id, round, lab_id),
         UNIQUE (draft_id, student_email)
     );
 

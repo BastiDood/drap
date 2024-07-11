@@ -160,6 +160,19 @@ export class Database implements Loggable {
         return parse(RegisteredLabs, labs);
     }
 
+    @timed async getLabCountAndStudentCount(draft: Draft['draft_id']) {
+        const [[labCount, ...labRest], [studentCount, ...studentRest]] = await this.#sql.begin(
+            sql =>
+                [
+                    sql`SELECT count(lab_id) FROM drap.labs`,
+                    sql`SELECT count(email) FROM drap.student_ranks WHERE draft_id = ${draft}`,
+                ] as const,
+        );
+        strictEqual(labRest.length, 0);
+        strictEqual(studentRest.length, 0);
+        return { labCount: parse(CountResult, labCount).count, studentCount: parse(CountResult, studentCount).count };
+    }
+
     @timed async updateLabQuotas(quota: Iterable<[Lab['lab_id'], Lab['quota']]>) {
         const sql = this.#sql;
         const values = sql(Array.from(quota));
@@ -198,13 +211,6 @@ export class Database implements Loggable {
         return typeof first === 'undefined' ? null : parse(DraftMaxRounds, first).max_rounds;
     }
 
-    @timed async getStudentCountInDraft(draft: Draft['draft_id']) {
-        const sql = this.#sql;
-        const [first, ...rest] = await sql`SELECT count(email) FROM drap.student_ranks WHERE draft_id = ${draft}`;
-        strictEqual(rest.length, 0);
-        return parse(CountResult, first).count;
-    }
-
     @timed async getStudentsInDraft(draft: Draft['draft_id']) {
         const sql = this.#sql;
         const users =
@@ -217,6 +223,7 @@ export class Database implements Loggable {
         lab: StudentRank['labs'][number],
     ) {
         const [[first, ...rest], available, selected] = await this.#sql.begin(
+            'ISOLATION LEVEL REPEATABLE READ',
             sql =>
                 [
                     sql`SELECT lab_name, quota FROM drap.labs WHERE lab_id = ${lab}`,
@@ -232,8 +239,16 @@ export class Database implements Loggable {
         };
     }
 
+    @timed async autoAcknowledgeLabsWithoutPreferences(draft: Draft['draft_id']) {
+        const sql = this.#sql;
+        const { count } =
+            await sql`INSERT INTO faculty_choices (draft_id, round, lab_id) SELECT draft_id, curr_round, l.lab_id FROM drap.labs l LEFT JOIN (SELECT DISTINCT draft_id, curr_round, labs[curr_round] lab_id FROM drap.faculty_choices_emails RIGHT JOIN drap.student_ranks ON student_email = email JOIN drap.drafts USING (draft_id) WHERE draft_id = ${draft} AND student_email IS NULL) _ USING (lab_id) WHERE _.lab_id IS NULL`;
+        return count;
+    }
+
     @timed async getLabQuotaAndSelectedStudentCountInDraft(draft: Draft['draft_id'], lab: StudentRank['labs'][number]) {
         const [[quota, ...quotaRest], [selected, ...selectedRest]] = await this.#sql.begin(
+            'ISOLATION LEVEL REPEATABLE READ',
             sql =>
                 [
                     sql`SELECT quota FROM drap.labs WHERE lab_id = ${lab}`,
@@ -274,7 +289,7 @@ export class Database implements Loggable {
             case 1:
                 return true;
             default:
-                fail('insertStudentRanking => unexpected insertion count');
+                fail(`insertStudentRanking => unexpected insertion count ${count}`);
         }
     }
 
@@ -313,7 +328,7 @@ export class Database implements Loggable {
             case 1:
                 return true;
             default:
-                fail('inviteNewUser => unexpected insertion count');
+                fail(`inviteNewUser => unexpected insertion count ${count}`);
         }
     }
 }

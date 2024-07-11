@@ -17,7 +17,7 @@ export const FacultyChoiceEmail = object({
     choice_email_id: bigint(),
     draft_id: FacultyChoice.entries.draft_id,
     round: FacultyChoice.entries.round,
-    faculty_email: FacultyChoice.entries.faculty_email,
+    lab_id: FacultyChoice.entries.lab_id,
     student_email: User.entries.email,
 });
 

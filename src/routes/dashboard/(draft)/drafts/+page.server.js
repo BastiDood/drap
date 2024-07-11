@@ -1,3 +1,5 @@
+import assert, { fail, strictEqual } from 'node:assert/strict';
+import { PostgresError } from 'postgres';
 import { error } from '@sveltejs/kit';
 import { validateString } from '$lib/forms';
 
@@ -19,12 +21,17 @@ export const actions = {
         // TODO: Check if the user has permissions to start a new draft.
         const data = await request.formData();
         const draft = BigInt(validateString(data.get('draft')));
+
         await db.begin(async db => {
-            const count = await db.getStudentCountInDraft(draft);
-            if (count <= 0) error(403);
+            const { labCount, studentCount } = await db.getLabCountAndStudentCount(draft);
+            assert(labCount > 0);
+            if (studentCount <= 0) error(403);
+
             const result = await db.incrementDraftRound(draft);
-            if (result === null) error(404);
-            // TODO: Check if all labs have no more pending work.
+            assert(result !== null);
+
+            const ackCount = await db.autoAcknowledgeLabsWithoutPreferences(draft);
+            assert(ackCount < labCount);
         });
     },
 };
