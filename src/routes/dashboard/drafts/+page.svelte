@@ -30,10 +30,10 @@
         {#if students.length > 0}
             <p>
                 There are currently <strong>{students.length}</strong> students who have registered for this draft.
-                Press <strong>"Start Draft"</strong> (if available) to close registration and start the draft
-                automation. Lab heads will be notified about the first round. The draft proceeds to the next round when
-                all lab heads have submitted their preferences. This process repeats until the configured maximum number
-                of rounds have elapsed, after which the draft pauses until an administrator <em>manually</em> proceeds with
+                Press the <strong>"Start Draft"</strong> button to close registration and start the draft automation.
+                Lab heads will be notified about the first round. The draft proceeds to the next round when all lab
+                heads have submitted their preferences. This process repeats until the configured maximum number of
+                rounds have elapsed, after which the draft pauses until an administrator <em>manually</em> proceeds with
                 the lottery.
             </p>
         {:else}
