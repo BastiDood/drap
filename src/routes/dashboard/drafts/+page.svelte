@@ -1,16 +1,21 @@
 <script>
-    import { ArrowRight } from '@steeze-ui/heroicons';
+    import { ArrowRight, ShieldExclamation } from '@steeze-ui/heroicons';
     import ErrorAlert from '$lib/alerts/Error.svelte';
     import { Icon } from '@steeze-ui/svelte-icon';
+    import LotteryStudent from './LotteryStudent.svelte';
     import Student from '$lib/users/Student.svelte';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
     import { format } from 'date-fns';
+    import { getToastStore } from '@skeletonlabs/skeleton';
+
+    const toast = getToastStore();
 
     // eslint-disable-next-line init-declarations
     export let data;
     $: ({
         draft: { draft_id, curr_round, max_rounds, active_period_start },
+        labs,
         available,
         selected,
     } = data);
@@ -43,8 +48,8 @@
             <ul>
                 <li>
                     The <strong>"Eligible for Lottery"</strong> section features a list of the remaining undrafted students.
-                    At this point, administrators may negotiate with the lab heads how to manually assign and distribute
-                    these students fairly among interested labs.
+                    Administrators may negotiate with the lab heads on how to manually assign and distribute these students
+                    fairly among interested labs.
                 </li>
                 <li>
                     Meanwhile, the <strong>"Already Drafted"</strong> section features an <em>immutable</em> list of students
@@ -70,11 +75,51 @@
         <div class="min-w-max space-y-2">
             <nav class="card list-nav variant-ghost-warning space-y-4 p-4">
                 <h3 class="h3">Eligible for Lottery</h3>
-                <ul class="list">
-                    {#each available as user (user.email)}
-                        <li><Student {user} /></li>
-                    {/each}
-                </ul>
+                {#if available.length > 0}
+                    <form
+                        action="?/intervene"
+                        method="post"
+                        class="space-y-4"
+                        use:enhance={({ submitter, cancel }) => {
+                            if (!confirm('Are you sure you want to apply these interventions?')) {
+                                cancel();
+                                return;
+                            }
+                            assert(submitter !== null);
+                            assert(submitter instanceof HTMLButtonElement);
+                            submitter.disabled = true;
+                            return async ({ update, result }) => {
+                                submitter.disabled = false;
+                                await update({ reset: false });
+                                switch (result.type) {
+                                    case 'success':
+                                        toast.trigger({
+                                            message: 'Successfully applied the interventions.',
+                                            background: 'variant-filled-success',
+                                        });
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            };
+                        }}
+                    >
+                        <ul class="list">
+                            {#each available as user (user.email)}
+                                <li><LotteryStudent {labs} {user} /></li>
+                            {/each}
+                        </ul>
+                        <input type="hidden" name="draft" value={draft_id} />
+                        <button type="submit" class="!variant-glass-warning btn btn-lg w-full">
+                            <Icon src={ShieldExclamation} class="size-8" />
+                            <span>Apply Interventions</span>
+                        </button>
+                    </form>
+                {:else}
+                    <p class="prose max-w-none dark:prose-invert">
+                        Congratulations! All participants have been drafted. No action is needed here.
+                    </p>
+                {/if}
             </nav>
             <nav class="card list-nav variant-ghost-success space-y-4 p-4">
                 <h3 class="h3">Already Drafted</h3>

@@ -8,8 +8,8 @@
 </script>
 
 <a href="mailto:{email}" class="grid w-full grid-cols-[auto_1fr] items-center gap-1 p-4">
-    <Avatar src={avatar} width="w-20" />
-    <div class="flex flex-col">
+    <span><Avatar src={avatar} width="w-20" /></span>
+    <span class="flex flex-col">
         <strong><span class="uppercase">{family_name}</span>, {given_name}</strong>
         {#if student_number !== null}
             <span class="text-sm opacity-50">{student_number}</span>
@@ -24,5 +24,5 @@
                 <span class="variant-ghost-primary badge text-xs uppercase">{lab_id}</span>
             {/if}
         </div>
-    </div>
+    </span>
 </a>

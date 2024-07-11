@@ -126,7 +126,7 @@ export class Database implements Loggable {
     ) {
         const sql = this.#sql;
         const { count } =
-            await sql`INSERT INTO drap.users AS u (email, user_id, given_name, family_name, avatar) VALUES (${email}, ${uid}, ${given}, ${family}, ${avatar}) ON CONFLICT ON CONSTRAINT users_pkey DO UPDATE SET user_id = ${uid}, given_name = coalesce(nullif(trim(u.given_name), ''), ${given}), family_name = coalesce(nullif(trim(u.family_name), ''), ${family}), avatar = ${avatar}`;
+            await sql`INSERT INTO drap.users AS u (email, user_id, given_name, family_name, avatar) VALUES (${email}, ${uid}, ${given}, ${family}, ${avatar}) ON CONFLICT ON CONSTRAINT users_pkey DO UPDATE SET user_id = EXCLUDED.user_id, given_name = coalesce(nullif(trim(u.given_name), ''), EXCLUDED.given_name), family_name = coalesce(nullif(trim(u.family_name), ''), EXCLUDED.family_name), avatar = EXCLUDED.avatar`;
         return count;
     }
 
@@ -304,16 +304,29 @@ export class Database implements Loggable {
     }
 
     @timed async insertFacultyChoice(
-        draftId: StudentRank['draft_id'],
-        labId: FacultyChoice['lab_id'],
-        facultyEmail: FacultyChoice['faculty_email'],
-        studentEmails: StudentRank['email'][],
+        draft: StudentRank['draft_id'],
+        lab: FacultyChoice['lab_id'],
+        faculty: FacultyChoice['faculty_email'],
+        students: StudentRank['email'][],
     ) {
         const sql = this.#sql;
-        const emails = sql(studentEmails.map(email => [email] as const));
+        const emails = students.map(email => [email] as const);
         const { count } =
-            await sql`WITH fc AS (INSERT INTO drap.faculty_choices (draft_id, round, lab_id, faculty_email) SELECT draft_id, curr_round, ${labId}, ${facultyEmail} FROM drap.drafts WHERE draft_id = ${draftId} RETURNING draft_id, round, lab_id) INSERT INTO drap.faculty_choices_emails (draft_id, round, lab_id, student_email) SELECT draft_id, round, lab_id, email FROM fc, (VALUES ${emails}) _ (email)`;
-        strictEqual(studentEmails.length, count);
+            await sql`WITH fc AS (INSERT INTO drap.faculty_choices (draft_id, round, lab_id, faculty_email) SELECT draft_id, curr_round, ${lab}, ${faculty} FROM drap.drafts WHERE draft_id = ${draft} RETURNING draft_id, round, lab_id) INSERT INTO drap.faculty_choices_emails (draft_id, round, lab_id, student_email) SELECT draft_id, round, lab_id, email FROM fc, (VALUES ${sql(emails)}) _ (email)`;
+        strictEqual(students.length, count);
+    }
+
+    @timed async insertLotteryChoices(
+        draft: Draft['draft_id'],
+        admin: FacultyChoice['faculty_email'],
+        batch: Iterable<[StudentRank['email'], FacultyChoice['lab_id']]>,
+    ) {
+        const sql = this.#sql;
+        const rows = Array.from(batch);
+        const labs = Array.from(new Set(rows.map(([_, lab]) => lab)), lab => [lab] as const);
+        const { count } =
+            await sql`WITH fc AS (INSERT INTO drap.faculty_choices (draft_id, round, lab_id, faculty_email) SELECT draft_id, curr_round, lab_id, ${admin} FROM drap.drafts, (VALUES ${sql(labs)}) labs (lab_id) WHERE draft_id = ${draft} ON CONFLICT ON CONSTRAINT faculty_choices_pkey DO UPDATE SET faculty_email = EXCLUDED.faculty_email RETURNING draft_id, round, lab_id) INSERT INTO drap.faculty_choices_emails (draft_id, round, lab_id, student_email) SELECT draft_id, round, lab_id, email FROM fc JOIN (VALUES ${sql(rows)}) batch (email, lab_id) USING (lab_id)`;
+        strictEqual(rows.length, count);
     }
 
     @timed async getPendingLabCountInDraft(draft: Draft['draft_id']) {
