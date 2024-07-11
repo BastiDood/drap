@@ -27,14 +27,17 @@ export const actions = {
         if (user === null) error(401);
         if (!user.is_admin) error(403);
 
-        // TODO: Check if a draft is currently active.
+        // [x]: Check if a draft is currently active.
+        // Resolved: Check the latestDraft, whose active period should be unbounded above, meaning it hasn't ended
+        if (db.getLatestDraft() === null) error(409);
+
         const data = await request.formData();
         const id = validateString(data.get('id'));
         const lab = validateString(data.get('name'));
         const insertNewLab = await db.insertNewLab(id, lab);
         db.logger.info({ insertNewLab });
     },
-    async quota({ locals: { db }, request }) {
+    async quota({ locals: { db }, cookies, request }) {
         // [x]: Validate whether this user has permission to this action.
         // Resolved: Check if is_admin. I'm assuming only admins have this permission...
         const sid = cookies.get('sid');
@@ -44,7 +47,10 @@ export const actions = {
         if (user === null) error(401);
         if (!user.is_admin) error(403);
 
-        // TODO: Check if a draft is currently active.
+        // [x]: Check if a draft is currently active.
+        // Resolved: Check the latestDraft, whose active period should be unbounded above, meaning it hasn't ended
+        if (db.getLatestDraft() === null) error(409);
+
         const data = await request.formData();
         await db.updateLabQuotas(mapRowTuples(data));
     },
