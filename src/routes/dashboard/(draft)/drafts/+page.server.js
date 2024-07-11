@@ -1,5 +1,4 @@
-import assert, { fail, strictEqual } from 'node:assert/strict';
-import { PostgresError } from 'postgres';
+import assert from 'node:assert/strict';
 import { error } from '@sveltejs/kit';
 import { validateString } from '$lib/forms';
 
