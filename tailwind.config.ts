@@ -1,6 +1,8 @@
 import { type CustomThemeConfig, skeleton } from '@skeletonlabs/tw-plugin';
 import type { Config } from 'tailwindcss';
 import { join } from 'node:path';
+
+import form from '@tailwindcss/forms';
 import typo from '@tailwindcss/typography';
 
 const theme = {
@@ -110,5 +112,5 @@ export default {
         // eslint-disable-next-line no-undef
         join(require.resolve('@skeletonlabs/skeleton'), '../**/*.{html,js,svelte,ts}'),
     ],
-    plugins: [typo, skeleton({ themes: { custom: [theme] } })],
+    plugins: [form, typo, skeleton({ themes: { custom: [theme] } })],
 } satisfies Config;
