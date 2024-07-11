@@ -73,7 +73,7 @@ const TaggedStudentsWithLabs = array(
 const UserEmails = array(pick(User, ['email']));
 
 export type AvailableLabs = InferOutput<typeof AvailableLabs>;
-export type DesignatedSender = InferOutput<typeof DesignatedSender>
+export type DesignatedSender = InferOutput<typeof DesignatedSender>;
 export type QueriedFaculty = InferOutput<typeof QueriedFaculty>;
 export type RegisteredLabs = InferOutput<typeof RegisteredLabs>;
 export type StudentsWithLabPreference = InferOutput<typeof StudentsWithLabPreference>;
@@ -390,8 +390,7 @@ export class Database implements Loggable {
 
     @timed async getDesignatedSender() {
         const sql = this.#sql;
-        const [first, ...rest] = 
-            await sql`SELECT * FROM drap.designated_sender`
+        const [first, ...rest] = await sql`SELECT * FROM drap.designated_sender`;
         strictEqual(rest.length, 0);
         
         if (typeof first === 'undefined') return;
@@ -405,15 +404,13 @@ export class Database implements Loggable {
 
     @timed async deleteDesignatedSender() {
         const sql = this.#sql;
-        const count = await sql`DELETE FROM drap.designated_sender`
+        const count = await sql`DELETE FROM drap.designated_sender`;
         return count;
     }
 
-    @timed async initDesignatedSender(
-        email: DesignatedSender['email'],
-    ) {
+    @timed async initDesignatedSender(email: DesignatedSender['email']) {
         const sql = this.#sql;
-        const count = await sql`INSERT INTO drap.designated_sender (email) VALUES (${email})`
+        const count = await sql`INSERT INTO drap.designated_sender (email) VALUES (${email})`;
         return count;
     }
 
@@ -421,14 +418,13 @@ export class Database implements Loggable {
         email: DesignatedSender['email'],
         expires_at: DesignatedSender['expires_at'],
         access_token: DesignatedSender['access_token'],
-        refresh_token: DesignatedSender['refresh_token'] = null
+        refresh_token: DesignatedSender['refresh_token'] = null,
     ) {
         const sql = this.#sql;
-        const [first, ...rest] = 
-            refresh_token ? 
-                await sql`UPDATE drap.designated_sender SET expires_at = ${expires_at}, access_token = ${access_token}, refresh_token = ${refresh_token} WHERE email = ${email} RETURNING *` 
-                : await sql`UPDATE drap.designated_sender SET expires_at = ${expires_at}, access_token = ${access_token} WHERE email = ${email} RETURNING *`
-        notEqual(typeof first, 'undefined')    
+        const [first, ...rest] = refresh_token
+            ? await sql`UPDATE drap.designated_sender SET expires_at = ${expires_at}, access_token = ${access_token}, refresh_token = ${refresh_token} WHERE email = ${email} RETURNING *`
+            : await sql`UPDATE drap.designated_sender SET expires_at = ${expires_at}, access_token = ${access_token} WHERE email = ${email} RETURNING *`;
+        notEqual(typeof first, 'undefined');
         strictEqual(rest.length, 0);
         return parse(DesignatedSender, first);
     }

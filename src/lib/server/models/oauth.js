@@ -39,7 +39,7 @@ export const TokenResponse = object({
     // Remaining lifetime in seconds.
     expires_in: pipe(number(), safeInteger()),
     // Refresh token, will not always be given with every TokenResponse (requires prompt=consent&access_type=offline)
-    refresh_token: optional(string())
+    refresh_token: optional(string()),
 });
 
 const UnixTimeSecs = pipe(

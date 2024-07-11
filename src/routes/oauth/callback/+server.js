@@ -55,14 +55,9 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
 
         // Check if this session is for handling a new designated_sender, first delete sole designated_sender then complete the designated_sender
         if (pending.is_new_sender) {
-            await db.deleteDesignatedSender()
-            await db.initDesignatedSender(token.email)
-            await db.updateDesignatedSender(
-                token.email,
-                token.exp,
-                access_token,
-                refresh_token
-            )
+            await db.deleteDesignatedSender();
+            await db.initDesignatedSender(token.email);
+            await db.updateDesignatedSender(token.email, token.exp, access_token, refresh_token);
         }
 
         // Insert user as uninitialized by default

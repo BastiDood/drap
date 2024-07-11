@@ -10,7 +10,9 @@ export async function GET({ locals: { db }, cookies, url: { searchParams } }) {
         if (user !== null) redirect(302, '/');
     }
 
-    const { session_id, nonce, expiration } = await db.generatePendingSession();
+    const isNewSender = Boolean(searchParams.get('new_sender'));
+
+    const { session_id, nonce, expiration } = await db.generatePendingSession(isNewSender);
     cookies.set('sid', session_id, { path: '/', httpOnly: true, sameSite: 'lax', expires: expiration });
 
     const hashedSessionId = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(session_id));
@@ -22,8 +24,8 @@ export async function GET({ locals: { db }, cookies, url: { searchParams } }) {
         hd: 'up.edu.ph',
         access_type: isNewSender ? 'offline' : 'online',
         response_type: 'code',
-        scope: OAUTH_SCOPE_STRING.concat(isNewSender ? ' https://mail.google.com/' : '' ),
-        prompt: isNewSender ? 'consent' : ''
+        scope: OAUTH_SCOPE_STRING.concat(isNewSender ? ' https://mail.google.com/' : ''),
+        prompt: isNewSender ? 'consent' : '',
     });
 
     redirect(302, `https://accounts.google.com/o/oauth2/v2/auth?${params}`);
