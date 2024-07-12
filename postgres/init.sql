@@ -46,7 +46,7 @@ CREATE SCHEMA drap
         draft_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
         curr_round SMALLINT DEFAULT 0,
         max_rounds SMALLINT NOT NULL CONSTRAINT max_rounds_above_floor CHECK (max_rounds > 0),
-        active_period TSTZRANGE NOT NULL DEFAULT TSTZRANGE '[now,)',
+        active_period TSTZRANGE NOT NULL DEFAULT TSTZRANGE(NOW(), NULL, '[)'),
         CONSTRAINT curr_round_within_bounds CHECK (curr_round BETWEEN 0 AND max_rounds),
         CONSTRAINT overlapping_draft_periods EXCLUDE USING gist (active_period WITH &&)
     )
