@@ -59,7 +59,7 @@ export const actions = {
             db.logger.info({ incrementDraftRound });
 
             const ackCount = await db.autoAcknowledgeLabsWithoutPreferences(draft);
-            assert(ackCount < labCount);
+            assert(ackCount <= labCount);
             db.logger.info({ autoAcknowledgeLabsWithoutPreferences: ackCount });
         });
     },
