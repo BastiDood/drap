@@ -18,7 +18,7 @@ const theme = {
         '--theme-border-base': '2px',
         // =~= Theme On-X Colors =~=
         '--on-primary': '255 255 255',
-        '--on-secondary': '255 255 255',
+        '--on-secondary': '0 0 0',
         '--on-tertiary': '0 0 0',
         '--on-success': '0 0 0',
         '--on-warning': '0 0 0',
