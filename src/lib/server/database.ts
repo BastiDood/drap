@@ -369,8 +369,9 @@ export class Database implements Loggable {
 
     @timed async getPendingLabCountInDraft(draft: Draft['draft_id']) {
         const sql = this.#sql;
+        const fc = sql`SELECT choice_id, lab_id FROM drap.faculty_choices fc JOIN drap.drafts d USING (fc.draft_id, round) = (d.draft_id, curr_round) WHERE draft_id = ${draft}`;
         const [first, ...rest] =
-            await sql`SELECT count(l.lab_id) FROM drap.drafts d JOIN drap.faculty_choices fc ON (d.draft_id, curr_round) = (fc.draft_id, round) RIGHT JOIN drap.labs l USING (lab_id) WHERE d.draft_id = ${draft} AND fc.lab_id IS NULL`;
+            await sql`SELECT count(lab_id) FROM drap.labs l LEFT JOIN (${fc}) fc USING (lab_id) WHERE choice_id IS NULL`;
         strictEqual(rest.length, 0);
         return parse(CountResult, first).count;
     }
