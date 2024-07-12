@@ -79,7 +79,7 @@
                 submitter.disabled = true;
                 return async ({ update, result }) => {
                     submitter.disabled = false;
-                    await update({ reset: false });
+                    await update();
                     switch (result.type) {
                         case 'success':
                             toast.trigger({
