@@ -304,6 +304,13 @@ export class Database implements Loggable {
         }
     }
 
+    @timed async syncDraftResultsToUsers(draft: Draft['draft_id']) {
+        const sql = this.#sql;
+        const { count } =
+            await sql`UPDATE drap.users SET lab_id = fce.lab_id FROM drap.faculty_choices_emails fce WHERE draft_id = ${draft} AND email = student_email`;
+        return count;
+    }
+
     @timed async insertStudentRanking(draft: Draft['draft_id'], email: User['email'], labs: StudentRank['labs']) {
         const sql = this.#sql;
         const { count } =
