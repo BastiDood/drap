@@ -45,7 +45,7 @@ export const actions = {
 
                 const round = await db.incrementDraftRound(draft);
                 assert(round !== null);
-                if (round.curr_round > round.max_rounds) break;
+                if (round.curr_round === null) break;
                 db.logger.info({ incrementDraftRound: round });
 
                 const autoAcknowledgeLabsWithoutPreferences = await db.autoAcknowledgeLabsWithoutPreferences(draft);

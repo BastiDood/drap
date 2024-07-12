@@ -14,14 +14,13 @@
         lab: { lab_name, quota },
     } = data);
 
-    $: suffix = getOrdinalSuffix(curr_round);
-
     let draftees: string[] = [];
     $: remainingQuota = quota - researchers.length;
     $: remainingDraftees = remainingQuota - draftees.length;
 </script>
 
-{#if students.length > 0}
+{#if curr_round !== null && students.length > 0}
+    {@const suffix = getOrdinalSuffix(curr_round)}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
         <div class="prose dark:prose-invert">
             <h2>Draft Picks</h2>

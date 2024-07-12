@@ -11,14 +11,10 @@
     } = data);
 </script>
 
-{#if curr_round > 0}
-    <WarningAlert>
-        {#if curr_round > max_rounds}
-            A lottery is ongoing. You may join again soon in the next draft.
-        {:else}
-            A draft is currently ongoing. You may no longer register.
-        {/if}
-    </WarningAlert>
+{#if curr_round === null}
+    <WarningAlert>A lottery is currently ongoing. You may join again soon in the next draft.</WarningAlert>
+{:else if curr_round > 0}
+    <WarningAlert>A draft is currently ongoing. You may no longer register.</WarningAlert>
 {:else if Array.isArray(info)}
     <SubmitRankings draftId={draft_id} maxRounds={max_rounds} availableLabs={info} />
 {:else}

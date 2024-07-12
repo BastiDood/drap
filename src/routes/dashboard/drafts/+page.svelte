@@ -25,7 +25,7 @@
 
 <div class="card prose max-w-none p-4 dark:prose-invert">
     <p>
-        {#if curr_round > max_rounds}
+        {#if curr_round === null}
             <strong>Draft &num;{draft_id}</strong> (which opened last <strong>{startDate}</strong> at
             <strong>{startTime}</strong>) has recently finished the main drafting process. It is currently in the
             lottery rounds.
@@ -36,7 +36,7 @@
         {/if}
     </p>
 </div>
-{#if curr_round > max_rounds}
+{#if curr_round === null}
     <div class="grid grid-cols-1 gap-4 md:grid-cols-[auto_1fr]">
         <div class="prose dark:prose-invert">
             <h3>Lottery</h3>
@@ -65,7 +65,24 @@
                 After the randomization stage, the draft process is officially complete. All students, lab heads, and
                 administrators are notified of the final results.
             </p>
-            <form action="?/conclude" method="post" class="not-prose" use:enhance>
+            <form
+                action="?/conclude"
+                method="post"
+                class="not-prose"
+                use:enhance={({ submitter, cancel }) => {
+                    if (!confirm('Are you sure you want to apply these interventions?')) {
+                        cancel();
+                        return;
+                    }
+                    assert(submitter !== null);
+                    assert(submitter instanceof HTMLButtonElement);
+                    submitter.disabled = true;
+                    return async ({ update }) => {
+                        submitter.disabled = false;
+                        await update();
+                    };
+                }}
+            >
                 <button type="submit" class="variant-filled-primary btn btn-lg w-full">
                     <Icon src={ArrowRight} class="size-8" />
                     <span>Conclude Draft</span>
@@ -90,7 +107,7 @@
                             submitter.disabled = true;
                             return async ({ update, result }) => {
                                 submitter.disabled = false;
-                                await update({ reset: false });
+                                await update();
                                 switch (result.type) {
                                     case 'success':
                                         toast.trigger({

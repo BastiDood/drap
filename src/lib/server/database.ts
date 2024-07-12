@@ -276,7 +276,7 @@ export class Database implements Loggable {
     @timed async incrementDraftRound(draft: Draft['draft_id']) {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`UPDATE drap.drafts SET curr_round = curr_round + 1 WHERE draft_id = ${draft} RETURNING curr_round, max_rounds`;
+            await sql`UPDATE drap.drafts SET curr_round = curr_round + 1 WHERE draft_id = ${draft} ON CONFLICT ON CONSTRAINT curr_round_within_bounds DO UPDATE SET curr_round = NULL RETURNING curr_round, max_rounds `;
         strictEqual(rest.length, 0);
         return typeof first === 'undefined' ? null : parse(IncrementedDraftRound, first);
     }

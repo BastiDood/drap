@@ -131,7 +131,7 @@
     {@const startTime = format(active_period_start, 'pp')}
     <WarningAlert>
         <span
-            >{#if curr_round > max_rounds}
+            >{#if curr_round === null}
                 <strong>Draft &num;{draft_id}</strong> started last <strong>{startDate}</strong> at
                 <strong>{startTime}</strong> and is now in lottery mode. It's still unsafe to update the lab quota.
             {:else}
