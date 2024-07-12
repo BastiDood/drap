@@ -1,4 +1,3 @@
-import type { FacultyChoiceEmail } from '$lib/models/faculty-choice';
 import assert from 'node:assert/strict';
 import { error } from '@sveltejs/kit';
 import groupBy from 'just-group-by';
@@ -18,7 +17,7 @@ export async function load({ locals: { db }, parent }) {
 function* mapRowTuples(data: FormData) {
     for (const [email, lab] of data.entries()) {
         if (lab instanceof File || lab.length === 0) continue;
-        yield [email, lab] as [FacultyChoiceEmail['student_email'], FacultyChoiceEmail['lab_id']];
+        yield [email, lab] as const;
     }
 }
 

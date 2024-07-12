@@ -175,7 +175,7 @@ export class Database implements Loggable {
         return { labCount: parse(CountResult, labCount).count, studentCount: parse(CountResult, studentCount).count };
     }
 
-    @timed async updateLabQuotas(quota: Iterable<[Lab['lab_id'], Lab['quota']]>) {
+    @timed async updateLabQuotas(quota: Iterable<readonly [Lab['lab_id'], Lab['quota']]>) {
         const sql = this.#sql;
         const values = sql(Array.from(quota));
         const { count } =
@@ -319,7 +319,7 @@ export class Database implements Loggable {
     @timed async insertLotteryChoices(
         draft: Draft['draft_id'],
         admin: FacultyChoice['faculty_email'],
-        batch: Iterable<[StudentRank['email'], FacultyChoice['lab_id']]>,
+        batch: Iterable<readonly [StudentRank['email'], FacultyChoice['lab_id']]>,
     ) {
         const sql = this.#sql;
         const rows = Array.from(batch);

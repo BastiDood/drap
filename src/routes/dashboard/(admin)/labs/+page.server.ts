@@ -10,7 +10,7 @@ export async function load({ locals: { db }, parent }) {
 function* mapRowTuples(data: FormData) {
     for (const [key, value] of data.entries()) {
         if (value instanceof File || value.length === 0) continue;
-        yield [key, parseInt(value, 10)] as [string, number];
+        yield [key, parseInt(value, 10)] as const;
     }
 }
 
