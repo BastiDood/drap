@@ -4,11 +4,8 @@
     import { Icon } from '@steeze-ui/svelte-icon';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
-    import { getToastStore } from '@skeletonlabs/skeleton';
     import { page } from '$app/stores';
     import { validateString } from '$lib/forms';
-
-    const toast = getToastStore();
     $: ({ status, error } = $page);
 </script>
 
@@ -39,25 +36,9 @@
                 assert(submitter !== null);
                 assert(submitter instanceof HTMLButtonElement);
                 submitter.disabled = true;
-                return async ({ update, result }) => {
+                return async ({ update }) => {
                     submitter.disabled = false;
                     await update();
-                    switch (result.type) {
-                        case 'success':
-                            toast.trigger({
-                                message: 'Successfully started a new draft.',
-                                background: 'variant-filled-success',
-                            });
-                            break;
-                        case 'failure':
-                            toast.trigger({
-                                message: 'Failed to start a new draft.',
-                                background: 'variant-filled-error',
-                            });
-                            break;
-                        default:
-                            break;
-                    }
                 };
             }}
         >
