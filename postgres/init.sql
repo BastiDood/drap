@@ -44,9 +44,10 @@ CREATE SCHEMA drap
     )
     CREATE TABLE drafts (
         draft_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
-        curr_round SMALLINT NOT NULL DEFAULT 0 CONSTRAINT curr_round_above_floor CHECK (curr_round >= 0),
+        curr_round SMALLINT NOT NULL DEFAULT 0,
         max_rounds SMALLINT NOT NULL CONSTRAINT max_rounds_above_floor CHECK (max_rounds > 0),
         active_period TSTZRANGE NOT NULL DEFAULT TSTZRANGE '[now,)',
+        CONSTRAINT curr_round_within_bounds CHECK (curr_round BETWEEN 0 AND max_rounds + 1),
         CONSTRAINT overlapping_draft_periods EXCLUDE USING gist (active_period WITH &&)
     )
     CREATE TABLE student_ranks (
