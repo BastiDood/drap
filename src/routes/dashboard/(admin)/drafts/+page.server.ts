@@ -5,10 +5,8 @@ import groupBy from 'just-group-by';
 import { validateString } from '$lib/forms';
 
 export async function load({ locals: { db }, parent }) {
-    const { user } = await parent();
+    const { user, draft } = await parent();
     if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
-
-    const draft = await db.getActiveDraft();
     if (draft === null) error(499);
 
     // TODO: Migrate to SQL Pipelining
