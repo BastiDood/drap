@@ -12,7 +12,7 @@
     const toast = getToastStore();
 </script>
 
-{#if draft === null}
+{#if draft === null || draft.curr_round === null}
     <form
         method="post"
         action="?/lab"
@@ -130,15 +130,10 @@
     {@const startDate = format(active_period_start, 'PPP')}
     {@const startTime = format(active_period_start, 'pp')}
     <WarningAlert>
-        <span
-            >{#if curr_round === null}
-                <strong>Draft &num;{draft_id}</strong> started last <strong>{startDate}</strong> at
-                <strong>{startTime}</strong> and is now in lottery mode. It's still unsafe to update the lab quota.
-            {:else}
-                <strong>Draft &num;{draft_id}</strong> started last <strong>{startDate}</strong> at
-                <strong>{startTime}</strong> and is now in Round <strong>{curr_round}</strong> of
-                <strong>{max_rounds}</strong>. It's unsafe to update the lab quota while a draft is in progress.
-            {/if}</span
-        >
+        <span>
+            <strong>Draft &num;{draft_id}</strong> started last <strong>{startDate}</strong> at
+            <strong>{startTime}</strong> and is now in Round <strong>{curr_round}</strong> of
+            <strong>{max_rounds}</strong>. It's unsafe to update the lab quota while a draft is in progress.
+        </span>
     </WarningAlert>
 {/if}
