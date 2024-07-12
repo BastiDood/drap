@@ -1,6 +1,6 @@
 <script>
     import { ArrowRight, ShieldExclamation } from '@steeze-ui/heroicons';
-    import ErrorAlert from '$lib/alerts/Error.svelte';
+    import WarningAlert from '$lib/alerts/Warning.svelte';
     import { Icon } from '@steeze-ui/svelte-icon';
     import LotteryStudent from './LotteryStudent.svelte';
     import Student from '$lib/users/Student.svelte';
@@ -184,9 +184,9 @@
                 the lottery.
             </p>
         {:else}
-            <ErrorAlert
+            <WarningAlert
                 >No students have registered for this draft yet. This draft cannot proceed to the next round until at
-                least one student registers.</ErrorAlert
+                least one student registers.</WarningAlert
             >
         {/if}
     </div>
