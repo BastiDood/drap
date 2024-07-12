@@ -82,19 +82,20 @@
                         submitter.disabled = false;
                         await update();
                         switch (result.type) {
+                            case 'success':
+                                toast.trigger({
+                                    message: 'Successfully concluded the draft.',
+                                    background: 'variant-filled-success',
+                                });
+                                break;
                             case 'failure':
-                                switch (result.status) {
-                                    case 400:
-                                        toast.trigger({
-                                            message:
-                                                'Failed to conclude the draft. The number of draftees do not match the total quota of all labs.',
-                                            background: 'variant-filled-error',
-                                            autohide: false,
-                                        });
-                                        break;
-                                    default:
-                                        break;
-                                }
+                                assert(result.status === 400);
+                                toast.trigger({
+                                    message:
+                                        'Failed to conclude the draft. The number of draftees do not match the total quota of all labs.',
+                                    background: 'variant-filled-error',
+                                    autohide: false,
+                                });
                                 break;
                             default:
                                 break;
