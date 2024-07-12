@@ -3,6 +3,7 @@
         AcademicCap,
         Beaker,
         ClipboardDocumentList,
+        Clock,
         Home,
         QueueList,
         UserCircle,
@@ -49,7 +50,7 @@
                 </AppRailAnchor>
             {:else if user.student_number !== null}
                 <!-- Registered User -->
-                <AppRailAnchor href="/dashboard/ranks/" selected={pathname.startsWith('/dashboard/ranks/')}>
+                <AppRailAnchor href="/dashboard/ranks/" selected={pathname === '/dashboard/ranks/'}>
                     <Icon src={QueueList} slot="lead" class="h-8" />
                     <span>Ranks</span>
                 </AppRailAnchor>
@@ -62,6 +63,10 @@
             </AppRailAnchor>
         {/if}
     {/if}
+    <AppRailAnchor href="/history/" selected={pathname.startsWith('/history/')}>
+        <Icon src={Clock} slot="lead" class="h-8" />
+        <span>History</span>
+    </AppRailAnchor>
     <div slot="trail" class="my-4 flex aspect-square flex-col items-center justify-center gap-2">
         {#if typeof user !== 'undefined'}
             <Avatar src={user.avatar} />

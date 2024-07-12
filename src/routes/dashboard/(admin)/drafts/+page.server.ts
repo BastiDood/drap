@@ -1,4 +1,4 @@
-import { error, fail } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import { repeat, roundrobin, zip } from 'itertools';
 import { validateEmail, validateString } from '$lib/forms';
 import assert from 'node:assert/strict';
@@ -111,5 +111,7 @@ export const actions = {
             if (err === ZIP_NOT_EQUAL) return fail(400);
             throw err;
         }
+
+        redirect(302, `/history/${draft}/`);
     },
 };
