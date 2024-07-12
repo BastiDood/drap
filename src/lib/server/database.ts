@@ -217,7 +217,7 @@ export class Database implements Loggable {
     @timed async getStudentsInDraftTaggedByLab(draft: Draft['draft_id']) {
         const sql = this.#sql;
         const students =
-            await sql`SELECT email, given_name, family_name, avatar, student_number, labs, fce.lab_id FROM drap.student_ranks sr JOIN drap.users u USING (email) LEFT JOIN drap.faculty_choices_emails fce ON u.email = student_email WHERE sr.draft_id = ${draft}`;
+            await sql`SELECT email, given_name, family_name, avatar, student_number, labs, fce.lab_id FROM drap.student_ranks sr JOIN drap.users u USING (email) LEFT JOIN drap.faculty_choices_emails fce ON (sr.draft_id, email) = (fce.draft_id, student_email) WHERE sr.draft_id = ${draft}`;
         return parse(TaggedStudentsWithLabs, students);
     }
 
