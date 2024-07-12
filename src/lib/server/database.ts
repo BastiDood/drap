@@ -42,12 +42,13 @@ const TaggedStudentsWithLabs = array(
         lab_id: nullable(FacultyChoiceEmail.entries.lab_id),
     }),
 );
+const UserEmails = array(pick(User, ['email']));
 
 export type AvailableLabs = InferOutput<typeof AvailableLabs>;
 export type QueriedFaculty = InferOutput<typeof QueriedFaculty>;
 export type TaggedStudentsWithLabs = InferOutput<typeof TaggedStudentsWithLabs>;
 
-export type Sql = postgres.Sql<{ bigint: bigint }>;
+export type Sql = postgres.Sql<{ bigint: bigint; }>;
 
 export class Database implements Loggable {
     #sql: Sql;
@@ -242,6 +243,7 @@ export class Database implements Loggable {
     }
 
     @timed async autoAcknowledgeLabsWithoutPreferences(draft: Draft['draft_id']) {
+        // TODO: Auto-acknowledge labs without quota left as well.
         const sql = this.#sql;
         const { count } =
             await sql`INSERT INTO drap.faculty_choices (draft_id, round, lab_id) WITH d AS (SELECT draft_id, curr_round FROM drap.drafts WHERE draft_id = ${draft}) SELECT draft_id, curr_round, lab_id FROM d, (SELECT lab_id FROM drap.labs EXCEPT SELECT labs[curr_round] lab_id FROM d JOIN drap.student_ranks USING (draft_id) LEFT JOIN drap.faculty_choices_emails fce ON email = student_email WHERE student_email IS NULL) _;`;
@@ -281,6 +283,27 @@ export class Database implements Loggable {
         return typeof first === 'undefined' ? null : parse(IncrementedDraftRound, first);
     }
 
+    @timed async randomizeRemainingStudents(draft: Draft['draft_id']) {
+        const sql = this.#sql;
+        const emails =
+            await sql`SELECT email FROM drap.student_ranks LEFT JOIN drap.faculty_choices_emails ON email = student_email WHERE draft_id = ${draft} AND student_email IS NULL ORDER BY random()`;
+        return parse(UserEmails, emails).map(({ email }) => email);
+    }
+
+    @timed async concludeDraft(draft: Draft['draft_id']) {
+        const sql = this.#sql;
+        const { count } =
+            await sql`UPDATE drap.drafts d SET active_period = tstzrange(lower(d.active_period), coalesce(upper(d.active_period), now())) WHERE draft_id = ${draft} RETURNING upper(active_period) active_period_end`;
+        switch (count) {
+            case 0:
+                return false;
+            case 1:
+                return true;
+            default:
+                fail(`concludeDraft => unexpected update count ${count}`);
+        }
+    }
+
     @timed async insertStudentRanking(draft: Draft['draft_id'], email: User['email'], labs: StudentRank['labs']) {
         const sql = this.#sql;
         const { count } =
@@ -298,7 +321,7 @@ export class Database implements Loggable {
     @timed async getStudentRankings(draft: StudentRank['draft_id'], email: StudentRank['email']) {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`SELECT created_at, array_agg(lab_name) labs FROM drap.labs JOIN (SELECT created_at, unnest(labs) lab_id FROM drap.student_ranks WHERE draft_id = ${draft} AND email = ${email}) ranks USING (lab_id) GROUP BY created_at`;
+            await sql`SELECT created_at, array_agg(lab_name ORDER BY idx) labs FROM (SELECT generate_subscripts(labs, 1) idx, created_at, unnest(labs) lab_id FROM drap.student_ranks WHERE draft_id = ${draft} AND email = ${email}) _ JOIN drap.labs USING (lab_id) GROUP BY created_at`;
         strictEqual(rest.length, 0);
         return typeof first === 'undefined' ? null : parse(QueriedStudentRank, first);
     }

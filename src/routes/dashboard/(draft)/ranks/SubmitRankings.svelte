@@ -89,10 +89,22 @@
                     });
                     break;
                 case 'failure':
-                    toast.trigger({
-                        message: 'You have already set your lab preferences before.',
-                        background: 'variant-filled-error',
-                    });
+                    switch (result.status) {
+                        case 400:
+                            toast.trigger({
+                                message: 'Empty submissions are not allowed.',
+                                background: 'variant-filled-error',
+                            });
+                            break;
+                        case 403:
+                            toast.trigger({
+                                message: 'You have already set your lab preferences before.',
+                                background: 'variant-filled-error',
+                            });
+                            break;
+                        default:
+                            break;
+                    }
                     break;
                 default:
                     break;
@@ -113,38 +125,40 @@
         <button type="submit" class="variant-filled-primary btn">Submit Lab Preferences</button>
     </div>
     <hr class="!border-surface-400-500-token !border-t-4" />
-    {#each selectedLabs as { lab_id, lab_name }, idx (lab_id)}
-        <div
-            class="card grid grid-cols-[1fr_auto_auto_auto] items-center gap-2 p-4"
-            transition:slide={{ duration: 120 }}
-        >
-            <input type="hidden" name="labs" value={lab_id} />
-            <span>{lab_name}</span>
-            <button
-                type="button"
-                class="variant-filled-success btn-icon btn-icon-sm"
-                on:click={moveLabUp.bind(null, idx)}
+    <div class="space-y-2">
+        {#each selectedLabs as { lab_id, lab_name }, idx (lab_id)}
+            <div
+                class="card grid grid-cols-[1fr_auto_auto_auto] items-center gap-2 p-4"
+                transition:slide={{ duration: 120 }}
             >
-                <Icon src={ArrowUp} class="size-6" />
-            </button>
-            <button
-                type="button"
-                class="variant-filled-warning btn-icon btn-icon-sm"
-                on:click={moveLabDown.bind(null, idx)}
-            >
-                <Icon src={ArrowDown} class="size-6" />
-            </button>
-            <button
-                type="button"
-                class="variant-filled-error btn-icon btn-icon-sm"
-                on:click={resetSelection.bind(null, idx)}
-            >
-                <Icon src={XMark} class="size-6" />
-            </button>
-        </div>
-    {:else}
-        <WarningAlert>No labs selected yet.</WarningAlert>
-    {/each}
+                <input type="hidden" name="labs" value={lab_id} />
+                <span>{lab_name}</span>
+                <button
+                    type="button"
+                    class="variant-filled-success btn-icon btn-icon-sm"
+                    on:click={moveLabUp.bind(null, idx)}
+                >
+                    <Icon src={ArrowUp} class="size-6" />
+                </button>
+                <button
+                    type="button"
+                    class="variant-filled-warning btn-icon btn-icon-sm"
+                    on:click={moveLabDown.bind(null, idx)}
+                >
+                    <Icon src={ArrowDown} class="size-6" />
+                </button>
+                <button
+                    type="button"
+                    class="variant-filled-error btn-icon btn-icon-sm"
+                    on:click={resetSelection.bind(null, idx)}
+                >
+                    <Icon src={XMark} class="size-6" />
+                </button>
+            </div>
+        {:else}
+            <WarningAlert>No labs selected yet.</WarningAlert>
+        {/each}
+    </div>
 </form>
 <hr class="!border-surface-400-500-token !border-t-4" />
 <div class="space-y-2">

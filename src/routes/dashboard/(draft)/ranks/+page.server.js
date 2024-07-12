@@ -4,8 +4,11 @@ import { validateString } from '$lib/forms';
 export async function load({ locals: { db }, parent }) {
     const { user, draft } = await parent();
     if (user.is_admin || user.user_id === null || user.lab_id !== null || user.student_number === null) error(403);
-    const info = (await db.getStudentRankings(draft.draft_id, user.email)) ?? (await db.getAvailableLabs());
-    return { draft, info };
+    const [availableLabs, rankings] = await Promise.all([
+        db.getAvailableLabs(),
+        db.getStudentRankings(draft.draft_id, user.email),
+    ]);
+    return { draft, availableLabs, rankings };
 }
 
 export const actions = {
@@ -20,6 +23,7 @@ export const actions = {
         const data = await request.formData();
         const draft = BigInt(validateString(data.get('draft')));
         const labs = data.getAll('labs').map(validateString);
+        if (labs.length <= 0) return fail(400);
 
         const maxRounds = await db.getMaxRoundInDraft(draft);
         if (maxRounds === null) error(404);

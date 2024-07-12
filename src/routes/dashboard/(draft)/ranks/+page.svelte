@@ -7,7 +7,8 @@
     export let data;
     $: ({
         draft: { draft_id, curr_round, max_rounds },
-        info,
+        availableLabs,
+        rankings,
     } = data);
 </script>
 
@@ -15,10 +16,8 @@
     <WarningAlert>A lottery is currently ongoing. You may join again soon in the next draft.</WarningAlert>
 {:else if curr_round > 0}
     <WarningAlert>A draft is currently ongoing. You may no longer register.</WarningAlert>
-{:else if Array.isArray(info)}
-    <SubmitRankings draftId={draft_id} maxRounds={max_rounds} availableLabs={info} />
-{:else}
-    {@const { created_at, labs } = info}
+{:else if rankings !== null}
+    {@const { created_at, labs } = rankings}
     {@const creationDate = format(created_at, 'PPP')}
     {@const creationTime = format(created_at, 'pp')}
     <div class="card variant-ghost-secondary prose max-w-none p-4 dark:prose-invert">
@@ -32,4 +31,6 @@
             {/each}
         </ol>
     </div>
+{:else}
+    <SubmitRankings draftId={draft_id} maxRounds={max_rounds} {availableLabs} />
 {/if}
