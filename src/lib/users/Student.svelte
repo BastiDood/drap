@@ -18,7 +18,7 @@
         <div class="space-x-1">
             {#if lab_id === null}
                 {#each labs as lab (lab)}
-                    <span class="variant-ghost-tertiary badge text-xs">{lab}</span>
+                    <span class="variant-ghost-tertiary badge text-xs uppercase">{lab}</span>
                 {/each}
             {:else}
                 <span class="variant-ghost-primary badge text-xs uppercase">{lab_id}</span>
