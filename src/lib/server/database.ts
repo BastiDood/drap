@@ -242,12 +242,17 @@ export class Database implements Loggable {
         };
     }
 
+    /**
+     * For a lab to be auto-acknowledged:
+     * 1. The lab has exhausted their entire quota (i.e., no remaining quota).
+     * 2. The lab must not be preferred by anyone in the current draft round.
+     */
     @timed async autoAcknowledgeLabsWithoutPreferences(draft: Draft['draft_id']) {
         const sql = this.#sql;
         const d = sql`SELECT draft_id, curr_round FROM drap.drafts WHERE draft_id = ${draft}`;
         const drafted = sql`SELECT lab_id, count(student_email) draftees FROM d JOIN drap.faculty_choices_emails USING (draft_id) GROUP BY lab_id`;
-        const selected = sql`SELECT labs[curr_round] lab_id FROM d JOIN drap.student_ranks USING (draft_id) LEFT JOIN drap.faculty_choices_emails ON email = student_email WHERE student_email IS NULL`;
-        const values = sql`WITH d AS (${d}), drafted AS (${drafted}), selected AS (${selected}) SELECT draft_id, curr_round, lab_id FROM d, drap.labs LEFT JOIN drafted USING (lab_id) LEFT JOIN selected USING (lab_id) WHERE selected.lab_id IS NULL OR coalesce(draftees, 0) >= quota`;
+        const preferred = sql`SELECT lab_id, count(DISTINCT email) preferrers FROM (SELECT labs[curr_round] lab_id, email FROM d JOIN drap.student_ranks USING (draft_id) LEFT JOIN drap.faculty_choices_emails fce ON (d.draft_id, email) = (fce.draft_id, student_email) WHERE student_email IS NULL) _ GROUP BY lab_id`;
+        const values = sql`WITH d AS (${d}), drafted AS (${drafted}), preferred AS (${preferred}) SELECT draft_id, curr_round, lab_id FROM d, drap.labs LEFT JOIN drafted USING (lab_id) LEFT JOIN preferred USING (lab_id) WHERE coalesce(draftees, 0) >= quota OR coalesce(preferrers, 0) = 0`;
         const { count } = await sql`INSERT INTO drap.faculty_choices (draft_id, round, lab_id) ${values}`;
         return count;
     }
@@ -369,7 +374,7 @@ export class Database implements Loggable {
 
     @timed async getPendingLabCountInDraft(draft: Draft['draft_id']) {
         const sql = this.#sql;
-        const fc = sql`SELECT choice_id, lab_id FROM drap.faculty_choices fc JOIN drap.drafts d USING (fc.draft_id, round) = (d.draft_id, curr_round) WHERE draft_id = ${draft}`;
+        const fc = sql`SELECT choice_id, lab_id FROM drap.faculty_choices fc JOIN drap.drafts d ON (fc.draft_id, round) = (d.draft_id, curr_round) WHERE fc.draft_id = ${draft}`;
         const [first, ...rest] =
             await sql`SELECT count(lab_id) FROM drap.labs l LEFT JOIN (${fc}) fc USING (lab_id) WHERE choice_id IS NULL`;
         strictEqual(rest.length, 0);
