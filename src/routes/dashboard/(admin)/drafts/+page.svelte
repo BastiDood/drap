@@ -1,9 +1,9 @@
 <script>
     import { ArrowRight, ShieldExclamation } from '@steeze-ui/heroicons';
-    import WarningAlert from '$lib/alerts/Warning.svelte';
     import { Icon } from '@steeze-ui/svelte-icon';
     import LotteryStudent from './LotteryStudent.svelte';
     import Student from '$lib/users/Student.svelte';
+    import WarningAlert from '$lib/alerts/Warning.svelte';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
     import { format } from 'date-fns';

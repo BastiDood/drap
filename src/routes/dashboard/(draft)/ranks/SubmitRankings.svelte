@@ -128,10 +128,11 @@
     <div class="space-y-2">
         {#each selectedLabs as { lab_id, lab_name }, idx (lab_id)}
             <div
-                class="card grid grid-cols-[1fr_auto_auto_auto] items-center gap-2 p-4"
+                class="card card-hover grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-4 p-4"
                 transition:slide={{ duration: 120 }}
             >
                 <input type="hidden" name="labs" value={lab_id} />
+                <span class="text-md variant-filled-secondary badge-icon p-4 text-lg font-bold">{idx + 1}</span>
                 <span>{lab_name}</span>
                 <button
                     type="button"
@@ -164,7 +165,7 @@
 <div class="space-y-2">
     {#each availableLabs as { lab_id, lab_name }, idx (lab_id)}
         <button
-            class="card w-full {cardCursor} appearance-none p-4 {cardOpacity} transition"
+            class="card card-hover w-full {cardCursor} appearance-none p-4 {cardOpacity} transition"
             transition:slide={{ duration: 120 }}
             on:click={selectLab.bind(null, idx)}>{lab_name}</button
         >
