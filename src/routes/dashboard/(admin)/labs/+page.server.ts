@@ -41,7 +41,7 @@ export const actions = {
         if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
 
         const draft = await db.getActiveDraft();
-        if (draft !== null) error(403);
+        if (draft !== null && draft.curr_round !== null) error(403);
 
         const data = await request.formData();
         await db.updateLabQuotas(mapRowTuples(data));

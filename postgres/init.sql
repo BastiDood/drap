@@ -58,17 +58,19 @@ CREATE SCHEMA drap
         PRIMARY KEY (draft_id, email)
     )
     CREATE TABLE faculty_choices (
+        choice_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
         draft_id BIGINT NOT NULL REFERENCES drafts (draft_id),
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        round SMALLINT NOT NULL CONSTRAINT non_negative_round CHECK (round > 0),
+        round SMALLINT CONSTRAINT non_negative_round CHECK (round > 0),
         lab_id TEXT NOT NULL REFERENCES labs (lab_id),
         faculty_email TEXT REFERENCES users (email),
-        PRIMARY KEY (draft_id, round, lab_id)
+        UNIQUE NULLS NOT DISTINCT (draft_id, round, lab_id)
     )
     CREATE TABLE faculty_choices_emails (
         choice_email_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
         draft_id BIGINT NOT NULL REFERENCES drafts (draft_id),
-        round SMALLINT NOT NULL CONSTRAINT non_negative_round CHECK (round > 0),
+        -- TODO: How do we enforce `round BETWEEN 0 AND max_rounds`?
+        round SMALLINT CONSTRAINT non_negative_round CHECK (round > 0),
         lab_id TEXT NOT NULL REFERENCES labs (lab_id),
         student_email TEXT NOT NULL REFERENCES users (email),
         -- TODO: How do we enforce `student_email <> faculty_email`?

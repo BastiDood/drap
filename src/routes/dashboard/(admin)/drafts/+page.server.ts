@@ -1,7 +1,8 @@
+import { error, fail } from '@sveltejs/kit';
+import { repeat, roundrobin, zip } from 'itertools';
+import { validateEmail, validateString } from '$lib/forms';
 import assert from 'node:assert/strict';
-import { error } from '@sveltejs/kit';
 import groupBy from 'just-group-by';
-import { validateString } from '$lib/forms';
 
 export async function load({ locals: { db }, parent }) {
     const { user, draft } = await parent();
@@ -17,7 +18,7 @@ export async function load({ locals: { db }, parent }) {
 function* mapRowTuples(data: FormData) {
     for (const [email, lab] of data.entries()) {
         if (lab instanceof File || lab.length === 0) continue;
-        yield [email, lab] as const;
+        yield [validateEmail(email), lab] as const;
     }
 }
 
@@ -72,9 +73,10 @@ export const actions = {
 
         const data = await request.formData();
         const draft = BigInt(validateString(data.get('draft')));
-        await db.insertLotteryChoices(draft, user.email, mapRowTuples(data));
+        data.delete('draft');
+        await db.insertLotteryChoices(draft, user.email, Array.from(mapRowTuples(data)));
     },
-    async conclude({ locals: { db }, cookies }) {
+    async conclude({ locals: { db }, cookies, request }) {
         const sid = cookies.get('sid');
         if (typeof sid === 'undefined') error(401);
 
@@ -82,7 +84,19 @@ export const actions = {
         if (user === null) error(401);
         if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
 
+        const data = await request.formData();
+        const draft = BigInt(validateString(data.get('draft')));
+
         // TODO: Assert that we are indeed in the lottery phase.
-        // TODO: Run randomization phase.
+
+        const labs = await db.getLabRegistry();
+        const schedule = Array.from(roundrobin(...labs.map(({ lab_id, quota }) => repeat(lab_id, quota))));
+        return await db.begin(async db => {
+            const emails = await db.randomizeRemainingStudents(draft);
+            if (emails.length !== schedule.length) return fail(400);
+            await db.insertLotteryChoices(draft, user.email, zip(emails, schedule));
+            const concludeDraft = await db.concludeDraft(draft);
+            db.logger.info({ concludeDraft });
+        });
     },
 };

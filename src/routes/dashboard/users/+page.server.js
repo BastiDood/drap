@@ -1,5 +1,5 @@
 import { error, fail } from '@sveltejs/kit';
-import { validateString } from '$lib/forms';
+import { validateEmail, validateString } from '$lib/forms';
 
 export async function load({ locals: { db }, parent }) {
     const { user } = await parent();
@@ -19,7 +19,7 @@ export const actions = {
         if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
 
         const data = await request.formData();
-        const email = validateString(data.get('email'));
+        const email = validateEmail(data.get('email'));
         const lab = validateString(data.get('invite'));
         if (await db.inviteNewFacultyOrStaff(email, lab)) return;
         return fail(409);

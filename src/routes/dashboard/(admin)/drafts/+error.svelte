@@ -6,12 +6,14 @@
     import { enhance } from '$app/forms';
     import { getToastStore } from '@skeletonlabs/skeleton';
     import { page } from '$app/stores';
+    import { validateString } from '$lib/forms';
 
     const toast = getToastStore();
     $: ({ status, error } = $page);
 </script>
 
 {#if status === 499}
+    <!-- TODO: Add reminder about setting the lab quota. -->
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
         <div class="prose dark:prose-invert">
             <h2>Start a New Draft</h2>
@@ -28,7 +30,12 @@
             method="post"
             action="?/init"
             class="min-w-max"
-            use:enhance={({ submitter }) => {
+            use:enhance={({ formData, submitter, cancel }) => {
+                const rounds = parseInt(validateString(formData.get('rounds')), 10);
+                if (!confirm(`Are you sure you want to start a new draft with ${rounds} rounds?`)) {
+                    cancel();
+                    return;
+                }
                 assert(submitter !== null);
                 assert(submitter instanceof HTMLButtonElement);
                 submitter.disabled = true;

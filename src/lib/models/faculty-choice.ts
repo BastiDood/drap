@@ -1,12 +1,13 @@
-import { type InferOutput, bigint, date, minValue, number, object, pipe, safeInteger } from 'valibot';
+import { type InferOutput, bigint, date, object } from 'valibot';
 import { Draft } from '$lib/models/draft';
 import { Lab } from '$lib/models/lab';
 import { User } from '$lib/models/user';
 
 export const FacultyChoice = object({
+    choice_id: bigint(),
     draft_id: Draft.entries.draft_id,
     created_at: date(),
-    round: pipe(number(), safeInteger(), minValue(0)),
+    round: Draft.entries.curr_round,
     lab_id: Lab.entries.lab_id,
     faculty_email: User.entries.email,
 });

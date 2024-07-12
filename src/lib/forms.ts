@@ -1,8 +1,17 @@
+import { User } from '$lib/models/user';
 import { error } from '@sveltejs/kit';
+import { safeParse } from 'valibot';
 
 export function validateString(param: FormDataEntryValue | null) {
     if (param === null || param instanceof File || param.length === 0) error(400, 'expected string paramater');
     return param;
+}
+
+export function validateEmail(param: FormDataEntryValue | null) {
+    const email = validateString(param);
+    const result = safeParse(User.entries.email, email);
+    if (result.success) return result.output;
+    error(400, 'expected email parameter');
 }
 
 export function maybeValidateBigInt(param: FormDataEntryValue | null) {

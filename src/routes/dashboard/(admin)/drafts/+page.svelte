@@ -57,6 +57,7 @@
                 </li>
             </ul>
             <p>
+                <!-- TODO: Add reminder about resetting the lab quota. -->
                 When ready, administrators can press the <strong>"Conclude Draft"</strong> button to proceed with the randomization
                 stage. The list of students will be randomly shuffled and distributed among the labs in a round-robin fashion.
                 To uphold fairness, it is important that uneven distributions are manually resolved beforehand.
@@ -70,19 +71,38 @@
                 method="post"
                 class="not-prose"
                 use:enhance={({ submitter, cancel }) => {
-                    if (!confirm('Are you sure you want to apply these interventions?')) {
+                    if (!confirm('Are you sure you want to conclude this draft?')) {
                         cancel();
                         return;
                     }
                     assert(submitter !== null);
                     assert(submitter instanceof HTMLButtonElement);
                     submitter.disabled = true;
-                    return async ({ update }) => {
+                    return async ({ update, result }) => {
                         submitter.disabled = false;
                         await update();
+                        switch (result.type) {
+                            case 'failure':
+                                switch (result.status) {
+                                    case 400:
+                                        toast.trigger({
+                                            message:
+                                                'Failed to conclude the draft. The number of draftees do not match the total quota of all labs.',
+                                            background: 'variant-filled-error',
+                                            autohide: false,
+                                        });
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                break;
+                            default:
+                                break;
+                        }
                     };
                 }}
             >
+                <input type="hidden" name="draft" value={draft_id} />
                 <button type="submit" class="variant-filled-primary btn btn-lg w-full">
                     <Icon src={ArrowRight} class="size-8" />
                     <span>Conclude Draft</span>
@@ -91,7 +111,7 @@
         </div>
         <div class="min-w-max space-y-2">
             <nav class="card list-nav variant-ghost-warning space-y-4 p-4">
-                <h3 class="h3">Eligible for Lottery</h3>
+                <h3 class="h3">Eligible for Lottery ({available.length})</h3>
                 {#if available.length > 0}
                     <form
                         action="?/intervene"
@@ -139,7 +159,7 @@
                 {/if}
             </nav>
             <nav class="card list-nav variant-ghost-success space-y-4 p-4">
-                <h3 class="h3">Already Drafted</h3>
+                <h3 class="h3">Already Drafted ({selected.length})</h3>
                 <ul class="list">
                     {#each selected as user (user.email)}
                         <li><Student {user} /></li>

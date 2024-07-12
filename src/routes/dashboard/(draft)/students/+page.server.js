@@ -1,6 +1,6 @@
+import { validateEmail, validateString } from '$lib/forms';
 import assert from 'node:assert/strict';
 import { error } from '@sveltejs/kit';
-import { validateString } from '$lib/forms';
 
 export async function load({ locals: { db }, parent }) {
     const { user, draft } = await parent();
@@ -26,7 +26,7 @@ export const actions = {
 
         const data = await request.formData();
         const draft = BigInt(validateString(data.get('draft')));
-        const students = data.getAll('students').map(validateString);
+        const students = data.getAll('students').map(validateEmail);
 
         const { quota, selected } = await db.getLabQuotaAndSelectedStudentCountInDraft(draft, user.lab_id);
         assert(quota !== null);

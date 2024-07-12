@@ -19,7 +19,16 @@
     $: remainingDraftees = remainingQuota - draftees.length;
 </script>
 
-{#if curr_round !== null && students.length > 0}
+{#if curr_round === null}
+    <WarningAlert
+        >The draft is now in the lottery stage. Kindly contact the draft administrators on how to proceed.</WarningAlert
+    >
+{:else if curr_round === 0}
+    <WarningAlert
+        >Students are still registering for this draft. Kindly wait for the draft administrators to officially open the
+        draft.</WarningAlert
+    >
+{:else if students.length > 0}
     {@const suffix = getOrdinalSuffix(curr_round)}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
         <div class="prose dark:prose-invert">
@@ -117,5 +126,4 @@
             {/each}
         </ul>
     </nav>
-    <ListBox multiple rounded="rounded" disabled></ListBox>
 {/if}
