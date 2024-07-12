@@ -243,10 +243,12 @@ export class Database implements Loggable {
     }
 
     @timed async autoAcknowledgeLabsWithoutPreferences(draft: Draft['draft_id']) {
-        // TODO: Auto-acknowledge labs without quota left as well.
         const sql = this.#sql;
-        const { count } =
-            await sql`INSERT INTO drap.faculty_choices (draft_id, round, lab_id) WITH d AS (SELECT draft_id, curr_round FROM drap.drafts WHERE draft_id = ${draft}) SELECT draft_id, curr_round, lab_id FROM d, (SELECT lab_id FROM drap.labs EXCEPT SELECT labs[curr_round] lab_id FROM d JOIN drap.student_ranks USING (draft_id) LEFT JOIN drap.faculty_choices_emails fce ON email = student_email WHERE student_email IS NULL) _;`;
+        const d = sql`SELECT draft_id, curr_round FROM drap.drafts WHERE draft_id = ${draft}`;
+        const drafted = sql`SELECT lab_id, count(student_email) draftees FROM draft JOIN drap.faculty_choices_emails USING (draft_id) GROUP BY lab_id`;
+        const selected = sql`SELECT labs[curr_round] lab_id FROM draft JOIN drap.student_ranks USING (draft_id) LEFT JOIN drap.faculty_choices_emails ON email = student_email WHERE student_email IS NULL`;
+        const values = sql`WITH d AS (${d}), drafted AS (${drafted}), selected AS (${selected}) SELECT draft_id, curr_round, lab_id FROM draft, drap.labs LEFT JOIN drafted USING (lab_id) LEFT JOIN selected USING (lab_id) WHERE coalesce(draftees, 0) < quota`;
+        const { count } = await sql`INSERT INTO drap.faculty_choices (draft_id, round, lab_id) ${values}`;
         return count;
     }
 
