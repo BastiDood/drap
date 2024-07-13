@@ -1,0 +1,11 @@
+<script>
+    import ErrorAlert from '$lib/alerts/Error.svelte';
+    import { page } from '$app/stores';
+    $: ({ status, error } = $page);
+</script>
+
+{#if error !== null}
+    <ErrorAlert><strong>{status}:</strong> {error.message}</ErrorAlert>
+{:else}
+    <ErrorAlert><strong>{status}</strong></ErrorAlert>
+{/if}
