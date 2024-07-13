@@ -30,10 +30,9 @@
                     </li>
                 {:else if curr_round === null}
                     <!-- Lottery Stage -->
-                    <li class="card variant-ghost-tertiary">
+                    <li class="card variant-ghost-secondary">
                         <a href="/history/{draft_id}/">
                             <Icon src={Sparkles} class="size-8" />
-                            <span>&num;{draft_id}</span>
                             <span class="flex-auto"
                                 ><strong>Draft &num;{draft_id}</strong> started on
                                 <time datetime={active_period_start.toISOString()}>{start}</time> and is now in the
@@ -43,7 +42,7 @@
                     </li>
                 {:else if curr_round === 0}
                     <!-- Registration Stage -->
-                    <li class="card variant-soft-tertiary">
+                    <li class="card variant-ghost-tertiary">
                         <a href="/history/{draft_id}/">
                             <Icon src={Clock} class="size-8" />
                             <span class="flex-auto"

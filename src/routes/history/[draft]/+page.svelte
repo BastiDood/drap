@@ -25,7 +25,7 @@
 {:else if curr_round === null}
     <!-- Lottery Stage -->
     <ProgressBar meter="bg-primary-500-400-token" />
-    <div class="alert variant-ghost-tertiary">
+    <div class="alert variant-ghost-secondary">
         <Icon src={Sparkles} class="size-8" />
         <div class="alert-message">
             This draft started last <strong><time datetime={active_period_start.toISOString()}>{start}</time></strong> and
@@ -34,7 +34,7 @@
     </div>
 {:else if curr_round === 0}
     <!-- Registration Stage -->
-    <div class="alert variant-soft-tertiary">
+    <div class="alert variant-ghost-tertiary">
         <Icon src={Clock} class="size-8" />
         <div class="alert-message">
             This draft started last <strong><time datetime={active_period_start.toISOString()}>{start}</time></strong> and
