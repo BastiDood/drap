@@ -69,8 +69,7 @@ CREATE SCHEMA drap
     CREATE TABLE faculty_choices_emails (
         choice_email_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
         draft_id BIGINT NOT NULL REFERENCES drafts (draft_id),
-        -- TODO: How do we enforce `round BETWEEN 0 AND max_rounds`?
-        round SMALLINT CONSTRAINT non_negative_round CHECK (round > 0),
+        round SMALLINT,
         lab_id TEXT NOT NULL REFERENCES labs (lab_id),
         student_email TEXT NOT NULL REFERENCES users (email),
         -- TODO: How do we enforce `student_email <> faculty_email`?
