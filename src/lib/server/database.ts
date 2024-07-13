@@ -307,7 +307,7 @@ export class Database implements Loggable {
     @timed async randomizeRemainingStudents(draft: Draft['draft_id']) {
         const sql = this.#sql;
         const emails =
-            await sql`SELECT email FROM drap.student_ranks sr LEFT JOIN drap.faculty_choices_emails ON email = student_email WHERE sr.draft_id = ${draft} AND student_email IS NULL ORDER BY random()`;
+            await sql`SELECT email FROM drap.student_ranks sr LEFT JOIN drap.faculty_choices_emails fce ON (sr.draft_id, email) = (fce.draft_id, student_email) WHERE sr.draft_id = ${draft} AND student_email IS NULL ORDER BY random()`;
         return parse(UserEmails, emails).map(({ email }) => email);
     }
 
