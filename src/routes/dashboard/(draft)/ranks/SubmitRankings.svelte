@@ -6,7 +6,6 @@
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
     import { getToastStore } from '@skeletonlabs/skeleton';
-    import { slide } from 'svelte/transition';
 
     import ErrorAlert from '$lib/alerts/Error.svelte';
     import WarningAlert from '$lib/alerts/Warning.svelte';
@@ -24,8 +23,6 @@
     $: remaining = maxRounds - selectedLabs.length;
     $: hasRemaining = remaining > 0;
     $: cardVariant = hasRemaining ? 'variant-ghost-primary' : 'variant-ghost-secondary';
-    $: cardCursor = hasRemaining ? 'cursor-pointer' : 'cursor-not-allowed';
-    $: cardOpacity = hasRemaining ? 'opacity-100' : 'opacity-50';
 
     function selectLab(index: number) {
         if (selectedLabs.length >= maxRounds) return;
@@ -125,51 +122,55 @@
         <button type="submit" class="variant-filled-primary btn">Submit Lab Preferences</button>
     </div>
     <hr class="!border-surface-400-500-token !border-t-4" />
-    <div class="space-y-2">
-        {#each selectedLabs as { lab_id, lab_name }, idx (lab_id)}
-            <div
-                class="card card-hover grid grid-cols-[auto_1fr_auto_auto_auto] items-center gap-4 p-4"
-                transition:slide={{ duration: 120 }}
-            >
+    {#if selectedLabs.length > 0}
+        <ol class="list">
+            {#each selectedLabs as { lab_id, lab_name }, idx (lab_id)}
                 <input type="hidden" name="labs" value={lab_id} />
-                <span class="text-md variant-filled-secondary badge-icon p-4 text-lg font-bold">{idx + 1}</span>
-                <span>{lab_name}</span>
-                <button
-                    type="button"
-                    class="variant-filled-success btn-icon btn-icon-sm"
-                    on:click={moveLabUp.bind(null, idx)}
-                >
-                    <Icon src={ArrowUp} class="size-6" />
-                </button>
-                <button
-                    type="button"
-                    class="variant-filled-warning btn-icon btn-icon-sm"
-                    on:click={moveLabDown.bind(null, idx)}
-                >
-                    <Icon src={ArrowDown} class="size-6" />
-                </button>
-                <button
-                    type="button"
-                    class="variant-filled-error btn-icon btn-icon-sm"
-                    on:click={resetSelection.bind(null, idx)}
-                >
-                    <Icon src={XMark} class="size-6" />
-                </button>
-            </div>
-        {:else}
-            <WarningAlert>No labs selected yet.</WarningAlert>
-        {/each}
-    </div>
+                <li class="card variant-ghost-surface card-hover p-4">
+                    <span class="text-md variant-filled-secondary badge-icon p-4 text-lg font-bold">{idx + 1}</span>
+                    <span class="flex-auto">{lab_name}</span>
+                    <span class="flex gap-2">
+                        <button
+                            type="button"
+                            class="variant-filled-success btn-icon btn-icon-sm"
+                            on:click={moveLabUp.bind(null, idx)}
+                        >
+                            <Icon src={ArrowUp} class="size-6" />
+                        </button>
+                        <button
+                            type="button"
+                            class="variant-filled-warning btn-icon btn-icon-sm"
+                            on:click={moveLabDown.bind(null, idx)}
+                        >
+                            <Icon src={ArrowDown} class="size-6" />
+                        </button>
+                        <button
+                            type="button"
+                            class="variant-filled-error btn-icon btn-icon-sm"
+                            on:click={resetSelection.bind(null, idx)}
+                        >
+                            <Icon src={XMark} class="size-6" />
+                        </button>
+                    </span>
+                </li>
+            {/each}
+        </ol>
+    {:else}
+        <WarningAlert>No labs selected yet.</WarningAlert>
+    {/if}
 </form>
 <hr class="!border-surface-400-500-token !border-t-4" />
-<div class="space-y-2">
-    {#each availableLabs as { lab_id, lab_name }, idx (lab_id)}
-        <button
-            class="card card-hover w-full {cardCursor} appearance-none p-4 {cardOpacity} transition"
-            transition:slide={{ duration: 120 }}
-            on:click={selectLab.bind(null, idx)}>{lab_name}</button
-        >
-    {:else}
-        <ErrorAlert>No more labs with remaining slots left.</ErrorAlert>
-    {/each}
-</div>
+{#if availableLabs.length > 0}
+    <ul class="list">
+        {#each availableLabs as { lab_id, lab_name }, idx (lab_id)}
+            <li>
+                <button
+                    class="card variant-soft-surface card-hover flex-auto p-4 transition"
+                    on:click={selectLab.bind(null, idx)}>{lab_name}</button
+                >
+            </li>
+        {/each}
+    </ul>
+{:else}
+    <ErrorAlert>No more labs with remaining slots left.</ErrorAlert>
+{/if}
