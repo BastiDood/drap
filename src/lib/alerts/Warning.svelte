@@ -3,9 +3,7 @@
     import { ExclamationTriangle as src } from '@steeze-ui/heroicons';
 </script>
 
-<div class="alert variant-soft-warning flex flex-row items-center gap-x-2">
+<div class="alert variant-soft-warning">
     <Icon {src} class="size-8" />
-    <div class="!mt-0 contents">
-        <slot />
-    </div>
+    <div class="alert-message"><slot /></div>
 </div>
