@@ -1,4 +1,4 @@
-import { type InferOutput, array, bigint, nullable, object, parse, pick } from 'valibot';
+import { type InferOutput, array, bigint, boolean, nullable, object, parse, pick } from 'valibot';
 import { type Loggable, timed } from '$lib/decorators';
 import { fail, strictEqual } from 'node:assert/strict';
 import type { Logger } from 'pino';
@@ -18,6 +18,12 @@ const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
 const Drafts = array(Draft);
+const DraftEvents = array(
+    object({
+        ...pick(FacultyChoice, ['created_at', 'round', 'lab_id']).entries,
+        is_system: boolean(),
+    }),
+);
 const DraftMaxRounds = pick(Draft, ['max_rounds']);
 const IncrementedDraftRound = pick(Draft, ['curr_round', 'max_rounds']);
 const LabQuota = pick(Lab, ['quota']);
@@ -387,6 +393,13 @@ export class Database implements Loggable {
             await sql`SELECT count(lab_id) FROM drap.labs l LEFT JOIN (${fc}) fc USING (lab_id) WHERE choice_id IS NULL`;
         strictEqual(rest.length, 0);
         return parse(CountResult, first).count;
+    }
+
+    @timed async getDraftEvents(draft: Draft['draft_id']) {
+        const sql = this.#sql;
+        const events =
+            await sql`SELECT created_at, round, lab_id, (faculty_email IS NULL) is_system FROM drap.faculty_choices WHERE draft_id = ${draft} ORDER BY created_at DESC`;
+        return parse(DraftEvents, events);
     }
 
     @timed async inviteNewFacultyOrStaff(email: User['email'], lab: User['lab_id']) {

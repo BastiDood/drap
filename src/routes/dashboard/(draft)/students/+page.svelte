@@ -3,7 +3,7 @@
     import WarningAlert from '$lib/alerts/Warning.svelte';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
-    import { getOrdinalSuffix } from './ordinal';
+    import { getOrdinalSuffix } from '$lib/ordinal';
 
     // eslint-disable-next-line init-declarations
     export let data;

@@ -1,12 +1,22 @@
 import { error } from '@sveltejs/kit';
 
-export async function load({ locals: { db }, params: { draft: id } }) {
+/** @param {string} text */
+function validateBigInt(text) {
     try {
-        const draft = await db.getDraftById(BigInt(id));
-        if (draft === null) error(404, 'Draft not found.');
-        return { id, draft };
+        return BigInt(text);
     } catch (err) {
-        if (err instanceof SyntaxError) error(404, 'Invalid draft ID.');
+        if (err instanceof SyntaxError) return null;
         throw err;
     }
+}
+
+export async function load({ locals: { db }, params: { draft: id } }) {
+    const did = validateBigInt(id);
+    if (did === null) error(404, 'Invalid draft ID.');
+
+    const draft = await db.getDraftById(did);
+    if (draft === null) error(404, 'Draft not found.');
+
+    const events = await db.getDraftEvents(did);
+    return { did, draft, events };
 }
