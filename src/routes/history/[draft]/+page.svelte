@@ -110,7 +110,7 @@
                                 <li class="card variant-soft-surface px-3 py-1.5">
                                     <Icon src={Cog} class="size-4" theme="micro" />
                                     <span class="flex-auto"
-                                        >The system has skipped <strong class="uppercase">{lab_id}</strong> for the {ordinal}
+                                        >The system has skipped the <strong class="uppercase">{lab_id}</strong> for the {ordinal}
                                         round due to insufficient quota and/or zero demand.</span
                                     >
                                 </li>
