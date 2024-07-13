@@ -1,4 +1,17 @@
-import { type InferOutput, array, bigint, boolean, date, nullable, object, parse, pick, pipe, string, transform } from 'valibot';
+import {
+    type InferOutput,
+    array,
+    bigint,
+    boolean,
+    date,
+    nullable,
+    object,
+    parse,
+    pick,
+    pipe,
+    string,
+    transform,
+} from 'valibot';
 import { type Loggable, timed } from '$lib/decorators';
 import { fail, strictEqual } from 'node:assert/strict';
 import type { Logger } from 'pino';
@@ -21,10 +34,10 @@ const CreatedFacultyChoice = pick(FacultyChoice, ['choice_id', 'created_at']);
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration', 'is_new_sender']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
 const DesignatedSender = object({
-    'expires_at': date(),
-    'email': string(),
-    'access_token': string(),
-    'refresh_token': nullable(string())
+    expires_at: date(),
+    email: string(),
+    access_token: string(),
+    refresh_token: nullable(string()),
 });
 const Drafts = array(Draft);
 const DraftEvents = array(
@@ -41,10 +54,10 @@ const Emails = array(
     ),
 );
 const EmailerCredentails = object({
-    'user_id': string(),
-    'email': string(),
-    'access_token': string(),
-    'refresh_token': nullable(string())
+    user_id: string(),
+    email: string(),
+    access_token: string(),
+    refresh_token: nullable(string()),
 });
 const IncrementedDraftRound = pick(Draft, ['curr_round', 'max_rounds']);
 const LabQuota = pick(Lab, ['quota']);
@@ -392,14 +405,14 @@ export class Database implements Loggable {
         const sql = this.#sql;
         const [first, ...rest] = await sql`SELECT * FROM drap.designated_sender`;
         strictEqual(rest.length, 0);
-        
+
         if (typeof first === 'undefined') return;
 
         const { email } = first;
-        const [firstUser, ...restUsers] = 
+        const [firstUser, ...restUsers] =
             await sql`SELECT user_id, email, access_token, refresh_token FROM drap.users WHERE email = ${email}`;
         strictEqual(restUsers.length, 0);
-        return typeof firstUser === 'undefined' ? null : parse(EmailerCredentails, firstUser)
+        return typeof firstUser === 'undefined' ? null : parse(EmailerCredentails, firstUser);
     }
 
     @timed async deleteDesignatedSender() {
