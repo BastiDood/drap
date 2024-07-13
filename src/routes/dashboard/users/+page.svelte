@@ -22,9 +22,9 @@
     const toast = getToastStore();
 </script>
 
-<h1 class="h1">Users</h1>
+<h2 class="h2">Users</h2>
 <div class="card space-y-4 p-4">
-    <h2 class="h2">Lab Heads</h2>
+    <h3 class="h3">Lab Heads</h3>
     <form
         method="post"
         action="?/faculty"
@@ -76,7 +76,7 @@
     </form>
     <div class="grid grid-cols-1 md:grid-cols-2">
         <nav class="list-nav space-y-2">
-            <h3 class="h3">Invited</h3>
+            <h4 class="h4">Invited</h4>
             <ul>
                 {#each invitedHeads as head (head.email)}
                     <li><Faculty user={head} /></li>
@@ -84,7 +84,7 @@
             </ul>
         </nav>
         <nav class="list-nav space-y-2">
-            <h3 class="h3">Registered</h3>
+            <h4 class="h4">Registered</h4>
             <ul>
                 {#each registeredHeads as head (head.email)}
                     <li><Faculty user={head} /></li>
@@ -94,7 +94,7 @@
     </div>
 </div>
 <div class="card space-y-4 p-4">
-    <h2 class="h2">Draft Administrators</h2>
+    <h3 class="h3">Draft Administrators</h3>
     <form
         method="post"
         action="?/admin"
@@ -137,7 +137,7 @@
     </form>
     <div class="grid grid-cols-1 md:grid-cols-2">
         <nav class="list-nav space-y-2">
-            <h3 class="h3">Invited</h3>
+            <h4 class="h4">Invited</h4>
             <ul>
                 {#each invitedAdmins as head (head.email)}
                     <li><Faculty user={head} /></li>
@@ -145,7 +145,7 @@
             </ul>
         </nav>
         <nav class="list-nav space-y-2">
-            <h3 class="h3">Registered</h3>
+            <h4 class="h4">Registered</h4>
             <ul>
                 {#each registeredAdmins as head (head.email)}
                     <li><Faculty user={head} /></li>
