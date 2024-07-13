@@ -24,6 +24,7 @@
         events,
     } = data);
 
+    // TODO: How do we merge the creation and conclusion events into the same array?
     $: entries = Array.from(
         groupby(events, ({ created_at }) => getUnixTime(created_at)),
         ([timestamp, events]) => [timestamp, Array.from(events)] as const,
@@ -31,15 +32,19 @@
 
     $: startDateTime = format(active_period_start, 'PPPpp');
     $: startIsoString = active_period_start.toISOString();
+    $: end =
+        active_period_end === null
+            ? null
+            : { endDateTime: format(active_period_end, 'PPPpp'), endIsoString: active_period_end.toISOString() };
 </script>
 
 <h2 class="h2">Draft &num;{did}</h2>
-{#if active_period_end !== null}
-    {@const end = format(active_period_end, 'PPPpp')}
+{#if end !== null}
+    {@const { endIsoString, endDateTime } = end}
     <!-- Concluded Draft -->
     <Success>
         This draft was held from <strong><time datetime={startIsoString}>{startDateTime}</time></strong>
-        &ndash; <strong><time datetime={active_period_end.toISOString()}>{end}</time></strong> over {max_rounds} rounds.
+        &ndash; <strong><time datetime={endIsoString}>{endDateTime}</time></strong> over {max_rounds} rounds.
     </Success>
 {:else if curr_round === null}
     <!-- Lottery Stage -->
@@ -73,6 +78,21 @@
 {/if}
 <section class="p-4">
     <ol class="border-surface-500-400-token relative border-s">
+        {#if end !== null}
+            {@const { endIsoString, endDateTime } = end}
+            <li class="mb-10 ms-6">
+                <span
+                    class="bg-primary-300-600-token ring-primary-900-50-token absolute -start-3 flex size-6 items-center justify-center rounded-full ring-2"
+                    ><Icon src={CalendarDays} class="size-4" theme="micro" /></span
+                >
+                <h4 class="h4 mb-2"><time datetime={endIsoString}>{endDateTime}</time></h4>
+                <ol class="list">
+                    <li class="card variant-ghost-success px-3 py-1.5">
+                        <span class="flex-auto">Draft &num;{did} was concluded.</span>
+                    </li>
+                </ol>
+            </li>
+        {/if}
         {#each entries as [unix, events] (unix)}
             {@const date = fromUnixTime(unix)}
             {@const heading = format(date, 'PPPpp')}
