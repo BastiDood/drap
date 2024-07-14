@@ -1,17 +1,19 @@
 <script lang="ts">
     import {
         AcademicCap,
+        ArrowRightStartOnRectangle,
         Beaker,
         ClipboardDocumentList,
         Clock,
         Home,
         QueueList,
-        UserCircle,
         Users,
     } from '@steeze-ui/heroicons';
     import { AppRail, AppRailAnchor, Avatar, LightSwitch } from '@skeletonlabs/skeleton';
     import { Icon } from '@steeze-ui/svelte-icon';
     import type { User } from '$lib/models/user';
+    import { assert } from '$lib/assert';
+    import { enhance } from '$app/forms';
     import { page } from '$app/stores';
 
     // eslint-disable-next-line init-declarations
@@ -30,7 +32,7 @@
     </AppRailAnchor>
     {#if typeof user !== 'undefined' && user.user_id !== null}
         <AppRailAnchor href="/profile/" selected={pathname === '/profile/'}>
-            <Icon src={UserCircle} slot="lead" class="h-8" />
+            <Avatar slot="lead" width="w-8" src={user.avatar} />
             <span>Profile</span>
         </AppRailAnchor>
         {#if user.lab_id === null}
@@ -67,9 +69,26 @@
         <Icon src={Clock} slot="lead" class="h-8" />
         <span>History</span>
     </AppRailAnchor>
-    <div slot="trail" class="my-4 flex aspect-square flex-col items-center justify-center gap-2">
+    <svelte:fragment slot="trail">
         {#if typeof user !== 'undefined'}
-            <Avatar src={user.avatar} />
+            <form
+                method="post"
+                action="/?/logout"
+                class="p-2"
+                use:enhance={({ submitter }) => {
+                    assert(submitter !== null);
+                    assert(submitter instanceof HTMLButtonElement);
+                    submitter.disabled = true;
+                    return async ({ update }) => {
+                        submitter.disabled = false;
+                        await update();
+                    };
+                }}
+            >
+                <button type="submit" class="variant-soft-primary btn-icon btn-icon-sm aspect-square w-full">
+                    <Icon slot="trail" src={ArrowRightStartOnRectangle} class="w-full p-2" />
+                </button>
+            </form>
         {/if}
-    </div>
+    </svelte:fragment>
 </AppRail>
