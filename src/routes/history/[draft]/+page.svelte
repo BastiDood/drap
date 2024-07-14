@@ -48,7 +48,7 @@
     </Success>
 {:else if curr_round === null}
     <!-- Lottery Stage -->
-    <ProgressBar meter="bg-primary-500-400-token" />
+    <ProgressBar meter="bg-primary-600-300-token" />
     <div class="alert variant-ghost-secondary">
         <Icon src={Sparkles} class="size-8" />
         <div class="alert-message">
@@ -67,7 +67,7 @@
     </div>
 {:else}
     <!-- Regular Draft Process -->
-    <ProgressBar max={max_rounds} value={curr_round} meter="bg-primary-500-400-token" />
+    <ProgressBar max={max_rounds} value={curr_round} meter="bg-primary-600-300-token" />
     <div class="alert variant-soft-secondary">
         <Icon src={Scale} class="size-8" />
         <div class="alert-message">
