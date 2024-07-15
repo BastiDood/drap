@@ -173,6 +173,13 @@ export class Database implements Loggable {
         return parse(RegisteredLabs, labs);
     }
 
+    @timed async isValidTotalLabQuota() {
+        const sql = this.#sql;
+        const [first, ...rest] = await sql`SELECT bool_or(quota > 0) result FROM drap.labs`;
+        strictEqual(rest.length, 0);
+        return parse(BooleanResult, first).result;
+    }
+
     @timed async getLabCountAndStudentCount(draft: Draft['draft_id']) {
         const [[labCount, ...labRest], [studentCount, ...studentRest]] = await this.#sql.begin(
             sql =>

@@ -34,6 +34,9 @@ export const actions = {
         if (user === null) error(401);
         if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
 
+        const isValid = await db.isValidTotalLabQuota();
+        if (!isValid) error(403);
+
         const data = await request.formData();
         const rounds = parseInt(validateString(data.get('rounds')), 10);
         const initDraft = await db.initDraft(rounds);
