@@ -1,4 +1,4 @@
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 
 export const actions = {
     async logout({ locals: { db }, cookies }) {
@@ -10,5 +10,6 @@ export const actions = {
         else db.logger.info({ deleteValidSession: session });
 
         cookies.delete('sid', { path: '/', httpOnly: true, sameSite: 'lax' });
+        redirect(302, '/');
     },
 };
