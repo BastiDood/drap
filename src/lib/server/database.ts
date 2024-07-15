@@ -1,17 +1,4 @@
-import {
-    type InferOutput,
-    array,
-    bigint,
-    boolean,
-    date,
-    nullable,
-    object,
-    parse,
-    pick,
-    pipe,
-    string,
-    transform,
-} from 'valibot';
+import { type InferOutput, array, bigint, boolean, date, nullable, object, parse, pick, string } from 'valibot';
 import { type Loggable, timed } from '$lib/decorators';
 import { fail, strictEqual } from 'node:assert/strict';
 import type { Logger } from 'pino';
@@ -46,12 +33,6 @@ const DraftEvents = array(
     }),
 );
 const DraftMaxRounds = pick(Draft, ['max_rounds']);
-const Emails = array(
-    pipe(
-        pick(User, ['email']),
-        transform(({ email }) => email),
-    ),
-);
 const EmailerCredentails = object({
     user_id: string(),
     email: string(),
