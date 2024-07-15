@@ -12,6 +12,7 @@ import { StudentRank } from '$lib/models/student-rank';
 import { User } from '$lib/models/user';
 
 const AvailableLabs = array(pick(Lab, ['lab_id', 'lab_name']));
+const BooleanResult = object({ result: boolean() });
 const CountResult = object({ count: bigint() });
 const CreatedLab = pick(Lab, ['lab_id']);
 const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
@@ -239,20 +240,23 @@ export class Database implements Loggable {
         draft: Draft['draft_id'],
         lab: StudentRank['labs'][number],
     ) {
-        const [[first, ...rest], available, selected] = await this.#sql.begin(
+        const [[labs, ...labsRest], available, selected, [isDone, ...doneRest]] = await this.#sql.begin(
             'ISOLATION LEVEL REPEATABLE READ',
             sql =>
                 [
                     sql`SELECT lab_name, quota FROM drap.labs WHERE lab_id = ${lab}`,
                     sql`SELECT email, given_name, family_name, avatar, student_number FROM drap.student_ranks sr JOIN drap.drafts USING (draft_id) LEFT JOIN drap.faculty_choices_emails fce ON (sr.draft_id, email) = (fce.draft_id, student_email) JOIN drap.users USING (email) WHERE sr.draft_id = ${draft} AND student_email IS NULL AND labs[curr_round] = ${lab}`,
                     sql`SELECT email, given_name, family_name, avatar, student_number FROM drap.faculty_choices_emails fce JOIN drap.users ON student_email = email WHERE draft_id = ${draft} AND fce.lab_id = ${lab}`,
+                    sql`SELECT EXISTS(SELECT student_email FROM drap.faculty_choices_emails fce JOIN drap.drafts d ON (fce.draft_id, round) = (d.draft_id, curr_round) WHERE fce.draft_id = ${draft} AND lab_id = ${lab}) result`,
                 ] as const,
         );
-        strictEqual(rest.length, 0);
+        strictEqual(labsRest.length, 0);
+        strictEqual(doneRest.length, 0);
         return {
-            lab: typeof first === 'undefined' ? null : parse(QueriedLab, first),
+            lab: typeof labs === 'undefined' ? null : parse(QueriedLab, labs),
             students: parse(StudentsWithLabPreference, available),
             researchers: parse(StudentsWithLabPreference, selected),
+            isDone: parse(BooleanResult, isDone).result,
         };
     }
 

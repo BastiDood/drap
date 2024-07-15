@@ -6,13 +6,13 @@ export async function load({ locals: { db }, parent }) {
     const { user, draft } = await parent();
     if (!user.is_admin || user.user_id === null || user.lab_id === null) error(403);
 
-    // TODO: Check if the lab already submitted their picks.
-    const { lab, students, researchers } = await db.getLabAndRemainingStudentsInDraftWithLabPreference(
+    const { lab, students, researchers, isDone } = await db.getLabAndRemainingStudentsInDraftWithLabPreference(
         draft.draft_id,
         user.lab_id,
     );
     if (lab === null) error(404);
-    return { draft, lab, students, researchers };
+
+    return { draft, lab, students, researchers, isDone };
 }
 
 export const actions = {
