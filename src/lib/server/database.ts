@@ -20,7 +20,7 @@ const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration', 'has_extended_scope']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
 const DesignatedSender = object({
-    expires_at: date(),
+    expiration: date(),
     email: string(),
     access_token: string(),
     refresh_token: nullable(string()),
@@ -409,14 +409,14 @@ export class Database implements Loggable {
 
     @timed async updateDesignatedSender(
         email: DesignatedSender['email'],
-        expires_at: DesignatedSender['expires_at'],
+        expiration: DesignatedSender['expiration'],
         access_token: DesignatedSender['access_token'],
         refresh_token: DesignatedSender['refresh_token'] = null,
     ) {
         const sql = this.#sql;
         const [first, ...rest] = refresh_token
-            ? await sql`UPDATE drap.designated_sender SET expires_at = ${expires_at}, access_token = ${access_token}, refresh_token = ${refresh_token} WHERE email = ${email} RETURNING *`
-            : await sql`UPDATE drap.designated_sender SET expires_at = ${expires_at}, access_token = ${access_token} WHERE email = ${email} RETURNING *`;
+            ? await sql`UPDATE drap.designated_sender SET expiration = ${expiration}, access_token = ${access_token}, refresh_token = ${refresh_token} WHERE email = ${email} RETURNING *`
+            : await sql`UPDATE drap.designated_sender SET expiration = ${expiration}, access_token = ${access_token} WHERE email = ${email} RETURNING *`;
         notEqual(typeof first, 'undefined');
         strictEqual(rest.length, 0);
         return parse(DesignatedSender, first);
