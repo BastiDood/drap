@@ -61,7 +61,7 @@ CREATE SCHEMA drap
         choice_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
         draft_id BIGINT NOT NULL REFERENCES drafts (draft_id),
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        round SMALLINT CONSTRAINT non_negative_round CHECK (round > 0),
+        round SMALLINT CONSTRAINT post_registration_round_only CHECK (round > 0),
         lab_id TEXT NOT NULL REFERENCES labs (lab_id),
         faculty_email TEXT REFERENCES users (email),
         UNIQUE NULLS NOT DISTINCT (draft_id, round, lab_id)
