@@ -170,7 +170,7 @@ export class Database implements Loggable {
     ) {
         const sql = this.#sql;
         const { count } =
-            await sql`INSERT INTO drap.users AS u (email, user_id, given_name, family_name, avatar) VALUES (${email}, ${uid}, ${given}, ${family}, ${avatar}) ON CONFLICT ON CONSTRAINT users_pkey DO UPDATE SET user_id = ${uid}, given_name = coalesce(nullif(trim(u.given_name), ''), ${given}), family_name = coalesce(nullif(trim(u.family_name), ''), ${family}), avatar = ${avatar}`;
+            await sql`INSERT INTO drap.users AS u (email, user_id, given_name, family_name, avatar) VALUES (${email}, ${uid}, ${given}, ${family}, ${avatar}) ON CONFLICT ON CONSTRAINT users_pkey DO UPDATE SET user_id = EXCLUDED.user_id, given_name = coalesce(nullif(trim(u.given_name), ''), EXCLUDED.given_name), family_name = coalesce(nullif(trim(u.family_name), ''), EXCLUDED.family_name), avatar = EXCLUDED.avatar`;
         return count;
     }
 
