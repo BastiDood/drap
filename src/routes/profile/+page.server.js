@@ -8,7 +8,7 @@ export async function load({ parent }) {
 }
 
 export const actions = {
-    async default({ locals: { db }, request, cookies }) {
+    async profile({ locals: { db }, request, cookies }) {
         const sid = cookies.get('sid');
         if (typeof sid === 'undefined') redirect(302, '/oauth/login/');
 

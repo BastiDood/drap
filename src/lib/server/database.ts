@@ -54,6 +54,8 @@ const UserEmails = array(pick(User, ['email']));
 
 export type AvailableLabs = InferOutput<typeof AvailableLabs>;
 export type QueriedFaculty = InferOutput<typeof QueriedFaculty>;
+export type RegisteredLabs = InferOutput<typeof RegisteredLabs>;
+export type StudentsWithLabPreference = InferOutput<typeof StudentsWithLabPreference>;
 export type TaggedStudentsWithLabs = InferOutput<typeof TaggedStudentsWithLabs>;
 
 export type Sql = postgres.Sql<{ bigint: bigint }>;

@@ -1,6 +1,8 @@
 <script lang="ts">
     import { Avatar } from '@skeletonlabs/skeleton';
+    import { Icon } from '@steeze-ui/svelte-icon';
     import type { QueriedFaculty } from '$lib/server/database';
+    import { UserCircle } from '@steeze-ui/heroicons';
 
     // eslint-disable-next-line init-declarations
     export let user: QueriedFaculty[number];
@@ -8,7 +10,7 @@
 </script>
 
 <a href="mailto:{email}">
-    <Avatar src={avatar} width="w-14" />
+    <Avatar src={avatar} width="w-14"><Icon src={UserCircle} class="w-14" /></Avatar>
     <span class="flex flex-col">
         <strong><span class="uppercase">{family_name}</span>, {given_name}</strong>
         {#if lab_name !== null}

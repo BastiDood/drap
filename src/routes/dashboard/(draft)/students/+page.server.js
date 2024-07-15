@@ -16,7 +16,7 @@ export async function load({ locals: { db }, parent }) {
 }
 
 export const actions = {
-    async default({ locals: { db }, cookies, request }) {
+    async rankings({ locals: { db }, cookies, request }) {
         const sid = cookies.get('sid');
         if (typeof sid === 'undefined') error(401);
 

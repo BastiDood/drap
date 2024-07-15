@@ -1,8 +1,7 @@
 <script lang="ts">
-    import { Avatar, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
+    import { Avatar } from '@skeletonlabs/skeleton';
+    import RankingsForm from './RankingsForm.svelte';
     import WarningAlert from '$lib/alerts/Warning.svelte';
-    import { assert } from '$lib/assert';
-    import { enhance } from '$app/forms';
     import { getOrdinalSuffix } from '$lib/ordinal';
 
     // eslint-disable-next-line init-declarations
@@ -15,7 +14,7 @@
         isDone,
     } = data);
 
-    let draftees: string[] = [];
+    let draftees = [] as string[];
     $: remainingQuota = quota - researchers.length;
     $: remainingDraftees = remainingQuota - draftees.length;
 </script>
@@ -52,41 +51,7 @@
                 heads and administrators will be notified when this happens.
             </p>
         </div>
-        <form
-            method="post"
-            class="flex min-w-max flex-col gap-1"
-            use:enhance={({ formData, submitter, cancel }) => {
-                const count = formData.getAll('students').length;
-                if (!confirm(`Are you sure you want to select these ${count} students?`)) {
-                    cancel();
-                    return;
-                }
-                assert(submitter !== null);
-                assert(submitter instanceof HTMLButtonElement);
-                submitter.disabled = true;
-                return async ({ update }) => {
-                    submitter.disabled = false;
-                    await update();
-                };
-            }}
-        >
-            <input type="hidden" name="draft" value={draft_id} />
-            <button type="submit" class="variant-filled-primary btn w-full">Submit</button>
-            <ListBox multiple rounded="rounded" disabled={remainingDraftees <= 0}>
-                {#each students as { email, given_name, family_name, avatar, student_number } (email)}
-                    <ListBoxItem bind:group={draftees} name="students" value={email}>
-                        <Avatar slot="lead" src={avatar} />
-                        <div class="flex flex-col">
-                            <strong><span class="uppercase">{family_name}</span>, {given_name}</strong>
-                            {#if student_number !== null}
-                                <span class="text-sm opacity-50">{student_number}</span>
-                            {/if}
-                            <span class="text-xs opacity-50">{email}</span>
-                        </div>
-                    </ListBoxItem>
-                {/each}
-            </ListBox>
-        </form>
+        <RankingsForm draft={draft_id} {students} bind:draftees disabled={remainingDraftees <= 0} />
     </div>
 {:else}
     <WarningAlert

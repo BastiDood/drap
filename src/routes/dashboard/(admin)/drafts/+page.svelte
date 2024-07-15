@@ -1,16 +1,12 @@
 <script>
-    import { ArrowRight, CalendarDays, ShieldExclamation } from '@steeze-ui/heroicons';
-    import { Icon } from '@steeze-ui/svelte-icon';
-    import LotteryStudent from './LotteryStudent.svelte';
     import Student from '$lib/users/Student.svelte';
     import WarningAlert from '$lib/alerts/Warning.svelte';
-    import { assert } from '$lib/assert';
-    import { enhance } from '$app/forms';
     import { format } from 'date-fns';
-    import { getToastStore } from '@skeletonlabs/skeleton';
-    import { validateString } from '$lib/forms';
 
-    const toast = getToastStore();
+    import ConcludeForm from './ConcludeForm.svelte';
+    import InitForm from './InitForm.svelte';
+    import InterveneForm from './InterveneForm.svelte';
+    import StartForm from './StartForm.svelte';
 
     // eslint-disable-next-line init-declarations
     export let data;
@@ -30,34 +26,7 @@
                 been set to <strong>5</strong>.
             </p>
         </div>
-        <form
-            method="post"
-            action="?/init"
-            class="min-w-max"
-            use:enhance={({ formData, submitter, cancel }) => {
-                const rounds = parseInt(validateString(formData.get('rounds')), 10);
-                if (!confirm(`Are you sure you want to start a new draft with ${rounds} rounds?`)) {
-                    cancel();
-                    return;
-                }
-                assert(submitter !== null);
-                assert(submitter instanceof HTMLButtonElement);
-                submitter.disabled = true;
-                return async ({ update }) => {
-                    submitter.disabled = false;
-                    await update();
-                };
-            }}
-        >
-            <label>
-                <span>Number of Rounds</span>
-                <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
-                    <div class="input-group-shim"><Icon src={CalendarDays} class="size-6" /></div>
-                    <input type="number" min="1" required name="rounds" placeholder="5" class="px-4 py-2" />
-                    <button class="variant-filled-primary">Start</button>
-                </div>
-            </label>
-        </form>
+        <InitForm />
     </div>
 {:else}
     {@const {
@@ -111,93 +80,13 @@
                     After the randomization stage, the draft process is officially complete. All students, lab heads,
                     and administrators are notified of the final results.
                 </p>
-                <form
-                    action="?/conclude"
-                    method="post"
-                    class="not-prose"
-                    use:enhance={({ submitter, cancel }) => {
-                        if (!confirm('Are you sure you want to conclude this draft?')) {
-                            cancel();
-                            return;
-                        }
-                        assert(submitter !== null);
-                        assert(submitter instanceof HTMLButtonElement);
-                        submitter.disabled = true;
-                        return async ({ update, result }) => {
-                            submitter.disabled = false;
-                            await update();
-                            switch (result.type) {
-                                case 'success':
-                                    toast.trigger({
-                                        message: 'Successfully concluded the draft.',
-                                        background: 'variant-filled-success',
-                                    });
-                                    break;
-                                case 'failure':
-                                    assert(result.status === 400);
-                                    toast.trigger({
-                                        message:
-                                            'Failed to conclude the draft. The number of draftees do not match the total quota of all labs.',
-                                        background: 'variant-filled-error',
-                                        autohide: false,
-                                    });
-                                    break;
-                                default:
-                                    break;
-                            }
-                        };
-                    }}
-                >
-                    <input type="hidden" name="draft" value={draft_id} />
-                    <button type="submit" class="variant-filled-primary btn btn-lg w-full">
-                        <Icon src={ArrowRight} class="size-8" />
-                        <span>Conclude Draft</span>
-                    </button>
-                </form>
+                <ConcludeForm draft={draft_id} />
             </div>
             <div class="min-w-max space-y-2">
                 <nav class="card list-nav variant-ghost-warning space-y-4 p-4">
                     <h3 class="h3">Eligible for Lottery ({available.length})</h3>
                     {#if available.length > 0}
-                        <form
-                            action="?/intervene"
-                            method="post"
-                            class="space-y-4"
-                            use:enhance={({ submitter, cancel }) => {
-                                if (!confirm('Are you sure you want to apply these interventions?')) {
-                                    cancel();
-                                    return;
-                                }
-                                assert(submitter !== null);
-                                assert(submitter instanceof HTMLButtonElement);
-                                submitter.disabled = true;
-                                return async ({ update, result }) => {
-                                    submitter.disabled = false;
-                                    await update();
-                                    switch (result.type) {
-                                        case 'success':
-                                            toast.trigger({
-                                                message: 'Successfully applied the interventions.',
-                                                background: 'variant-filled-success',
-                                            });
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                };
-                            }}
-                        >
-                            <ul class="list">
-                                {#each available as user (user.email)}
-                                    <li><LotteryStudent {labs} {user} /></li>
-                                {/each}
-                            </ul>
-                            <input type="hidden" name="draft" value={draft_id} />
-                            <button type="submit" class="!variant-glass-warning btn btn-lg w-full">
-                                <Icon src={ShieldExclamation} class="size-8" />
-                                <span>Apply Interventions</span>
-                            </button>
-                        </form>
+                        <InterveneForm draft={draft_id} {labs} students={available} />
                     {:else}
                         <p class="prose max-w-none dark:prose-invert">
                             Congratulations! All participants have been drafted. No action is needed here.
@@ -234,26 +123,7 @@
                         > proceeds with the lottery stage.
                     </p>
                 </section>
-                <form
-                    method="post"
-                    action="?/start"
-                    use:enhance={({ submitter, cancel }) => {
-                        if (!confirm('Are you sure you want to start the draft?')) {
-                            cancel();
-                            return;
-                        }
-                        assert(submitter !== null);
-                        assert(submitter instanceof HTMLButtonElement);
-                        submitter.disabled = true;
-                        return async ({ update }) => {
-                            submitter.disabled = false;
-                            await update();
-                        };
-                    }}
-                >
-                    <input type="hidden" name="draft" value={draft_id} />
-                    <button type="submit" class="variant-ghost-warning btn w-full">Start Draft</button>
-                </form>
+                <StartForm draft={draft_id} />
             </div>
             <nav class="list-nav w-full">
                 <ul class="list">
