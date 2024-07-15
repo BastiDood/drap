@@ -6,7 +6,11 @@ const CommonSchema = object({
     expiration: date(),
 });
 
-export const Pending = object({ ...CommonSchema.entries, nonce: instance(Uint8Array), is_new_sender: boolean() });
+export const Pending = object({
+    ...CommonSchema.entries,
+    nonce: instance(Uint8Array),
+    has_extended_scope: boolean(),
+});
 export type Pending = InferOutput<typeof Pending>;
 
 export const Session = object({ ...CommonSchema.entries, email: User.entries.email });

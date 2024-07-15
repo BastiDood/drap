@@ -54,7 +54,7 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
         strictEqual(Buffer.from(token.nonce, 'base64url').compare(pending.nonce), 0);
 
         // Check if this session is for handling a new designated_sender, first delete sole designated_sender then complete the designated_sender
-        if (pending.is_new_sender) {
+        if (pending.has_extended_scope) {
             await db.deleteDesignatedSender();
             await db.initDesignatedSender(token.email);
             await db.updateDesignatedSender(token.email, token.exp, access_token, refresh_token);

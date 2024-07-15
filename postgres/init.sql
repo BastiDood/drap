@@ -36,7 +36,7 @@ CREATE SCHEMA drap
         session_id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
         expiration Expiration NOT NULL DEFAULT NOW() + INTERVAL '15 minutes',
         nonce BYTEA NOT NULL DEFAULT gen_random_bytes(64),
-        is_new_sender BOOLEAN NOT NULL DEFAULT FALSE
+        has_extended_scope BOOLEAN NOT NULL DEFAULT FALSE
     )
     CREATE TABLE sessions (
         session_id UUID NOT NULL PRIMARY KEY,
@@ -76,11 +76,12 @@ CREATE SCHEMA drap
         -- TODO: How do we enforce `student_email <> faculty_email`?
         FOREIGN KEY (draft_id, round, lab_id) REFERENCES faculty_choices (draft_id, round, lab_id),
         UNIQUE (draft_id, student_email)
+    )
     CREATE TABLE designated_sender (
-        email TEXT NOT NULL REFERENCES users (email),
-        access_token TEXT,
-        refresh_token TEXT,
-        expires_at TIMESTAMPTZ
+        email TEXT NOT NULL REFERENCES users (email) PRIMARY KEY,
+        access_token TEXT NOT NULL,
+        refresh_token TEXT NOT NULL,
+        expiration Expiration NOT NULL
     );
 
 INSERT INTO drap.labs (lab_id, lab_name) VALUES

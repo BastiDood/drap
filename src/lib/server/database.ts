@@ -30,8 +30,7 @@ const BooleanResult = object({ result: boolean() });
 const CountResult = object({ count: bigint() });
 const CreatedLab = pick(Lab, ['lab_id']);
 const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
-const CreatedFacultyChoice = pick(FacultyChoice, ['choice_id', 'created_at']);
-const DeletedPendingSession = pick(Pending, ['nonce', 'expiration', 'is_new_sender']);
+const DeletedPendingSession = pick(Pending, ['nonce', 'expiration', 'has_extended_scope']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
 const DesignatedSender = object({
     expires_at: date(),
@@ -112,10 +111,10 @@ export class Database implements Loggable {
         return this.#sql.begin('ISOLATION LEVEL REPEATABLE READ', sql => fn(new Database(sql, this.#logger)));
     }
 
-    @timed async generatePendingSession(new_sender: boolean = false) {
+    @timed async generatePendingSession(hasExtendedScope = false) {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`INSERT INTO drap.pendings (is_new_sender) VALUES (${new_sender}) RETURNING session_id, expiration, nonce, is_new_sender`;
+            await sql`INSERT INTO drap.pendings (has_extended_scope) VALUES (${hasExtendedScope}) RETURNING session_id, expiration, nonce, has_extended_scope`;
         strictEqual(rest.length, 0);
         return parse(Pending, first);
     }
@@ -123,7 +122,7 @@ export class Database implements Loggable {
     @timed async deletePendingSession(sid: Pending['session_id']) {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`DELETE FROM drap.pendings WHERE session_id = ${sid} RETURNING expiration, nonce, is_new_sender`;
+            await sql`DELETE FROM drap.pendings WHERE session_id = ${sid} RETURNING expiration, nonce, has_extended_scope`;
         strictEqual(rest.length, 0);
         return typeof first === 'undefined' ? null : parse(DeletedPendingSession, first);
     }
