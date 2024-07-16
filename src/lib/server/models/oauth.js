@@ -1,6 +1,7 @@
 import {
     boolean,
     email,
+    everyItem,
     literal,
     maxLength,
     minLength,
@@ -20,10 +21,10 @@ const OAUTH_SCOPES = [
     'https://www.googleapis.com/auth/userinfo.profile',
     'https://www.googleapis.com/auth/userinfo.email',
 ];
-const SENDER_OAUTH_SCOPE = OAUTH_SCOPES.concat('https://mail.google.com/')
+const SENDER_OAUTH_SCOPES = OAUTH_SCOPES.concat('https://mail.google.com/')
 
 export const OAUTH_SCOPE_STRING = OAUTH_SCOPES.join(' ');
-export const SENDER_SCOPE_STRING = SENDER_OAUTH_SCOPE.join(' ');
+export const SENDER_SCOPE_STRING = SENDER_OAUTH_SCOPES.join(' ');
 export const OAUTH_TOKEN_TYPE = 'Bearer';
 
 /** @see https://developers.google.com/identity/protocols/oauth2#size */
@@ -37,6 +38,7 @@ export const TokenResponse = object({
     scope: pipe(
         string(),
         transform(str => str.split(' ')),
+        everyItem(str => SENDER_OAUTH_SCOPES.includes(str))
     ),
     token_type: literal(OAUTH_TOKEN_TYPE),
     // Remaining lifetime in seconds.
