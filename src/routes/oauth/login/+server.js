@@ -10,7 +10,7 @@ export async function GET({ locals: { db }, cookies, url: { searchParams } }) {
         if (user !== null) redirect(302, '/');
     }
 
-    const isNewSender = Boolean(searchParams.get('new_sender'));
+    const hasExtendedScope = Boolean(searchParams.get('extended'));
 
     const { session_id, nonce, expiration } = await db.generatePendingSession(isNewSender);
     cookies.set('sid', session_id, { path: '/', httpOnly: true, sameSite: 'lax', expires: expiration });
