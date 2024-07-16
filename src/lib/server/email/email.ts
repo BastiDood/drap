@@ -34,7 +34,7 @@ async function refreshAccessToken(refresh_token: string, email: string, db: Data
 
     const token = parse(pick(IdToken, ['exp']), payload);
 
-    db.updateDesignatedSender(email, token.exp, access_token);
+    await db.updateDesignatedSender(email, token.exp, access_token);
 
     return db.getDesignatedSender();
 }
