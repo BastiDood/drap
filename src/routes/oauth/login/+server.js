@@ -5,12 +5,11 @@ import { redirect } from '@sveltejs/kit';
 
 export async function GET({ locals: { db }, cookies, url: { searchParams } }) {
     const sid = cookies.get('sid');
+    const isNewSender = Boolean(searchParams.get('new_sender'));
     if (typeof sid !== 'undefined') {
         const user = await db.getUserFromValidSession(sid);
-        if (user !== null) redirect(302, '/');
+        if (user !== null && !isNewSender) redirect(302, '/');
     }
-
-    const isNewSender = Boolean(searchParams.get('new_sender'));
 
     const { session_id, nonce, expiration } = await db.generatePendingSession(isNewSender);
     cookies.set('sid', session_id, { path: '/', httpOnly: true, sameSite: 'lax', expires: expiration });
