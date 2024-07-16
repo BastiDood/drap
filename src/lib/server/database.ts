@@ -1,9 +1,10 @@
-import { type InferOutput, array, bigint, boolean, date, nullable, object, parse, pick, string } from 'valibot';
+import { type InferOutput, array, bigint, boolean, nullable, object, parse, pick } from 'valibot';
 import { type Loggable, timed } from '$lib/decorators';
 import { fail, strictEqual } from 'node:assert/strict';
 import type { Logger } from 'pino';
 import postgres from 'postgres';
 
+import { DesignatedSender, EmailerCredentails } from '$lib/server/models/email';
 import { FacultyChoice, FacultyChoiceEmail } from '$lib/models/faculty-choice';
 import { Pending, Session } from '$lib/server/models/session';
 import { Draft } from '$lib/models/draft';
@@ -19,12 +20,6 @@ const CreatedLab = pick(Lab, ['lab_id']);
 const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration', 'has_extended_scope']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
-const DesignatedSender = object({
-    expiration: date(),
-    email: string(),
-    access_token: string(),
-    refresh_token: nullable(string()),
-});
 const Drafts = array(Draft);
 const DraftEvents = array(
     object({
@@ -33,12 +28,6 @@ const DraftEvents = array(
     }),
 );
 const DraftMaxRounds = pick(Draft, ['max_rounds']);
-const EmailerCredentails = object({
-    user_id: string(),
-    email: string(),
-    access_token: string(),
-    refresh_token: nullable(string()),
-});
 const IncrementedDraftRound = pick(Draft, ['curr_round', 'max_rounds']);
 const LabQuota = pick(Lab, ['quota']);
 const LatestDraft = pick(Draft, ['draft_id', 'curr_round', 'max_rounds', 'active_period_start']);
@@ -66,7 +55,6 @@ const TaggedStudentsWithLabs = array(
 const UserEmails = array(pick(User, ['email']));
 
 export type AvailableLabs = InferOutput<typeof AvailableLabs>;
-export type DesignatedSender = InferOutput<typeof DesignatedSender>;
 export type QueriedFaculty = InferOutput<typeof QueriedFaculty>;
 export type RegisteredLabs = InferOutput<typeof RegisteredLabs>;
 export type StudentsWithLabPreference = InferOutput<typeof StudentsWithLabPreference>;
