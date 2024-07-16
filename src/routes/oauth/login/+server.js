@@ -1,6 +1,6 @@
+import { OAUTH_SCOPE_STRING, SENDER_SCOPE_STRING } from '$lib/server/models/oauth';
 import { Buffer } from 'node:buffer';
 import GOOGLE from '$lib/server/env/google';
-import { OAUTH_SCOPE_STRING } from '$lib/server/models/oauth';
 import { redirect } from '@sveltejs/kit';
 
 export async function GET({ locals: { db }, cookies, url: { searchParams } }) {
@@ -23,7 +23,7 @@ export async function GET({ locals: { db }, cookies, url: { searchParams } }) {
         hd: 'up.edu.ph',
         access_type: isNewSender ? 'offline' : 'online',
         response_type: 'code',
-        scope: OAUTH_SCOPE_STRING.concat(isNewSender ? ' https://mail.google.com/' : ''),
+        scope: isNewSender ? SENDER_SCOPE_STRING : OAUTH_SCOPE_STRING,
         prompt: isNewSender ? 'consent' : '',
     });
 
