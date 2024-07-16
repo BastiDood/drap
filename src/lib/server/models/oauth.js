@@ -20,7 +20,10 @@ const OAUTH_SCOPES = [
     'https://www.googleapis.com/auth/userinfo.profile',
     'https://www.googleapis.com/auth/userinfo.email',
 ];
+const SENDER_OAUTH_SCOPE = OAUTH_SCOPES.concat('https://mail.google.com/')
+
 export const OAUTH_SCOPE_STRING = OAUTH_SCOPES.join(' ');
+export const SENDER_SCOPE_STRING = SENDER_OAUTH_SCOPE.join(' ');
 export const OAUTH_TOKEN_TYPE = 'Bearer';
 
 /** @see https://developers.google.com/identity/protocols/oauth2#size */
