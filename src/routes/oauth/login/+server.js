@@ -5,13 +5,14 @@ import { redirect } from '@sveltejs/kit';
 
 export async function GET({ locals: { db }, cookies, url: { searchParams } }) {
     const sid = cookies.get('sid');
-    const isNewSender = Boolean(searchParams.get('new_sender'));
+    const hasExtendedScope = Boolean(searchParams.get('extended'));
     if (typeof sid !== 'undefined') {
         const user = await db.getUserFromValidSession(sid);
-        if (user !== null && !isNewSender) redirect(302, '/');
+        if (user !== null && !hasExtendedScope) redirect(302, '/');
     }
 
-    const { session_id, nonce, expiration } = await db.generatePendingSession(isNewSender);
+
+    const { session_id, nonce, expiration } = await db.generatePendingSession(hasExtendedScope);
     cookies.set('sid', session_id, { path: '/', httpOnly: true, sameSite: 'lax', expires: expiration });
 
     const hashedSessionId = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(session_id));
@@ -21,10 +22,10 @@ export async function GET({ locals: { db }, cookies, url: { searchParams } }) {
         redirect_uri: GOOGLE.OAUTH_REDIRECT_URI,
         nonce: Buffer.from(nonce).toString('base64url'),
         hd: 'up.edu.ph',
-        access_type: isNewSender ? 'offline' : 'online',
+        access_type: hasExtendedScope ? 'offline' : 'online',
         response_type: 'code',
-        scope: isNewSender ? SENDER_SCOPE_STRING : OAUTH_SCOPE_STRING,
-        prompt: isNewSender ? 'consent' : '',
+        scope: hasExtendedScope ? SENDER_SCOPE_STRING : OAUTH_SCOPE_STRING,
+        prompt: hasExtendedScope ? 'consent' : '',
     });
 
     redirect(302, `https://accounts.google.com/o/oauth2/v2/auth?${params}`);
