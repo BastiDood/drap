@@ -36,7 +36,7 @@ async function refreshAccessToken(refresh_token: string, email: string, db: Data
 
     await db.updateDesignatedSender(email, token.exp, access_token);
 
-    return db.getDesignatedSender();
+    return await db.getDesignatedSender();
 }
 
 // this function sends an email to the provided email address with the given body via nodemailer using the access token of the designated admin sender
