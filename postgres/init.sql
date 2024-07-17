@@ -35,7 +35,8 @@ CREATE SCHEMA drap
     CREATE TABLE pendings (
         session_id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
         expiration Expiration NOT NULL DEFAULT NOW() + INTERVAL '15 minutes',
-        nonce BYTEA NOT NULL DEFAULT gen_random_bytes(64)
+        nonce BYTEA NOT NULL DEFAULT gen_random_bytes(64),
+        has_extended_scope BOOLEAN NOT NULL
     )
     CREATE TABLE sessions (
         session_id UUID NOT NULL PRIMARY KEY,
@@ -75,6 +76,15 @@ CREATE SCHEMA drap
         -- TODO: How do we enforce `student_email <> faculty_email`?
         FOREIGN KEY (draft_id, round, lab_id) REFERENCES faculty_choices (draft_id, round, lab_id),
         UNIQUE (draft_id, student_email)
+    )
+    CREATE TABLE candidate_senders (
+        email TEXT NOT NULL REFERENCES users (email) PRIMARY KEY,
+        access_token TEXT NOT NULL CONSTRAINT access_token_length CHECK (length(access_token) <= 2048),
+        refresh_token TEXT NOT NULL CONSTRAINT refresh_token_length CHECK (length(refresh_token) <= 512),
+        expiration Expiration NOT NULL
+    )
+    CREATE TABLE designated_sender (
+        email TEXT NOT NULL REFERENCES candidate_senders (email) ON DELETE CASCADE PRIMARY KEY
     );
 
 INSERT INTO drap.labs (lab_id, lab_name) VALUES

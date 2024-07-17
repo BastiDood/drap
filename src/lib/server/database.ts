@@ -6,6 +6,7 @@ import postgres from 'postgres';
 
 import { FacultyChoice, FacultyChoiceEmail } from '$lib/models/faculty-choice';
 import { Pending, Session } from '$lib/server/models/session';
+import { CandidateSender } from '$lib/server/models/email';
 import { Draft } from '$lib/models/draft';
 import { Lab } from '$lib/models/lab';
 import { StudentRank } from '$lib/models/student-rank';
@@ -16,7 +17,7 @@ const BooleanResult = object({ result: boolean() });
 const CountResult = object({ count: bigint() });
 const CreatedLab = pick(Lab, ['lab_id']);
 const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
-const DeletedPendingSession = pick(Pending, ['nonce', 'expiration']);
+const DeletedPendingSession = pick(Pending, ['nonce', 'expiration', 'has_extended_scope']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
 const Drafts = array(Draft);
 const DraftEvents = array(
@@ -50,6 +51,7 @@ const TaggedStudentsWithLabs = array(
         lab_id: nullable(FacultyChoiceEmail.entries.lab_id),
     }),
 );
+const UpsertedOpenIdUser = pick(User, ['is_admin', 'lab_id']);
 const UserEmails = array(pick(User, ['email']));
 
 export type AvailableLabs = InferOutput<typeof AvailableLabs>;
@@ -78,10 +80,10 @@ export class Database implements Loggable {
         return this.#sql.begin('ISOLATION LEVEL REPEATABLE READ', sql => fn(new Database(sql, this.#logger)));
     }
 
-    @timed async generatePendingSession() {
+    @timed async generatePendingSession(hasExtendedScope: boolean) {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`INSERT INTO drap.pendings DEFAULT VALUES RETURNING session_id, expiration, nonce`;
+            await sql`INSERT INTO drap.pendings (has_extended_scope) VALUES (${hasExtendedScope}) RETURNING session_id, expiration, nonce, has_extended_scope`;
         strictEqual(rest.length, 0);
         return parse(Pending, first);
     }
@@ -89,7 +91,7 @@ export class Database implements Loggable {
     @timed async deletePendingSession(sid: Pending['session_id']) {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`DELETE FROM drap.pendings WHERE session_id = ${sid} RETURNING expiration, nonce`;
+            await sql`DELETE FROM drap.pendings WHERE session_id = ${sid} RETURNING expiration, nonce, has_extended_scope`;
         strictEqual(rest.length, 0);
         return typeof first === 'undefined' ? null : parse(DeletedPendingSession, first);
     }
@@ -136,9 +138,10 @@ export class Database implements Loggable {
         avatar: User['avatar'],
     ) {
         const sql = this.#sql;
-        const { count } =
-            await sql`INSERT INTO drap.users AS u (email, user_id, given_name, family_name, avatar) VALUES (${email}, ${uid}, ${given}, ${family}, ${avatar}) ON CONFLICT ON CONSTRAINT users_pkey DO UPDATE SET user_id = EXCLUDED.user_id, given_name = coalesce(nullif(trim(u.given_name), ''), EXCLUDED.given_name), family_name = coalesce(nullif(trim(u.family_name), ''), EXCLUDED.family_name), avatar = EXCLUDED.avatar`;
-        return count;
+        const [first, ...rest] =
+            await sql`INSERT INTO drap.users AS u (email, user_id, given_name, family_name, avatar) VALUES (${email}, ${uid}, ${given}, ${family}, ${avatar}) ON CONFLICT ON CONSTRAINT users_pkey DO UPDATE SET user_id = EXCLUDED.user_id, given_name = coalesce(nullif(trim(u.given_name), ''), EXCLUDED.given_name), family_name = coalesce(nullif(trim(u.family_name), ''), EXCLUDED.family_name), avatar = EXCLUDED.avatar RETURNING is_admin, lab_id`;
+        strictEqual(rest.length, 0);
+        return parse(UpsertedOpenIdUser, first);
     }
 
     @timed async updateProfileBySession(
@@ -367,6 +370,49 @@ export class Database implements Loggable {
         return typeof first === 'undefined' ? null : parse(QueriedStudentRank, first);
     }
 
+    /**
+     * A designated sender is an admin (i.e., `is_admin=True` and `lab_id=NULL`) with valid
+     * OAuth 2.0 credentials * such that the access token will not expire in the next five minutes.
+     */
+    @timed async getDesignatedSenderCredentials() {
+        const sql = this.#sql;
+        const [first, ...rest] =
+            await sql`SELECT email, access_token, refresh_token, expiration FROM drap.designated_sender JOIN drap.candidate_senders USING (email) JOIN drap.users (email) WHERE user_id IS NOT NULL AND is_admin AND lab_id IS NULL`;
+        strictEqual(rest.length, 0);
+        return typeof first === 'undefined' ? null : parse(CandidateSender, first);
+    }
+
+    @timed async upsertCandidateSender(
+        email: CandidateSender['email'],
+        expiration: CandidateSender['expiration'],
+        accessToken: CandidateSender['access_token'],
+        refreshToken?: CandidateSender['refresh_token'],
+    ) {
+        const sql = this.#sql;
+        const query =
+            typeof refreshToken === 'undefined'
+                ? sql`INSERT INTO drap.candidate_senders (email, expiration, access_token) VALUES (${email}, ${expiration}, ${accessToken}) ON CONFLICT ON CONSTRAINT candidate_senders_pkey DO UPDATE SET expiration = EXCLUDED.expiration, access_token = EXCLUDED.access_token`
+                : sql`INSERT INTO drap.candidate_senders (email, expiration, access_token, refresh_token) VALUES (${email}, ${expiration}, ${accessToken}, ${refreshToken}) ON CONFLICT ON CONSTRAINT candidate_senders_pkey DO UPDATE SET expiration = EXCLUDED.expiration, access_token = EXCLUDED.access_token, refresh_token = EXCLUDED.refresh_token`;
+        const { count } = await query;
+        strictEqual(count, 1);
+    }
+
+    @timed async clearDesignatedSenders() {
+        const sql = this.#sql;
+        await sql`TRUNCATE drap.designated_sender`;
+    }
+
+    @timed async insertDesignatedSender(email: CandidateSender['email']) {
+        const sql = this.#sql;
+        const { count } = await sql`INSERT INTO drap.designated_sender (email) VALUES (${email})`;
+        strictEqual(count, 1);
+    }
+
+    /**
+     * The operation of inserting a faculty choice must necessarily occur
+     * with the updating of a student_rank entry's chosen_by field; note
+     * the two return values for this function.
+     */
     @timed async insertFacultyChoice(
         draft: StudentRank['draft_id'],
         lab: FacultyChoice['lab_id'],

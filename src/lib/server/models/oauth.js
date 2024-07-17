@@ -7,6 +7,7 @@ import {
     minLength,
     number,
     object,
+    optional,
     pipe,
     safeInteger,
     string,
@@ -19,8 +20,12 @@ const OAUTH_SCOPES = [
     'openid',
     'https://www.googleapis.com/auth/userinfo.profile',
     'https://www.googleapis.com/auth/userinfo.email',
+    'https://mail.google.com/',
 ];
+const SENDER_OAUTH_SCOPES = OAUTH_SCOPES.concat('https://mail.google.com/');
+
 export const OAUTH_SCOPE_STRING = OAUTH_SCOPES.join(' ');
+export const SENDER_SCOPE_STRING = SENDER_OAUTH_SCOPES.join(' ');
 export const OAUTH_TOKEN_TYPE = 'Bearer';
 
 /** @see https://developers.google.com/identity/protocols/oauth2#size */
@@ -29,15 +34,18 @@ export const AuthorizationCode = pipe(string(), minLength(1), maxLength(256));
 export const TokenResponse = object({
     // JSON Web Token token containing the user's ID token.
     id_token: string(),
+    access_token: string(),
     // Always set to `OAUTH_SCOPE` for now.
     scope: pipe(
         string(),
         transform(str => str.split(' ')),
-        everyItem(item => OAUTH_SCOPES.includes(item)),
+        everyItem(str => SENDER_OAUTH_SCOPES.includes(str)),
     ),
     token_type: literal(OAUTH_TOKEN_TYPE),
     // Remaining lifetime in seconds.
     expires_in: pipe(number(), safeInteger()),
+    // Refresh token, will not always be given with every TokenResponse (requires prompt=consent&access_type=offline)
+    refresh_token: optional(string()),
 });
 
 const UnixTimeSecs = pipe(

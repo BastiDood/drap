@@ -1,4 +1,4 @@
-import { type InferOutput, date, instance, object, pipe, string, uuid } from 'valibot';
+import { type InferOutput, boolean, date, instance, object, pipe, string, uuid } from 'valibot';
 import { User } from '$lib/models/user';
 
 const CommonSchema = object({
@@ -6,7 +6,11 @@ const CommonSchema = object({
     expiration: date(),
 });
 
-export const Pending = object({ ...CommonSchema.entries, nonce: instance(Uint8Array) });
+export const Pending = object({
+    ...CommonSchema.entries,
+    nonce: instance(Uint8Array),
+    has_extended_scope: boolean(),
+});
 export type Pending = InferOutput<typeof Pending>;
 
 export const Session = object({ ...CommonSchema.entries, email: User.entries.email });

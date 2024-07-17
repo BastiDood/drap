@@ -1,12 +1,11 @@
 import { AuthorizationCode, IdToken, TokenResponse } from '$lib/server/models/oauth';
-import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { error, redirect } from '@sveltejs/kit';
 import { ok, strictEqual } from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
 import GOOGLE from '$lib/server/env/google';
+import { fetchJwks } from '$lib/server/jwks';
+import { jwtVerify } from 'jose';
 import { parse } from 'valibot';
-
-const fetchJwks = createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'));
 
 export async function GET({ fetch, locals: { db }, cookies, url: { searchParams } }) {
     const sid = cookies.get('sid');
@@ -43,7 +42,7 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
         ok(res.ok);
 
         const json = await res.json();
-        const { id_token } = parse(TokenResponse, json);
+        const { id_token, access_token, refresh_token } = parse(TokenResponse, json);
         const { payload } = await jwtVerify(id_token, fetchJwks, {
             issuer: 'https://accounts.google.com',
             audience: GOOGLE.OAUTH_CLIENT_ID,
@@ -55,8 +54,21 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
 
         // Insert user as uninitialized by default
         await db.initUser(token.email);
-        await db.upsertOpenIdUser(token.email, token.sub, token.given_name, token.family_name, token.picture);
+        const { is_admin, lab_id } = await db.upsertOpenIdUser(
+            token.email,
+            token.sub,
+            token.given_name,
+            token.family_name,
+            token.picture,
+        );
         await db.insertValidSession(sid, token.email, token.exp);
+
+        if (pending.has_extended_scope && typeof refresh_token !== 'undefined' && is_admin && lab_id === null) {
+            await db.upsertCandidateSender(token.email, token.exp, access_token, refresh_token);
+            await db.clearDesignatedSenders();
+            await db.insertDesignatedSender(token.email);
+        }
+
         return token.exp;
     });
 
