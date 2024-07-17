@@ -4,9 +4,9 @@ import { fail, strictEqual } from 'node:assert/strict';
 import type { Logger } from 'pino';
 import postgres from 'postgres';
 
-import { DesignatedSender, EmailerCredentails } from '$lib/server/models/email';
 import { FacultyChoice, FacultyChoiceEmail } from '$lib/models/faculty-choice';
 import { Pending, Session } from '$lib/server/models/session';
+import { DesignatedSender } from '$lib/server/models/email';
 import { Draft } from '$lib/models/draft';
 import { Lab } from '$lib/models/lab';
 import { StudentRank } from '$lib/models/student-rank';
@@ -380,7 +380,7 @@ export class Database implements Loggable {
         const [firstUser, ...restUsers] =
             await sql`SELECT user_id, email, access_token, refresh_token FROM drap.users WHERE email = ${email}`;
         strictEqual(restUsers.length, 0);
-        return typeof firstUser === 'undefined' ? null : parse(EmailerCredentails, firstUser);
+        return typeof firstUser === 'undefined' ? null : parse(DesignatedSender, firstUser);
     }
 
     @timed async deleteDesignatedSender() {

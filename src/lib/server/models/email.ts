@@ -8,12 +8,4 @@ export const DesignatedSender = object({
     refresh_token: nullable(string()),
 });
 
-export const EmailerCredentails = object({
-    user_id: string(),
-    email: string(),
-    access_token: string(),
-    refresh_token: nullable(string()),
-});
-
 export type DesignatedSender = InferOutput<typeof DesignatedSender>;
-export type EmailerCredentials = InferOutput<typeof EmailerCredentails>;
