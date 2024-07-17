@@ -52,6 +52,7 @@ const TaggedStudentsWithLabs = array(
         lab_id: nullable(FacultyChoiceEmail.entries.lab_id),
     }),
 );
+const UpsertedOpenIdUser = pick(User, ['is_admin', 'lab_id']);
 const UserEmails = array(pick(User, ['email']));
 
 export type AvailableLabs = InferOutput<typeof AvailableLabs>;
@@ -138,9 +139,10 @@ export class Database implements Loggable {
         avatar: User['avatar'],
     ) {
         const sql = this.#sql;
-        const { count } =
-            await sql`INSERT INTO drap.users AS u (email, user_id, given_name, family_name, avatar) VALUES (${email}, ${uid}, ${given}, ${family}, ${avatar}) ON CONFLICT ON CONSTRAINT users_pkey DO UPDATE SET user_id = EXCLUDED.user_id, given_name = coalesce(nullif(trim(u.given_name), ''), EXCLUDED.given_name), family_name = coalesce(nullif(trim(u.family_name), ''), EXCLUDED.family_name), avatar = EXCLUDED.avatar`;
-        return count;
+        const [first, ...rest] =
+            await sql`INSERT INTO drap.users AS u (email, user_id, given_name, family_name, avatar) VALUES (${email}, ${uid}, ${given}, ${family}, ${avatar}) ON CONFLICT ON CONSTRAINT users_pkey DO UPDATE SET user_id = EXCLUDED.user_id, given_name = coalesce(nullif(trim(u.given_name), ''), EXCLUDED.given_name), family_name = coalesce(nullif(trim(u.family_name), ''), EXCLUDED.family_name), avatar = EXCLUDED.avatar RETURNING is_admin, lab_id`;
+        strictEqual(rest.length, 0);
+        return parse(UpsertedOpenIdUser, first);
     }
 
     @timed async updateProfileBySession(

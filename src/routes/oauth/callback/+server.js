@@ -53,17 +53,23 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
         ok(token.email_verified);
         strictEqual(Buffer.from(token.nonce, 'base64url').compare(pending.nonce), 0);
 
-        // Check if this session is for handling a new designated_sender, first delete sole designated_sender then complete the designated_sender
-        if (pending.has_extended_scope) {
-            await db.deleteDesignatedSender();
-            await db.initDesignatedSender(token.email);
-            await db.updateDesignatedSender(token.email, token.exp, access_token, refresh_token);
-        }
-
         // Insert user as uninitialized by default
         await db.initUser(token.email);
-        await db.upsertOpenIdUser(token.email, token.sub, token.given_name, token.family_name, token.picture);
+        const { is_admin, lab_id } = await db.upsertOpenIdUser(
+            token.email,
+            token.sub,
+            token.given_name,
+            token.family_name,
+            token.picture,
+        );
         await db.insertValidSession(sid, token.email, token.exp);
+
+        if (pending.has_extended_scope && typeof refresh_token !== 'undefined' && is_admin && lab_id === null) {
+            await db.upsertCandidateSender(token.email, token.exp, access_token, refresh_token);
+            await db.clearDesignatedSenders();
+            await db.insertDesignatedSender(token.email);
+        }
+
         return token.exp;
     });
 
