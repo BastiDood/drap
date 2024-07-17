@@ -79,9 +79,9 @@ CREATE SCHEMA drap
     )
     CREATE TABLE designated_sender (
         email TEXT NOT NULL REFERENCES users (email) PRIMARY KEY,
-        access_token TEXT NOT NULL,
-        refresh_token TEXT NOT NULL,
-        expiration Expiration NOT NULL
+        access_token TEXT,
+        refresh_token TEXT,
+        expiration Expiration
     );
 
 INSERT INTO drap.labs (lab_id, lab_name) VALUES
