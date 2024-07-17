@@ -1,4 +1,4 @@
-import { type InferOutput, date, maxLength, object, pipe, string } from 'valibot';
+import { type InferOutput, array, date, maxLength, object, pipe, string } from 'valibot';
 import { User } from '$lib/models/user';
 
 export const CandidateSender = object({
@@ -9,3 +9,9 @@ export const CandidateSender = object({
 });
 
 export type CandidateSender = InferOutput<typeof CandidateSender>;
+
+export const GmailMessageSendResult = object({
+    id: string(),
+    threadId: string(),
+    labelIds: array(string()),
+});

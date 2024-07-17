@@ -19,6 +19,10 @@ const CreatedLab = pick(Lab, ['lab_id']);
 const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration', 'has_extended_scope']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
+const DesignatedSenderCredentials = object({
+    ...CandidateSender.entries,
+    ...pick(User, ['given_name', 'family_name']).entries,
+});
 const Drafts = array(Draft);
 const DraftEvents = array(
     object({
@@ -377,9 +381,9 @@ export class Database implements Loggable {
     @timed async getDesignatedSenderCredentials() {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`SELECT email, access_token, refresh_token, expiration FROM drap.designated_sender JOIN drap.candidate_senders USING (email) JOIN drap.users (email) WHERE user_id IS NOT NULL AND is_admin AND lab_id IS NULL`;
+            await sql`SELECT email, given_name, family_name, access_token, refresh_token, expiration FROM drap.designated_sender JOIN drap.candidate_senders USING (email) JOIN drap.users (email) WHERE user_id IS NOT NULL AND is_admin AND lab_id IS NULL`;
         strictEqual(rest.length, 0);
-        return typeof first === 'undefined' ? null : parse(CandidateSender, first);
+        return typeof first === 'undefined' ? null : parse(DesignatedSenderCredentials, first);
     }
 
     @timed async upsertCandidateSender(
