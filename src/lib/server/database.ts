@@ -19,7 +19,6 @@ const CreatedLab = pick(Lab, ['lab_id']);
 const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration', 'has_extended_scope']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
-const DesignatedSenderCredentials = pick(CandidateSender, ['email', 'access_token', 'refresh_token']);
 const Drafts = array(Draft);
 const DraftEvents = array(
     object({
@@ -378,20 +377,23 @@ export class Database implements Loggable {
     @timed async getDesignatedSenderCredentials() {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`SELECT email, access_token, refresh_token FROM drap.designated_sender JOIN drap.candidate_senders USING (email) JOIN drap.users (email) WHERE NOW() < expiration - INTERVAL '5 minutes' AND user_id IS NOT NULL AND is_admin AND lab_id IS NULL`;
+            await sql`SELECT email, access_token, refresh_token, expiration FROM drap.designated_sender JOIN drap.candidate_senders USING (email) JOIN drap.users (email) WHERE user_id IS NOT NULL AND is_admin AND lab_id IS NULL`;
         strictEqual(rest.length, 0);
-        return typeof first === 'undefined' ? null : parse(DesignatedSenderCredentials, first);
+        return typeof first === 'undefined' ? null : parse(CandidateSender, first);
     }
 
     @timed async upsertCandidateSender(
         email: CandidateSender['email'],
         expiration: CandidateSender['expiration'],
         accessToken: CandidateSender['access_token'],
-        refreshToken: CandidateSender['refresh_token'],
+        refreshToken?: CandidateSender['refresh_token'],
     ) {
         const sql = this.#sql;
-        const { count } =
-            await sql`INSERT INTO drap.candidate_senders (email, expiration, access_token, refresh_token) VALUES (${email}, ${expiration}, ${accessToken}, ${refreshToken}) ON CONFLICT ON CONSTRAINT candidate_senders_pkey DO UPDATE SET expiration = EXCLUDED.expiration, access_token = EXCLUDED.access_token, refresh_token = EXCLUDED.refresh_token RETURNING email`;
+        const query =
+            typeof refreshToken === 'undefined'
+                ? sql`INSERT INTO drap.candidate_senders (email, expiration, access_token) VALUES (${email}, ${expiration}, ${accessToken}) ON CONFLICT ON CONSTRAINT candidate_senders_pkey DO UPDATE SET expiration = EXCLUDED.expiration, access_token = EXCLUDED.access_token`
+                : sql`INSERT INTO drap.candidate_senders (email, expiration, access_token, refresh_token) VALUES (${email}, ${expiration}, ${accessToken}, ${refreshToken}) ON CONFLICT ON CONSTRAINT candidate_senders_pkey DO UPDATE SET expiration = EXCLUDED.expiration, access_token = EXCLUDED.access_token, refresh_token = EXCLUDED.refresh_token`;
+        const { count } = await query;
         strictEqual(count, 1);
     }
 
