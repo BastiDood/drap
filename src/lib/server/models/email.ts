@@ -1,5 +1,4 @@
-import { type InferOutput, date, nullable, object, string } from "valibot";
-
+import { type InferOutput, date, nullable, object, string } from 'valibot';
 
 export const DesignatedSender = object({
     expiration: date(),

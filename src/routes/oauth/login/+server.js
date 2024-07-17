@@ -11,7 +11,6 @@ export async function GET({ locals: { db }, cookies, url: { searchParams } }) {
         if (user !== null && !hasExtendedScope) redirect(302, '/');
     }
 
-
     const { session_id, nonce, expiration } = await db.generatePendingSession(hasExtendedScope);
     cookies.set('sid', session_id, { path: '/', httpOnly: true, sameSite: 'lax', expires: expiration });
 
