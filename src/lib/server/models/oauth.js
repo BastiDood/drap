@@ -20,9 +20,8 @@ const OAUTH_SCOPES = [
     'openid',
     'https://www.googleapis.com/auth/userinfo.profile',
     'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/gmail.send',
 ];
-const SENDER_OAUTH_SCOPES = OAUTH_SCOPES.concat('https://mail.google.com/');
+const SENDER_OAUTH_SCOPES = OAUTH_SCOPES.concat('https://www.googleapis.com/auth/gmail.send');
 
 export const OAUTH_SCOPE_STRING = OAUTH_SCOPES.join(' ');
 export const SENDER_SCOPE_STRING = SENDER_OAUTH_SCOPES.join(' ');
