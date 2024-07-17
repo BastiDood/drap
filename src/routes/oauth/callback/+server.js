@@ -1,12 +1,11 @@
 import { AuthorizationCode, IdToken, TokenResponse } from '$lib/server/models/oauth';
-import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { error, redirect } from '@sveltejs/kit';
 import { ok, strictEqual } from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
 import GOOGLE from '$lib/server/env/google';
+import { fetchJwks } from '$lib/server/jwks';
+import { jwtVerify } from 'jose';
 import { parse } from 'valibot';
-
-const fetchJwks = createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'));
 
 export async function GET({ fetch, locals: { db }, cookies, url: { searchParams } }) {
     const sid = cookies.get('sid');
