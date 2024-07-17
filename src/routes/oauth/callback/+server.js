@@ -28,7 +28,7 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
         grant_type: 'authorization_code',
     });
 
-    const expires = await db.begin(async db => {
+    const { hasExtendedScope, expires } = await db.begin(async db => {
         const pending = await db.deletePendingSession(sid);
         if (pending === null) redirect(302, '/oauth/login/');
 
@@ -63,15 +63,12 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
         );
         await db.insertValidSession(sid, token.email, token.exp);
 
-        if (pending.has_extended_scope && typeof refresh_token !== 'undefined' && is_admin && lab_id === null) {
+        if (pending.has_extended_scope && typeof refresh_token !== 'undefined' && is_admin && lab_id === null)
             await db.upsertCandidateSender(token.email, token.exp, access_token, refresh_token);
-            await db.clearDesignatedSenders();
-            await db.insertDesignatedSender(token.email);
-        }
 
-        return token.exp;
+        return { hasExtendedScope: pending.has_extended_scope, expires: token.exp };
     });
 
     cookies.set('sid', sid, { path: '/', httpOnly: true, sameSite: 'lax', expires });
-    redirect(302, '/');
+    redirect(302, hasExtendedScope ? '/dashboard/email/' : '/');
 }

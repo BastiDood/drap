@@ -5,6 +5,7 @@
         Beaker,
         ClipboardDocumentList,
         Clock,
+        Envelope,
         Home,
         QueueList,
         Users,
@@ -36,17 +37,21 @@
         {#if user.lab_id === null}
             {#if user.is_admin}
                 <!-- Registered Admin -->
-                <AppRailAnchor href="/dashboard/drafts/" selected={pathname === '/dashboard/drafts/'}>
-                    <Icon src={ClipboardDocumentList} slot="lead" class="h-8" />
-                    <span>Drafts</span>
+                <AppRailAnchor href="/dashboard/labs/" selected={pathname === '/dashboard/labs/'}>
+                    <Icon src={Beaker} slot="lead" class="h-8" />
+                    <span>Labs</span>
                 </AppRailAnchor>
                 <AppRailAnchor href="/dashboard/users/" selected={pathname === '/dashboard/users/'}>
                     <Icon src={Users} slot="lead" class="h-8" />
                     <span>Users</span>
                 </AppRailAnchor>
-                <AppRailAnchor href="/dashboard/labs/" selected={pathname === '/dashboard/labs/'}>
-                    <Icon src={Beaker} slot="lead" class="h-8" />
-                    <span>Labs</span>
+                <AppRailAnchor href="/dashboard/drafts/" selected={pathname === '/dashboard/drafts/'}>
+                    <Icon src={ClipboardDocumentList} slot="lead" class="h-8" />
+                    <span>Drafts</span>
+                </AppRailAnchor>
+                <AppRailAnchor href="/dashboard/email/" selected={pathname === '/dashboard/email/'}>
+                    <Icon src={Envelope} slot="lead" class="h-8" />
+                    <span>Email</span>
                 </AppRailAnchor>
             {:else if user.student_number !== null}
                 <!-- Registered User -->

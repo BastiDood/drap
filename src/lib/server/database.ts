@@ -34,6 +34,12 @@ const DraftMaxRounds = pick(Draft, ['max_rounds']);
 const IncrementedDraftRound = pick(Draft, ['curr_round', 'max_rounds']);
 const LabQuota = pick(Lab, ['quota']);
 const LatestDraft = pick(Draft, ['draft_id', 'curr_round', 'max_rounds', 'active_period_start']);
+const QueriedCandidateSenders = array(
+    object({
+        ...pick(User, ['email', 'given_name', 'family_name', 'avatar']).entries,
+        is_active: boolean(),
+    }),
+);
 const QueriedDraft = pick(Draft, ['curr_round', 'max_rounds', 'active_period_start', 'active_period_end']);
 const QueriedFaculty = array(
     object({
@@ -59,6 +65,7 @@ const UpsertedOpenIdUser = pick(User, ['is_admin', 'lab_id']);
 const UserEmails = array(pick(User, ['email']));
 
 export type AvailableLabs = InferOutput<typeof AvailableLabs>;
+export type QueriedCandidateSenders = InferOutput<typeof QueriedCandidateSenders>;
 export type QueriedFaculty = InferOutput<typeof QueriedFaculty>;
 export type RegisteredLabs = InferOutput<typeof RegisteredLabs>;
 export type StudentsWithLabPreference = InferOutput<typeof StudentsWithLabPreference>;
@@ -374,6 +381,13 @@ export class Database implements Loggable {
         return typeof first === 'undefined' ? null : parse(QueriedStudentRank, first);
     }
 
+    @timed async getCandidateSenders() {
+        const sql = this.#sql;
+        const users =
+            await sql`SELECT cs.email, given_name, family_name, avatar, (ds.email IS NOT NULL) is_active FROM drap.candidate_senders cs JOIN drap.users USING (email) LEFT JOIN drap.designated_sender ds ON cs.email = ds.email WHERE user_id IS NOT NULL AND is_admin AND lab_id IS NULL`;
+        return parse(QueriedCandidateSenders, users);
+    }
+
     /**
      * A designated sender is an admin (i.e., `is_admin=True` and `lab_id=NULL`) with valid
      * OAuth 2.0 credentials * such that the access token will not expire in the next five minutes.
@@ -401,15 +415,37 @@ export class Database implements Loggable {
         strictEqual(count, 1);
     }
 
-    @timed async clearDesignatedSenders() {
+    @timed async deleteCandidateSender(email: CandidateSender['email']) {
         const sql = this.#sql;
-        await sql`TRUNCATE drap.designated_sender`;
+        const { count } = await sql`DELETE FROM drap.candidate_senders WHERE email = ${email}`;
+        switch (count) {
+            case 0:
+                return false;
+            case 1:
+                return true;
+            default:
+                fail(`deleteCandidateSender => unexpected delete count ${count}`);
+        }
     }
 
-    @timed async insertDesignatedSender(email: CandidateSender['email']) {
+    @timed async deleteDesignatedSender(email: CandidateSender['email']) {
         const sql = this.#sql;
-        const { count } = await sql`INSERT INTO drap.designated_sender (email) VALUES (${email})`;
-        strictEqual(count, 1);
+        const { count } = await sql`DELETE FROM drap.designated_sender WHERE email = ${email}`;
+        switch (count) {
+            case 0:
+                return false;
+            case 1:
+                return true;
+            default:
+                fail(`deleteDesignatedSender => unexpected delete count ${count}`);
+        }
+    }
+
+    @timed async upsertDesignatedSender(email: CandidateSender['email']) {
+        const sql = this.#sql;
+        const { count } =
+            await sql`INSERT INTO drap.designated_sender (email) VALUES (${email}) ON CONFLICT ON CONSTRAINT designated_sender_pkey DO NOTHING`;
+        return count;
     }
 
     /**
