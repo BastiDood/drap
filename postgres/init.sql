@@ -75,6 +75,16 @@ CREATE SCHEMA drap
         -- TODO: How do we enforce `student_email <> faculty_email`?
         FOREIGN KEY (draft_id, round, lab_id) REFERENCES faculty_choices (draft_id, round, lab_id),
         UNIQUE (draft_id, student_email)
+    )
+    CREATE VIEW vw_undrafted_students AS (
+        SELECT 
+            email 
+        FROM 
+            drap.drafts d 
+            JOIN drap.student_ranks USING (draft_id) 
+            LEFT JOIN drap.faculty_choices_emails fce ON (d.draft_id, email) = (fce.draft_id, student_email) 
+        WHERE 
+            student_email IS NULL
     );
 
 INSERT INTO drap.labs (lab_id, lab_name) VALUES
