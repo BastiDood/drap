@@ -45,6 +45,11 @@ export async function sendEmailTo(to: string, subject: string, body: string, db:
     if (!credentials) throw Error();
     if (!credentials.refresh_token) throw Error();
 
+    if (credentials.expiration < new Date()) 
+        credentials = await refreshAccessToken(credentials.refresh_token, credentials.email, db)
+
+    if (!credentials) throw Error();
+
     const transporter = createTransport({
         host: 'smtp.gmail.com',
         port: 465,
