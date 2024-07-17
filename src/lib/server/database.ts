@@ -77,7 +77,7 @@ export class Database implements Loggable {
 
     /** Begins a transaction. */
     begin<T>(fn: (db: Database) => Promise<T>) {
-        return this.#sql.begin('ISOLATION LEVEL REPEATABLE READ', sql => fn(new Database(sql, this.#logger)));
+        return this.#sql.begin('ISOLATION LEVEL SERIALIZABLE', sql => fn(new Database(sql, this.#logger)));
     }
 
     @timed async generatePendingSession(hasExtendedScope: boolean) {
