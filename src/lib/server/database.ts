@@ -6,12 +6,11 @@ import postgres from 'postgres';
 
 import { FacultyChoice, FacultyChoiceEmail } from '$lib/models/faculty-choice';
 import { Pending, Session } from '$lib/server/models/session';
-import { DesignatedSender } from '$lib/server/models/email';
+import { CandidateSender } from '$lib/server/models/email';
 import { Draft } from '$lib/models/draft';
 import { Lab } from '$lib/models/lab';
 import { StudentRank } from '$lib/models/student-rank';
 import { User } from '$lib/models/user';
-import { notEqual } from 'node:assert';
 
 const AvailableLabs = array(pick(Lab, ['lab_id', 'lab_name']));
 const BooleanResult = object({ result: boolean() });
@@ -20,6 +19,7 @@ const CreatedLab = pick(Lab, ['lab_id']);
 const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration', 'has_extended_scope']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
+const DesignatedSenderCredentials = pick(CandidateSender, ['email', 'access_token', 'refresh_token']);
 const Drafts = array(Draft);
 const DraftEvents = array(
     object({
@@ -80,7 +80,7 @@ export class Database implements Loggable {
         return this.#sql.begin('ISOLATION LEVEL REPEATABLE READ', sql => fn(new Database(sql, this.#logger)));
     }
 
-    @timed async generatePendingSession(hasExtendedScope = false) {
+    @timed async generatePendingSession(hasExtendedScope: boolean) {
         const sql = this.#sql;
         const [first, ...rest] =
             await sql`INSERT INTO drap.pendings (has_extended_scope) VALUES (${hasExtendedScope}) RETURNING session_id, expiration, nonce, has_extended_scope`;
@@ -369,45 +369,39 @@ export class Database implements Loggable {
         return typeof first === 'undefined' ? null : parse(QueriedStudentRank, first);
     }
 
-    @timed async getDesignatedSender() {
+    /**
+     * A designated sender is an admin (i.e., `is_admin=True` and `lab_id=NULL`) with valid
+     * OAuth 2.0 credentials * such that the access token will not expire in the next five minutes.
+     */
+    @timed async getDesignatedSenderCredentials() {
         const sql = this.#sql;
-        const [first, ...rest] = await sql`SELECT * FROM drap.designated_sender`;
+        const [first, ...rest] =
+            await sql`SELECT email, access_token, refresh_token FROM drap.designated_sender JOIN drap.candidate_senders USING (email) JOIN drap.users (email) WHERE NOW() < expiration - INTERVAL '5 minutes' AND user_id IS NOT NULL AND is_admin AND lab_id IS NULL`;
         strictEqual(rest.length, 0);
-
-        if (typeof first === 'undefined') return;
-
-        const { email } = first;
-        const [firstUser, ...restUsers] =
-            await sql`SELECT user_id, email, access_token, refresh_token FROM drap.users WHERE email = ${email}`;
-        strictEqual(restUsers.length, 0);
-        return typeof firstUser === 'undefined' ? null : parse(DesignatedSender, firstUser);
+        return typeof first === 'undefined' ? null : parse(DesignatedSenderCredentials, first);
     }
 
-    @timed async deleteDesignatedSender() {
-        const sql = this.#sql;
-        const count = await sql`DELETE FROM drap.designated_sender`;
-        return count;
-    }
-
-    @timed async initDesignatedSender(email: DesignatedSender['email']) {
-        const sql = this.#sql;
-        const count = await sql`INSERT INTO drap.designated_sender (email) VALUES (${email})`;
-        return count;
-    }
-
-    @timed async updateDesignatedSender(
-        email: DesignatedSender['email'],
-        expiration: DesignatedSender['expiration'],
-        access_token: DesignatedSender['access_token'],
-        refresh_token: DesignatedSender['refresh_token'] = null,
+    @timed async upsertCandidateSender(
+        email: CandidateSender['email'],
+        expiration: CandidateSender['expiration'],
+        accessToken: CandidateSender['access_token'],
+        refreshToken: CandidateSender['refresh_token'],
     ) {
         const sql = this.#sql;
-        const [first, ...rest] = refresh_token
-            ? await sql`UPDATE drap.designated_sender SET expiration = ${expiration}, access_token = ${access_token}, refresh_token = ${refresh_token} WHERE email = ${email} RETURNING *`
-            : await sql`UPDATE drap.designated_sender SET expiration = ${expiration}, access_token = ${access_token} WHERE email = ${email} RETURNING *`;
-        notEqual(typeof first, 'undefined');
-        strictEqual(rest.length, 0);
-        return parse(DesignatedSender, first);
+        const { count } =
+            await sql`INSERT INTO drap.candidate_senders (email, expiration, access_token, refresh_token) VALUES (${email}, ${expiration}, ${accessToken}, ${refreshToken}) ON CONFLICT ON CONSTRAINT candidate_senders_pkey DO UPDATE SET expiration = EXCLUDED.expiration, access_token = EXCLUDED.access_token, refresh_token = EXCLUDED.refresh_token RETURNING email`;
+        strictEqual(count, 1);
+    }
+
+    @timed async clearDesignatedSenders() {
+        const sql = this.#sql;
+        await sql`TRUNCATE drap.designated_sender`;
+    }
+
+    @timed async insertDesignatedSender(email: CandidateSender['email']) {
+        const sql = this.#sql;
+        const { count } = await sql`INSERT INTO drap.designated_sender (email) VALUES (${email})`;
+        strictEqual(count, 1);
     }
 
     /**

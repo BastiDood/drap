@@ -1,10 +1,11 @@
-import { type InferOutput, date, nullable, object, string } from 'valibot';
+import { type InferOutput, date, maxLength, object, pipe, string } from 'valibot';
+import { User } from '$lib/models/user';
 
-export const DesignatedSender = object({
+export const CandidateSender = object({
     expiration: date(),
-    email: string(),
-    access_token: string(),
-    refresh_token: nullable(string()),
+    email: User.entries.email,
+    access_token: pipe(string(), maxLength(2048)),
+    refresh_token: pipe(string(), maxLength(512)),
 });
 
-export type DesignatedSender = InferOutput<typeof DesignatedSender>;
+export type CandidateSender = InferOutput<typeof CandidateSender>;
