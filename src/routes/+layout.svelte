@@ -2,6 +2,7 @@
     import './app.css';
     import { AppShell, Toast, initializeStores } from '@skeletonlabs/skeleton';
     import SideBar from './SideBar.svelte';
+    import favicon from '$lib/favicon.ico?url';
 
     // eslint-disable-next-line init-declarations
     export let data;
@@ -9,6 +10,10 @@
 
     initializeStores();
 </script>
+
+<svelte:head>
+    <link rel="icon" href={favicon} />
+</svelte:head>
 
 <Toast />
 <AppShell>
