@@ -35,7 +35,7 @@ export const actions = {
         if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
 
         const isValid = await db.isValidTotalLabQuota();
-        if (!isValid) return fail(403);
+        if (!isValid) error(403);
 
         const data = await request.formData();
         const rounds = parseInt(validateString(data.get('rounds')), 10);
@@ -112,7 +112,7 @@ export const actions = {
                 }),
             );
         } catch (err) {
-            if (err === ZIP_NOT_EQUAL) return fail(400);
+            if (err === ZIP_NOT_EQUAL) return fail(403);
             throw err;
         }
 
