@@ -12,7 +12,9 @@
 <a href="mailto:{email}">
     <Avatar src={avatar} width="w-14"><Icon src={UserCircle} class="w-14" /></Avatar>
     <span class="flex flex-col">
-        <strong><span class="uppercase">{family_name}</span>, {given_name}</strong>
+        {#if given_name.length > 0 && family_name.length > 0}
+            <strong><span class="uppercase">{family_name}</span>, {given_name}</strong>
+        {/if}
         {#if lab_name !== null}
             <span class="text-sm opacity-50">{lab_name}</span>
         {/if}

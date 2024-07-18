@@ -10,7 +10,9 @@
 <a href="mailto:{email}" class="grid w-full grid-cols-[auto_1fr] items-center gap-1 p-4">
     <span><Avatar src={avatar} width="w-20" /></span>
     <span class="flex flex-col">
-        <strong><span class="uppercase">{family_name}</span>, {given_name}</strong>
+        {#if given_name.length > 0 && family_name.length > 0}
+            <strong><span class="uppercase">{family_name}</span>, {given_name}</strong>
+        {/if}
         {#if student_number !== null}
             <span class="text-sm opacity-50">{student_number}</span>
         {/if}
