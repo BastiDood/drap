@@ -13,7 +13,7 @@
 
 <form
     method="post"
-    action="/dashboard/profile/?/profile"
+    action="/profile/?/profile"
     class="space-y-4"
     use:enhance={({ submitter }) => {
         assert(submitter !== null);
