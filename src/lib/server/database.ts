@@ -32,6 +32,7 @@ const DraftEvents = array(
 );
 const DraftMaxRounds = pick(Draft, ['max_rounds']);
 const IncrementedDraftRound = pick(Draft, ['curr_round', 'max_rounds']);
+const LabName = pick(Lab, ['lab_name']);
 const LabQuota = pick(Lab, ['quota']);
 const LatestDraft = pick(Draft, ['draft_id', 'curr_round', 'max_rounds', 'active_period_start']);
 const QueriedCandidateSenders = array(
@@ -48,12 +49,12 @@ const QueriedFaculty = array(
     }),
 );
 const QueriedLab = pick(Lab, ['lab_name', 'quota']);
+const QueriedLabMembers = array(pick(User, ['email', 'given_name', 'family_name', 'avatar', 'student_number']));
 const QueriedStudentRank = object({
     ...pick(StudentRank, ['created_at']).entries,
     labs: array(Lab.entries.lab_name),
 });
 const RegisteredLabs = array(Lab);
-const StudentsWithLabPreference = array(pick(User, ['email', 'given_name', 'family_name', 'avatar', 'student_number']));
 const TaggedStudentsWithLabs = array(
     object({
         ...pick(User, ['email', 'given_name', 'family_name', 'avatar', 'student_number']).entries,
@@ -68,7 +69,7 @@ export type AvailableLabs = InferOutput<typeof AvailableLabs>;
 export type QueriedCandidateSenders = InferOutput<typeof QueriedCandidateSenders>;
 export type QueriedFaculty = InferOutput<typeof QueriedFaculty>;
 export type RegisteredLabs = InferOutput<typeof RegisteredLabs>;
-export type StudentsWithLabPreference = InferOutput<typeof StudentsWithLabPreference>;
+export type QueriedLabMembers = InferOutput<typeof QueriedLabMembers>;
 export type TaggedStudentsWithLabs = InferOutput<typeof TaggedStudentsWithLabs>;
 
 export type Sql = postgres.Sql<{ bigint: bigint }>;
@@ -222,6 +223,23 @@ export class Database implements Loggable {
         return parse(QueriedFaculty, users);
     }
 
+    @timed async getLabMembers(lab: Lab['lab_id']) {
+        const [[labName, ...labRest], heads, members] = await this.#sql.begin(
+            sql =>
+                [
+                    sql`SELECT lab_name FROM drap.labs WHERE lab_id = ${lab}`,
+                    sql`SELECT email, given_name, family_name, avatar, student_number FROM drap.users WHERE user_id IS NOT NULL AND lab_id = ${lab} AND is_admin ORDER BY family_name`,
+                    sql`SELECT email, given_name, family_name, avatar, student_number FROM drap.users WHERE user_id IS NOT NULL AND lab_id = ${lab} AND NOT is_admin ORDER BY family_name`,
+                ] as const,
+        );
+        strictEqual(labRest.length, 0);
+        return {
+            lab: parse(LabName, labName).lab_name,
+            heads: parse(QueriedLabMembers, heads),
+            members: parse(QueriedLabMembers, members),
+        };
+    }
+
     @timed async getDrafts() {
         const sql = this.#sql;
         const drafts =
@@ -277,8 +295,8 @@ export class Database implements Loggable {
         strictEqual(doneRest.length, 0);
         return {
             lab: typeof labs === 'undefined' ? null : parse(QueriedLab, labs),
-            students: parse(StudentsWithLabPreference, available),
-            researchers: parse(StudentsWithLabPreference, selected),
+            students: parse(QueriedLabMembers, available),
+            researchers: parse(QueriedLabMembers, selected),
             isDone: parse(BooleanResult, isDone).result,
         };
     }

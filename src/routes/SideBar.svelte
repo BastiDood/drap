@@ -61,12 +61,19 @@
                     <span>Ranks</span>
                 </AppRailAnchor>
             {/if}
-        {:else if user.is_admin}
-            <!-- Registered Faculty -->
-            <AppRailAnchor href="/dashboard/students/" selected={pathname === '/dashboard/students/'}>
-                <Icon src={AcademicCap} slot="lead" class="h-8" />
-                <span>Students</span>
+        {:else}
+            <!-- Registered Researcher -->
+            <AppRailAnchor href="/dashboard/lab/" selected={pathname === '/dashboard/lab/'}>
+                <Icon src={Beaker} slot="lead" class="h-8" />
+                <span>Lab</span>
             </AppRailAnchor>
+            {#if user.is_admin}
+                <!-- Registered Faculty -->
+                <AppRailAnchor href="/dashboard/students/" selected={pathname === '/dashboard/students/'}>
+                    <Icon src={AcademicCap} slot="lead" class="h-8" />
+                    <span>Students</span>
+                </AppRailAnchor>
+            {/if}
         {/if}
     {/if}
     <AppRailAnchor href="/history/" selected={pathname.startsWith('/history/')}>

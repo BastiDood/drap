@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Avatar, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
     import type { Draft } from '$lib/models/draft';
-    import type { StudentsWithLabPreference } from '$lib/server/database';
+    import type { QueriedLabMembers } from '$lib/server/database';
     import type { User } from '$lib/models/user';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
@@ -11,7 +11,7 @@
     // eslint-disable-next-line init-declarations
     export let draft: Draft['draft_id'];
     // eslint-disable-next-line init-declarations
-    export let students: StudentsWithLabPreference;
+    export let students: QueriedLabMembers;
     // eslint-disable-next-line init-declarations
     export let draftees: User['email'][];
 </script>
