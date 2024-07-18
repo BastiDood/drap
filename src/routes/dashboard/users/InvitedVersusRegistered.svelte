@@ -1,5 +1,6 @@
 <script lang="ts">
     import Faculty from '$lib/users/Faculty.svelte';
+    import Invited from '$lib/users/Invited.svelte';
     import type { QueriedFaculty } from '$lib/server/database';
 
     // eslint-disable-next-line init-declarations
@@ -13,7 +14,7 @@
         <h4 class="h4">Invited</h4>
         <ul>
             {#each invited as head (head.email)}
-                <li><Faculty user={head} /></li>
+                <li><Invited user={head} /></li>
             {/each}
         </ul>
     </nav>
