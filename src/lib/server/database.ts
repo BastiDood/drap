@@ -384,7 +384,7 @@ export class Database implements Loggable {
     @timed async getCandidateSenders() {
         const sql = this.#sql;
         const users =
-            await sql`SELECT cs.email, given_name, family_name, avatar, (ds.email IS NOT NULL) is_active FROM drap.candidate_senders cs JOIN drap.users USING (email) LEFT JOIN drap.designated_sender ds ON cs.email = ds.email WHERE user_id IS NOT NULL AND is_admin AND lab_id IS NULL`;
+            await sql`SELECT cs.email, given_name, family_name, avatar, (ds.email IS NOT NULL) is_active FROM drap.candidate_senders cs JOIN drap.users USING (email) LEFT JOIN drap.designated_sender ds ON cs.email = ds.email WHERE user_id IS NOT NULL AND is_admin AND lab_id IS NULL ORDER BY family_name`;
         return parse(QueriedCandidateSenders, users);
     }
 
