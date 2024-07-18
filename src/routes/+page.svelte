@@ -1,4 +1,6 @@
 <script>
+    import { AcademicCap, Beaker, ShieldExclamation } from '@steeze-ui/heroicons';
+    import { Accordion, AccordionItem } from '@skeletonlabs/skeleton';
     import { Google } from '@steeze-ui/simple-icons';
     import { Icon } from '@steeze-ui/svelte-icon';
 
@@ -60,10 +62,75 @@
             <li>The draft concludes when all registered participants have been assigned to a lab.</li>
         </ol>
     </section>
+    <section>
+        <h2>Getting Started</h2>
+        <p>
+            All interactions with the application require UP Mail authentication. To <a
+                href="/oauth/login/"
+                rel="external">sign in with Google</a
+            >, simply press the login button at the lower left corner of the dashboard. When logged in, the button
+            functions as a logout button instead. The next steps depend on your role in the draft.
+        </p>
+        <Accordion autocollapse>
+            <AccordionItem>
+                <Icon slot="lead" src={AcademicCap} class="h-8" />
+                <strong slot="summary">For Students</strong>
+                <ol slot="content">
+                    <li>
+                        Go to your <a href="/profile/">profile</a> and set your student number.
+                        <em>Note that this can only be done once.</em>
+                    </li>
+                    <li>Set your <a href="/dashboard/ranks/">lab rankings and preferences</a>.</li>
+                    <li>Track the progress of the draft in the <a href="/history/">history</a> page.</li>
+                    <li>Wait until the draft is finished.</li>
+                </ol>
+            </AccordionItem>
+            <AccordionItem>
+                <Icon slot="lead" src={Beaker} class="h-8" />
+                <strong slot="summary">For Lab Heads</strong>
+                <ol slot="content">
+                    <li>Wait for the administrators to open a draft.</li>
+                    <li>Track the progress of the draft in the <a href="/history/">history</a> page.</li>
+                    <li>
+                        Visit the <a href="/dashboard/students/">students</a> page to select draftees who chose your lab.
+                    </li>
+                    <li>Wait until the regular draft process to finish.</li>
+                    <li>
+                        During the lottery stage, negotiate with the draft administrators to resolve the membership of
+                        any remaining draftees.
+                    </li>
+                    <li>
+                        Finally, after the manual interventions, wait for the results of the randomized round-robin
+                        lottery (if there are any undrafted students).
+                    </li>
+                </ol>
+            </AccordionItem>
+            <AccordionItem>
+                <Icon slot="lead" src={ShieldExclamation} class="h-8" />
+                <strong slot="summary">For Administrators</strong>
+                <ol slot="content">
+                    <li>Set the <a href="/dashboard/labs/">lab quota</a>.</li>
+                    <li>Initialize a <a href="/dashboard/drafts/">new draft</a>.</li>
+                    <li>Wait for participating draftees to register their lab preferences.</li>
+                    <li>
+                        Officially <a href="/dashboard/drafts/">start the draft</a>. This will notify all of the
+                        concerned lab heads of the interested draftees.
+                    </li>
+                    <li>Audit the progress of the draft in the <a href="/history/">history</a> page.</li>
+                    <li>Wait for all rounds of the draft to finish.</li>
+                    <li>
+                        After the regular draft process, <a href="/dashboard/drafts/">resolve</a> the membership of the remaining
+                        undrafted students by negotiating with the lab heads.
+                    </li>
+                    <li>
+                        <a href="/dashboard/drafts/">Apply</a> the necessary manual interventions (i.e., assigning students
+                        to their labs based on the agreed terms between labs)
+                    </li>
+                    <li>
+                        <a href="/dashboard/drafts/">Conclude</a> the draft to proceed to the randomized round-robin stage.
+                    </li>
+                </ol>
+            </AccordionItem>
+        </Accordion>
+    </section>
 </div>
-{#if typeof user === 'undefined'}
-    <a href="/oauth/login/" rel="external" class="not-prose variant-filled-primary btn">
-        <Icon src={Google} class="size-4" />
-        <span>Sign in with Google</span>
-    </a>
-{/if}
