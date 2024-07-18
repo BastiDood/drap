@@ -45,10 +45,18 @@
             <strong>"Demote"</strong> button demotes a designated sender back to candidate sender status. Lastly, an
             administrator may press the <strong>"Remove"</strong> to revoke their consent.
         </p>
-        <WarningAlert
-            >Note that consent is user-specific. Nevertheless, <em>any</em> draft administrator may promote, demote, and
-            remove <em>any</em> of the candidate senders.</WarningAlert
-        >
+        <div class="not-prose space-y-4">
+            <WarningAlert
+                >Note that consent is user-specific. Nevertheless, <em>any</em> draft administrator may promote, demote,
+                and remove <em>any</em> of the candidate senders.</WarningAlert
+            >
+            <WarningAlert
+                >Google sets <a target="_blank" href="https://support.google.com/a/answer/166852#limits" class="anchor"
+                    >limits</a
+                > on the number of automated emails that can be sent within a rolling 24-hour period. As such, some email
+                notifications may not timely arrive.</WarningAlert
+            >
+        </div>
     </div>
     {#if senders.length > 0}
         <DesignateForm {senders} />
