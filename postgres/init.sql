@@ -7,7 +7,6 @@ CREATE SCHEMA drap;
 CREATE EXTENSION pgcrypto WITH SCHEMA drap;
 
 CREATE DOMAIN drap.GoogleUserId AS VARCHAR(255);
-CREATE DOMAIN drap.Expiration AS TIMESTAMPTZ CHECK(VALUE > NOW());
 
 CREATE TABLE drap.labs (
     lab_id TEXT NOT NULL PRIMARY KEY,
@@ -37,14 +36,14 @@ CREATE TABLE drap.users (
 
 CREATE TABLE drap.pendings (
     session_id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-    expiration Expiration NOT NULL DEFAULT NOW() + INTERVAL '15 minutes',
+    expiration TIMESTAMPTZ NOT NULL DEFAULT NOW() + INTERVAL '15 minutes',
     nonce BYTEA NOT NULL DEFAULT drap.gen_random_bytes(64),
     has_extended_scope BOOLEAN NOT NULL
 );
 
 CREATE TABLE drap.sessions (
     session_id UUID NOT NULL PRIMARY KEY,
-    expiration Expiration NOT NULL,
+    expiration TIMESTAMPTZ NOT NULL,
     email TEXT NOT NULL REFERENCES drap.users (email)
 );
 
@@ -90,7 +89,7 @@ CREATE TABLE drap.candidate_senders (
     email TEXT NOT NULL REFERENCES drap.users (email) PRIMARY KEY,
     access_token TEXT NOT NULL CONSTRAINT access_token_length CHECK (length(access_token) <= 2048),
     refresh_token TEXT NOT NULL CONSTRAINT refresh_token_length CHECK (length(refresh_token) <= 512),
-    expiration Expiration NOT NULL
+    expiration TIMESTAMPTZ NOT NULL
 );
 
 CREATE TABLE drap.designated_sender (
