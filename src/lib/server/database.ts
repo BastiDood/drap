@@ -341,7 +341,7 @@ export class Database implements Loggable {
     @timed async concludeDraft(draft: Draft['draft_id']) {
         const sql = this.#sql;
         const { count } =
-            await sql`UPDATE drap.drafts d SET active_period = tstzrange(lower(d.active_period), coalesce(upper(d.active_period), now())) WHERE draft_id = ${draft} RETURNING upper(active_period) active_period_end`;
+            await sql`UPDATE drap.drafts d SET active_period = tstzrange(lower(d.active_period), coalesce(upper(d.active_period), now()), '[)') WHERE draft_id = ${draft} RETURNING upper(active_period) active_period_end`;
         switch (count) {
             case 0:
                 return false;
