@@ -4,6 +4,6 @@
 </script>
 
 <div class="alert variant-soft-error">
-    <Icon {src} class="size-8" />
+    <span><Icon {src} class="w-8" /></span>
     <div class="alert-message"><slot /></div>
 </div>
