@@ -1,6 +1,7 @@
 <script lang="ts">
     import {
         AcademicCap,
+        ArrowRightEndOnRectangle,
         ArrowRightStartOnRectangle,
         Beaker,
         ClipboardDocumentList,
@@ -73,7 +74,17 @@
         <span>History</span>
     </AppRailAnchor>
     <svelte:fragment slot="trail">
-        {#if typeof user !== 'undefined'}
+        {#if typeof user === 'undefined'}
+            <div class="p-2">
+                <a
+                    href="/oauth/login/"
+                    rel="external"
+                    class="variant-soft-primary btn-icon btn-icon-sm aspect-square w-full"
+                >
+                    <Icon slot="trail" src={ArrowRightEndOnRectangle} class="w-full p-2" />
+                </a>
+            </div>
+        {:else}
             <form
                 method="post"
                 action="/?/logout"
@@ -88,7 +99,7 @@
                     };
                 }}
             >
-                <button type="submit" class="variant-soft-primary btn-icon btn-icon-sm aspect-square w-full">
+                <button type="submit" class="variant-soft-tertiary btn-icon btn-icon-sm aspect-square w-full">
                     <Icon slot="trail" src={ArrowRightStartOnRectangle} class="w-full p-2" />
                 </button>
             </form>
