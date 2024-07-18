@@ -5,11 +5,14 @@ import { parse, pick } from 'valibot';
 import type { Database } from '$lib/server/database';
 import GOOGLE from '$lib/server/env/google';
 import { GmailMessageSendResult } from './models/email';
+import type { User } from '$lib/models/user';
 import { createMimeMessage } from 'mimetext/node';
 import { fetchJwks } from '$lib/server/jwks';
 import { jwtVerify } from 'jose';
 
-async function refreshAccessToken(db: Database, email: string, refreshToken: string) {
+export type Email = User['email'];
+
+async function refreshAccessToken(db: Database, email: Email, refreshToken: string) {
     const res = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -33,8 +36,7 @@ async function refreshAccessToken(db: Database, email: string, refreshToken: str
     return access_token;
 }
 
-// this function sends an email to the provided email address with the given body via nodemailer using the access token of the designated admin sender
-export async function sendEmailTo(db: Database, to: string, subject: string, data: string) {
+export async function sendEmail(db: Database, to: Email[], subject: string, data: string) {
     const credentials = await db.getDesignatedSenderCredentials();
     if (credentials === null) return false;
 
@@ -46,8 +48,8 @@ export async function sendEmailTo(db: Database, to: string, subject: string, dat
     message.setRecipient(to);
     message.setSubject(subject);
     message.addMessage({ contentType: 'text/plain', data });
-
     const raw = message.asEncoded();
+
     const accessToken = isPast(sub(credentials.expiration, { minutes: 10 }))
         ? await refreshAccessToken(db, credentials.email, credentials.refresh_token)
         : credentials.access_token;
