@@ -1,12 +1,7 @@
 <script>
     import { AcademicCap, Beaker, ShieldExclamation } from '@steeze-ui/heroicons';
     import { Accordion, AccordionItem } from '@skeletonlabs/skeleton';
-    import { Google } from '@steeze-ui/simple-icons';
     import { Icon } from '@steeze-ui/svelte-icon';
-
-    // eslint-disable-next-line init-declarations
-    export let data;
-    $: ({ user } = data);
 </script>
 
 <div class="prose max-w-none dark:prose-invert">
