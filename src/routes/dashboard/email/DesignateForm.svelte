@@ -21,10 +21,10 @@
 <dl class="list-dl">
     {#each senders as { email, given_name, family_name, avatar, is_active } (email)}
         {@const [action, variant, card, text, icon] = useSenderControls(is_active)}
-        <div class="card {card}">
+        <div class="card {card} min-w-max">
             <span><Avatar slot="lead" src={avatar} width="w-12" /></span>
             <span class="flex-auto">
-                <dt><strong><span class="uppercas">{family_name}</span>, {given_name}</strong></dt>
+                <dt><strong><span class="uppercase">{family_name}</span>, {given_name}</strong></dt>
                 <dd class="text-sm opacity-50">{email}</dd>
             </span>
             <span>
