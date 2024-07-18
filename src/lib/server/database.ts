@@ -270,7 +270,7 @@ export class Database implements Loggable {
                     sql`SELECT lab_name, quota FROM drap.labs WHERE lab_id = ${lab}`,
                     sql`SELECT email, given_name, family_name, avatar, student_number FROM drap.student_ranks sr JOIN drap.drafts USING (draft_id) LEFT JOIN drap.faculty_choices_emails fce ON (sr.draft_id, email) = (fce.draft_id, student_email) JOIN drap.users USING (email) WHERE sr.draft_id = ${draft} AND student_email IS NULL AND labs[curr_round] = ${lab}`,
                     sql`SELECT email, given_name, family_name, avatar, student_number FROM drap.faculty_choices_emails fce JOIN drap.users ON student_email = email WHERE draft_id = ${draft} AND fce.lab_id = ${lab}`,
-                    sql`SELECT EXISTS(SELECT student_email FROM drap.faculty_choices_emails fce JOIN drap.drafts d ON (fce.draft_id, round) = (d.draft_id, curr_round) WHERE fce.draft_id = ${draft} AND lab_id = ${lab}) result`,
+                    sql`SELECT EXISTS(SELECT choice_id FROM drap.faculty_choices fc JOIN drap.drafts d ON (fc.draft_id, round) = (d.draft_id, curr_round) WHERE fc.draft_id = ${draft} AND lab_id = ${lab}) result`,
                 ] as const,
         );
         strictEqual(labsRest.length, 0);
