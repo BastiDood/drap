@@ -113,7 +113,11 @@
             </div>
         </div>
     {:else if curr_round > 0}
-        <!-- TODO: Ongoing Draft -->
+        <!-- TODO: Ongoing Draft (ADMIN DASHBOARD) -->
+        <!-- TODO: Registered Students -->
+        <!-- TODO: Submitted Lab Preferences -->
+        <!-- TODO: Start + End Dates for Draft (?) -->
+        <!-- TODO: System Automation Logs -->
     {:else if available.length > 0}
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
             <div class="space-y-4">
