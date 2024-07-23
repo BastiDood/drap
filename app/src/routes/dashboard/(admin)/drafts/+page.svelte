@@ -9,6 +9,7 @@
     import InitForm from './InitForm.svelte';
     import InterveneForm from './InterveneForm.svelte';
     import StartForm from './StartForm.svelte';
+    import StudentsPanel from './StudentsPanel.svelte';
 
     import { TabGroup, Tab, TabAnchor } from '@skeletonlabs/skeleton';
     import { Icon } from '@steeze-ui/svelte-icon';
@@ -144,7 +145,7 @@
             <svelte:fragment slot="panel">
                 {#if selectedTab === 0}
                     <!-- TODO: Registered Students -->
-                    (tab panel 1 contents)
+                    <StudentsPanel available={available} selected={selected} labs={labs}/>
                 {:else if selectedTab === 1}
                     <!-- TODO: Submitted Lab Preferences -->
                     (tab panel 2 contents)
