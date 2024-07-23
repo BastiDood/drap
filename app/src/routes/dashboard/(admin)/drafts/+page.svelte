@@ -153,7 +153,7 @@
                     (tab panel 3 contents)
                 {:else if selectedTab === 3}
                     <!-- TODO: System Automation Logs -->
-                        (tab panel 4 contents)
+                    (tab panel 4 contents)
                 {/if}
             </svelte:fragment>
 
