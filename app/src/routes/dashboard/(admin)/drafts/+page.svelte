@@ -10,9 +10,13 @@
     import InterveneForm from './InterveneForm.svelte';
     import StartForm from './StartForm.svelte';
 
+    import { TabGroup, Tab, TabAnchor } from '@skeletonlabs/skeleton';
+
     // eslint-disable-next-line init-declarations
     export let data;
     $: ({ labs } = data);
+
+    let selectedTab = 0;
 </script>
 
 {#if data.draft === null}
@@ -114,10 +118,44 @@
         </div>
     {:else if curr_round > 0}
         <!-- TODO: Ongoing Draft (ADMIN DASHBOARD) -->
-        <!-- TODO: Registered Students -->
-        <!-- TODO: Submitted Lab Preferences -->
-        <!-- TODO: Start + End Dates for Draft (?) -->
-        <!-- TODO: System Automation Logs -->
+        <TabGroup>
+            
+            <!-- Tab Labels -->
+            <Tab bind:group={selectedTab} name="tab1" value={0}>
+                <svelte:fragment slot="lead">(icon)</svelte:fragment>
+                <span>(label 1)</span>
+            </Tab>
+            <Tab bind:group={selectedTab} name="tab2" value={1}>
+                <svelte:fragment slot="lead">(icon)</svelte:fragment>
+                <span>(label 2)</span>
+            </Tab>
+            <Tab bind:group={selectedTab} name="tab3" value={2}>
+                <svelte:fragment slot="lead">(icon)</svelte:fragment>
+                <span>(label 3)</span>
+            </Tab>
+            <Tab bind:group={selectedTab} name="tab4" value={3}>
+                <svelte:fragment slot="lead">(icon)</svelte:fragment>
+                <span>(label 4)</span>
+            </Tab>
+            
+            <!-- Tab Panels --->
+            <svelte:fragment slot="panel">
+                {#if selectedTab === 0}
+                    <!-- TODO: Registered Students -->
+                    (tab panel 1 contents)
+                {:else if selectedTab === 1}
+                    <!-- TODO: Submitted Lab Preferences -->
+                    (tab panel 2 contents)
+                {:else if selectedTab === 2}
+                    <!-- TODO: Start + End Dates for Draft (?) -->
+                    (tab panel 3 contents)
+                {:else if selectedTab === 3}
+                    <!-- TODO: System Automation Logs -->
+                        (tab panel 4 contents)
+                {/if}
+            </svelte:fragment>
+
+    </TabGroup>
     {:else if available.length > 0}
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
             <div class="space-y-4">
