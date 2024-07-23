@@ -11,6 +11,8 @@
     import StartForm from './StartForm.svelte';
 
     import { TabGroup, Tab, TabAnchor } from '@skeletonlabs/skeleton';
+    import { Icon } from '@steeze-ui/svelte-icon';
+    import { AcademicCap, Beaker, Clock, PaperClip } from '@steeze-ui/heroicons';
 
     // eslint-disable-next-line init-declarations
     export let data;
@@ -122,20 +124,20 @@
             
             <!-- Tab Labels -->
             <Tab bind:group={selectedTab} name="tab1" value={0}>
-                <svelte:fragment slot="lead">(icon)</svelte:fragment>
-                <span>(label 1)</span>
+                <Icon src={AcademicCap} slot="lead" class="h-8" />
+                <span>Registered Students</span>
             </Tab>
             <Tab bind:group={selectedTab} name="tab2" value={1}>
-                <svelte:fragment slot="lead">(icon)</svelte:fragment>
-                <span>(label 2)</span>
+                <Icon src={Beaker} slot="lead" class="h-8" />
+                <span>Lab Submissions</span>
             </Tab>
             <Tab bind:group={selectedTab} name="tab3" value={2}>
-                <svelte:fragment slot="lead">(icon)</svelte:fragment>
-                <span>(label 3)</span>
+                <Icon src={Clock} slot="lead" class="h-8" />
+                <span>Draft Start and End</span>
             </Tab>
             <Tab bind:group={selectedTab} name="tab4" value={3}>
-                <svelte:fragment slot="lead">(icon)</svelte:fragment>
-                <span>(label 4)</span>
+                <Icon src={PaperClip} slot="lead" class="h-8" />
+                <span>System Logs</span>
             </Tab>
             
             <!-- Tab Panels --->
@@ -155,7 +157,7 @@
                 {/if}
             </svelte:fragment>
 
-    </TabGroup>
+        </TabGroup>
     {:else if available.length > 0}
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
             <div class="space-y-4">
