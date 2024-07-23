@@ -145,7 +145,7 @@
             <svelte:fragment slot="panel">
                 {#if selectedTab === 0}
                     <!-- TODO: Registered Students -->
-                    <StudentsPanel available={available} selected={selected} labs={labs}/>
+                    <StudentsPanel {available} {selected} {labs}/>
                 {:else if selectedTab === 1}
                     <!-- TODO: Submitted Lab Preferences -->
                     (tab panel 2 contents)
