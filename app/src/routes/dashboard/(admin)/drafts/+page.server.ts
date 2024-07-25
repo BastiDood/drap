@@ -2,19 +2,6 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { repeat, roundrobin, zip } from 'itertools';
 import { validateEmail, validateString } from '$lib/forms';
 import assert from 'node:assert/strict';
-import groupBy from 'just-group-by';
-
-export async function load({ locals: { db }, parent }) {
-    const { user, draft } = await parent();
-    if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
-
-    const labs = await db.getLabRegistry();
-    if (draft === null) return { draft: null, labs };
-
-    const students = await db.getStudentsInDraftTaggedByLab(draft.draft_id);
-    const { available, selected } = groupBy(students, ({ lab_id }) => (lab_id === null ? 'available' : 'selected'));
-    return { draft, labs, available: available ?? [], selected: selected ?? [] };
-}
 
 function* mapRowTuples(data: FormData) {
     for (const [email, lab] of data.entries()) {
