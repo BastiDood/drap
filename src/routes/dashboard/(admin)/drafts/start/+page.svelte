@@ -8,7 +8,7 @@
 
     const { available, draft } = data;
 
-    assert(available && draft)
+    assert(available !== undefined && draft !== undefined)
 </script>
 
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
