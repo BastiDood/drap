@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Avatar } from '@skeletonlabs/skeleton';
-    import type { TaggedStudentsWithLabs } from '$lib/server/database';
+    import type { TaggedStudentsWithLabs } from 'drap-database';
 
     // eslint-disable-next-line init-declarations
     export let user: TaggedStudentsWithLabs[number];

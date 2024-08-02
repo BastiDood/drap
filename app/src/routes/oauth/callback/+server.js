@@ -1,4 +1,4 @@
-import { AuthorizationCode, IdToken, TokenResponse } from '$lib/server/models/oauth';
+import { AuthorizationCode, IdToken, TokenResponse } from 'drap-model/oauth';
 import { error, redirect } from '@sveltejs/kit';
 import { ok, strictEqual } from 'node:assert/strict';
 import { Buffer } from 'node:buffer';

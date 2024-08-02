@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { User } from '$lib/models/user';
+    import type { User } from 'drap-model/user';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
 

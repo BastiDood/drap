@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Avatar } from '@skeletonlabs/skeleton';
     import { Icon } from '@steeze-ui/svelte-icon';
-    import type { QueriedFaculty } from '$lib/server/database';
+    import type { QueriedFaculty } from 'drap-database';
     import { UserCircle } from '@steeze-ui/heroicons';
 
     // eslint-disable-next-line init-declarations

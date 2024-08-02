@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { AvailableLabs, TaggedStudentsWithLabs } from '$lib/server/database';
+    import type { AvailableLabs, TaggedStudentsWithLabs } from 'drap-database';
     import { Avatar } from '@skeletonlabs/skeleton';
 
     // eslint-disable-next-line init-declarations

@@ -1,7 +1,7 @@
 <script lang="ts">
     import { ArrowDown, ArrowUp, XMark } from '@steeze-ui/heroicons';
-    import type { AvailableLabs } from '$lib/server/database';
-    import type { Draft } from '$lib/models/draft';
+    import type { AvailableLabs } from 'drap-database';
+    import type { Draft } from 'drap-model/draft';
     import { Icon } from '@steeze-ui/svelte-icon';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';

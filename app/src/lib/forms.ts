@@ -1,4 +1,4 @@
-import { User } from '$lib/models/user';
+import { User } from 'drap-model/user';
 import { error } from '@sveltejs/kit';
 import { safeParse } from 'valibot';
 

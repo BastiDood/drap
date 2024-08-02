@@ -1,0 +1,13 @@
+{
+    "name": "drap-database",
+    "version": "0.0.0",
+    "type": "module",
+    "private": true,
+    "exports": "./src/database.ts",
+    "dependencies": {
+        "drap-model": "workspace:",
+        "pino": "catalog:",
+        "postgres": "^3.4.4",
+        "valibot": "catalog:"
+    }
+}

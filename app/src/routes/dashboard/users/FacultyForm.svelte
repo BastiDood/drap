@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Icon } from '@steeze-ui/svelte-icon';
     import { PaperAirplane } from '@steeze-ui/heroicons';
-    import type { RegisteredLabs } from '$lib/server/database';
+    import type { RegisteredLabs } from 'drap-database';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
     import { getToastStore } from '@skeletonlabs/skeleton';

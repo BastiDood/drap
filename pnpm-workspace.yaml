@@ -1,2 +1,7 @@
 packages:
     - app
+    - database
+    - model
+catalog:
+    pino: ^9.3.2
+    valibot: ^0.37.0

@@ -13,7 +13,7 @@ import {
     union,
     url,
 } from 'valibot';
-import { Lab } from '$lib/models/lab';
+import { Lab } from './lab';
 
 export const User = object({
     is_admin: boolean(),

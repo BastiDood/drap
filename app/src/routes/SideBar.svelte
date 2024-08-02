@@ -13,7 +13,7 @@
     } from '@steeze-ui/heroicons';
     import { AppRail, AppRailAnchor, Avatar, LightSwitch } from '@skeletonlabs/skeleton';
     import { Icon } from '@steeze-ui/svelte-icon';
-    import type { User } from '$lib/models/user';
+    import type { User } from 'drap-model/user';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
     import { page } from '$app/stores';

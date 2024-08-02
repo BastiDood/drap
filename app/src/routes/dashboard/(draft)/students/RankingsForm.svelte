@@ -1,8 +1,8 @@
 <script lang="ts">
     import { Avatar, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
-    import type { Draft } from '$lib/models/draft';
-    import type { QueriedLabMembers } from '$lib/server/database';
-    import type { User } from '$lib/models/user';
+    import type { Draft } from 'drap-model/draft';
+    import type { QueriedLabMembers } from 'drap-database';
+    import type { User } from 'drap-model/user';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
 

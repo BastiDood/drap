@@ -1,7 +1,7 @@
 import { type InferOutput, bigint, date, object } from 'valibot';
-import { Draft } from '$lib/models/draft';
-import { Lab } from '$lib/models/lab';
-import { User } from '$lib/models/user';
+import { Draft } from './draft';
+import { Lab } from './lab';
+import { User } from './user';
 
 export const FacultyChoice = object({
     choice_id: bigint(),
@@ -12,8 +12,6 @@ export const FacultyChoice = object({
     faculty_email: User.entries.email,
 });
 
-export type FacultyChoice = InferOutput<typeof FacultyChoice>;
-
 export const FacultyChoiceEmail = object({
     choice_email_id: bigint(),
     draft_id: FacultyChoice.entries.draft_id,
@@ -22,4 +20,5 @@ export const FacultyChoiceEmail = object({
     student_email: User.entries.email,
 });
 
+export type FacultyChoice = InferOutput<typeof FacultyChoice>;
 export type FacultyChoiceEmail = InferOutput<typeof FacultyChoiceEmail>;

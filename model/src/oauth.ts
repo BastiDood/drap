@@ -1,4 +1,5 @@
 import {
+    type InferOutput,
     boolean,
     email,
     everyItem,
@@ -14,7 +15,7 @@ import {
     transform,
     url,
 } from 'valibot';
-import { User } from '$lib/models/user';
+import { User } from './user';
 
 const OAUTH_SCOPES = [
     'openid',
@@ -47,6 +48,8 @@ export const TokenResponse = object({
     refresh_token: optional(string()),
 });
 
+export type TokenResponse = InferOutput<typeof TokenResponse>;
+
 const UnixTimeSecs = pipe(
     number(),
     safeInteger(),
@@ -77,3 +80,5 @@ export const IdToken = object({
     nonce: string(),
     picture: pipe(string(), url()),
 });
+
+export type IdToken = InferOutput<typeof IdToken>;

@@ -1,6 +1,6 @@
 <script lang="ts">
     import { ArrowRight } from '@steeze-ui/heroicons';
-    import type { Draft } from '$lib/models/draft';
+    import type { Draft } from 'drap-model/draft';
     import { Icon } from '@steeze-ui/svelte-icon';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';

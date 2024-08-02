@@ -1,6 +1,6 @@
 <script lang="ts">
-    import type { RegisteredLabs, TaggedStudentsWithLabs } from '$lib/server/database';
-    import type { Draft } from '$lib/models/draft';
+    import type { RegisteredLabs, TaggedStudentsWithLabs } from 'drap-database';
+    import type { Draft } from 'drap-model/draft';
     import { Icon } from '@steeze-ui/svelte-icon';
     import LotteryStudent from './LotteryStudent.svelte';
     import { ShieldExclamation } from '@steeze-ui/heroicons';

@@ -4,6 +4,15 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    pino:
+      specifier: ^9.3.2
+      version: 9.3.2
+    valibot:
+      specifier: ^0.37.0
+      version: 0.37.0
+
 importers:
 
   .:
@@ -68,6 +77,12 @@ importers:
       date-fns:
         specifier: ^3.6.0
         version: 3.6.0
+      drap-database:
+        specifier: 'workspace:'
+        version: link:../database
+      drap-model:
+        specifier: 'workspace:'
+        version: link:../model
       itertools:
         specifier: ^2.3.2
         version: 2.3.2
@@ -81,7 +96,7 @@ importers:
         specifier: ^3.0.24
         version: 3.0.24
       pino:
-        specifier: ^9.3.2
+        specifier: 'catalog:'
         version: 9.3.2
       postgres:
         specifier: ^3.4.4
@@ -90,7 +105,7 @@ importers:
         specifier: ^4.2.18
         version: 4.2.18
       valibot:
-        specifier: ^0.37.0
+        specifier: 'catalog:'
         version: 0.37.0(typescript@5.5.4)
     devDependencies:
       '@linthtml/linthtml':
@@ -135,15 +150,33 @@ importers:
       tailwindcss:
         specifier: ^3.4.7
         version: 3.4.7
-      typescript:
-        specifier: ^5.5.4
-        version: 5.5.4
       vite:
         specifier: ^5.3.5
         version: 5.3.5(@types/node@22.0.2)
       vite-plugin-tailwind-purgecss:
         specifier: ^0.3.3
         version: 0.3.3(tailwindcss@3.4.7)(vite@5.3.5(@types/node@22.0.2))
+
+  database:
+    dependencies:
+      drap-model:
+        specifier: 'workspace:'
+        version: link:../model
+      pino:
+        specifier: 'catalog:'
+        version: 9.3.2
+      postgres:
+        specifier: ^3.4.4
+        version: 3.4.4
+      valibot:
+        specifier: 'catalog:'
+        version: 0.37.0(typescript@5.5.4)
+
+  model:
+    dependencies:
+      valibot:
+        specifier: 'catalog:'
+        version: 0.37.0(typescript@5.5.4)
 
 packages:
 

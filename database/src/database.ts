@@ -1,16 +1,16 @@
 import { type InferOutput, array, bigint, boolean, nullable, object, parse, pick } from 'valibot';
-import { type Loggable, timed } from '$lib/decorators';
+import { type Loggable, timed } from './decorators';
 import { fail, strictEqual } from 'node:assert/strict';
 import type { Logger } from 'pino';
 import postgres from 'postgres';
 
-import { FacultyChoice, FacultyChoiceEmail } from '$lib/models/faculty-choice';
-import { Pending, Session } from '$lib/server/models/session';
-import { CandidateSender } from '$lib/server/models/email';
-import { Draft } from '$lib/models/draft';
-import { Lab } from '$lib/models/lab';
-import { StudentRank } from '$lib/models/student-rank';
-import { User } from '$lib/models/user';
+import { FacultyChoice, FacultyChoiceEmail } from 'drap-model/faculty-choice';
+import { Pending, Session } from 'drap-model/session';
+import { CandidateSender } from 'drap-model/email';
+import { Draft } from 'drap-model/draft';
+import { Lab } from 'drap-model/lab';
+import { StudentRank } from 'drap-model/student-rank';
+import { User } from 'drap-model/user';
 
 const AvailableLabs = array(pick(Lab, ['lab_id', 'lab_name']));
 const BooleanResult = object({ result: boolean() });

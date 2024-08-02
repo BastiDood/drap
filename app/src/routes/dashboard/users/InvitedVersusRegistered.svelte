@@ -1,7 +1,7 @@
 <script lang="ts">
     import Faculty from '$lib/users/Faculty.svelte';
     import Invited from '$lib/users/Invited.svelte';
-    import type { QueriedFaculty } from '$lib/server/database';
+    import type { QueriedFaculty } from 'drap-database';
 
     // eslint-disable-next-line init-declarations
     export let invited: QueriedFaculty;

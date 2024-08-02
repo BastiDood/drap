@@ -1,4 +1,4 @@
-import { Database } from '$lib/server/database';
+import { Database } from 'drap-database';
 import POSTGRES from '$lib/server/env/postgres';
 import pino from 'pino';
 import postgres from 'postgres';

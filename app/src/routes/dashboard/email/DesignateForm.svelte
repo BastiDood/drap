@@ -10,7 +10,7 @@
 <script lang="ts">
     import { Avatar } from '@skeletonlabs/skeleton';
     import { Icon } from '@steeze-ui/svelte-icon';
-    import type { QueriedCandidateSenders } from '$lib/server/database';
+    import type { QueriedCandidateSenders } from 'drap-database';
     import { enhance } from '$app/forms';
 
     // eslint-disable-next-line init-declarations
