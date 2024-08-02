@@ -14,6 +14,17 @@ CREATE TABLE drap.labs (
     quota SMALLINT NOT NULL DEFAULT 0 CHECK (quota >= 0)
 );
 
+INSERT INTO drap.labs (lab_id, lab_name) VALUES
+    ('acl', 'Algorithms & Complexity Laboratory'),
+    ('aclrl', 'Automata, Combinatorics, & Logic Research Laboratory'),
+    ('csl', 'Computer Security Laboratory'),
+    ('cvmil', 'Computer Vision & Machine Intelligence Laboratory'),
+    ('ndsl', 'Networks & Distributed Systems Laboratory'),
+    ('scl', 'Scientific Computing Laboratory'),
+    ('s3', 'Service Science & Software Engineering Laboratory'),
+    ('smsl', 'System Modelling & Simulation Laboratory'),
+    ('wsl', 'Web Science Laboratory');
+
 CREATE TABLE drap.users (
     -- match is_admin, user_id, lab_id:
     --     case FALSE, NULL, NULL: Invited User
@@ -96,13 +107,17 @@ CREATE TABLE drap.designated_sender (
     email TEXT NOT NULL REFERENCES drap.candidate_senders (email) ON DELETE CASCADE PRIMARY KEY
 );
 
-INSERT INTO drap.labs (lab_id, lab_name) VALUES
-    ('acl', 'Algorithms & Complexity Laboratory'),
-    ('aclrl', 'Automata, Combinatorics, & Logic Research Laboratory'),
-    ('csl', 'Computer Security Laboratory'),
-    ('cvmil', 'Computer Vision & Machine Intelligence Laboratory'),
-    ('ndsl', 'Networks & Distributed Systems Laboratory'),
-    ('scl', 'Scientific Computing Laboratory'),
-    ('s3', 'Service Science & Software Engineering Laboratory'),
-    ('smsl', 'System Modelling & Simulation Laboratory'),
-    ('wsl', 'Web Science Laboratory');
+CREATE TYPE drap.NotificationType AS ENUM ('DraftRoundStarted', 'DraftRoundSubmitted', 'LotteryIntervention', 'LabAssigned');
+CREATE TABLE drap.notifications (
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    notif_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
+    draft_id BIGINT NOT NULL REFERENCES drap.drafts (draft_id),
+    -- [Admin] [Lab] DraftRoundStarted   (draft, round)
+    -- [Admin]       DraftRoundSubmitted (draft, round, lab)
+    -- [Admin] [Lab] LotteryIntervention (draft, lab, email)
+    -- [User]        LabAssigned         (draft, lab)
+    ty SMALLINT NOT NULL,
+    round SMALLINT,
+    recipient TEXT NOT NULL REFERENCES drap.users (email),
+    lab_id TEXT
+);
