@@ -109,7 +109,6 @@ export default {
     darkMode: 'selector',
     content: [
         './src/**/*.{css,html,js,svelte,ts}',
-        // eslint-disable-next-line no-undef
         join(require.resolve('@skeletonlabs/skeleton'), '../**/*.{html,js,svelte,ts}'),
     ],
     plugins: [form, typo, skeleton({ themes: { custom: [theme] } })],
