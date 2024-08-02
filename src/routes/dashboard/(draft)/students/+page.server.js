@@ -38,7 +38,6 @@ export const actions = {
         const faculty = user.email;
         await db.begin(async db => {
             await db.insertFacultyChoice(draft, lab, faculty, students);
-            // eslint-disable-next-line no-constant-condition
             while (true) {
                 const count = await db.getPendingLabCountInDraft(draft);
                 if (count > 0) break;
