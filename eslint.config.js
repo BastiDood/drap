@@ -11,7 +11,7 @@ export default tsEslint.config(
     ...eslintPluginSvelte.configs['flat/prettier'],
     ...tsEslint.configs.recommended,
     {
-        files: ['src/**/*.svelte'],
+        files: ['**/*.svelte'],
         languageOptions: {
             parser: svelteParser,
             parserOptions: {
@@ -110,18 +110,7 @@ export default tsEslint.config(
         },
     },
     {
-        ignores: [
-            '.svelte-kit/**/*',
-            'build/**/*',
-            'node_modules/**/*',
-            '.DS_Store',
-            '.env',
-            '.env.*',
-            '!.env.example',
-            'pnpm-lock.yaml',
-            'package-lock.json',
-            'yarn.lock',
-        ],
+        ignores: ['**/node_modules/**/*', 'app/.svelte-kit/**/*', 'app/build/**/*'],
     },
     eslintPrettierConfig,
 );

@@ -45,7 +45,7 @@
     } = data}
     {@const startDate = format(active_period_start, 'PPP')}
     {@const startTime = format(active_period_start, 'pp')}
-    <div class="card prose max-w-none p-4 dark:prose-invert">
+    <div class="card prose dark:prose-invert max-w-none p-4">
         <p>
             {#if curr_round === null}
                 <strong>Draft &num;{draft_id}</strong> (which opened last <strong>{startDate}</strong> at
@@ -97,7 +97,7 @@
                     {#if available.length > 0}
                         <InterveneForm draft={draft_id} {labs} students={available} />
                     {:else}
-                        <p class="prose max-w-none dark:prose-invert">
+                        <p class="prose dark:prose-invert max-w-none">
                             Congratulations! All participants have been drafted. No action is needed here.
                         </p>
                     {/if}

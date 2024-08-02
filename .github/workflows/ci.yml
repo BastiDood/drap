@@ -35,14 +35,12 @@ jobs:
       - name: Check Formatters
         run: pnpm fmt
       - name: Check HTML
-        run: pnpm lint:html
+        run: pnpm --filter=drap-app lint:html
       - name: Check CSS
-        run: pnpm lint:css
+        run: pnpm --filter=drap-app lint:css
       - name: Synchronize SvelteKit
-        run: pnpm sync
+        run: pnpm --filter=drap-app sync
       - name: Check JavaScript
         run: pnpm lint:js
       - name: Check Svelte
-        run: pnpm lint:svelte
-      - name: Build Website
-        run: pnpm build
+        run: pnpm --filter=drap-app lint:svelte

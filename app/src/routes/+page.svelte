@@ -4,7 +4,7 @@
     import { Icon } from '@steeze-ui/svelte-icon';
 </script>
 
-<div class="prose max-w-none dark:prose-invert">
+<div class="prose dark:prose-invert max-w-none">
     <section>
         <h1>DRAP: Draft Ranking Automated Processor</h1>
         <p>
