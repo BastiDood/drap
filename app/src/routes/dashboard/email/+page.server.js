@@ -31,8 +31,13 @@ export const actions = {
 
         const data = await request.formData();
         const email = validateEmail(data.get('email'));
-        const upsertDesignatedSender = await db.upsertDesignatedSender(email);
-        db.logger.info({ upsertDesignatedSender });
+
+        await db.begin(async db => {
+            const upsertDesignatedSender = await db.upsertDesignatedSender(email);
+            db.logger.info({ upsertDesignatedSender });
+            await db.notifyDraftChannel();
+            await db.notifyUserChannel();
+        });
     },
     async remove({ locals: { db }, cookies, request }) {
         const sid = cookies.get('sid');
