@@ -26,12 +26,19 @@ async function listenForDraftNotifications(emailer: Emailer, signal: AbortSignal
 
                 const meta = (() => {
                     switch (notif.ty) {
-                        case 'DraftRoundStarted':
-                            return {
-                                emails: db.getValidFacultyAndStaffEmails(),
-                                subject: `[DRAP] Round #${notif.round} for Draft #${notif.draft_id} has begun!`,
-                                message: `Round #${notif.round} for Draft #${notif.draft_id} has begun. For lab heads, kindly check the students module to see the list of students who have chosen your lab.`,
-                            };
+                        case 'DraftRoundStarted': {
+                            const body =
+                                notif.round === null
+                                    ? {
+                                          subject: `[DRAP] Lottery Round for Draft #${notif.draft_id} has begun!`,
+                                          message: `The lottery round for Draft #${notif.draft_id} has begun. For lab heads, kindly coordinate with the draft administrators for the next steps.`,
+                                      }
+                                    : {
+                                          subject: `[DRAP] Round #${notif.round} for Draft #${notif.draft_id} has begun!`,
+                                          message: `Round #${notif.round} for Draft #${notif.draft_id} has begun. For lab heads, kindly check the students module to see the list of students who have chosen your lab.`,
+                                      };
+                            return { emails: db.getValidFacultyAndStaffEmails(), ...body };
+                        }
                         case 'DraftRoundSubmitted':
                             return {
                                 emails: db.getValidStaffEmails(),
@@ -43,6 +50,12 @@ async function listenForDraftNotifications(emailer: Emailer, signal: AbortSignal
                                 emails: db.getValidFacultyAndStaffEmails(),
                                 subject: `[DRAP] Lottery Intervention for ${notif.lab_id.toUpperCase()} in Draft #${notif.draft_id}`,
                                 message: ``,
+                            };
+                        case 'DraftConcluded':
+                            return {
+                                emails: db.getValidFacultyAndStaffEmails(),
+                                subject: `[DRAP] Draft #${notif.draft_id} Concluded`,
+                                message: `Draft #${notif.draft_id} has just concluded. See the new roster of researchers using the lab module.`,
                             };
                         default:
                             return null;

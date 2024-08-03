@@ -107,7 +107,7 @@ CREATE TABLE drap.designated_sender (
     email TEXT NOT NULL REFERENCES drap.candidate_senders (email) ON DELETE CASCADE PRIMARY KEY
 );
 
-CREATE TYPE drap.DraftNotificationType AS ENUM ('DraftRoundStarted', 'DraftRoundSubmitted', 'LotteryIntervention');
+CREATE TYPE drap.DraftNotificationType AS ENUM ('DraftRoundStarted', 'DraftRoundSubmitted', 'LotteryIntervention', 'DraftConcluded');
 
 -- Notifications sent to multiple admins or lab heads.
 CREATE TABLE drap.draft_notifications (
@@ -116,6 +116,7 @@ CREATE TABLE drap.draft_notifications (
     -- [Admin] [Lab] DraftRoundStarted   (draft, round)
     -- [Admin]       DraftRoundSubmitted (draft, round, lab)
     -- [Admin] [Lab] LotteryIntervention (draft, lab, email)
+    -- [Admin] [Lab] DraftConcluded      (draft)
     ty drap.DraftNotificationType NOT NULL,
     round SMALLINT,
     lab_id TEXT REFERENCES drap.labs (lab_id),

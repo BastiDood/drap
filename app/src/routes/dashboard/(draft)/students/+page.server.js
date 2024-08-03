@@ -38,12 +38,23 @@ export const actions = {
         const faculty = user.email;
         await db.begin(async db => {
             await db.insertFacultyChoice(draft, lab, faculty, students);
+            const postDraftRoundSubmittedNotification = await db.postDraftRoundSubmittedNotification(draft, lab);
+            db.logger.info({ postDraftRoundSubmittedNotification });
+            await db.notifyDraftChannel();
+
             while (true) {
                 const count = await db.getPendingLabCountInDraft(draft);
                 if (count > 0) break;
 
                 const round = await db.incrementDraftRound(draft);
                 assert(round !== null);
+
+                const postDraftRoundStartedNotification = await db.postDraftRoundStartedNotification(
+                    draft,
+                    round.curr_round,
+                );
+                db.logger.info({ postDraftRoundStartedNotification });
+
                 if (round.curr_round === null) break;
                 db.logger.info({ incrementDraftRound: round });
 

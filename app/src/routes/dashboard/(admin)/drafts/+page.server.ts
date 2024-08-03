@@ -59,12 +59,20 @@ export const actions = {
 
         await db.begin(async db => {
             const incrementDraftRound = await db.incrementDraftRound(draft);
-            assert(incrementDraftRound !== null);
             db.logger.info({ incrementDraftRound });
+            assert(incrementDraftRound !== null);
+            assert(incrementDraftRound.curr_round !== null);
+
+            const postDraftRoundStartedNotification = await db.postDraftRoundStartedNotification(
+                draft,
+                incrementDraftRound.curr_round,
+            );
+            db.logger.info({ postDraftRoundStartedNotification });
+            await db.notifyDraftChannel();
 
             const ackCount = await db.autoAcknowledgeLabsWithoutPreferences(draft);
-            assert(ackCount <= labCount);
             db.logger.info({ autoAcknowledgeLabsWithoutPreferences: ackCount });
+            assert(ackCount <= labCount);
         });
     },
     async intervene({ locals: { db }, cookies, request }) {
@@ -80,7 +88,15 @@ export const actions = {
         const data = await request.formData();
         const draft = BigInt(validateString(data.get('draft')));
         data.delete('draft');
-        await db.insertLotteryChoices(draft, user.email, Array.from(mapRowTuples(data)));
+
+        const pairs = Array.from(mapRowTuples(data));
+        if (pairs.length === 0) return;
+
+        await db.begin(async db => {
+            await db.insertLotteryChoices(draft, user.email, pairs);
+            await db.postLotteryInterventionNotifications(draft, pairs);
+            await db.notifyDraftChannel();
+        });
     },
     async conclude({ locals: { db }, cookies, request }) {
         const sid = cookies.get('sid');
@@ -96,21 +112,29 @@ export const actions = {
         // TODO: Assert that we are indeed in the lottery phase.
 
         try {
-            db.logger.info(
-                await db.begin(async db => {
-                    const labs = await db.getLabRegistry();
-                    const schedule = Array.from(roundrobin(...labs.map(({ lab_id, quota }) => repeat(lab_id, quota))));
-                    const emails = await db.randomizeRemainingStudents(draft);
-                    if (emails.length !== schedule.length) throw ZIP_NOT_EQUAL;
+            await db.begin(async db => {
+                const labs = await db.getLabRegistry();
+                const schedule = Array.from(roundrobin(...labs.map(({ lab_id, quota }) => repeat(lab_id, quota))));
+                const emails = await db.randomizeRemainingStudents(draft);
+                if (emails.length !== schedule.length) throw ZIP_NOT_EQUAL;
 
-                    await db.insertLotteryChoices(draft, user.email, zip(emails, schedule));
-                    const concludeDraft = await db.concludeDraft(draft);
-                    if (!concludeDraft) error(400);
+                const pairs = zip(emails, schedule);
+                if (pairs.length > 0) {
+                    await db.insertLotteryChoices(draft, user.email, pairs);
+                    await db.postLotteryInterventionNotifications(draft, pairs);
+                }
 
-                    const syncDraftResultsToUsers = await db.syncDraftResultsToUsers(draft);
-                    return { concludeDraft, syncDraftResultsToUsers };
-                }),
-            );
+                const concludeDraft = await db.concludeDraft(draft);
+                db.logger.info({ concludeDraft });
+                if (!concludeDraft) error(400);
+
+                await db.postDraftConcluded(draft);
+                await db.notifyDraftChannel();
+
+                const syncDraftResultsToUsers = await db.syncDraftResultsToUsersWithNotification(draft);
+                db.logger.info({ syncDraftResultsToUsers });
+                await db.notifyUserChannel();
+            });
         } catch (err) {
             if (err === ZIP_NOT_EQUAL) return fail(403);
             throw err;

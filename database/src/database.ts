@@ -4,7 +4,13 @@ import { fail, strictEqual } from 'node:assert/strict';
 import type { Logger } from 'pino';
 import postgres from 'postgres';
 
-import { DraftNotification, UserNotification } from 'drap-model/notification';
+import {
+    DraftNotification,
+    type DraftRoundStarted,
+    type DraftRoundSubmitted,
+    type LotteryIntervention,
+    UserNotification,
+} from 'drap-model/notification';
 import { FacultyChoice, FacultyChoiceEmail } from 'drap-model/faculty-choice';
 import { Pending, Session } from 'drap-model/session';
 import { CandidateSender } from 'drap-model/email';
@@ -18,6 +24,8 @@ const BooleanResult = object({ result: boolean() });
 const CountResult = object({ count: bigint() });
 const CreatedLab = pick(Lab, ['lab_id']);
 const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
+const CreatedUserNotification = pick(UserNotification, ['notif_id']);
+const CreatedUserNotifications = array(CreatedUserNotification);
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration', 'has_extended_scope']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
 const DequeuedDraftNotification = intersect([
@@ -404,11 +412,12 @@ export class Database implements Loggable {
         }
     }
 
-    @timed async syncDraftResultsToUsers(draft: Draft['draft_id']) {
+    @timed async syncDraftResultsToUsersWithNotification(draft: Draft['draft_id']) {
         const sql = this.#sql;
-        const { count } =
-            await sql`UPDATE drap.users SET lab_id = fce.lab_id FROM drap.faculty_choices_emails fce WHERE draft_id = ${draft} AND email = student_email`;
-        return count;
+        const results = sql`UPDATE drap.users SET lab_id = fce.lab_id FROM drap.faculty_choices_emails fce WHERE draft_id = ${draft} AND email = student_email RETURNING email, lab_id`;
+        const notifs =
+            await sql`WITH results AS (${results}) INSERT INTO drap.user_notifications (email, lab_id) SELECT email, lab_id FROM results RETURNING notif_id`;
+        return parse(CreatedUserNotifications, notifs).map(({ notif_id }) => notif_id);
     }
 
     @timed async insertStudentRanking(draft: Draft['draft_id'], email: User['email'], labs: StudentRank['labs']) {
@@ -529,7 +538,6 @@ export class Database implements Loggable {
         admin: FacultyChoice['faculty_email'],
         batch: (readonly [StudentRank['email'], FacultyChoice['lab_id']])[],
     ) {
-        if (batch.length === 0) return;
         const sql = this.#sql;
         const labs = Array.from(new Set(batch.map(([_, lab]) => lab)), lab => [lab] as const);
         const { count } =
@@ -565,6 +573,62 @@ export class Database implements Loggable {
             default:
                 fail(`inviteNewUser => unexpected insertion count ${count}`);
         }
+    }
+
+    @timed async notifyDraftChannel(payload = '') {
+        await this.#sql.notify('notify:draft', payload);
+    }
+
+    @timed async postDraftRoundStartedNotification(
+        draft: DraftNotification['draft_id'],
+        round: DraftRoundStarted['round'],
+    ) {
+        const sql = this.#sql;
+        const [first, ...rest] =
+            await sql`INSERT INTO drap.draft_notifications (ty, draft_id, round) VALUES ('DraftRoundStarted', ${draft}, ${round}) RETURNING notif_id`;
+        strictEqual(rest.length, 0);
+        return parse(CreatedUserNotification, first).notif_id;
+    }
+
+    @timed async postDraftRoundSubmittedNotification(
+        draft: DraftNotification['draft_id'],
+        lab: DraftRoundSubmitted['lab_id'],
+    ) {
+        const sql = this.#sql;
+        const [first, ...rest] =
+            await sql`INSERT INTO drap.draft_notifications (ty, draft_id, round, lab_id) SELECT 'DraftRoundSubmitted', draft_id, curr_round, ${lab} FROM drap.drafts WHERE draft_id = ${draft} RETURNING notif_id`;
+        strictEqual(rest.length, 0);
+        return parse(CreatedUserNotification, first).notif_id;
+    }
+
+    @timed async postLotteryInterventionNotifications(
+        draft: DraftNotification['draft_id'],
+        rows: (readonly [LotteryIntervention['email'], LotteryIntervention['lab_id']])[],
+    ) {
+        const sql = this.#sql;
+        const notifs =
+            await sql`INSERT INTO drap.draft_notifications (ty, draft_id, lab_id, email) SELECT 'LotteryIntervention', ${draft}, lab, email FROM (VALUES ${sql(rows)}) _ (email, lab) RETURNING notif_id`;
+        return parse(CreatedUserNotifications, notifs).map(({ notif_id }) => notif_id);
+    }
+
+    @timed async postDraftConcluded(draft: DraftNotification['draft_id']) {
+        const sql = this.#sql;
+        const [first, ...rest] =
+            await sql`INSERT INTO drap.draft_notifications (ty, draft_id) VALUES ('DraftConcluded', ${draft})`;
+        strictEqual(rest.length, 0);
+        return parse(CreatedUserNotification, first).notif_id;
+    }
+
+    @timed async postUserNotification(lab: UserNotification['lab_id'], email: UserNotification['email']) {
+        const sql = this.#sql;
+        const [first, ...rest] =
+            await sql`INSERT INTO drap.user_notifications (lab_id, email) VALUES (${lab}, ${email}) RETURNING notif_id`;
+        strictEqual(rest.length, 0);
+        return parse(CreatedUserNotification, first).notif_id;
+    }
+
+    @timed async notifyUserChannel(payload = '') {
+        await this.#sql.notify('notify:user', payload);
     }
 
     @timed async getOneDraftNotification() {
