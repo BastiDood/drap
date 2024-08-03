@@ -3,7 +3,7 @@ import { error, redirect } from '@sveltejs/kit';
 import { ok, strictEqual } from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
 import GOOGLE from '$lib/server/env/google';
-import { fetchJwks } from '$lib/server/jwks';
+import { fetchJwks } from 'drap-email/jwks';
 import { jwtVerify } from 'jose';
 import { parse } from 'valibot';
 

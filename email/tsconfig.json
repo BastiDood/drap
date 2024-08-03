@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "module": "ESNext",
+        "strict": true,
+        "noUncheckedIndexedAccess": true,
+        "noImplicitOverride": true,
+        "allowJs": true,
+        "checkJs": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "moduleDetection": "force",
+        "moduleResolution": "Bundler",
+        "verbatimModuleSyntax": true,
+        "isolatedModules": true,
+        "experimentalDecorators": true
+    }
+}

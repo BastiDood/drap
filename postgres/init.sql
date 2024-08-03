@@ -107,17 +107,24 @@ CREATE TABLE drap.designated_sender (
     email TEXT NOT NULL REFERENCES drap.candidate_senders (email) ON DELETE CASCADE PRIMARY KEY
 );
 
-CREATE TYPE drap.NotificationType AS ENUM ('DraftRoundStarted', 'DraftRoundSubmitted', 'LotteryIntervention', 'LabAssigned');
-CREATE TABLE drap.notifications (
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+CREATE TYPE drap.DraftNotificationType AS ENUM ('DraftRoundStarted', 'DraftRoundSubmitted', 'LotteryIntervention');
+
+-- Notifications sent to multiple admins or lab heads.
+CREATE TABLE drap.draft_notifications (
     notif_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
     draft_id BIGINT NOT NULL REFERENCES drap.drafts (draft_id),
     -- [Admin] [Lab] DraftRoundStarted   (draft, round)
     -- [Admin]       DraftRoundSubmitted (draft, round, lab)
     -- [Admin] [Lab] LotteryIntervention (draft, lab, email)
-    -- [User]        LabAssigned         (draft, lab)
-    ty SMALLINT NOT NULL,
+    ty drap.DraftNotificationType NOT NULL,
     round SMALLINT,
-    recipient TEXT NOT NULL REFERENCES drap.users (email),
-    lab_id TEXT
+    lab_id TEXT REFERENCES drap.labs (lab_id),
+    email TEXT REFERENCES drap.users (email)
+);
+
+-- Notifications sent to particular users only. Used to notify lab assignments from draft results.
+CREATE TABLE drap.user_notifications (
+    notif_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
+    lab_id TEXT NOT NULL REFERENCES drap.labs (lab_id),
+    email TEXT UNIQUE NOT NULL REFERENCES drap.users (email)
 );

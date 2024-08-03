@@ -1,9 +1,10 @@
-import { type InferOutput, array, bigint, boolean, nullable, object, parse, pick } from 'valibot';
+import { type InferOutput, array, bigint, boolean, intersect, nullable, object, parse, pick } from 'valibot';
 import { type Loggable, timed } from './decorators';
 import { fail, strictEqual } from 'node:assert/strict';
 import type { Logger } from 'pino';
 import postgres from 'postgres';
 
+import { DraftNotification, UserNotification } from 'drap-model/notification';
 import { FacultyChoice, FacultyChoiceEmail } from 'drap-model/faculty-choice';
 import { Pending, Session } from 'drap-model/session';
 import { CandidateSender } from 'drap-model/email';
@@ -19,6 +20,22 @@ const CreatedLab = pick(Lab, ['lab_id']);
 const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
 const DeletedPendingSession = pick(Pending, ['nonce', 'expiration', 'has_extended_scope']);
 const DeletedValidSession = pick(Session, ['email', 'expiration']);
+const DequeuedDraftNotification = intersect([
+    DraftNotification,
+    object({
+        lab_name: Lab.entries.lab_name,
+        given_name: User.entries.given_name,
+        family_name: User.entries.family_name,
+    }),
+]);
+const DequeuedUserNotification = intersect([
+    UserNotification,
+    object({
+        lab_name: Lab.entries.lab_name,
+        given_name: User.entries.given_name,
+        family_name: User.entries.family_name,
+    }),
+]);
 const DesignatedSenderCredentials = object({
     ...CandidateSender.entries,
     ...pick(User, ['given_name', 'family_name']).entries,
@@ -223,6 +240,18 @@ export class Database implements Loggable {
         return parse(QueriedFaculty, users);
     }
 
+    @timed async getValidStaffEmails() {
+        const sql = this.#sql;
+        const users = await sql`SELECT email FROM drap.users WHERE is_admin AND lab_id IS NULL AND user_id IS NOT NULL`;
+        return parse(UserEmails, users).map(({ email }) => email);
+    }
+
+    @timed async getValidFacultyAndStaffEmails() {
+        const sql = this.#sql;
+        const users = await sql`SELECT email FROM drap.users WHERE is_admin AND user_id IS NOT NULL`;
+        return parse(UserEmails, users).map(({ email }) => email);
+    }
+
     @timed async getLabMembers(lab: Lab['lab_id']) {
         const [[labName, ...labRest], heads, members] = await this.#sql.begin(
             sql =>
@@ -413,7 +442,7 @@ export class Database implements Loggable {
     @timed async getDesignatedSenderCredentials() {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`SELECT email, given_name, family_name, access_token, refresh_token, expiration FROM drap.designated_sender JOIN drap.candidate_senders USING (email) JOIN drap.users (email) WHERE user_id IS NOT NULL AND is_admin AND lab_id IS NULL`;
+            await sql`SELECT email, given_name, family_name, access_token, refresh_token, expiration FROM drap.designated_sender JOIN drap.candidate_senders USING (email) JOIN drap.users (email) WHERE user_id IS NOT NULL AND is_admin AND lab_id IS NULL FOR UPDATE OF drap.candidate_senders`;
         strictEqual(rest.length, 0);
         return typeof first === 'undefined' ? null : parse(DesignatedSenderCredentials, first);
     }
@@ -531,5 +560,65 @@ export class Database implements Loggable {
             default:
                 fail(`inviteNewUser => unexpected insertion count ${count}`);
         }
+    }
+
+    @timed async getOneDraftNotification() {
+        const sql = this.#sql;
+        const [notif, ...rest] =
+            await sql`SELECT notif_id, draft_id, ty, round, lab_id, lab_name, email, given_name, family_name FROM drap.draft_notifications JOIN drap.labs USING (lab_id) JOIN drap.users USING (email) ORDER BY notif_id LIMIT 1 FOR UPDATE SKIP LOCKED`;
+        strictEqual(rest.length, 0);
+        return typeof notif === 'undefined' ? null : parse(DequeuedDraftNotification, notif);
+    }
+
+    @timed async getOneUserNotification() {
+        const sql = this.#sql;
+        const [notif, ...rest] =
+            await sql`SELECT notif_id, lab_id, lab_name, email, given_name, family_name FROM drap.draft_notifications JOIN drap.labs USING (lab_id) JOIN drap.users USING (email) ORDER BY notif_id LIMIT 1 FOR UPDATE SKIP LOCKED`;
+        strictEqual(rest.length, 0);
+        return typeof notif === 'undefined' ? null : parse(DequeuedUserNotification, notif);
+    }
+
+    @timed async dropDraftNotification(notif: DraftNotification['notif_id']) {
+        const sql = this.#sql;
+        const { count } = await sql`DELETE FROM drap.draft_notifications WHERE notif_id = ${notif}`;
+        switch (count) {
+            case 0:
+                return false;
+            case 1:
+                return true;
+            default:
+                fail(`dropDraftNotification => unexpected delete count ${count}`);
+        }
+    }
+
+    @timed async dropUserNotification(notif: UserNotification['notif_id']) {
+        const sql = this.#sql;
+        const { count } = await sql`DELETE FROM drap.user_notifications WHERE notif_id = ${notif}`;
+        switch (count) {
+            case 0:
+                return false;
+            case 1:
+                return true;
+            default:
+                fail(`dropUserNotification => unexpected delete count ${count}`);
+        }
+    }
+
+    async *listen(channel: string): AsyncGenerator<string, void, boolean> {
+        let resolver = Promise.withResolvers<string>();
+        const listener = await this.#sql.listen(
+            channel,
+            payload => resolver.resolve(payload),
+            () => resolver.resolve(''),
+        );
+
+        while (true) {
+            const payload = await resolver.promise;
+            // eslint-disable-next-line require-atomic-updates
+            resolver = Promise.withResolvers();
+            if (yield payload) break;
+        }
+
+        await listener.unlisten();
     }
 }

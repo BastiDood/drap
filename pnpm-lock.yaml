@@ -6,9 +6,18 @@ settings:
 
 catalogs:
   default:
+    date-fns:
+      specifier: ^3.6.0
+      version: 3.6.0
+    jose:
+      specifier: ^5.6.3
+      version: 5.6.3
     pino:
       specifier: ^9.3.2
       version: 9.3.2
+    postgres:
+      specifier: ^3.4.4
+      version: 3.4.4
     valibot:
       specifier: ^0.37.0
       version: 0.37.0
@@ -75,11 +84,14 @@ importers:
         specifier: ^2.5.19
         version: 2.5.19(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.3.5(@types/node@22.0.2)))(svelte@4.2.18)(vite@5.3.5(@types/node@22.0.2))
       date-fns:
-        specifier: ^3.6.0
+        specifier: 'catalog:'
         version: 3.6.0
       drap-database:
         specifier: 'workspace:'
         version: link:../database
+      drap-email:
+        specifier: 'workspace:'
+        version: link:../email
       drap-model:
         specifier: 'workspace:'
         version: link:../model
@@ -87,19 +99,16 @@ importers:
         specifier: ^2.3.2
         version: 2.3.2
       jose:
-        specifier: ^5.6.3
+        specifier: 'catalog:'
         version: 5.6.3
       just-group-by:
         specifier: ^2.2.0
         version: 2.2.0
-      mimetext:
-        specifier: ^3.0.24
-        version: 3.0.24
       pino:
         specifier: 'catalog:'
         version: 9.3.2
       postgres:
-        specifier: ^3.4.4
+        specifier: 'catalog:'
         version: 3.4.4
       svelte:
         specifier: ^4.2.18
@@ -167,6 +176,33 @@ importers:
         version: 9.3.2
       postgres:
         specifier: ^3.4.4
+        version: 3.4.4
+      valibot:
+        specifier: 'catalog:'
+        version: 0.37.0(typescript@5.5.4)
+
+  email:
+    dependencies:
+      date-fns:
+        specifier: 'catalog:'
+        version: 3.6.0
+      drap-database:
+        specifier: 'workspace:'
+        version: link:../database
+      drap-model:
+        specifier: 'workspace:'
+        version: link:../model
+      jose:
+        specifier: 'catalog:'
+        version: 5.6.3
+      mimetext:
+        specifier: ^3.0.24
+        version: 3.0.24
+      pino:
+        specifier: 'catalog:'
+        version: 9.3.2
+      postgres:
+        specifier: 'catalog:'
         version: 3.4.4
       valibot:
         specifier: 'catalog:'
