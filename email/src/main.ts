@@ -10,7 +10,7 @@ assert(typeof GOOGLE_OAUTH_CLIENT_ID !== 'undefined', 'empty google oauth client
 assert(typeof GOOGLE_OAUTH_CLIENT_SECRET !== 'undefined', 'empty google oauth client secret');
 
 const logger = pino();
-const sql = postgres(DATABASE_URL, { ssl: 'prefer', types: { bigint: postgres.BigInt } });
+const sql = postgres(DATABASE_URL, { types: { bigint: postgres.BigInt } });
 const db = new Database(sql, logger);
 const emailer = new Emailer(db, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET);
 
