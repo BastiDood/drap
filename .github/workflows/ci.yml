@@ -44,3 +44,5 @@ jobs:
         run: pnpm lint:js
       - name: Check Svelte
         run: pnpm --filter=drap-app lint:svelte
+      - name: Build App
+        run: pnpm --filter=drap-app build
