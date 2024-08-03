@@ -565,7 +565,7 @@ export class Database implements Loggable {
     @timed async getOneDraftNotification() {
         const sql = this.#sql;
         const [notif, ...rest] =
-            await sql`SELECT notif_id, draft_id, ty, round, lab_id, lab_name, email, given_name, family_name FROM drap.draft_notifications JOIN drap.labs USING (lab_id) JOIN drap.users USING (email) ORDER BY notif_id LIMIT 1 FOR UPDATE SKIP LOCKED`;
+            await sql`SELECT notif_id, draft_id, ty, round, dn.lab_id, lab_name, u.email, given_name, family_name FROM drap.draft_notifications dn JOIN drap.labs USING (lab_id) JOIN drap.users u USING (email) ORDER BY notif_id LIMIT 1 FOR UPDATE SKIP LOCKED`;
         strictEqual(rest.length, 0);
         return typeof notif === 'undefined' ? null : parse(DequeuedDraftNotification, notif);
     }
@@ -573,7 +573,7 @@ export class Database implements Loggable {
     @timed async getOneUserNotification() {
         const sql = this.#sql;
         const [notif, ...rest] =
-            await sql`SELECT notif_id, lab_id, lab_name, email, given_name, family_name FROM drap.draft_notifications JOIN drap.labs USING (lab_id) JOIN drap.users USING (email) ORDER BY notif_id LIMIT 1 FOR UPDATE SKIP LOCKED`;
+            await sql`SELECT notif_id, dn.lab_id, lab_name, email, given_name, family_name FROM drap.draft_notifications dn JOIN drap.labs USING (lab_id) JOIN drap.users USING (email) ORDER BY notif_id LIMIT 1 FOR UPDATE SKIP LOCKED`;
         strictEqual(rest.length, 0);
         return typeof notif === 'undefined' ? null : parse(DequeuedUserNotification, notif);
     }
