@@ -43,7 +43,7 @@ async function listenForDraftNotifications(emailer: Emailer, signal: AbortSignal
                             return {
                                 emails: db.getValidStaffEmails(),
                                 subject: `[DRAP] Acknowledgement from ${notif.lab_id.toUpperCase()} for Round #${notif.round} of Draft #${notif.draft_id}`,
-                                message: `${notif.given_name} ${notif.family_name} has submitted their student preferences on behalf of the ${notif.lab_name} for Round #${notif.round} of Draft #${notif.draft_id}.`,
+                                message: `The ${notif.lab_name} has submitted their student preferences for Round #${notif.round} of Draft #${notif.draft_id}.`,
                             };
                         case 'LotteryIntervention':
                             return {
@@ -83,7 +83,7 @@ async function listenForUserNotifications(emailer: Emailer, signal: AbortSignal)
                 const email = await emailer.send(
                     [notif.email],
                     `[DRAP] Assigned to ${notif.lab_id.toUpperCase()}`,
-                    `Hello, ${notif.given_name} ${notif.given_name}! Kindly note that you have been assigned to the ${notif.lab_name}.`,
+                    `Hello, ${notif.given_name} ${notif.family_name}! Kindly note that you have been assigned to the ${notif.lab_name}.`,
                 );
 
                 assert(await db.dropUserNotification(notif.notif_id), 'cannot drop non-existent notification');

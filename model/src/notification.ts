@@ -14,10 +14,22 @@ const DraftRoundSubmitted = object({
     lab_id: Lab.entries.lab_id,
 });
 
+const DraftRoundSubmittedWithDetails = object({
+    ...DraftRoundSubmitted.entries,
+    lab_name: Lab.entries.lab_name,
+});
+
 const LotteryIntervention = object({
     ty: literal('LotteryIntervention'),
     lab_id: Lab.entries.lab_id,
     email: User.entries.email,
+});
+
+const LotteryInterventionWithDetails = object({
+    ...LotteryIntervention.entries,
+    lab_name: Lab.entries.lab_name,
+    given_name: User.entries.given_name,
+    family_name: User.entries.given_name,
 });
 
 const DraftConcluded = object({ ty: literal('DraftConcluded') });
@@ -27,10 +39,22 @@ export const DraftNotification = intersect([
     variant('ty', [DraftRoundStarted, DraftRoundSubmitted, LotteryIntervention, DraftConcluded]),
 ]);
 
+export const DraftNotificationWithDetails = intersect([
+    object({ notif_id: bigint(), draft_id: bigint() }),
+    variant('ty', [DraftRoundStarted, DraftRoundSubmittedWithDetails, LotteryInterventionWithDetails, DraftConcluded]),
+]);
+
 export const UserNotification = object({
     notif_id: bigint(),
     lab_id: Lab.entries.lab_id,
     email: User.entries.email,
+});
+
+export const UserNotificationWithDetails = object({
+    ...UserNotification.entries,
+    lab_name: Lab.entries.lab_name,
+    given_name: User.entries.given_name,
+    family_name: User.entries.given_name,
 });
 
 export type DraftRoundStarted = InferOutput<typeof DraftRoundStarted>;
