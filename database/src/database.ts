@@ -109,6 +109,11 @@ export class Database implements Loggable {
         return this.#sql.begin('ISOLATION LEVEL SERIALIZABLE', sql => fn(new Database(sql, this.#logger)));
     }
 
+    /** Closes the database connection. */
+    async end() {
+        await this.#sql.end();
+    }
+
     @timed async generatePendingSession(hasExtendedScope: boolean) {
         const sql = this.#sql;
         const [first, ...rest] =
@@ -604,21 +609,31 @@ export class Database implements Loggable {
         }
     }
 
-    async *listen(channel: string): AsyncGenerator<string, void, boolean> {
+    async *listen(channel: string, signal: AbortSignal) {
         let resolver = Promise.withResolvers<string>();
+
+        // eslint-disable-next-line func-style
+        const aborter = () => resolver.reject();
+        signal.addEventListener('abort', aborter);
+
         const listener = await this.#sql.listen(
             channel,
             payload => resolver.resolve(payload),
             () => resolver.resolve(''),
         );
 
-        while (true) {
-            const payload = await resolver.promise;
-            // eslint-disable-next-line require-atomic-updates
-            resolver = Promise.withResolvers();
-            if (yield payload) break;
+        try {
+            while (true) {
+                const payload = await resolver.promise;
+                // eslint-disable-next-line require-atomic-updates
+                resolver = Promise.withResolvers();
+                yield payload;
+            }
+        } catch {
+            // NOTE: Intentionally empty. Abort signal invoked.
+        } finally {
+            signal.removeEventListener('abort', aborter);
+            await listener.unlisten();
         }
-
-        await listener.unlisten();
     }
 }

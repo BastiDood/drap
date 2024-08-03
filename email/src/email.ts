@@ -22,6 +22,10 @@ export class Emailer {
         this.#clientSecret = secret;
     }
 
+    get db() {
+        return this.#db;
+    }
+
     /** Must be called within a transaction context for correctness. */
     async #getLatestCredentials() {
         const creds = await this.#db.getDesignatedSenderCredentials();

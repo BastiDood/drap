@@ -14,13 +14,12 @@ const sql = postgres(POSTGRES_URL, { ssl: 'prefer', types: { bigint: postgres.Bi
 const db = new Database(sql, logger);
 const emailer = new Emailer(db, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET);
 
-async function listenForDraftNotifications(db: Database, emailer: Emailer) {
-    const stream = db.listen('notify:draft');
-    while (true) {
-        const result = await stream.next(true);
-        if (typeof result.done !== 'undefined' && result.done) break;
+const controller = new AbortController();
+process.on('SIGINT', () => controller.abort());
 
-        const email = await db.begin(async db => {
+async function listenForDraftNotifications(emailer: Emailer, signal: AbortSignal) {
+    for await (const payload of emailer.db.listen('notify:draft', signal)) {
+        const email = await emailer.db.begin(async db => {
             const notif = await db.getOneDraftNotification();
             if (notif === null) return null;
 
@@ -55,19 +54,15 @@ async function listenForDraftNotifications(db: Database, emailer: Emailer) {
             return email;
         });
 
-        const logger = db.logger.child({ payload: result.value });
+        const logger = emailer.db.logger.child({ payload });
         if (email === null) logger.warn({ email });
         else logger.info({ email });
     }
 }
 
-async function listenForUserNotifications(db: Database, emailer: Emailer) {
-    const stream = db.listen('notify:user');
-    while (true) {
-        const result = await stream.next(true);
-        if (typeof result.done !== 'undefined' && result.done) break;
-
-        const email = await db.begin(async db => {
+async function listenForUserNotifications(emailer: Emailer, signal: AbortSignal) {
+    for await (const payload of emailer.db.listen('notify:user', signal)) {
+        const email = await emailer.db.begin(async db => {
             const notif = await db.getOneUserNotification();
             if (notif === null) return null;
             const email = await emailer.send(
@@ -78,12 +73,17 @@ async function listenForUserNotifications(db: Database, emailer: Emailer) {
             assert(await db.dropUserNotification(notif.notif_id), 'cannot drop non-existent notification');
             return email;
         });
-
-        const logger = db.logger.child({ payload: result.value });
+        const logger = emailer.db.logger.child({ payload });
         if (email === null) logger.warn({ email });
         else logger.info({ email });
     }
 }
 
 // Main event loop of the email worker
-await Promise.all([listenForDraftNotifications(db, emailer), listenForUserNotifications(db, emailer)]);
+await Promise.all([
+    listenForDraftNotifications(emailer, controller.signal),
+    listenForUserNotifications(emailer, controller.signal),
+]);
+db.logger.warn('email workers shut down');
+await db.end();
+db.logger.warn('database connection shut down');
