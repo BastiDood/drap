@@ -456,7 +456,7 @@ export class Database implements Loggable {
     @timed async getDesignatedSenderCredentials() {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`SELECT email, given_name, family_name, access_token, refresh_token, expiration FROM drap.designated_sender JOIN drap.candidate_senders USING (email) JOIN drap.users (email) WHERE user_id IS NOT NULL AND is_admin AND lab_id IS NULL FOR UPDATE OF drap.candidate_senders`;
+            await sql`SELECT email, given_name, family_name, access_token, refresh_token, expiration FROM drap.designated_sender JOIN drap.candidate_senders USING (email) JOIN drap.users USING (email) WHERE user_id IS NOT NULL AND is_admin AND lab_id IS NULL FOR UPDATE OF candidate_senders`;
         strictEqual(rest.length, 0);
         return typeof first === 'undefined' ? null : parse(DesignatedSenderCredentials, first);
     }
