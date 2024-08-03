@@ -3,17 +3,18 @@
     "version": "0.0.0",
     "type": "module",
     "private": true,
+    "files": [
+        "./dist/*"
+    ],
     "scripts": {
+        "build": "tsup",
         "start": "node --enable-source-maps --env-file=.env --import=@swc-node/register/esm-register src/main.ts"
     },
     "exports": {
-        ".": "./src/main.ts",
         "./jwks": "./src/jwks.ts"
     },
     "dependencies": {
         "date-fns": "catalog:",
-        "drap-database": "workspace:",
-        "drap-model": "workspace:",
         "jose": "catalog:",
         "mimetext": "^3.0.24",
         "pino": "catalog:",
@@ -21,6 +22,9 @@
         "valibot": "catalog:"
     },
     "devDependencies": {
-        "@swc-node/register": "^1.10.9"
+        "@swc-node/register": "^1.10.9",
+        "drap-database": "workspace:",
+        "drap-model": "workspace:",
+        "tsup": "^8.2.4"
     }
 }

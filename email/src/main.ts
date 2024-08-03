@@ -4,13 +4,13 @@ import assert from 'node:assert/strict';
 import pino from 'pino';
 import postgres from 'postgres';
 
-const { POSTGRES_URL, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET } = process.env;
-assert(typeof POSTGRES_URL !== 'undefined', 'empty database url');
+const { DATABASE_URL, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET } = process.env;
+assert(typeof DATABASE_URL !== 'undefined', 'empty database url');
 assert(typeof GOOGLE_OAUTH_CLIENT_ID !== 'undefined', 'empty google oauth client id');
 assert(typeof GOOGLE_OAUTH_CLIENT_SECRET !== 'undefined', 'empty google oauth client secret');
 
 const logger = pino();
-const sql = postgres(POSTGRES_URL, { ssl: 'prefer', types: { bigint: postgres.BigInt } });
+const sql = postgres(DATABASE_URL, { ssl: 'prefer', types: { bigint: postgres.BigInt } });
 const db = new Database(sql, logger);
 const emailer = new Emailer(db, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET);
 
@@ -30,13 +30,13 @@ async function listenForDraftNotifications(emailer: Emailer, signal: AbortSignal
                             const body =
                                 notif.round === null
                                     ? {
-                                          subject: `[DRAP] Lottery Round for Draft #${notif.draft_id} has begun!`,
-                                          message: `The lottery round for Draft #${notif.draft_id} has begun. For lab heads, kindly coordinate with the draft administrators for the next steps.`,
-                                      }
+                                        subject: `[DRAP] Lottery Round for Draft #${notif.draft_id} has begun!`,
+                                        message: `The lottery round for Draft #${notif.draft_id} has begun. For lab heads, kindly coordinate with the draft administrators for the next steps.`,
+                                    }
                                     : {
-                                          subject: `[DRAP] Round #${notif.round} for Draft #${notif.draft_id} has begun!`,
-                                          message: `Round #${notif.round} for Draft #${notif.draft_id} has begun. For lab heads, kindly check the students module to see the list of students who have chosen your lab.`,
-                                      };
+                                        subject: `[DRAP] Round #${notif.round} for Draft #${notif.draft_id} has begun!`,
+                                        message: `Round #${notif.round} for Draft #${notif.draft_id} has begun. For lab heads, kindly check the students module to see the list of students who have chosen your lab.`,
+                                    };
                             return { emails: db.getValidFacultyAndStaffEmails(), ...body };
                         }
                         case 'DraftRoundSubmitted':

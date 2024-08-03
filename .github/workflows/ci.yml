@@ -9,7 +9,7 @@ on:
 jobs:
   build:
     env:
-      POSTGRES_URL: 'postgres://example.com'
+      DATABASE_URL: 'postgres://example.com'
       GOOGLE_OAUTH_CLIENT_ID: 'id.google.com'
       GOOGLE_OAUTH_CLIENT_SECRET: 'secret.google.com'
       GOOGLE_OAUTH_REDIRECT_URI: 'https://drap.dcs.upd.edu.ph/auth/callback'

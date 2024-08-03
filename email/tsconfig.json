@@ -1,4 +1,5 @@
 {
+    "exclude": ["dist"],
     "compilerOptions": {
         "target": "ESNext",
         "module": "ESNext",
