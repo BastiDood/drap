@@ -37,7 +37,7 @@ CREATE TABLE drap.users (
     --     case TRUE, _, _:        Registered Faculty
     is_admin BOOLEAN NOT NULL DEFAULT FALSE,
     student_number BIGINT UNIQUE CONSTRAINT student_number_within_bounds CHECK (student_number BETWEEN 100000000 AND 1000000000),
-    user_id GoogleUserId UNIQUE,
+    user_id drap.GoogleUserId UNIQUE,
     lab_id TEXT REFERENCES drap.labs (lab_id),
     email TEXT NOT NULL PRIMARY KEY,
     given_name TEXT NOT NULL DEFAULT '',
