@@ -414,7 +414,7 @@ export class Database implements Loggable {
 
     @timed async syncDraftResultsToUsersWithNotification(draft: Draft['draft_id']) {
         const sql = this.#sql;
-        const results = sql`UPDATE drap.users SET lab_id = fce.lab_id FROM drap.faculty_choices_emails fce WHERE draft_id = ${draft} AND email = student_email RETURNING email, lab_id`;
+        const results = sql`UPDATE drap.users u SET lab_id = fce.lab_id FROM drap.faculty_choices_emails fce WHERE draft_id = ${draft} AND email = student_email RETURNING email, u.lab_id`;
         const notifs =
             await sql`WITH results AS (${results}) INSERT INTO drap.user_notifications (email, lab_id) SELECT email, lab_id FROM results RETURNING notif_id`;
         return parse(CreatedUserNotifications, notifs).map(({ notif_id }) => notif_id);
@@ -614,7 +614,7 @@ export class Database implements Loggable {
     @timed async postDraftConcluded(draft: DraftNotification['draft_id']) {
         const sql = this.#sql;
         const [first, ...rest] =
-            await sql`INSERT INTO drap.draft_notifications (ty, draft_id) VALUES ('DraftConcluded', ${draft})`;
+            await sql`INSERT INTO drap.draft_notifications (ty, draft_id) VALUES ('DraftConcluded', ${draft}) RETURNING notif_id`;
         strictEqual(rest.length, 0);
         return parse(CreatedUserNotification, first).notif_id;
     }
