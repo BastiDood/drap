@@ -86,15 +86,6 @@ importers:
       date-fns:
         specifier: 'catalog:'
         version: 3.6.0
-      drap-database:
-        specifier: workspace:^
-        version: link:../database
-      drap-email:
-        specifier: workspace:^
-        version: link:../email
-      drap-model:
-        specifier: workspace:^
-        version: link:../model
       itertools:
         specifier: ^2.3.2
         version: 2.3.2
@@ -144,6 +135,15 @@ importers:
       autoprefixer:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.4.40)
+      drap-database:
+        specifier: workspace:^
+        version: link:../database
+      drap-email:
+        specifier: workspace:^
+        version: link:../email
+      drap-model:
+        specifier: workspace:^
+        version: link:../model
       stylelint:
         specifier: ^16.8.1
         version: 16.8.1(typescript@5.5.4)
