@@ -29,10 +29,6 @@
         <span>Lab Submissions</span>
     </Tab>
     <Tab bind:group={selectedTab} name="tab3" value={2}>
-        <Icon src={Clock} slot="lead" class="h-8" />
-        <span>Draft Start and End</span>
-    </Tab>
-    <Tab bind:group={selectedTab} name="tab4" value={3}>
         <Icon src={PaperClip} slot="lead" class="h-8" />
         <span>System Logs</span>
     </Tab>
@@ -46,11 +42,8 @@
             <!-- TODO: Submitted Lab Preferences -->
             (tab panel 2 contents)
         {:else if selectedTab === 2}
-            <!-- TODO: Start + End Dates for Draft (?) -->
-            (tab panel 3 contents)
-        {:else if selectedTab === 3}
             <!-- TODO: System Automation Logs -->
-            (tab panel 4 contents)
+            (tab panel 3 contents)
         {/if}
     </svelte:fragment>
 
