@@ -2,8 +2,8 @@ app = 'drap-app'
 primary_region = 'sin'
 
 [processes]
-app = 'node /prod/app/build/index.js'
-email = 'node --enable-source-maps /prod/email/dist/main.js'
+app = 'node /drap/app/build/index.js'
+email = 'node --enable-source-maps /drap/email/dist/main.js'
 
 [http_service]
 processes = ['app']
