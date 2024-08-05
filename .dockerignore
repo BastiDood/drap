@@ -1,3 +1,4 @@
+.dockerignore
 .env
 .git
 .github
@@ -8,10 +9,14 @@
 .stylelintrc.json
 .svelte-kit
 
+Dockerfile
+LICENSE
+README.md
+eslint.config.js
+fly.toml
+
 build
 data
 dist
 node_modules
 postgres
-
-eslint.config.json

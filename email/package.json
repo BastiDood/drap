@@ -3,9 +3,7 @@
     "version": "0.0.0",
     "type": "module",
     "private": true,
-    "files": [
-        "./dist/*"
-    ],
+    "files": [],
     "scripts": {
         "build": "tsup",
         "start": "node --enable-source-maps --env-file=.env --import=@swc-node/register/esm-register src/main.ts"

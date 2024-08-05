@@ -8,9 +8,8 @@ COPY pnpm-lock.yaml ./
 RUN pnpm fetch
 COPY . ./
 RUN pnpm install --recursive --offline
-RUN pnpm --parallel --recursive build
-RUN pnpm --filter=drap-email --prod deploy /prod/email
-RUN pnpm --filter=drap-app --prod deploy /prod/app
+RUN pnpm --filter=drap-email --prod deploy /prod/email && pnpm --filter=drap-app --prod deploy /prod/app
+RUN pnpm --parallel --recursive build && mv email/dist/ /prod/email && mv app/build/ /prod/app
 
 FROM node:22.5.1-alpine3.20 AS deploy
 COPY --from=build /prod/ /drap/
