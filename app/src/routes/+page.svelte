@@ -1,6 +1,7 @@
 <script>
     import { AcademicCap, Beaker, ShieldExclamation } from '@steeze-ui/heroicons';
     import { Accordion, AccordionItem } from '@skeletonlabs/skeleton';
+    import { Github } from '@steeze-ui/simple-icons';
     import { Icon } from '@steeze-ui/svelte-icon';
 </script>
 
@@ -127,5 +128,24 @@
                 </ol>
             </AccordionItem>
         </Accordion>
+    </section>
+    <section>
+        <h2>Acknowledgements</h2>
+        <p>
+            The <a target="_blank" href="https://github.com/BastiDood/drap">DRAP project</a>, licensed under the free
+            and open-source
+            <a
+                target="_blank"
+                href="https://github.com/BastiDood/drap/blob/bbd5be8b2b3528d2ba28643a91212c2abaa38ce7/LICENSE"
+                >GNU Affero General Public License v3</a
+            >, was originally developed by
+            <a target="_blank" href="https://github.com/BastiDood">Sebastian Luis S. Ortiz</a>
+            and <a target="_blank" href="https://github.com/VeeIsForVanana">Victor Edwin E. Reyes</a> as a service
+            project under the <a target="_blank" href="https://up-csi.org/">UP Center for Student Innovations</a>.
+        </p>
+        <a target="_blank" href="https://github.com/BastiDood/drap" class="btn btn-lg variant-filled-primary">
+            <span><Icon src={Github} class="h-8" /></span>
+            <span>BastiDood/drap</span>
+        </a>
     </section>
 </div>
