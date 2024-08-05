@@ -1,8 +1,0 @@
-app = 'drap-email'
-primary_region = 'sin'
-
-[build]
-build-target = 'email'
-
-[[vm]]
-size = 'shared-cpu-1x'
