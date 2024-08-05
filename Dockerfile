@@ -15,6 +15,7 @@ RUN pnpm --filter=drap-app --prod deploy /prod/app
 FROM node:22.5.1-alpine3.20 AS deploy
 COPY --from=build /prod/ /drap/
 EXPOSE 3000
+USER node
 
 # This is the command to start the SvelteKit server. The background email worker
 # should be spawned as a separate process somehow. When deploying to Fly.io
