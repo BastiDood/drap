@@ -1,5 +1,5 @@
 <script>
-    import { AcademicCap, Beaker, ShieldExclamation } from '@steeze-ui/heroicons';
+    import { AcademicCap, Beaker, BugAnt, DocumentDuplicate, ShieldExclamation } from '@steeze-ui/heroicons';
     import { Accordion, AccordionItem } from '@skeletonlabs/skeleton';
     import { Github } from '@steeze-ui/simple-icons';
     import { Icon } from '@steeze-ui/svelte-icon';
@@ -137,15 +137,35 @@
             <a
                 target="_blank"
                 href="https://github.com/BastiDood/drap/blob/bbd5be8b2b3528d2ba28643a91212c2abaa38ce7/LICENSE"
-                >GNU Affero General Public License v3</a
+                class="no-underline">GNU Affero General Public License v3</a
             >, was originally developed by
             <a target="_blank" href="https://github.com/BastiDood">Sebastian Luis S. Ortiz</a>
             and <a target="_blank" href="https://github.com/VeeIsForVanana">Victor Edwin E. Reyes</a> as a service
             project under the <a target="_blank" href="https://up-csi.org/">UP Center for Student Innovations</a>.
         </p>
-        <a target="_blank" href="https://github.com/BastiDood/drap" class="btn btn-lg variant-filled-primary">
+        <a
+            target="_blank"
+            href="https://github.com/BastiDood/drap"
+            class="btn btn-lg variant-filled-primary no-underline"
+        >
             <span><Icon src={Github} class="h-8" /></span>
             <span>BastiDood/drap</span>
+        </a>
+        <a
+            target="_blank"
+            href="https://github.com/BastiDood/drap/fork"
+            class="btn btn-lg variant-filled-secondary no-underline"
+        >
+            <span><Icon src={DocumentDuplicate} class="h-8" /></span>
+            <span>Fork the Repository</span>
+        </a>
+        <a
+            target="_blank"
+            href="https://github.com/BastiDood/drap/issues/new"
+            class="btn btn-lg variant-filled-error no-underline"
+        >
+            <span><Icon src={BugAnt} class="h-8" /></span>
+            <span>Report a Bug</span>
         </a>
     </section>
 </div>
