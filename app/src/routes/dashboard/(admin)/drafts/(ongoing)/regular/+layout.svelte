@@ -30,15 +30,6 @@
         <span>Laboratories</span>
     </TabAnchor>
     <TabAnchor
-        href="/dashboard/drafts/regular/preferences"
-        selected={$page.url.pathname == '/dashboard/drafts/regular/preferences/'}
-        name="tab3"
-        value={2}
-    >
-        <Icon src={QueueList} slot="lead" class="h-8" />
-        <span>Labs Preferences</span>
-    </TabAnchor>
-    <TabAnchor
         href="/dashboard/drafts/regular/logs"
         selected={$page.url.pathname == '/dashboard/drafts/regular/logs/'}
         name="tab4"
