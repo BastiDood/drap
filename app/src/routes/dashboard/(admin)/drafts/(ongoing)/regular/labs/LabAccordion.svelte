@@ -20,8 +20,12 @@
 
 <AccordionItem bind:open={isOpen}>
     <div class="flex justify-between" slot="summary">
-        <span>{lab.lab_name}</span>
-        <span>{selected.length} {isOpen ? "members" : ""} / {preferred.length} {isOpen ? "preferred" : ""} / {lab.quota} {isOpen ? "maximum" : ""}</span>
+        <span class="h5">{lab.lab_name}</span>
+        <span>
+            <span class="variant-ghost-primary badge text-xs uppercase font-mono">{selected.length} {isOpen ? "members" : ""}</span>
+            <span class="variant-ghost-tertiary badge text-xs uppercase font-mono">{preferred.length} {isOpen ? "preferred" : ""}</span>
+            <span class="variant-ghost-warning badge text-xs uppercase font-mono">{lab.quota} {isOpen ? "maximum" : ""}</span>
+        </span>
     </div>
     <div slot="content">
         <div class="grid grid-cols-3">
