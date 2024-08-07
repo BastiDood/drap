@@ -1,8 +1,14 @@
 <script lang="ts">
+    import { assert } from '$lib/assert.js';
+
 
     export let data;
     
-    let { available, students } = data;
+    let { available, selected, labs } = data;
+
+    assert(available !== undefined)
+    assert(selected !== undefined)
+    assert(labs !== undefined)
 
 </script>
 
