@@ -8,6 +8,7 @@ import {
     minLength,
     nullable,
     object,
+    optional,
     pipe,
     string,
     union,
@@ -21,9 +22,9 @@ export const User = object({
     lab_id: nullable(Lab.entries.lab_id),
     email: pipe(string(), email()),
     user_id: nullable(pipe(string(), minLength(1), maxLength(255))),
-    given_name: string(),
-    family_name: string(),
-    avatar: union([literal(''), pipe(string(), url())]),
+    given_name: optional(string(), ''),
+    family_name: optional(string(), ''),
+    avatar: union([literal(''), optional(pipe(string(), url()), '')]),
 });
 
 export type User = InferOutput<typeof User>;
