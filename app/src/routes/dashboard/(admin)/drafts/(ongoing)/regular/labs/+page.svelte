@@ -2,15 +2,17 @@
     import { assert } from '$lib/assert.js';
     import { Accordion } from '@skeletonlabs/skeleton';
     import LabAccordion from './LabAccordion.svelte';
+    import type { TaggedStudentsWithLabs } from 'drap-database';
 
 
     export let data;
     
-    let { available, selected, labs } = data;
+    let { available, selected, labs, draft } = data;
 
     assert(available !== undefined)
     assert(selected !== undefined)
     assert(labs !== undefined)
+    assert(draft !== null)
 
 </script>
 
@@ -20,6 +22,11 @@
 
 <Accordion>
     {#each labs as lab}
-        <LabAccordion {available} {selected} {lab} />
+        <LabAccordion 
+            available={available.filter( (val) => val.labs.includes(lab.lab_id) )} 
+            selected={selected.filter( (val) => val.lab_id == lab.lab_id )} 
+            {lab}
+            curr_round={draft.curr_round}
+        />
     {/each}
 </Accordion>
