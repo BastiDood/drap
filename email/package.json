@@ -21,8 +21,8 @@
     },
     "devDependencies": {
         "@swc-node/register": "^1.10.9",
-        "drap-database": "workspace:",
-        "drap-model": "workspace:",
+        "drap-database": "workspace:^",
+        "drap-model": "workspace:^",
         "tsup": "^8.2.4"
     }
 }

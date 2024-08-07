@@ -22,6 +22,6 @@
         "stylelint-config-standard": "^36.0.1",
         "stylelint-config-tailwindcss": "^0.0.7",
         "svelte-eslint-parser": "^0.41.0",
-        "typescript-eslint": "^8.0.0"
+        "typescript-eslint": "^8.0.1"
     }
 }
