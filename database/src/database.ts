@@ -23,6 +23,11 @@ import { User } from 'drap-model/user';
 
 const AvailableLabs = array(pick(Lab, ['lab_id', 'lab_name']));
 const BooleanResult = object({ result: boolean() });
+const ChoiceRecords = array(object({
+    ...pick(FacultyChoice, ['created_at', 'lab_id', 'round', 'draft_id']).entries,
+    faculty_email: nullable(User.entries.email),
+    student_email: nullable(User.entries.email)
+}))
 const CountResult = object({ count: bigint() });
 const CreatedLab = pick(Lab, ['lab_id']);
 const CreatedDraft = pick(Draft, ['draft_id', 'active_period_start']);
@@ -538,6 +543,12 @@ export class Database implements Loggable {
             await sql`SELECT count(lab_id) FROM drap.labs l LEFT JOIN (${fc}) fc USING (lab_id) WHERE choice_id IS NULL`;
         strictEqual(rest.length, 0);
         return parse(CountResult, first).count;
+    }
+
+    @timed async getFacultyChoiceRecords(draft: Draft['draft_id']) {
+        const sql = this.#sql;
+        const choices = await sql`SELECT fc.draft_id, fc.round, fc.lab_id, fc.created_at, fc.faculty_email, fce.student_email FROM drap.faculty_choices fc LEFT JOIN drap.faculty_choices_emails fce ON (fc.draft_id, fc.round, fc.lab_id) = (fce.draft_id, fce.round, fce.lab_id) WHERE fc.draft_id = ${draft} ORDER BY fc.round`; 
+        return parse(ChoiceRecords, choices);
     }
 
     @timed async getDraftEvents(draft: Draft['draft_id']) {
