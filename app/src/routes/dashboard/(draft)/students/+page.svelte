@@ -30,7 +30,8 @@
     >
 {:else if isDone}
     <WarningAlert
-        >This lab has already submitted their picks for this round. No action is required until the next one.</WarningAlert
+        >This lab either has no draft slots remaining or has already submitted their picks for this round. No action is
+        required until the next one.</WarningAlert
     >
 {:else if students.length > 0}
     {@const suffix = getOrdinalSuffix(curr_round)}
