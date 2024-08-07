@@ -4,7 +4,7 @@
     import { AcademicCap, Beaker, Clock, PaperClip, QueueList } from '@steeze-ui/heroicons';
     import { page } from '$app/stores';
 
-    // eslint-disable-next-line init-declarations
+    // svelte-ignore unused-export-let
     export let data;
 </script>
 
