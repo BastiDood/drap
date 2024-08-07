@@ -8,6 +8,7 @@
         Clock,
         Envelope,
         Home,
+        LockClosed,
         QueueList,
         Users,
     } from '@steeze-ui/heroicons';
@@ -79,6 +80,10 @@
     <AppRailAnchor href="/history/" selected={pathname.startsWith('/history/')}>
         <Icon src={Clock} slot="lead" class="h-8" />
         <span>History</span>
+    </AppRailAnchor>
+    <AppRailAnchor href="/privacy/" selected={pathname === '/privacy/'}>
+        <Icon src={LockClosed} slot="lead" class="h-8" />
+        <span>Privacy</span>
     </AppRailAnchor>
     <svelte:fragment slot="trail">
         {#if typeof user === 'undefined'}

@@ -1,5 +1,12 @@
 <script>
-    import { AcademicCap, Beaker, BugAnt, DocumentDuplicate, ShieldExclamation } from '@steeze-ui/heroicons';
+    import {
+        AcademicCap,
+        Beaker,
+        BugAnt,
+        DocumentDuplicate,
+        LockClosed,
+        ShieldExclamation,
+    } from '@steeze-ui/heroicons';
     import { Accordion, AccordionItem } from '@skeletonlabs/skeleton';
     import { Github } from '@steeze-ui/simple-icons';
     import { Icon } from '@steeze-ui/svelte-icon';
@@ -166,6 +173,10 @@
         >
             <span><Icon src={BugAnt} class="h-8" /></span>
             <span>Report a Bug</span>
+        </a>
+        <a href="/privacy/" class="btn btn-lg variant-filled-tertiary no-underline">
+            <span><Icon src={LockClosed} class="h-8" /></span>
+            <span>Privacy Policy</span>
         </a>
     </section>
 </div>
