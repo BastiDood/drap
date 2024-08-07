@@ -13,7 +13,7 @@
 </script>
 
 <Accordion>
-    <AccordionItem>
+    <AccordionItem open>
         <Icon src={CheckCircle} slot="lead" class="h-8"/>
         <span slot="summary">Available ({available.length}/{available.length + selected.length})</span>
         <svelte:fragment slot="content">
