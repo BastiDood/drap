@@ -17,36 +17,50 @@
 
     let isOpen = false;
 </script>
-
-<AccordionItem bind:open={isOpen}>
-    <div class="flex justify-between" slot="summary">
-        <span class="h5">{lab.lab_name}</span>
-        <span>
-            <span class="variant-ghost-primary badge text-xs uppercase font-mono">{selected.length} {isOpen ? "members" : ""}</span>
-            <span class="variant-ghost-tertiary badge text-xs uppercase font-mono">{preferred.length} {isOpen ? "preferred" : ""}</span>
-            <span class="variant-ghost-warning badge text-xs uppercase font-mono">{lab.quota} {isOpen ? "maximum" : ""}</span>
-        </span>
-    </div>
-    <div slot="content">
-        <div class="grid grid-cols-3">
-            <div>
-                Members / Already selected
-                {#each selected as student}
-                    <Student user={student}/>
-                {/each}
-            </div>
-            <div>
-                Preferred this round
-                {#each preferred as student}
-                    <Student user={student}/>
-                {/each}
-            </div>
-            <div>
-                Interested in future round
-                {#each interested as student}
-                    <Student user={student}/>
-                {/each}
+<div class="card space-y-4 p-4">
+    <AccordionItem bind:open={isOpen}>
+        <div class="flex justify-between" slot="summary">
+            {#if lab.quota == 0}
+                <span class="h5 text-gray-400">{lab.lab_name}</span>
+            {:else if selected.length != lab.quota}
+                <span class="h5">{lab.lab_name}</span>
+            {:else}
+                <span class="h5 text-warning-500">{lab.lab_name}</span>
+            {/if}
+            <span>
+                <span class="variant-ghost-primary badge text-xs uppercase font-mono">{selected.length} {isOpen ? "members" : ""}</span>
+                <span class="variant-ghost-tertiary badge text-xs uppercase font-mono">{preferred.length} {isOpen ? "preferred" : ""}</span>
+                <span class="variant-ghost-warning badge text-xs uppercase font-mono">{lab.quota} {isOpen ? "maximum" : ""}</span>
+            </span>
+        </div>
+        <div slot="content">
+            <hr class="p-2">
+            <div class="grid grid-cols-3">
+                <div>
+                    Members / Already selected
+                    {#each selected as student}
+                        <Student user={student}/>
+                    {:else}
+                        <div class="space-y-4 m-2 p-2 italic">No students selected yet.</div>
+                    {/each}
+                </div>
+                <div>
+                    Preferred this round
+                    {#each preferred as student}
+                        <Student user={student}/>
+                    {:else}
+                        <div class="space-y-4 m-2 p-2 italic">No students prefer this lab for this round.</div>
+                    {/each}
+                </div>
+                <div>
+                    Interested in future round
+                    {#each interested as student}
+                        <Student user={student}/>
+                    {:else}
+                        <div class="space-y-4 m-2 p-2 italic">No remaining students are interested in this lab.</div>
+                    {/each}
+                </div>
             </div>
         </div>
-    </div>
-</AccordionItem>
+    </AccordionItem>
+</div>
