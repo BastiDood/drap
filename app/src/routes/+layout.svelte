@@ -14,7 +14,7 @@
 
 <svelte:head>
     <link rel="icon" href={favicon} />
-    <meta property="og:image" content="https://drap.dcs.upd.edu.ph{banner}">
+    <meta property="og:image" content="https://drap.dcs.upd.edu.ph{banner}" />
 </svelte:head>
 
 <Toast />
