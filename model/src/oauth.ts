@@ -75,10 +75,10 @@ export const IdToken = object({
     hd: literal('up.edu.ph'),
     email: pipe(string(), email()),
     email_verified: boolean(),
-    given_name: string(),
-    family_name: string(),
+    given_name: optional(string(), ''),
+    family_name: optional(string(), ''),
+    picture: optional(pipe(string(), url()), ''),
     nonce: string(),
-    picture: pipe(string(), url()),
 });
 
 export type IdToken = InferOutput<typeof IdToken>;
