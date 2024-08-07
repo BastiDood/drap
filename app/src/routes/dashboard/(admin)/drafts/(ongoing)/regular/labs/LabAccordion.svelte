@@ -1,22 +1,23 @@
 <script lang="ts">
-    import { assert } from "$lib/assert";
-    import Student from "$lib/users/Student.svelte";
-    import { AccordionItem } from "@skeletonlabs/skeleton";
-    import type { TaggedStudentsWithLabs } from "drap-database";
-    import type { Lab } from "drap-model/lab";
+    import { assert } from '$lib/assert';
+    import Student from '$lib/users/Student.svelte';
+    import { AccordionItem } from '@skeletonlabs/skeleton';
+    import type { TaggedStudentsWithLabs } from 'drap-database';
+    import type { Lab } from 'drap-model/lab';
 
     export let lab: Lab;
     export let available: TaggedStudentsWithLabs;
     export let selected: TaggedStudentsWithLabs;
     export let curr_round: number | null;
-    
-    assert(curr_round !== null)
-    
-    let preferred = available.filter( (val) => val.labs[curr_round] == lab.lab_id)
-    let interested = available.filter( (val) => val.labs.slice(curr_round + 1).includes(lab.lab_id) )
+
+    assert(curr_round !== null);
+
+    const preferred = available.filter(val => val.labs[curr_round] == lab.lab_id);
+    const interested = available.filter(val => val.labs.slice(curr_round + 1).includes(lab.lab_id));
 
     let isOpen = false;
 </script>
+
 <div class="card space-y-4 p-4">
     <AccordionItem bind:open={isOpen}>
         <div class="flex justify-between" slot="summary">
@@ -28,18 +29,24 @@
                 <span class="h5 text-warning-500">{lab.lab_name}</span>
             {/if}
             <span>
-                <span class="variant-ghost-primary badge text-xs uppercase font-mono">{selected.length} {isOpen ? "members" : ""}</span>
-                <span class="variant-ghost-tertiary badge text-xs uppercase font-mono">{preferred.length} {isOpen ? "preferred" : ""}</span>
-                <span class="variant-ghost-warning badge text-xs uppercase font-mono">{lab.quota} {isOpen ? "maximum" : ""}</span>
+                <span class="variant-ghost-primary badge font-mono text-xs uppercase"
+                    >{selected.length} {isOpen ? 'members' : ''}</span
+                >
+                <span class="variant-ghost-tertiary badge font-mono text-xs uppercase"
+                    >{preferred.length} {isOpen ? 'preferred' : ''}</span
+                >
+                <span class="variant-ghost-warning badge font-mono text-xs uppercase"
+                    >{lab.quota} {isOpen ? 'maximum' : ''}</span
+                >
             </span>
         </div>
         <div slot="content">
-            <hr class="p-2">
+            <hr class="p-2" />
             <div class="grid grid-cols-3">
                 <div>
                     Members / Already selected
                     {#each selected as student}
-                        <Student user={student}/>
+                        <Student user={student} />
                     {:else}
                         <div class="space-y-4 m-2 p-2 italic">No students selected yet.</div>
                     {/each}
@@ -47,7 +54,7 @@
                 <div>
                     Preferred this round
                     {#each preferred as student}
-                        <Student user={student}/>
+                        <Student user={student} />
                     {:else}
                         <div class="space-y-4 m-2 p-2 italic">No students prefer this lab for this round.</div>
                     {/each}
@@ -55,7 +62,7 @@
                 <div>
                     Interested in future round
                     {#each interested as student}
-                        <Student user={student}/>
+                        <Student user={student} />
                     {:else}
                         <div class="space-y-4 m-2 p-2 italic">No remaining students are interested in this lab.</div>
                     {/each}

@@ -1,16 +1,15 @@
 <script>
     import { assert } from '$lib/assert';
     import Student from '$lib/users/Student.svelte';
-    
+
     import ConcludeForm from './ConcludeForm.svelte';
     import InterveneForm from './InterveneForm.svelte';
-    
+
     // eslint-disable-next-line init-declarations
     export let data;
     const { draft, available, labs, selected } = data;
 
-    assert(available && draft)
-
+    assert(available && draft);
 </script>
 
 <div class="grid grid-cols-1 gap-4 md:grid-cols-[auto_1fr]">
@@ -24,24 +23,23 @@
         <ul>
             <li>
                 The <strong>"Eligible for Lottery"</strong> section features a list of the remaining undrafted students.
-                Administrators may negotiate with the lab heads on how to manually assign and distribute these students
-                fairly among interested labs.
+                Administrators may negotiate with the lab heads on how to manually assign and distribute these students fairly
+                among interested labs.
             </li>
             <li>
-                Meanwhile, the <strong>"Already Drafted"</strong> section features an <em>immutable</em> list of
-                students who have already been drafted into their respective labs. These are considered final.
+                Meanwhile, the <strong>"Already Drafted"</strong> section features an <em>immutable</em> list of students
+                who have already been drafted into their respective labs. These are considered final.
             </li>
         </ul>
         <p>
             <!-- TODO: Add reminder about resetting the lab quota. -->
-            When ready, administrators can press the <strong>"Conclude Draft"</strong> button to proceed with the
-            randomization stage. The list of students will be randomly shuffled and distributed among the labs in
-            a round-robin fashion. To uphold fairness, it is important that uneven distributions are manually resolved
-            beforehand.
+            When ready, administrators can press the <strong>"Conclude Draft"</strong> button to proceed with the randomization
+            stage. The list of students will be randomly shuffled and distributed among the labs in a round-robin fashion.
+            To uphold fairness, it is important that uneven distributions are manually resolved beforehand.
         </p>
         <p>
-            After the randomization stage, the draft process is officially complete. All students, lab heads,
-            and administrators are notified of the final results.
+            After the randomization stage, the draft process is officially complete. All students, lab heads, and
+            administrators are notified of the final results.
         </p>
         <ConcludeForm draft={draft.draft_id} />
     </div>
@@ -51,7 +49,7 @@
             {#if available.length > 0}
                 <InterveneForm draft={draft.draft_id} {labs} students={available} />
             {:else}
-                <p class="prose max-w-none dark:prose-invert">
+                <p class="prose dark:prose-invert max-w-none">
                     Congratulations! All participants have been drafted. No action is needed here.
                 </p>
             {/if}

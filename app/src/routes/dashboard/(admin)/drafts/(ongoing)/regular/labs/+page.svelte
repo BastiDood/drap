@@ -4,27 +4,24 @@
     import LabAccordion from './LabAccordion.svelte';
     import type { TaggedStudentsWithLabs } from 'drap-database';
 
-
     export let data;
-    
-    let { available, selected, labs, draft } = data;
 
-    assert(available !== undefined)
-    assert(selected !== undefined)
-    assert(labs !== undefined)
-    assert(draft !== null)
+    const { available, selected, labs, draft } = data;
 
+    assert(available !== undefined);
+    assert(selected !== undefined);
+    assert(labs !== undefined);
+    assert(draft !== null);
 </script>
-
 
 <!-- Show labs, lab heads, lab quotas, lab membership count as follows -- ( SELECTED / AVAILABLE & PREFERENCE THIS ROUND / AVAILABLE & PREFERENCE FUTURE ROUNDS / QUOTA ) -->
 <!-- Detail already-selected lab members, available students with preferences for the lab in the current round -->
 
 <Accordion>
     {#each labs as lab}
-        <LabAccordion 
-            available={available.filter( (val) => val.labs.includes(lab.lab_id) )} 
-            selected={selected.filter( (val) => val.lab_id == lab.lab_id )} 
+        <LabAccordion
+            available={available.filter(val => val.labs.includes(lab.lab_id))}
+            selected={selected.filter(val => val.lab_id == lab.lab_id)}
             {lab}
             curr_round={draft.curr_round}
         />

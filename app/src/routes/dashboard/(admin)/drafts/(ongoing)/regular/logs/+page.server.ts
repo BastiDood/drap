@@ -3,5 +3,5 @@ export async function load({ locals: { db }, parent }) {
 
     const choiceRecords = await db.getFacultyChoiceRecords(draft.draft_id);
 
-    return { available, selected, draft, labs, choiceRecords }
+    return { available, selected, draft, labs, choiceRecords };
 }
