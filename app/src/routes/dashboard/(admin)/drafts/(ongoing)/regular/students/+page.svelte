@@ -1,5 +1,4 @@
 <script lang="ts">
-    import type { RegisteredLabs, TaggedStudentsWithLabs } from "$lib/server/database";
     import Student from "$lib/users/Student.svelte";
 
     import { Accordion, AccordionItem } from '@skeletonlabs/skeleton';
