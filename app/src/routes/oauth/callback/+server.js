@@ -12,13 +12,22 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
     if (typeof sid === 'undefined') redirect(302, '/oauth/login/');
 
     const state = searchParams.get('state');
-    if (state === null) error(400);
+    if (state === null) {
+        cookies.delete('sid', { path: '/', httpOnly: true, sameSite: 'lax' });
+        error(400);
+    }
 
     const hashedSessionId = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(sid));
-    if (Buffer.from(state, 'base64url').compare(Buffer.from(hashedSessionId)) !== 0) error(400);
+    if (Buffer.from(state, 'base64url').compare(Buffer.from(hashedSessionId)) !== 0) {
+        cookies.delete('sid', { path: '/', httpOnly: true, sameSite: 'lax' });
+        error(400);
+    }
 
     const code = searchParams.get('code');
-    if (code === null) error(400);
+    if (code === null) {
+        cookies.delete('sid', { path: '/', httpOnly: true, sameSite: 'lax' });
+        error(400);
+    }
 
     const body = new URLSearchParams({
         code: parse(AuthorizationCode, code),
