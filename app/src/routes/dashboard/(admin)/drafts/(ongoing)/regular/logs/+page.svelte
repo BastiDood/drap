@@ -14,11 +14,20 @@
       4. Lab received no interest, was auto-skipped [null faculty email, none of the above cases]
     */
 
+    let showAutomated = true;
+
     $: events = Array.from(
         groupby(choiceRecords, ({ created_at }) => getUnixTime(created_at)),
         ([timestamp, events]) => [timestamp, Array.from(events)] as const,
-    );
+    ).filter( (val) => (val[1][0]?.faculty_email != null) || showAutomated );
 </script>
+
+<div class="card p-2 my-2 space-y-2">
+	<label class="flex items-center space-x-2">
+		<input class="checkbox" type="checkbox" bind:checked={showAutomated} />
+		<p>Show system automation logs</p>
+	</label>
+</div>
 
 {#each events as [unix, choices]}
     {@const labs = [...new Set(choices.map( ({ lab_id }) => lab_id ))]}
