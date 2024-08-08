@@ -144,7 +144,7 @@
             <a
                 target="_blank"
                 href="https://github.com/BastiDood/drap/blob/bbd5be8b2b3528d2ba28643a91212c2abaa38ce7/LICENSE"
-                class="no-underline">GNU Affero General Public License v3</a
+                >GNU Affero General Public License v3</a
             >, was originally developed by
             <a target="_blank" href="https://github.com/BastiDood">Sebastian Luis S. Ortiz</a>
             and <a target="_blank" href="https://github.com/VeeIsForVanana">Victor Edwin E. Reyes</a> as a service
