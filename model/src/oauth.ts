@@ -13,6 +13,7 @@ import {
     safeInteger,
     string,
     transform,
+    union,
     url,
 } from 'valibot';
 import { User } from './user';
@@ -77,7 +78,7 @@ export const IdToken = object({
     email_verified: boolean(),
     given_name: optional(string(), ''),
     family_name: optional(string(), ''),
-    picture: optional(pipe(string(), url()), ''),
+    picture: optional(union([literal(''), pipe(string(), url())]), ''),
     nonce: string(),
 });
 
