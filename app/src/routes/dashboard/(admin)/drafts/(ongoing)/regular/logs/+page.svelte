@@ -1,6 +1,5 @@
 <script lang="ts">
-    import { getUnixTime } from 'date-fns';
-    import { FacultyChoice } from 'drap-model/faculty-choice';
+    import { fromUnixTime, getUnixTime } from 'date-fns';
     import { groupby } from 'itertools';
 
     export let data;
@@ -22,22 +21,32 @@
 </script>
 
 {#each events as [unix, choices]}
-    <div>{unix}</div>
     {@const labs = [...new Set(choices.map( ({ lab_id }) => lab_id ))]}
-    {#each labs as lab_id}
-        <p>{lab_id}</p>
-        {@const lab_choices = choices.filter( ({ lab_id: choice_lab }) => choice_lab == lab_id )}
-        {#if lab_choices.length == 1 && (lab_choices[0]?.faculty_email == null || lab_choices[0]?.student_email == null)}
-            {#if lab_choices[0]?.faculty_email == null}
-                <!-- If the system auto-skipped, TBD if due to quota or non-interest -->
-                <p>This selection was automated by the system</p>
-            {:else}
-                <!-- If a faculty member selected no students -->
-                <p>This selection of no students was performed by {lab_choices[0]?.faculty_email}</p>
-            {/if}
-        {:else}
-            <!-- If a facutly member selected students -->
-            <p>This selection of {lab_choices.length} student/s was performed by {lab_choices[0]?.faculty_email}</p>    
-        {/if}
-    {/each}
+    <div class="card p-2 space-y-4 my-2">
+        <header class="card-header">
+            <span class="h4">{fromUnixTime(unix).toLocaleString()}</span>
+        </header>
+        {#each labs as lab_id}
+            {@const lab_choices = choices.filter( ({ lab_id: choice_lab }) => choice_lab == lab_id )}
+            <div class="card p-4 space-y-1 bg-surface-500">
+                <strong class="uppercase">{lab_id}</strong> (Round {lab_choices[0]?.round ?? "Lottery"}):
+                {#if lab_choices.length == 1 && (lab_choices[0]?.faculty_email == null || lab_choices[0]?.student_email == null)}
+                    {#if lab_choices[0]?.faculty_email == null}
+                        <!-- If the system auto-skipped, TODO: if due to quota or non-interest -->
+                        <span>This selection was automated by the system</span>
+                    {:else}
+                        <!-- If a faculty member selected no students -->
+                        <span>This selection of <span class="variant-ghost-primary badge">no</span> students was performed by faculty member <span class="variant-ghost-secondary badge">{lab_choices[0]?.faculty_email}</span></span>
+                    {/if}
+                {:else}
+                    <!-- If a facutly member selected students -->
+                    <span>This selection of 
+                        {#each lab_choices as { student_email }}
+                                <span class="variant-ghost-primary badge">{student_email}</span>
+                        {/each}
+                        was performed by <span class="variant-ghost-secondary badge">{lab_choices[0]?.faculty_email}</span></span>    
+                {/if}
+            </div>
+        {/each}
+    </div>
 {/each}
