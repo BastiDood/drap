@@ -6,10 +6,12 @@
     import { Icon } from '@steeze-ui/svelte-icon';
     import { assert } from '$lib/assert';
 
+    // eslint-disable-next-line init-declarations
     export let data;
 
     const { available, selected } = data;
-    assert(available != undefined && selected != undefined);
+    assert(typeof(available) !== 'undefined');
+    assert(typeof(selected) !== 'undefined')
 </script>
 
 <Accordion>

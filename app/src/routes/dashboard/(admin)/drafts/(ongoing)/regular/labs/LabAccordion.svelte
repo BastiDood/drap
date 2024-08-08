@@ -1,18 +1,26 @@
 <script lang="ts">
-    import { assert } from '$lib/assert';
-    import Student from '$lib/users/Student.svelte';
     import { AccordionItem } from '@skeletonlabs/skeleton';
-    import type { TaggedStudentsWithLabs } from 'drap-database';
     import type { Lab } from 'drap-model/lab';
+    import Student from '$lib/users/Student.svelte';
+    import type { TaggedStudentsWithLabs } from 'drap-database';
+    
+    import { assert } from '$lib/assert';
 
+    // eslint-disable-next-line init-declarations
     export let lab: Lab;
+
+    // eslint-disable-next-line init-declarations
     export let available: TaggedStudentsWithLabs;
+
+    // eslint-disable-next-line init-declarations
     export let selected: TaggedStudentsWithLabs;
+
+    // eslint-disable-next-line init-declarations
     export let curr_round: number | null;
 
     assert(curr_round !== null);
 
-    const preferred = available.filter(val => val.labs[curr_round] == lab.lab_id);
+    const preferred = available.filter(val => val.labs[curr_round] === lab.lab_id);
     const interested = available.filter(val => val.labs.slice(curr_round + 1).includes(lab.lab_id));
 
     let isOpen = false;
@@ -21,9 +29,9 @@
 <div class="card space-y-4 p-4">
     <AccordionItem bind:open={isOpen}>
         <div class="flex justify-between" slot="summary">
-            {#if lab.quota == 0}
+            {#if lab.quota === 0}
                 <span class="h5 text-gray-400">{lab.lab_name}</span>
-            {:else if selected.length != lab.quota}
+            {:else if selected.length !== lab.quota}
                 <span class="h5">{lab.lab_name}</span>
             {:else}
                 <span class="h5 text-warning-500">{lab.lab_name}</span>

@@ -1,10 +1,9 @@
 <script>
-    import { goto } from '$app/navigation';
     import { browser } from '$app/environment';
+    import { goto } from '$app/navigation';
 
     // eslint-disable-next-line init-declarations
     export let data;
-    $: ({ labs } = data);
 
     const { draft } = data;
 

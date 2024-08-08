@@ -2,9 +2,10 @@
     import { fromUnixTime, getUnixTime } from 'date-fns';
     import { groupby } from 'itertools';
 
+    // eslint-disable-next-line init-declarations
     export let data;
 
-    let { choiceRecords } = data;
+    const { choiceRecords } = data;
 
     /* Take the records of all choices that have occurred and process them, deducing what exactly happened during each round
      Needs to distinguish the following events (one 'event' being a grouping of choices that occurred at the same time):
@@ -19,7 +20,7 @@
     $: events = Array.from(
         groupby(choiceRecords, ({ created_at }) => getUnixTime(created_at)),
         ([timestamp, events]) => [timestamp, Array.from(events)] as const,
-    ).filter(val => val[1][0]?.faculty_email != null || showAutomated);
+    ).filter(val => val[1][0]?.faculty_email !== null || showAutomated);
 </script>
 
 <div class="card my-2 space-y-2 p-2">
@@ -36,11 +37,11 @@
             <span class="h4">{fromUnixTime(unix).toLocaleString()}</span>
         </header>
         {#each labs as lab_id}
-            {@const lab_choices = choices.filter(({ lab_id: choice_lab }) => choice_lab == lab_id)}
+            {@const lab_choices = choices.filter(({ lab_id: choice_lab }) => choice_lab === lab_id)}
             <div class="card bg-surface-500 space-y-1 p-4">
                 <strong class="uppercase">{lab_id}</strong> (Round {lab_choices[0]?.round ?? 'Lottery'}):
-                {#if lab_choices.length == 1 && (lab_choices[0]?.faculty_email == null || lab_choices[0]?.student_email == null)}
-                    {#if lab_choices[0]?.faculty_email == null}
+                {#if lab_choices.length === 1 && (lab_choices[0]?.faculty_email === null || lab_choices[0]?.student_email === null)}
+                    {#if lab_choices[0]?.faculty_email === null}
                         <!-- If the system auto-skipped, TODO: if due to quota or non-interest -->
                         <span>This selection was automated by the system</span>
                     {:else}

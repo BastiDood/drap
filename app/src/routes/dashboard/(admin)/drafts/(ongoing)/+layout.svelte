@@ -2,9 +2,10 @@
     import { assert } from '$lib/assert';
     import { format } from 'date-fns';
 
+    // eslint-disable-next-line init-declarations
     export let data;
 
-    const { draft, available, selected } = data;
+    const { draft } = data;
     assert(draft !== null);
 
     const { draft_id, curr_round, max_rounds, active_period_start } = draft;

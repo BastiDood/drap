@@ -1,11 +1,8 @@
 <script>
+    import { AcademicCap, Beaker, PaperClip } from '@steeze-ui/heroicons';
     import { TabAnchor, TabGroup } from '@skeletonlabs/skeleton';
     import { Icon } from '@steeze-ui/svelte-icon';
-    import { AcademicCap, Beaker, Clock, PaperClip, QueueList } from '@steeze-ui/heroicons';
     import { page } from '$app/stores';
-
-    // svelte-ignore unused-export-let
-    export let data;
 </script>
 
 <!-- TODO: Ongoing Draft (ADMIN DASHBOARD) -->
@@ -13,7 +10,7 @@
     <!-- Tab Labels -->
     <TabAnchor
         href="/dashboard/drafts/regular/students"
-        selected={$page.url.pathname == '/dashboard/drafts/regular/students/'}
+        selected={$page.url.pathname === '/dashboard/drafts/regular/students/'}
         name="tab1"
         value={0}
     >
@@ -22,7 +19,7 @@
     </TabAnchor>
     <TabAnchor
         href="/dashboard/drafts/regular/labs"
-        selected={$page.url.pathname == '/dashboard/drafts/regular/labs/'}
+        selected={$page.url.pathname === '/dashboard/drafts/regular/labs/'}
         name="tab2"
         value={1}
     >
@@ -31,7 +28,7 @@
     </TabAnchor>
     <TabAnchor
         href="/dashboard/drafts/regular/logs"
-        selected={$page.url.pathname == '/dashboard/drafts/regular/logs/'}
+        selected={$page.url.pathname === '/dashboard/drafts/regular/logs/'}
         name="tab3"
         value={2}
     >

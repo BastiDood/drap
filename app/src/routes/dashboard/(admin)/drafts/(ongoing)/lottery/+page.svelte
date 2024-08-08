@@ -1,9 +1,9 @@
 <script>
     import { assert } from '$lib/assert';
-    import Student from '$lib/users/Student.svelte';
-
+    
     import ConcludeForm from './ConcludeForm.svelte';
     import InterveneForm from './InterveneForm.svelte';
+    import Student from '$lib/users/Student.svelte';
 
     // eslint-disable-next-line init-declarations
     export let data;

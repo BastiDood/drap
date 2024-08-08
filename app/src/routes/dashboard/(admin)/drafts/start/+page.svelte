@@ -1,14 +1,15 @@
 <script>
-    import { assert } from '$lib/assert';
-    import Student from '$lib/users/Student.svelte';
     import StartForm from './StartForm.svelte';
+    import Student from '$lib/users/Student.svelte';
+    
+    import { assert } from '$lib/assert';
 
     // eslint-disable-next-line init-declarations
     export let data;
 
     const { available, draft } = data;
 
-    assert(available !== undefined && draft !== undefined);
+    assert(available && draft);
 </script>
 
 <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
