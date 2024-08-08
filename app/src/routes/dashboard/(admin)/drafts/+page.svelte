@@ -1,19 +1,4 @@
 <script>
-    import Student from '$lib/users/Student.svelte';
-    import { format } from 'date-fns';
-
-    import ErrorAlert from '$lib/alerts/Error.svelte';
-    import WarningAlert from '$lib/alerts/Warning.svelte';
-
-    import ConcludeForm from './ConcludeForm.svelte';
-    import InterveneForm from './InterveneForm.svelte';
-    import StartForm from './StartForm.svelte';
-    import StudentsPanel from './StudentsPanel.svelte';
-
-    import { Tab, TabAnchor, TabGroup } from '@skeletonlabs/skeleton';
-    import { Icon } from '@steeze-ui/svelte-icon';
-    import { AcademicCap, Beaker, Clock, PaperClip } from '@steeze-ui/heroicons';
-
     import { goto } from '$app/navigation';
     import { browser } from '$app/environment';
 
@@ -23,7 +8,6 @@
 
     const { draft } = data;
 
-    const selectedTab = 0;
 
     if (browser) {
         if (draft === null) goto('/dashboard/drafts/start');
