@@ -1,3 +1,5 @@
 import { redirect } from '@sveltejs/kit';
 
-redirect(307, '/dashboard/drafts/regular/students');
+export async function load() {
+    redirect(302, '/dashboard/drafts/regular/students');
+}

@@ -5,6 +5,5 @@ export async function load({ locals: { db }, parent }) {
 
     assert(typeof draft !== 'undefined');
     const choiceRecords = await db.getFacultyChoiceRecords(draft.draft_id);
-
     return { available, selected, draft, labs, choiceRecords };
 }
