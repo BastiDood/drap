@@ -27,8 +27,17 @@
     {#each labs as lab_id}
         <p>{lab_id}</p>
         {@const lab_choices = choices.filter( ({ lab_id: choice_lab }) => choice_lab == lab_id )}
-        {#each lab_choices as choice}
-            <p>{choice.student_email}</p>
-        {/each}
+        {#if lab_choices.length == 1 && (lab_choices[0]?.faculty_email == null || lab_choices[0]?.student_email == null)}
+            {#if lab_choices[0]?.faculty_email == null}
+                <!-- If the system auto-skipped, TBD if due to quota or non-interest -->
+                <p>This selection was automated by the system</p>
+            {:else}
+                <!-- If a faculty member selected no students -->
+                <p>This selection of no students was performed by {lab_choices[0]?.faculty_email}</p>
+            {/if}
+        {:else}
+            <!-- If a facutly member selected students -->
+            <p>This selection of {lab_choices.length} student/s was performed by {lab_choices[0]?.faculty_email}</p>    
+        {/if}
     {/each}
 {/each}
