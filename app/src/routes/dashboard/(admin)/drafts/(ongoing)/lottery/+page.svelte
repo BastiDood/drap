@@ -1,6 +1,6 @@
 <script>
     import { assert } from '$lib/assert';
-    
+
     import ConcludeForm from './ConcludeForm.svelte';
     import InterveneForm from './InterveneForm.svelte';
     import Student from '$lib/users/Student.svelte';

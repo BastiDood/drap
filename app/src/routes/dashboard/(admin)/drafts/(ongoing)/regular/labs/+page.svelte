@@ -1,18 +1,18 @@
 <script lang="ts">
     import { Accordion } from '@skeletonlabs/skeleton';
     import LabAccordion from './LabAccordion.svelte';
-    
+
     import { assert } from '$lib/assert.js';
-    
+
     // eslint-disable-next-line init-declarations
     export let data;
 
     const { available, selected, labs, draft } = data;
 
-    assert(typeof(available) !== 'undefined')
-    assert(typeof(selected) !== 'undefined')
-    assert(typeof(labs) !== 'undefined')
-    assert(typeof(draft) !== 'undefined')
+    assert(typeof available !== 'undefined');
+    assert(typeof selected !== 'undefined');
+    assert(typeof labs !== 'undefined');
+    assert(typeof draft !== 'undefined');
 </script>
 
 <!-- Show labs, lab heads, lab quotas, lab membership count as follows -- ( SELECTED / AVAILABLE & PREFERENCE THIS ROUND / AVAILABLE & PREFERENCE FUTURE ROUNDS / QUOTA ) -->

@@ -7,7 +7,6 @@
 
     const { draft } = data;
 
-
     if (browser) {
         if (draft === null) goto('/dashboard/drafts/start');
         else if (draft.curr_round === null) goto('/dashboard/drafts/lottery');

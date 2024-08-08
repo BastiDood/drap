@@ -1,3 +1,3 @@
-import { redirect } from "@sveltejs/kit";
+import { redirect } from '@sveltejs/kit';
 
-redirect(307, '/dashboard/drafts/regular/students')
+redirect(307, '/dashboard/drafts/regular/students');

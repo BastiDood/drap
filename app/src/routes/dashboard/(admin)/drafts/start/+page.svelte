@@ -1,7 +1,7 @@
 <script>
     import StartForm from './StartForm.svelte';
     import Student from '$lib/users/Student.svelte';
-    
+
     import { assert } from '$lib/assert';
 
     // eslint-disable-next-line init-declarations

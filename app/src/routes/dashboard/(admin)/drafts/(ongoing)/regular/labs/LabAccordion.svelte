@@ -3,7 +3,7 @@
     import type { Lab } from 'drap-model/lab';
     import Student from '$lib/users/Student.svelte';
     import type { TaggedStudentsWithLabs } from 'drap-database';
-    
+
     import { assert } from '$lib/assert';
 
     // eslint-disable-next-line init-declarations

@@ -10,8 +10,8 @@
     export let data;
 
     const { available, selected } = data;
-    assert(typeof(available) !== 'undefined');
-    assert(typeof(selected) !== 'undefined')
+    assert(typeof available !== 'undefined');
+    assert(typeof selected !== 'undefined');
 </script>
 
 <Accordion>

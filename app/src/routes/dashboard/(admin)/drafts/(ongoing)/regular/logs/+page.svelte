@@ -25,7 +25,7 @@
 
 <div class="card my-2 space-y-2 p-2">
     <label class="flex items-center space-x-2">
-        <input class="checkbox" type="checkbox" bind:checked={showAutomated}/>
+        <input class="checkbox" type="checkbox" bind:checked={showAutomated} />
         <p>Show system automation logs</p>
     </label>
 </div>
