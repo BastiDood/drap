@@ -32,8 +32,8 @@
     <TabAnchor
         href="/dashboard/drafts/regular/logs"
         selected={$page.url.pathname == '/dashboard/drafts/regular/logs/'}
-        name="tab4"
-        value={3}
+        name="tab3"
+        value={2}
     >
         <Icon src={PaperClip} slot="lead" class="h-8" />
         <span>System Logs</span>
