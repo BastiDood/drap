@@ -1,5 +1,5 @@
 <script lang="ts">
-    import type { Draft } from '$lib/models/draft';
+    import type { Draft } from 'drap-model/draft';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
 
