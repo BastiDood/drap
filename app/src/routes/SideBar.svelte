@@ -46,7 +46,7 @@
                     <Icon src={Users} slot="lead" class="h-8" />
                     <span>Users</span>
                 </AppRailAnchor>
-                <AppRailAnchor href="/dashboard/drafts/" selected={pathname === '/dashboard/drafts/'}>
+                <AppRailAnchor href="/dashboard/drafts/" selected={pathname.split("/").includes("drafts")}>
                     <Icon src={ClipboardDocumentList} slot="lead" class="h-8" />
                     <span>Drafts</span>
                 </AppRailAnchor>
