@@ -49,7 +49,7 @@ async function listenForDraftNotifications(emailer: Emailer, signal: AbortSignal
                             return {
                                 emails: db.getValidFacultyAndStaffEmails(),
                                 subject: `[DRAP] Lottery Intervention for ${notif.lab_id.toUpperCase()} in Draft #${notif.draft_id}`,
-                                message: ``,
+                                message: `${notif.given_name} ${notif.family_name} <${notif.email}> has been manually assigned to ${notif.lab_name} during the lottery round of Draft #${notif.draft_id}.`,
                             };
                         case 'DraftConcluded':
                             return {
