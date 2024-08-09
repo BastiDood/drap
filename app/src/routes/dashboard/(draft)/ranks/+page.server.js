@@ -5,7 +5,7 @@ export async function load({ locals: { db }, parent }) {
     const { user, draft } = await parent();
     if (user.is_admin || user.user_id === null || user.lab_id !== null || user.student_number === null) error(403);
     const [availableLabs, rankings] = await Promise.all([
-        db.getAvailableLabs(),
+        db.getLabRegistry(),
         db.getStudentRankings(draft.draft_id, user.email),
     ]);
     return { draft, availableLabs, rankings };

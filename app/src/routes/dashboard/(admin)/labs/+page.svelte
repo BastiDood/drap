@@ -15,6 +15,8 @@
         <CreateForm />
         <QuotaForm {labs} />
     </div>
+{:else if draft.curr_round === 0}
+    <QuotaForm {labs} />
 {:else}
     {@const { draft_id, active_period_start, curr_round, max_rounds } = draft}
     {@const startDate = format(active_period_start, 'PPP')}

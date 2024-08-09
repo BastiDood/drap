@@ -33,15 +33,12 @@
         return async ({ update, result }) => {
             submitter.disabled = false;
             await update();
-            switch (result.type) {
-                case 'success':
-                    toast.trigger({
-                        message: 'Successfully applied the interventions.',
-                        background: 'variant-filled-success',
-                    });
-                    break;
-                default:
-                    break;
+            if (result.type === 'success') {
+                toast.trigger({
+                    message: 'Successfully applied the interventions.',
+                    background: 'variant-filled-success',
+                });
+                return;
             }
         };
     }}

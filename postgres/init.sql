@@ -127,5 +127,5 @@ CREATE TABLE drap.draft_notifications (
 CREATE TABLE drap.user_notifications (
     notif_id BIGINT GENERATED ALWAYS AS IDENTITY NOT NULL PRIMARY KEY,
     lab_id TEXT NOT NULL REFERENCES drap.labs (lab_id),
-    email TEXT UNIQUE NOT NULL REFERENCES drap.users (email)
+    email TEXT NOT NULL REFERENCES drap.users (email)
 );

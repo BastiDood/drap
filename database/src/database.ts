@@ -200,12 +200,6 @@ export class Database implements Loggable {
         return parse(CreatedLab, first).lab_id;
     }
 
-    @timed async getAvailableLabs() {
-        const sql = this.#sql;
-        const labs = await sql`SELECT lab_id, lab_name FROM drap.labs WHERE quota > 0 ORDER BY lab_name`;
-        return parse(AvailableLabs, labs);
-    }
-
     @timed async getLabRegistry() {
         const sql = this.#sql;
         const labs = await sql`SELECT lab_id, lab_name, quota FROM drap.labs ORDER BY lab_name`;

@@ -46,17 +46,17 @@ export const actions = {
                 const count = await db.getPendingLabCountInDraft(draft);
                 if (count > 0) break;
 
-                const round = await db.incrementDraftRound(draft);
-                assert(round !== null);
+                const incrementDraftRound = await db.incrementDraftRound(draft);
+                db.logger.info({ incrementDraftRound });
+                assert(incrementDraftRound !== null, 'The draft to be incremented does not exist.');
 
                 const postDraftRoundStartedNotification = await db.postDraftRoundStartedNotification(
                     draft,
-                    round.curr_round,
+                    incrementDraftRound.curr_round,
                 );
                 db.logger.info({ postDraftRoundStartedNotification });
 
-                if (round.curr_round === null) break;
-                db.logger.info({ incrementDraftRound: round });
+                if (incrementDraftRound.curr_round === null) break;
 
                 const autoAcknowledgeLabsWithoutPreferences = await db.autoAcknowledgeLabsWithoutPreferences(draft);
                 db.logger.info({ autoAcknowledgeLabsWithoutPreferences });

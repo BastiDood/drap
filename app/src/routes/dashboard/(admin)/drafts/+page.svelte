@@ -14,27 +14,20 @@
 </script>
 
 {#if draft === null}
-    {#if labs.some(({ quota }) => quota > 0)}
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
-            <div class="prose dark:prose-invert">
-                <h2>Start a New Draft</h2>
-                <p>
-                    Welcome to the <strong>Draft Ranking Automated Processor</strong>! There are currently no drafts
-                    happening at the moment, but as an administrator, you have the authorization to start a new one.
-                </p>
-                <p>
-                    To begin, simply provide the the maximum number of rounds for the upcoming draft. This has
-                    historically been set to <strong>5</strong>.
-                </p>
-            </div>
-            <InitForm />
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
+        <div class="prose dark:prose-invert">
+            <h2>Start a New Draft</h2>
+            <p>
+                Welcome to the <strong>Draft Ranking Automated Processor</strong>! There are currently no drafts
+                happening at the moment, but as an administrator, you have the authorization to start a new one.
+            </p>
+            <p>
+                To begin, simply provide the the maximum number of rounds for the upcoming draft. This has historically
+                been set to <strong>5</strong>.
+            </p>
         </div>
-    {:else}
-        <WarningAlert
-            >The total quota of all labs is currently zero. Please <a href="/dashboard/labs/" class="anchor">allocate</a
-            > at least one slot to a lab to proceed.</WarningAlert
-        >
-    {/if}
+        <InitForm />
+    </div>
 {:else if draft.curr_round === null}
     <div class="grid grid-cols-1 gap-4 md:grid-cols-[auto_1fr]">
         <div class="prose dark:prose-invert">
@@ -90,31 +83,23 @@
     </div>
 {:else if draft.curr_round > 0}
     <Dashboard {labs} {records} {available} {selected} round={draft.curr_round} />
-{:else}
+{:else if available.length > 0}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
         <div class="space-y-4">
-            {#if available.length > 0}
-                <section class="prose dark:prose-invert">
-                    <h2>Registered Students</h2>
-                    <p>
-                        There are currently <strong>{available.length}</strong> students who have registered for this
-                        draft. Press the <strong>"Start Draft"</strong> button to close registration and start the draft
-                        automation.
-                    </p>
-                    <p>
-                        Lab heads will be notified when the first round begins. The draft proceeds to the next round
-                        when all lab heads have submitted their preferences. This process repeats until the configured
-                        maximum number of rounds has elapsed, after which the draft pauses until an administrator
-                        <em>manually</em> proceeds with the lottery stage.
-                    </p>
-                </section>
-                <StartForm draft={draft.draft_id} />
-            {:else}
-                <WarningAlert
-                    >No students have registered for this draft yet. The draft cannot proceed until at least one student
-                    participates.</WarningAlert
-                >
-            {/if}
+            <section class="prose dark:prose-invert">
+                <h2>Registered Students</h2>
+                <p>
+                    There are currently <strong>{available.length}</strong> students who have registered for this draft.
+                    Press the <strong>"Start Draft"</strong> button to close registration and start the draft automation.
+                </p>
+                <p>
+                    Lab heads will be notified when the first round begins. The draft proceeds to the next round when
+                    all lab heads have submitted their preferences. This process repeats until the configured maximum
+                    number of rounds has elapsed, after which the draft pauses until an administrator
+                    <em>manually</em> proceeds with the lottery stage.
+                </p>
+            </section>
+            <StartForm draft={draft.draft_id} />
         </div>
         <nav class="list-nav w-full">
             <ul class="list">
@@ -124,4 +109,9 @@
             </ul>
         </nav>
     </div>
+{:else}
+    <WarningAlert
+        >No students have registered for this draft yet. The draft cannot proceed until at least one student
+        participates.</WarningAlert
+    >
 {/if}

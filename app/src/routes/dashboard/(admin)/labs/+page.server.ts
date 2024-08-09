@@ -41,7 +41,8 @@ export const actions = {
         if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
 
         const draft = await db.getActiveDraft();
-        if (draft !== null && draft.curr_round !== null) error(403);
+        if (draft !== null && draft.curr_round !== null && draft.curr_round > 0)
+            error(403, 'It is unsafe to update the lab quota while a draft is ongoing.');
 
         const data = await request.formData();
         await db.updateLabQuotas(mapRowTuples(data));

@@ -38,9 +38,6 @@ export const actions = {
         if (user === null) error(401);
         if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
 
-        const isValid = await db.isValidTotalLabQuota();
-        if (!isValid) error(403);
-
         const data = await request.formData();
         const rounds = parseInt(validateString(data.get('rounds')), 10);
         const initDraft = await db.initDraft(rounds);
@@ -54,29 +51,38 @@ export const actions = {
         if (user === null) error(401);
         if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
 
+        const isValid = await db.isValidTotalLabQuota();
+        if (!isValid) return fail(498);
+
         const data = await request.formData();
         const draft = BigInt(validateString(data.get('draft')));
 
         const { labCount, studentCount } = await db.getLabCountAndStudentCount(draft);
         assert(labCount > 0);
-        if (studentCount <= 0) error(403);
+        if (studentCount <= 0) return fail(497);
 
         await db.begin(async db => {
-            const incrementDraftRound = await db.incrementDraftRound(draft);
-            db.logger.info({ incrementDraftRound });
-            assert(incrementDraftRound !== null);
-            assert(incrementDraftRound.curr_round !== null);
+            while (true) {
+                const incrementDraftRound = await db.incrementDraftRound(draft);
+                assert(incrementDraftRound !== null, 'Cannot start a non-existent draft.');
+                db.logger.info({ incrementDraftRound });
 
-            const postDraftRoundStartedNotification = await db.postDraftRoundStartedNotification(
-                draft,
-                incrementDraftRound.curr_round,
-            );
-            db.logger.info({ postDraftRoundStartedNotification });
-            await db.notifyDraftChannel();
+                const postDraftRoundStartedNotification = await db.postDraftRoundStartedNotification(
+                    draft,
+                    incrementDraftRound.curr_round,
+                );
+                db.logger.info({ postDraftRoundStartedNotification });
+                await db.notifyDraftChannel();
 
-            const ackCount = await db.autoAcknowledgeLabsWithoutPreferences(draft);
-            db.logger.info({ autoAcknowledgeLabsWithoutPreferences: ackCount });
-            assert(ackCount <= labCount);
+                // Pause at the lottery rounds
+                if (incrementDraftRound.curr_round === null) break;
+
+                const autoAcknowledgeLabsWithoutPreferences = await db.autoAcknowledgeLabsWithoutPreferences(draft);
+                db.logger.info({ autoAcknowledgeLabsWithoutPreferences });
+
+                const count = await db.getPendingLabCountInDraft(draft);
+                if (count > 0) break;
+            }
         });
     },
     async intervene({ locals: { db }, cookies, request }) {
