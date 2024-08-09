@@ -9,11 +9,15 @@ export async function load({ locals: { db }, parent }) {
     if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
 
     const labs = await db.getLabRegistry();
-    if (draft === null) return { draft: null, labs };
+    if (draft === null) return { draft: null, labs, available: [], selected: [], records: [] };
 
-    const students = await db.getStudentsInDraftTaggedByLab(draft.draft_id);
+    const [students, records] = await Promise.all([
+        db.getStudentsInDraftTaggedByLab(draft.draft_id),
+        db.getFacultyChoiceRecords(draft.draft_id),
+    ]);
+
     const { available, selected } = groupBy(students, ({ lab_id }) => (lab_id === null ? 'available' : 'selected'));
-    return { draft, labs, available: available ?? [], selected: selected ?? [] };
+    return { draft, labs, available: available ?? [], selected: selected ?? [], records };
 }
 
 function* mapRowTuples(data: FormData) {
