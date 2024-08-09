@@ -44,7 +44,7 @@
         <hr class="p-2" />
         <div class="grid grid-cols-3">
             <div>
-                Members / Already selected
+                Members / Already Selected
                 {#each selected as student (student.email)}
                     <Student user={student} />
                 {:else}
@@ -52,7 +52,7 @@
                 {/each}
             </div>
             <div>
-                Preferred this round
+                Preferred This Round
                 {#each preferred as student (student.email)}
                     <Student user={student} />
                 {:else}
@@ -60,7 +60,7 @@
                 {/each}
             </div>
             <div>
-                Interested in future round
+                Interested in Future Rounds
                 {#each interested as student (student.email)}
                     <Student user={student} />
                 {:else}
