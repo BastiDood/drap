@@ -7,7 +7,7 @@
     $: ({ email, given_name, family_name, avatar, student_number, labs, lab_id } = user);
 </script>
 
-<a href="mailto:{email}" class="grid w-full grid-cols-[auto_1fr] items-center gap-1 p-4">
+<a href="mailto:{email}" class="grid w-full grid-cols-[auto_1fr] items-center gap-2 p-4">
     <span><Avatar src={avatar} width="w-20" /></span>
     <span class="flex flex-col">
         {#if given_name.length > 0 && family_name.length > 0}

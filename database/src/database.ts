@@ -84,6 +84,7 @@ const UpsertedOpenIdUser = pick(User, ['is_admin', 'lab_id']);
 const UserEmails = array(pick(User, ['email']));
 
 export type AvailableLabs = InferOutput<typeof AvailableLabs>;
+export type ChoiceRecords = InferOutput<typeof ChoiceRecords>;
 export type QueriedCandidateSenders = InferOutput<typeof QueriedCandidateSenders>;
 export type QueriedFaculty = InferOutput<typeof QueriedFaculty>;
 export type RegisteredLabs = InferOutput<typeof RegisteredLabs>;
