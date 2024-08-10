@@ -15,7 +15,6 @@ export async function handle({ event, resolve }) {
     const start = performance.now();
     try {
         const response = await resolve(event);
-        response.headers.set('Referrer-Policy', 'no-referrer-when-downgrade');
         event.locals.db.logger.info({ status: response.status, response_time: performance.now() - start });
         return response;
     } catch (error) {

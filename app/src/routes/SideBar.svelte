@@ -97,7 +97,20 @@
                 </a>
             </div>
         {:else}
-            <form method="post" action="/?/logout" class="p-2">
+            <form
+                method="post"
+                action="/?/logout"
+                class="p-2"
+                use:enhance={({ submitter }) => {
+                    assert(submitter !== null);
+                    assert(submitter instanceof HTMLButtonElement);
+                    submitter.disabled = true;
+                    return async ({ update }) => {
+                        submitter.disabled = false;
+                        await update();
+                    };
+                }}
+            >
                 <button type="submit" class="variant-soft-tertiary btn-icon btn-icon-sm aspect-square w-full">
                     <Icon slot="trail" src={ArrowRightStartOnRectangle} class="w-full p-2" />
                 </button>
