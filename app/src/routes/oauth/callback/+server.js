@@ -9,7 +9,7 @@ import { parse } from 'valibot';
 
 export async function GET({ fetch, locals: { db }, cookies, url: { searchParams } }) {
     const sid = cookies.get('sid');
-    if (typeof sid === 'undefined') redirect(302, '/oauth/login/');
+    if (typeof sid === 'undefined') redirect(307, '/oauth/login/');
 
     const code = searchParams.get('code');
     if (code === null) {
@@ -42,7 +42,7 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
 
     const { hasExtendedScope, expires } = await db.begin(async db => {
         const pending = await db.deletePendingSession(sid);
-        if (pending === null) redirect(302, '/oauth/login/');
+        if (pending === null) redirect(307, '/oauth/login/');
 
         const res = await fetch('https://oauth2.googleapis.com/token', {
             method: 'POST',
@@ -82,5 +82,5 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
     });
 
     cookies.set('sid', sid, { path: '/', httpOnly: true, sameSite: 'lax', expires });
-    redirect(302, hasExtendedScope ? '/dashboard/email/' : '/');
+    redirect(307, hasExtendedScope ? '/dashboard/email/' : '/');
 }

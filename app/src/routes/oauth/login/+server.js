@@ -10,7 +10,7 @@ export async function GET({ locals: { db }, cookies, url: { searchParams } }) {
         // Allow only admins through extended scope flow
         const user = await db.getUserFromValidSession(sid);
         if (user !== null) {
-            if (!hasExtendedScope) redirect(302, '/');
+            if (!hasExtendedScope) redirect(307, '/');
             if (user.user_id === null || !user.is_admin || user.lab_id !== null) error(403);
         }
     }
@@ -38,5 +38,5 @@ export async function GET({ locals: { db }, cookies, url: { searchParams } }) {
         params.set('scope', OAUTH_SCOPE_STRING);
     }
 
-    redirect(302, `https://accounts.google.com/o/oauth2/v2/auth?${params}`);
+    redirect(307, `https://accounts.google.com/o/oauth2/v2/auth?${params}`);
 }

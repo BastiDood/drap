@@ -10,6 +10,6 @@ export const actions = {
         else db.logger.info({ deleteValidSession: session });
 
         cookies.delete('sid', { path: '/', httpOnly: true, sameSite: 'lax' });
-        redirect(302, '/');
+        redirect(307, '/');
     },
 };
