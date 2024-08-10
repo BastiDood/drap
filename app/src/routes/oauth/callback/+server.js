@@ -26,7 +26,10 @@ export async function GET({ fetch, locals: { db }, cookies, url: { searchParams 
     const hashedSessionId = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(sid));
     if (Buffer.from(state, 'base64url').compare(Buffer.from(hashedSessionId)) !== 0) {
         cookies.delete('sid', { path: '/', httpOnly: true, sameSite: 'lax' });
-        error(400, 'Session state mismatch detected. Please log in again or clear your browser cookies.');
+        error(
+            400,
+            'Session state mismatch detected. Please (1) refresh the page, (2) clear your browser cache cookies, or (3) log in again.',
+        );
     }
 
     const body = new URLSearchParams({
