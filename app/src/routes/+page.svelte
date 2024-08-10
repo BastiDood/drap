@@ -10,6 +10,8 @@
     import { Accordion, AccordionItem } from '@skeletonlabs/skeleton';
     import { Github } from '@steeze-ui/simple-icons';
     import { Icon } from '@steeze-ui/svelte-icon';
+    import banner from '$lib/banner.png?url';
+    import logo from '$lib/favicon.ico?url';
 </script>
 
 <div class="prose dark:prose-invert max-w-none">
@@ -148,7 +150,10 @@
             >, was originally developed by
             <a target="_blank" href="https://github.com/BastiDood">Sebastian Luis S. Ortiz</a>
             and <a target="_blank" href="https://github.com/VeeIsForVanana">Victor Edwin E. Reyes</a> as a service
-            project under the <a target="_blank" href="https://up-csi.org/">UP Center for Student Innovations</a>.
+            project under the <a target="_blank" href="https://up-csi.org/">UP Center for Student Innovations</a>. The
+            DRAP <a target="_blank" href={logo}>logo</a> and <a target="_blank" href={banner}>banner</a> were originally
+            designed and created by
+            <a target="_blank" href="https://github.com/Anjellyrika">Angelica Julianne A. Raborar</a>.
         </p>
         <a
             target="_blank"
