@@ -30,10 +30,14 @@
             You have already submitted your lab preferences for this draft last <strong>{creationDate}</strong> at
             <strong>{creationTime}</strong>.
         </p>
-        <ol>
-            {#each labs as lab}
-                <li>{lab}</li>
-            {/each}
-        </ol>
+        {#if labs.length > 0}
+            <ol>
+                {#each labs as lab}
+                    <li>{lab}</li>
+                {/each}
+            </ol>
+        {:else}
+            <p>You have selected none of the labs. You will thus skip ahead to the lottery phase.</p>
+        {/if}
     </div>
 {/if}
