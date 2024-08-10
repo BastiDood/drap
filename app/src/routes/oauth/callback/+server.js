@@ -7,7 +7,8 @@ import { fetchJwks } from 'drap-email/jwks';
 import { jwtVerify } from 'jose';
 import { parse } from 'valibot';
 
-export async function GET({ fetch, locals: { db }, cookies, url: { searchParams } }) {
+export async function GET({ fetch, locals: { db }, cookies, setHeaders, url: { searchParams } }) {
+    setHeaders({ 'Cache-Control': 'no-store' });
     const sid = cookies.get('sid');
     if (typeof sid === 'undefined') redirect(307, '/oauth/login/');
 

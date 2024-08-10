@@ -3,7 +3,8 @@ import { error, redirect } from '@sveltejs/kit';
 import { Buffer } from 'node:buffer';
 import GOOGLE from '$lib/server/env/google';
 
-export async function GET({ locals: { db }, cookies, url: { searchParams } }) {
+export async function GET({ locals: { db }, cookies, setHeaders, url: { searchParams } }) {
+    setHeaders({ 'Cache-Control': 'no-store' });
     const sid = cookies.get('sid');
     const hasExtendedScope = searchParams.has('extended');
     if (typeof sid !== 'undefined') {
