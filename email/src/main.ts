@@ -64,6 +64,8 @@ async function listenForDraftNotifications(emailer: Emailer, signal: AbortSignal
 
                 assert(meta !== null, 'notify:draft => unexpected notification type');
                 const email = await emailer.send(await meta.emails, meta.subject, meta.message);
+                if (email === null) return null;
+
                 assert(await db.dropDraftNotification(notif.notif_id), 'cannot drop non-existent notification');
                 return email;
             });
@@ -85,6 +87,7 @@ async function listenForUserNotifications(emailer: Emailer, signal: AbortSignal)
                     `[DRAP] Assigned to ${notif.lab_id.toUpperCase()}`,
                     `Hello, ${notif.given_name} ${notif.family_name}! Kindly note that you have been assigned to the ${notif.lab_name}.`,
                 );
+                if (email === null) return null;
 
                 assert(await db.dropUserNotification(notif.notif_id), 'cannot drop non-existent notification');
                 return email;
