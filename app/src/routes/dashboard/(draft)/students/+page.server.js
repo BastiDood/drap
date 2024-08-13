@@ -40,7 +40,6 @@ export const actions = {
             await db.insertFacultyChoice(draft, lab, faculty, students);
             const postDraftRoundSubmittedNotification = await db.postDraftRoundSubmittedNotification(draft, lab);
             db.logger.info({ postDraftRoundSubmittedNotification });
-            await db.notifyDraftChannel();
 
             while (true) {
                 const count = await db.getPendingLabCountInDraft(draft);
@@ -61,6 +60,9 @@ export const actions = {
                 const autoAcknowledgeLabsWithoutPreferences = await db.autoAcknowledgeLabsWithoutPreferences(draft);
                 db.logger.info({ autoAcknowledgeLabsWithoutPreferences });
             }
+
+            // Do notification as final step to ensure consistency
+            await db.notifyDraftChannel();
         });
     },
 };

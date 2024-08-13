@@ -139,10 +139,10 @@ export const actions = {
                 if (!concludeDraft) error(400);
 
                 await db.postDraftConcluded(draft);
-                await db.notifyDraftChannel();
-
                 const syncDraftResultsToUsers = await db.syncDraftResultsToUsersWithNotification(draft);
                 db.logger.info({ syncDraftResultsToUsers });
+
+                await db.notifyDraftChannel();
                 await db.notifyUserChannel();
             });
         } catch (err) {
