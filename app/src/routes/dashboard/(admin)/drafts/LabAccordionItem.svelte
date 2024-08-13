@@ -13,6 +13,7 @@
     // eslint-disable-next-line init-declarations
     export let selected: TaggedStudentsWithLabs;
 
+    $: selected = selected.filter(val => val.lab_id === lab.lab_id);
     $: preferred = available.filter(val => val.labs[round - 1] === lab.lab_id);
     $: interested = available.filter(val => val.labs.slice(round).includes(lab.lab_id));
 
@@ -23,7 +24,7 @@
     <div class="flex justify-between" slot="summary">
         {#if lab.quota === 0}
             <h5 class="h5 text-gray-400">{lab.lab_name}</h5>
-        {:else if selected.length !== lab.quota}
+        {:else if selected.length < lab.quota}
             <h5 class="h5">{lab.lab_name}</h5>
         {:else}
             <h5 class="h5 text-warning-500">{lab.lab_name}</h5>
