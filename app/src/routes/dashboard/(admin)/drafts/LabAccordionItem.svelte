@@ -13,6 +13,7 @@
     // eslint-disable-next-line init-declarations
     export let selected: TaggedStudentsWithLabs;
 
+    $: selected = selected.filter(val => val.lab_id === lab.lab_id);
     $: preferred = available.filter(val => val.labs[round - 1] === lab.lab_id);
     $: interested = available.filter(val => val.labs.slice(round).includes(lab.lab_id));
 
