@@ -90,9 +90,11 @@ pnpm --parallel --recursive build
 
 ## Acknowledgements
 
-The DRAP project, licensed under the [GNU Affero General Public License v3], was originally developed by [Sebastian Luis S. Ortiz][BastiDood] and [Victor Edwin E. Reyes][VeeIsForVanana] as a service project under the [UP Center for Student Innovations].
+The DRAP project, licensed under the [GNU Affero General Public License v3], was originally developed by [Sebastian Luis S. Ortiz][BastiDood] and [Victor Edwin E. Reyes][VeeIsForVanana] as a service project under the [UP Center for Student Innovations]. The DRAP [logo](./app/src/lib/favicon.ico) and [banner](./app/src/lib/banner.png) were originally designed and created by [Angelica Julianne A. Raborar][Anjellyrika].
 
 [BastiDood]: https://github.com/BastiDood
 [VeeIsForVanana]: https://github.com/VeeIsForVanana
+[Anjellyrika]: https://github.com/Anjellyrika
+
 [UP Center for Student Innovations]: https://up-csi.org/
 [GNU Affero General Public License v3]: ./LICENSE
