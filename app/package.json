@@ -16,7 +16,7 @@
     "dependencies": {
         "@skeletonlabs/skeleton": "^2.10.2",
         "@steeze-ui/heroicons": "^2.4.0",
-        "@steeze-ui/simple-icons": "^1.8.0",
+        "@steeze-ui/simple-icons": "^1.9.0",
         "@steeze-ui/svelte-icon": "^1.5.0",
         "@sveltejs/kit": "^2.5.22",
         "date-fns": "catalog:",
@@ -36,7 +36,7 @@
         "@sveltejs/vite-plugin-svelte": "^3.1.1",
         "@tailwindcss/forms": "^0.5.7",
         "@tailwindcss/typography": "^0.5.14",
-        "@types/node": "^22.2.0",
+        "@types/node": "^22.3.0",
         "autoprefixer": "^10.4.20",
         "drap-database": "workspace:^",
         "drap-email": "workspace:^",
@@ -45,7 +45,7 @@
         "stylelint-config-standard": "^36.0.1",
         "stylelint-config-tailwindcss": "^0.0.7",
         "svelte-check": "^3.8.5",
-        "tailwindcss": "^3.4.9",
+        "tailwindcss": "^3.4.10",
         "vite": "^5.4.0",
         "vite-plugin-tailwind-purgecss": "^0.3.3"
     }
