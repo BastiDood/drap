@@ -95,6 +95,5 @@ The DRAP project, licensed under the [GNU Affero General Public License v3], was
 [BastiDood]: https://github.com/BastiDood
 [VeeIsForVanana]: https://github.com/VeeIsForVanana
 [Anjellyrika]: https://github.com/Anjellyrika
-
 [UP Center for Student Innovations]: https://up-csi.org/
 [GNU Affero General Public License v3]: ./LICENSE
