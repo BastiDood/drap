@@ -6,7 +6,7 @@
 
     // eslint-disable-next-line init-declarations
     export let user: QueriedLabMembers[number];
-    $: ({ email, given_name, family_name, avatar, student_number } = user);
+    $: ({ email, given_name, family_name, avatar } = user);
 </script>
 
 <a href="mailto:{email}">
@@ -14,9 +14,6 @@
     <span class="flex flex-col">
         {#if given_name.length > 0 && family_name.length > 0}
             <strong><span class="uppercase">{family_name}</span>, {given_name}</strong>
-        {/if}
-        {#if student_number !== null}
-            <span class="text-xs opacity-50">{student_number}</span>
         {/if}
         <span class="text-xs opacity-50">{email}</span>
     </span>
