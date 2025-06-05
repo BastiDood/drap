@@ -27,20 +27,34 @@ export const lab = app.table(
     },
     ({ quota }) => [check('lab_quota_non_negative_check', sql`${quota} >= 0`)],
 );
+export type Lab = typeof lab.$inferSelect;
+export type NewLab = typeof lab.$inferInsert;
 
+// match is_admin, user_id, lab_id:
+//     case FALSE, NULL, NULL: Invited User
+//     case FALSE, NULL, _:    Invited Researcher
+//     case FALSE, _, NULL:    Registered User
+//     case FALSE, _, _:       Drafted Researcher
+//     case TRUE, NULL, NULL:  Invited Admin
+//     case TRUE, NULL, _:     Invited Faculty
+//     case TRUE, _, NULL:     Registered Admin
+//     case TRUE, _, _:        Registered Faculty
 export const user = app.table(
     'user',
     {
-        id: ulid('id').primaryKey().notNull(),
+        id: ulid('id')
+            .primaryKey()
+            .notNull()
+            .default(sql`gen_random_uuid()`),
         createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
-        studentNumber: bigint('student_number', { mode: 'bigint' }).unique().notNull(),
+        studentNumber: bigint('student_number', { mode: 'bigint' }).unique(),
         isAdmin: boolean('is_admin').notNull().default(false),
-        googleUserId: text('google_user_id').unique().notNull(),
+        googleUserId: text('google_user_id').unique(),
         labId: text('lab_id').references(() => lab.id, { onUpdate: 'cascade' }),
-        email: text('email').notNull(),
+        email: text('email').notNull().unique(),
         givenName: text('given_name').notNull().default(''),
         familyName: text('family_name').notNull().default(''),
-        avatar: text('avatar').notNull().default(''),
+        avatarUrl: text('avatar').notNull().default(''),
     },
     ({ email, studentNumber }) => [
         check('user_student_number_within_bounds', sql`${studentNumber} BETWEEN 100000000 AND 1000000000`),
@@ -65,6 +79,8 @@ export const draft = app.table(
         // TODO: Exclusive index range for `activePeriod`.
     ],
 );
+export type Draft = typeof draft.$inferSelect;
+export type NewDraft = typeof draft.$inferInsert;
 
 export const studentRank = app.table(
     'student_rank',
@@ -81,6 +97,8 @@ export const studentRank = app.table(
     },
     ({ draftId, userId }) => [primaryKey({ columns: [draftId, userId] })],
 );
+export type StudentRank = typeof studentRank.$inferSelect;
+export type NewStudentRank = typeof studentRank.$inferInsert;
 
 export const facultyChoice = app.table(
     'faculty_choice',
@@ -101,6 +119,8 @@ export const facultyChoice = app.table(
         unique('faculty_choice_only_once_per_draft_round').on(draftId, round, labId).nullsNotDistinct(),
     ],
 );
+export type FacultyChoice = typeof facultyChoice.$inferSelect;
+export type NewFacultyChoice = typeof facultyChoice.$inferInsert;
 
 export const facultyChoiceUser = app.table(
     'faculty_choice_user',
@@ -111,7 +131,6 @@ export const facultyChoiceUser = app.table(
         studentUserId: ulid('student_user_id')
             .notNull()
             .references(() => user.id, { onUpdate: 'cascade' }),
-        id: bigint('id', { mode: 'bigint' }).notNull().generatedAlwaysAsIdentity().primaryKey(),
         draftId: bigint('draft_id', { mode: 'bigint' })
             .notNull()
             .references(() => draft.id, { onUpdate: 'cascade' }),
@@ -129,3 +148,5 @@ export const facultyChoiceUser = app.table(
         check('faculty_choice_user_different_student_and_faculty_users', sql`${studentUserId} <> ${facultyUserId}`),
     ],
 );
+export type FacultyChoiceUser = typeof facultyChoiceUser.$inferSelect;
+export type NewFacultyChoiceUser = typeof facultyChoiceUser.$inferInsert;

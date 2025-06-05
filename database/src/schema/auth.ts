@@ -21,6 +21,8 @@ export const pending = auth.table('pending', {
         .default(sql`gen_random_bytes(64)`),
     hasExtendedScope: boolean('has_extended_scope').notNull(),
 });
+export type Pending = typeof pending.$inferSelect;
+export type NewPending = typeof pending.$inferInsert;
 
 export const session = auth.table('session', {
     id: ulid('id').notNull().primaryKey(),
@@ -29,3 +31,5 @@ export const session = auth.table('session', {
         .notNull()
         .references(() => user.id, { onDelete: 'cascade' }),
 });
+export type Session = typeof session.$inferSelect;
+export type NewSession = typeof session.$inferInsert;
