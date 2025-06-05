@@ -168,9 +168,6 @@ importers:
 
   database:
     dependencies:
-      drap-model:
-        specifier: workspace:^
-        version: link:../model
       drizzle-orm:
         specifier: ^0.44.2
         version: 0.44.2(@types/pg@8.15.4)(pg@8.16.0)(postgres@3.4.4)
@@ -180,9 +177,6 @@ importers:
       pino:
         specifier: 'catalog:'
         version: 9.3.2
-      valibot:
-        specifier: 'catalog:'
-        version: 0.37.0(typescript@5.5.4)
     devDependencies:
       '@types/pg':
         specifier: ^8.15.4

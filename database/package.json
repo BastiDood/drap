@@ -5,11 +5,9 @@
     "private": true,
     "exports": "./src/index.ts",
     "dependencies": {
-        "drap-model": "workspace:^",
         "drizzle-orm": "^0.44.2",
         "pg": "^8.16.0",
-        "pino": "catalog:",
-        "valibot": "catalog:"
+        "pino": "catalog:"
     },
     "devDependencies": {
         "@types/pg": "^8.15.4",
