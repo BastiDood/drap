@@ -24,7 +24,7 @@ The application is composed of two components: the [main web application](./app/
 
 | Variable                     | Description                                                      |
 | ---------------------------- | ---------------------------------------------------------------- |
-| `DATABASE_URL`               | The connection string to the PostgreSQL instance.                |
+| `POSTGRES_URL`               | The connection string to the PostgreSQL instance.                |
 | `GOOGLE_OAUTH_CLIENT_ID`     | OAuth 2.0 credentials retrieved from the [Google Cloud Console]. |
 | `GOOGLE_OAUTH_CLIENT_SECRET` | OAuth 2.0 credentials retrieved from the [Google Cloud Console]. |
 | `GOOGLE_OAUTH_REDIRECT_URI`  | OAuth 2.0 credentials retrieved from the [Google Cloud Console]. |
