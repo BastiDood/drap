@@ -1,24 +1,26 @@
 <script lang="ts">
     import { ArrowDown, ArrowUp, XMark } from '@steeze-ui/heroicons';
-    import type { AvailableLabs } from 'drap-database';
     import type { Draft } from 'drap-model/draft';
     import { Icon } from '@steeze-ui/svelte-icon';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
     import { getToastStore } from '@skeletonlabs/skeleton';
+    import type { schema } from 'drap-database';
 
     import ErrorAlert from '$lib/alerts/Error.svelte';
     import WarningAlert from '$lib/alerts/Warning.svelte';
+
+    type Lab = Pick<schema.Lab, 'id' | 'name'>;
 
     // eslint-disable-next-line init-declarations
     export let draftId: Draft['draft_id'];
     // eslint-disable-next-line init-declarations
     export let maxRounds: Draft['max_rounds'];
     // eslint-disable-next-line init-declarations
-    export let availableLabs: AvailableLabs;
+    export let availableLabs: Lab[];
 
     const toast = getToastStore();
-    let selectedLabs = [] as typeof availableLabs;
+    let selectedLabs: typeof availableLabs = [];
 
     $: remaining = maxRounds - selectedLabs.length;
     $: hasRemaining = remaining > 0;
@@ -124,11 +126,11 @@
     <hr class="!border-surface-400-500-token !border-t-4" />
     {#if selectedLabs.length > 0}
         <ol class="list">
-            {#each selectedLabs as { lab_id, lab_name }, idx (lab_id)}
-                <input type="hidden" name="labs" value={lab_id} />
+            {#each selectedLabs as { id, name }, idx (id)}
+                <input type="hidden" name="labs" value={id} />
                 <li class="card variant-ghost-surface card-hover p-4">
                     <span class="text-md variant-filled-secondary badge-icon p-4 text-lg font-bold">{idx + 1}</span>
-                    <span class="flex-auto">{lab_name}</span>
+                    <span class="flex-auto">{name}</span>
                     <span class="flex gap-2">
                         <button
                             type="button"
@@ -162,11 +164,11 @@
 <hr class="!border-surface-400-500-token !border-t-4" />
 {#if availableLabs.length > 0}
     <ul class="list">
-        {#each availableLabs as { lab_id, lab_name }, idx (lab_id)}
+        {#each availableLabs as { id, name }, idx (id)}
             <li>
                 <button
                     class="card variant-soft-surface card-hover flex-auto p-4 transition"
-                    on:click={selectLab.bind(null, idx)}>{lab_name}</button
+                    on:click={selectLab.bind(null, idx)}>{name}</button
                 >
             </li>
         {/each}

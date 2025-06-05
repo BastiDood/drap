@@ -1,7 +1,7 @@
+import * as GOOGLE from '$lib/server/env/google';
 import { OAUTH_SCOPE_STRING, SENDER_SCOPE_STRING } from 'drap-model/oauth';
 import { error, redirect } from '@sveltejs/kit';
 import { Buffer } from 'node:buffer';
-import GOOGLE from '$lib/server/env/google';
 
 export async function GET({ locals: { db }, cookies, setHeaders, url: { searchParams } }) {
     setHeaders({ 'Cache-Control': 'no-store' });
@@ -12,15 +12,15 @@ export async function GET({ locals: { db }, cookies, setHeaders, url: { searchPa
         const user = await db.getUserFromValidSession(sid);
         if (user !== null) {
             if (!hasExtendedScope) redirect(307, '/');
-            if (user.user_id === null || !user.is_admin || user.lab_id !== null) error(403);
+            if (user?.googleUserId === null || !user?.isAdmin || user.labId !== null) error(403);
         }
     }
 
-    const { session_id, nonce, expiration } = await db.generatePendingSession(hasExtendedScope);
-    cookies.set('sid', session_id, { path: '/', httpOnly: true, sameSite: 'lax', expires: expiration });
+    const { id: sessionId, nonce, expiration } = await db.generatePendingSession(hasExtendedScope);
+    cookies.set('sid', sessionId, { path: '/', httpOnly: true, sameSite: 'lax', expires: expiration });
 
     // TODO: Use more secure CSRF token. Hash the entire session details instead of the public session ID.
-    const hashedSessionId = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(session_id));
+    const hashedSessionId = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(sessionId));
     const params = new URLSearchParams({
         state: Buffer.from(hashedSessionId).toString('base64url'),
         client_id: GOOGLE.OAUTH_CLIENT_ID,

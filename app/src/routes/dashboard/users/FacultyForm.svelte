@@ -1,13 +1,15 @@
 <script lang="ts">
     import { Icon } from '@steeze-ui/svelte-icon';
     import { PaperAirplane } from '@steeze-ui/heroicons';
-    import type { RegisteredLabs } from 'drap-database';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
     import { getToastStore } from '@skeletonlabs/skeleton';
+    import type { schema } from 'drap-database';
+
+    type Props = Pick<schema.Lab, 'id' | 'name'>;
 
     // eslint-disable-next-line init-declarations
-    export let labs: RegisteredLabs;
+    export let labs: Props[];
 
     const toast = getToastStore();
 </script>
@@ -47,8 +49,8 @@
         <span>Laboratory</span>
         <select required name="invite" class="variant-form-materal select">
             <option value="" disabled selected hidden>Send invite to...</option>
-            {#each labs as { lab_id, lab_name } (lab_id)}
-                <option value={lab_id}>{lab_name}</option>
+            {#each labs as { id, name } (id)}
+                <option value={id}>{name}</option>
             {/each}
         </select>
     </label>

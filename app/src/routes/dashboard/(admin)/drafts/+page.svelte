@@ -28,12 +28,12 @@
         </div>
         <InitForm />
     </div>
-{:else if draft.curr_round === null}
+{:else if draft.currRound === null}
     <div class="grid grid-cols-1 gap-4 md:grid-cols-[auto_1fr]">
         <div class="prose dark:prose-invert">
             <h3>Lottery</h3>
             <p>
-                Draft &num;{draft.draft_id} is almost done! The final stage is the lottery phase, where the remaining undrafted
+                Draft &num;{draft.id} is almost done! The final stage is the lottery phase, where the remaining undrafted
                 students are randomly assigned to their labs. Before the system automatically randomizes anything, administrators
                 are given a final chance to manually intervene with the draft results.
             </p>
@@ -58,13 +58,13 @@
                 After the randomization stage, the draft process is officially complete. All students, lab heads, and
                 administrators are notified of the final results.
             </p>
-            <ConcludeForm draft={draft.draft_id} />
+            <ConcludeForm draft={draft.id} />
         </div>
         <div class="min-w-max space-y-2">
             <nav class="card list-nav variant-ghost-warning space-y-4 p-4">
                 <h3 class="h3">Eligible for Lottery ({available.length})</h3>
                 {#if available.length > 0}
-                    <InterveneForm draft={draft.draft_id} {labs} students={available} />
+                    <InterveneForm draft={draft.id} {labs} students={available} />
                 {:else}
                     <p class="prose dark:prose-invert max-w-none">
                         Congratulations! All participants have been drafted. No action is needed here.
@@ -74,15 +74,15 @@
             <nav class="card list-nav variant-ghost-success space-y-4 p-4">
                 <h3 class="h3">Already Drafted ({selected.length})</h3>
                 <ul class="list">
-                    {#each selected as user (user.email)}
+                    {#each selected as { id, ...user } (id)}
                         <li><Student {user} /></li>
                     {/each}
                 </ul>
             </nav>
         </div>
     </div>
-{:else if draft.curr_round > 0}
-    <Dashboard {labs} {records} {available} {selected} round={draft.curr_round} />
+{:else if draft.currRound > 0}
+    <Dashboard {labs} {records} {available} {selected} round={draft.currRound} />
 {:else if available.length > 0}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
         <div class="space-y-4">
@@ -99,11 +99,11 @@
                     <em>manually</em> proceeds with the lottery stage.
                 </p>
             </section>
-            <StartForm draft={draft.draft_id} />
+            <StartForm draft={draft.id} />
         </div>
         <nav class="list-nav w-full">
             <ul class="list">
-                {#each available as user (user.email)}
+                {#each available as { id, ...user } (id)}
                     <li><Student {user} /></li>
                 {/each}
             </ul>

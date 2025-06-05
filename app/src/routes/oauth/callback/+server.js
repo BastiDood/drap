@@ -1,8 +1,8 @@
+import * as GOOGLE from '$lib/server/env/google';
 import { AuthorizationCode, IdToken, TokenResponse } from 'drap-model/oauth';
 import { error, redirect } from '@sveltejs/kit';
 import { ok, strictEqual } from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
-import GOOGLE from '$lib/server/env/google';
 import { fetchJwks } from 'drap-email/jwks';
 import { jwtVerify } from 'jose';
 import { parse } from 'valibot';
@@ -25,7 +25,7 @@ export async function GET({ fetch, locals: { db }, cookies, setHeaders, url: { s
     }
 
     const hashedSessionId = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(sid));
-    if (Buffer.from(state, 'base64url').compare(Buffer.from(hashedSessionId)) !== 0) {
+    if (Buffer.from(state, 'base64url').compare(new Uint8Array(hashedSessionId)) !== 0) {
         cookies.delete('sid', { path: '/', httpOnly: true, sameSite: 'lax' });
         error(
             400,
@@ -43,7 +43,7 @@ export async function GET({ fetch, locals: { db }, cookies, setHeaders, url: { s
 
     const { hasExtendedScope, expires } = await db.begin(async db => {
         const pending = await db.deletePendingSession(sid);
-        if (pending === null) redirect(307, '/oauth/login/');
+        if (typeof pending === 'undefined') redirect(307, '/oauth/login/');
 
         const res = await fetch('https://oauth2.googleapis.com/token', {
             method: 'POST',
@@ -63,11 +63,11 @@ export async function GET({ fetch, locals: { db }, cookies, setHeaders, url: { s
 
         const token = parse(IdToken, payload);
         ok(token.email_verified);
-        strictEqual(Buffer.from(token.nonce, 'base64url').compare(pending.nonce), 0);
+        strictEqual(Buffer.from(token.nonce, 'base64url').compare(new Uint8Array(pending.nonce)), 0);
 
         // Insert user as uninitialized by default
         await db.initUser(token.email);
-        const { is_admin, lab_id } = await db.upsertOpenIdUser(
+        const { isAdmin, labId } = await db.upsertOpenIdUser(
             token.email,
             token.sub,
             token.given_name,
@@ -76,10 +76,10 @@ export async function GET({ fetch, locals: { db }, cookies, setHeaders, url: { s
         );
         await db.insertValidSession(sid, token.email, token.exp);
 
-        if (pending.has_extended_scope && typeof refresh_token !== 'undefined' && is_admin && lab_id === null)
+        if (pending.hasExtendedScope && typeof refresh_token !== 'undefined' && isAdmin && labId === null)
             await db.upsertCandidateSender(token.email, token.exp, access_token, refresh_token);
 
-        return { hasExtendedScope: pending.has_extended_scope, expires: token.exp };
+        return { hasExtendedScope: pending.hasExtendedScope, expires: token.exp };
     });
 
     cookies.set('sid', sid, { path: '/', httpOnly: true, sameSite: 'lax', expires });

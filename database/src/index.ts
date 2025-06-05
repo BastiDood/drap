@@ -6,6 +6,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 
 import * as schema from './schema';
 import { type Loggable, timed } from './decorators';
+import { alias } from 'drizzle-orm/pg-core';
 
 function init(url: string) {
     return drizzle(url, { schema });
@@ -22,9 +23,13 @@ function assertSingle<T>(results: T[]) {
     return result;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function coerceDate(value: any) {
     return new Date(value);
 }
+
+// Ensures that no database details are leaked at runtime.
+export type { schema };
 
 export type DrizzleDatabase = ReturnType<typeof init>;
 export type DrizzleTransaction = Parameters<Parameters<DrizzleDatabase['transaction']>[0]>[0];
@@ -70,7 +75,7 @@ export class Database implements Loggable {
             .returning({
                 id: schema.pending.id,
                 expiration: schema.pending.expiration,
-                nonce: schema.pending.expiration,
+                nonce: schema.pending.nonce,
                 hasExtendedScope: schema.pending.hasExtendedScope,
             })
             .then(assertOptional);
@@ -122,7 +127,7 @@ export class Database implements Loggable {
             .then(assertSingle);
     }
 
-    @timed async updateProfileBySession(sid: string, studentNumber: bigint, given: string, family: string) {
+    @timed async updateProfileBySession(sid: string, studentNumber: bigint | null, given: string, family: string) {
         await this.#db
             .update(schema.user)
             .set({
@@ -178,7 +183,8 @@ export class Database implements Loggable {
     @timed async getFacultyAndStaff() {
         return await this.#db
             .select({
-                userId: schema.user.id,
+                id: schema.user.id,
+                googleUserId: schema.user.googleUserId,
                 email: schema.user.email,
                 givenName: schema.user.givenName,
                 familyName: schema.user.familyName,
@@ -272,6 +278,7 @@ export class Database implements Loggable {
     @timed async getStudentsInDraftTaggedByLab(draftId: bigint) {
         return await this.#db
             .select({
+                id: schema.user.id,
                 email: schema.user.email,
                 givenName: schema.user.givenName,
                 familyName: schema.user.familyName,
@@ -356,7 +363,7 @@ export class Database implements Loggable {
             )
             .where(and(eq(schema.facultyChoice.draftId, draftId), eq(schema.facultyChoice.labId, labId)));
 
-        return { lab: labInfo?.name, students, researchers, isDone: chosen.length > 0 };
+        return { lab: labInfo, students, researchers, isDone: chosen.length > 0 };
     }
 
     /** Typically invoked from within a transaction. */
@@ -539,7 +546,7 @@ export class Database implements Loggable {
                 givenName: schema.user.givenName,
                 familyName: schema.user.familyName,
                 avatarUrl: schema.user.avatarUrl,
-                isActive: isNotNull(schema.designatedSender.candidateSenderUserId),
+                isActive: isNotNull(schema.designatedSender.candidateSenderUserId).mapWith(Boolean),
             })
             .from(schema.candidateSender)
             .innerJoin(schema.user, eq(schema.candidateSender.userId, schema.user.id))
@@ -760,16 +767,20 @@ export class Database implements Loggable {
     }
 
     @timed async getFacultyChoiceRecords(draftId: bigint) {
+        const facultyUser = alias(schema.user, 'faculty_user');
+        const studentUser = alias(schema.user, 'student_user');
         return await this.#db
             .select({
                 draftId: schema.facultyChoice.draftId,
                 round: schema.facultyChoice.round,
                 labId: schema.facultyChoice.labId,
                 createdAt: schema.facultyChoice.createdAt,
-                facultyUserId: schema.facultyChoice.userId,
-                studentUserId: schema.facultyChoiceUser.studentUserId,
+                userId: schema.facultyChoice.userId,
+                userEmail: facultyUser.email,
+                studentEmail: studentUser.email,
             })
             .from(schema.facultyChoice)
+            .innerJoin(facultyUser, eq(schema.facultyChoice.userId, facultyUser.id))
             .leftJoin(
                 schema.facultyChoiceUser,
                 and(
@@ -778,6 +789,7 @@ export class Database implements Loggable {
                     eq(schema.facultyChoice.labId, schema.facultyChoiceUser.labId),
                 ),
             )
+            .innerJoin(studentUser, eq(schema.facultyChoiceUser.studentUserId, studentUser.id))
             .where(eq(schema.facultyChoice.draftId, draftId))
             .orderBy(schema.facultyChoice.round);
     }

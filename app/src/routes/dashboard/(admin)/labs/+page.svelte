@@ -10,22 +10,22 @@
     $: ({ draft, labs } = data);
 </script>
 
-{#if draft === null || draft.curr_round === null}
+{#if typeof draft === 'undefined' || draft.currRound === null}
     <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-[56ch_1fr]">
         <CreateForm />
         <QuotaForm {labs} />
     </div>
-{:else if draft.curr_round === 0}
+{:else if draft.currRound === 0}
     <QuotaForm {labs} />
 {:else}
-    {@const { draft_id, active_period_start, curr_round, max_rounds } = draft}
-    {@const startDate = format(active_period_start, 'PPP')}
-    {@const startTime = format(active_period_start, 'pp')}
+    {@const { id: draftId, activePeriodStart, currRound, maxRounds } = draft}
+    {@const startDate = format(activePeriodStart, 'PPP')}
+    {@const startTime = format(activePeriodStart, 'pp')}
     <WarningAlert>
         <span>
-            <strong>Draft &num;{draft_id}</strong> started last <strong>{startDate}</strong> at
-            <strong>{startTime}</strong> and is now in Round <strong>{curr_round}</strong> of
-            <strong>{max_rounds}</strong>. It's unsafe to update the lab quota while a draft is in progress.
+            <strong>Draft &num;{draftId}</strong> started last <strong>{startDate}</strong> at
+            <strong>{startTime}</strong> and is now in Round <strong>{currRound}</strong> of
+            <strong>{maxRounds}</strong>. It's unsafe to update the lab quota while a draft is in progress.
         </span>
     </WarningAlert>
 {/if}

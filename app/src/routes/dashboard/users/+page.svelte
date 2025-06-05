@@ -8,9 +8,9 @@
     // eslint-disable-next-line init-declarations
     export let data;
     $: ({ labs, faculty } = data);
-    $: users = groupBy(faculty, ({ user_id, lab_name }) => {
-        const isAdmin = lab_name === null;
-        if (user_id === null) return isAdmin ? 'invitedAdmins' : 'invitedHeads';
+    $: users = groupBy(faculty, ({ googleUserId, labName }) => {
+        const isAdmin = labName === null;
+        if (googleUserId === null) return isAdmin ? 'invitedAdmins' : 'invitedHeads';
         return isAdmin ? 'registeredAdmins' : 'registeredHeads';
     });
     $: invitedAdmins = users.invitedAdmins ?? [];

@@ -3,10 +3,10 @@ import { validateString } from '$lib/forms';
 
 export async function load({ locals: { db }, parent }) {
     const { user, draft } = await parent();
-    if (user.is_admin || user.user_id === null || user.lab_id !== null || user.student_number === null) error(403);
+    if (user.isAdmin || user.googleUserId === null || user.labId !== null || user.studentNumber === null) error(403);
     const [availableLabs, rankings] = await Promise.all([
         db.getLabRegistry(),
-        db.getStudentRankings(draft.draft_id, user.email),
+        db.getStudentRankings(draft.id, user.email),
     ]);
     return { draft, availableLabs, rankings };
 }
@@ -17,8 +17,9 @@ export const actions = {
         if (typeof sid === 'undefined') error(401);
 
         const user = await db.getUserFromValidSession(sid);
-        if (user === null) error(401);
-        if (user.is_admin || user.user_id === null || user.lab_id !== null || user.student_number === null) error(403);
+        if (typeof user === 'undefined') error(401);
+        if (user.isAdmin || user.googleUserId === null || user.labId !== null || user.studentNumber === null)
+            error(403);
 
         const data = await request.formData();
         const draft = BigInt(validateString(data.get('draft')));
@@ -26,7 +27,7 @@ export const actions = {
         if (labs.length <= 0) return fail(400);
 
         const maxRounds = await db.getMaxRoundInDraft(draft);
-        if (maxRounds === null) error(404);
+        if (typeof maxRounds === 'undefined') error(404);
         if (labs.length > maxRounds) error(400);
 
         if (await db.insertStudentRanking(draft, user.email, labs)) return;

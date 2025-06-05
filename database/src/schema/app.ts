@@ -1,14 +1,14 @@
 import {
-    boolean,
     bigint,
+    boolean,
     check,
+    foreignKey,
     pgSchema,
+    primaryKey,
     smallint,
     text,
     timestamp,
     unique,
-    primaryKey,
-    foreignKey,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 

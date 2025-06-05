@@ -10,21 +10,25 @@
 <script lang="ts">
     import { Avatar } from '@skeletonlabs/skeleton';
     import { Icon } from '@steeze-ui/svelte-icon';
-    import type { QueriedCandidateSenders } from 'drap-database';
     import { enhance } from '$app/forms';
+    import type { schema } from 'drap-database';
+
+    interface Props extends Pick<schema.User, 'email' | 'givenName' | 'familyName' | 'avatarUrl'> {
+        isActive: boolean;
+    }
 
     // eslint-disable-next-line init-declarations
-    export let senders: QueriedCandidateSenders;
+    export let senders: Props[];
     let disabled = false;
 </script>
 
 <dl class="list-dl">
-    {#each senders as { email, given_name, family_name, avatar, is_active } (email)}
-        {@const [action, variant, card, text, icon] = useSenderControls(is_active)}
+    {#each senders as { email, givenName, familyName, avatarUrl, isActive } (email)}
+        {@const [action, variant, card, text, icon] = useSenderControls(isActive)}
         <div class="card {card} min-w-max">
-            <span><Avatar slot="lead" src={avatar} width="w-12" /></span>
+            <span><Avatar slot="lead" src={avatarUrl} width="w-12" /></span>
             <span class="flex-auto">
-                <dt><strong><span class="uppercase">{family_name}</span>, {given_name}</strong></dt>
+                <dt><strong><span class="uppercase">{familyName}</span>, {givenName}</strong></dt>
                 <dd class="text-sm opacity-50">{email}</dd>
             </span>
             <span>

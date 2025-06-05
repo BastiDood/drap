@@ -1,14 +1,14 @@
 <script lang="ts">
-    import type { User } from 'drap-model/user';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
+    import type { schema } from 'drap-database';
 
     // eslint-disable-next-line init-declarations
-    export let studentNumber: User['student_number'];
+    export let studentNumber: schema.User['studentNumber'];
     // eslint-disable-next-line init-declarations
-    export let givenName: User['given_name'];
+    export let givenName: schema.User['givenName'];
     // eslint-disable-next-line init-declarations
-    export let familyName: User['family_name'];
+    export let familyName: schema.User['familyName'];
 </script>
 
 <form

@@ -1,21 +1,27 @@
 <script lang="ts">
     import { AccordionItem } from '@skeletonlabs/skeleton';
-    import type { Lab } from 'drap-model/lab';
+    import type { ComponentProps } from 'svelte';
     import Student from '$lib/users/Student.svelte';
-    import type { TaggedStudentsWithLabs } from 'drap-database';
+    import type { schema } from 'drap-database';
+
+    type Lab = Pick<schema.Lab, 'id' | 'name' | 'quota'>;
+    type StudentProps = ComponentProps<Student>['user'];
+    interface StudentUser extends StudentProps {
+        id: schema.User['id'];
+    }
 
     // eslint-disable-next-line init-declarations
     export let round: number;
     // eslint-disable-next-line init-declarations
     export let lab: Lab;
     // eslint-disable-next-line init-declarations
-    export let available: TaggedStudentsWithLabs;
+    export let available: StudentUser[];
     // eslint-disable-next-line init-declarations
-    export let selected: TaggedStudentsWithLabs;
+    export let selected: StudentUser[];
 
-    $: selected = selected.filter(val => val.lab_id === lab.lab_id);
-    $: preferred = available.filter(val => val.labs[round - 1] === lab.lab_id);
-    $: interested = available.filter(val => val.labs.slice(round).includes(lab.lab_id));
+    $: selected = selected.filter(val => val.labId === lab.id);
+    $: preferred = available.filter(val => val.labs[round - 1] === lab.id);
+    $: interested = available.filter(val => val.labs.slice(round).includes(lab.id));
 
     let isOpen = false;
 </script>
@@ -23,11 +29,11 @@
 <AccordionItem bind:open={isOpen}>
     <div class="flex justify-between" slot="summary">
         {#if lab.quota === 0}
-            <h5 class="h5 text-gray-400">{lab.lab_name}</h5>
+            <h5 class="h5 text-gray-400">{lab.name}</h5>
         {:else if selected.length < lab.quota}
-            <h5 class="h5">{lab.lab_name}</h5>
+            <h5 class="h5">{lab.name}</h5>
         {:else}
-            <h5 class="h5 text-warning-500">{lab.lab_name}</h5>
+            <h5 class="h5 text-warning-500">{lab.name}</h5>
         {/if}
         <span>
             <span class="variant-ghost-primary badge font-mono text-xs uppercase"
@@ -46,7 +52,7 @@
         <div class="grid grid-cols-3">
             <div>
                 Members / Already Selected
-                {#each selected as student (student.email)}
+                {#each selected as { id, ...student } (id)}
                     <Student user={student} />
                 {:else}
                     <div class="space-y-4 m-2 p-2 italic">No students selected yet.</div>
@@ -54,7 +60,7 @@
             </div>
             <div>
                 Preferred This Round
-                {#each preferred as student (student.email)}
+                {#each preferred as { id, ...student } (id)}
                     <Student user={student} />
                 {:else}
                     <div class="space-y-4 m-2 p-2 italic">No students prefer this lab for this round.</div>
@@ -62,7 +68,7 @@
             </div>
             <div>
                 Interested in Future Rounds
-                {#each interested as student (student.email)}
+                {#each interested as { id, ...student } (id)}
                     <Student user={student} />
                 {:else}
                     <div class="space-y-4 m-2 p-2 italic">No remaining students are interested in this lab.</div>

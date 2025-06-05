@@ -14,13 +14,13 @@
     } from '@steeze-ui/heroicons';
     import { AppRail, AppRailAnchor, Avatar, LightSwitch } from '@skeletonlabs/skeleton';
     import { Icon } from '@steeze-ui/svelte-icon';
-    import type { User } from 'drap-model/user';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
     import { page } from '$app/stores';
+    import type { schema } from 'drap-database';
 
     // eslint-disable-next-line init-declarations
-    export let user: User | undefined;
+    export let user: schema.User | undefined;
 
     $: ({ pathname } = $page.url);
 </script>
@@ -31,13 +31,13 @@
         <Icon src={Home} slot="lead" class="h-8" />
         <span>Home</span>
     </AppRailAnchor>
-    {#if typeof user !== 'undefined' && user.user_id !== null}
+    {#if typeof user !== 'undefined' && user.googleUserId !== null}
         <AppRailAnchor href="/profile/" selected={pathname === '/profile/'}>
-            <Avatar slot="lead" width="w-8" src={user.avatar} />
+            <Avatar slot="lead" width="w-8" src={user.avatarUrl} />
             <span>Profile</span>
         </AppRailAnchor>
-        {#if user.lab_id === null}
-            {#if user.is_admin}
+        {#if user.labId === null}
+            {#if user.isAdmin}
                 <!-- Registered Admin -->
                 <AppRailAnchor href="/dashboard/labs/" selected={pathname === '/dashboard/labs/'}>
                     <Icon src={Beaker} slot="lead" class="h-8" />
@@ -55,7 +55,7 @@
                     <Icon src={Envelope} slot="lead" class="h-8" />
                     <span>Email</span>
                 </AppRailAnchor>
-            {:else if user.student_number !== null}
+            {:else if user.studentNumber !== null}
                 <!-- Registered User -->
                 <AppRailAnchor href="/dashboard/ranks/" selected={pathname === '/dashboard/ranks/'}>
                     <Icon src={QueueList} slot="lead" class="h-8" />
@@ -68,7 +68,7 @@
                 <Icon src={Beaker} slot="lead" class="h-8" />
                 <span>Lab</span>
             </AppRailAnchor>
-            {#if user.is_admin}
+            {#if user.isAdmin}
                 <!-- Registered Faculty -->
                 <AppRailAnchor href="/dashboard/students/" selected={pathname === '/dashboard/students/'}>
                     <Icon src={AcademicCap} slot="lead" class="h-8" />

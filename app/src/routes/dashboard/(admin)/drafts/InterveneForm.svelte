@@ -1,19 +1,21 @@
 <script lang="ts">
-    import type { RegisteredLabs, TaggedStudentsWithLabs } from 'drap-database';
-    import type { Draft } from 'drap-model/draft';
     import { Icon } from '@steeze-ui/svelte-icon';
     import LotteryStudent from './LotteryStudent.svelte';
     import { ShieldExclamation } from '@steeze-ui/heroicons';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
     import { getToastStore } from '@skeletonlabs/skeleton';
+    import type { schema } from 'drap-database';
+
+    type Lab = Pick<schema.Lab, 'id' | 'name'>;
+    type User = Pick<schema.User, 'id' | 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'>;
 
     // eslint-disable-next-line init-declarations
-    export let draft: Draft['draft_id'];
+    export let draft: schema.Draft['id'];
     // eslint-disable-next-line init-declarations
-    export let labs: RegisteredLabs;
+    export let labs: Lab[];
     // eslint-disable-next-line init-declarations
-    export let students: TaggedStudentsWithLabs;
+    export let students: User[];
 
     const toast = getToastStore();
 </script>
@@ -44,7 +46,7 @@
     }}
 >
     <ul class="list">
-        {#each students as user (user.email)}
+        {#each students as { id, ...user } (id)}
             <li><LotteryStudent {labs} {user} /></li>
         {/each}
     </ul>

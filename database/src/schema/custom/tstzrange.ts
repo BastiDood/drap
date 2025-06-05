@@ -4,10 +4,13 @@ import { type CustomTypeValues, customType } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
 export class ClosedTimestampWithTimezoneRange {
+    // eslint-disable-next-line no-useless-constructor
     constructor(
         public start: Date,
         public end: Date,
-    ) {}
+    ) {
+        // Intentionally empty.
+    }
 
     static #PATTERN = /^\[(?<start>.*?),(?<end>.*?)\]$/u;
     static parse(input: string) {
