@@ -48,9 +48,7 @@ pnpm fmt:fix # prettier --write .
 
 ```bash
 # Check linting rules.
-pnpm lint:js
-pnpm lint:html
-pnpm lint:css
+pnpm lint:eslint
 pnpm lint:svelte
 
 # Perform all lints in parallel.
