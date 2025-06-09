@@ -26,7 +26,7 @@
         "@steeze-ui/simple-icons": "^1.10.1",
         "@steeze-ui/svelte-icon": "~1.5.0",
         "@sveltejs/kit": "^2.21.3",
-        "date-fns": "^3.6.0",
+        "date-fns": "^4.1.0",
         "drizzle-orm": "^0.44.2",
         "itertools": "^2.4.1",
         "jose": "^5.10.0",
@@ -35,7 +35,7 @@
         "pg": "^8.16.0",
         "pino": "^9.7.0",
         "svelte": "^4.2.20",
-        "valibot": "^0.37.0"
+        "valibot": "^1.1.0"
     },
     "devDependencies": {
         "@eslint/js": "^9.28.0",
