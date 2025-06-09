@@ -12,10 +12,10 @@ export const pending = auth.table('pending', {
     id: ulid('id')
         .notNull()
         .primaryKey()
-        .default(sql`gen_random_ulid()`),
+        .default(sql`gen_ulid()`),
     expiration: timestamp('expiration', { mode: 'date' })
         .notNull()
-        .default(sql`NOW() + INTERVAL '15 minutes'`),
+        .default(sql`now() + INTERVAL '15 minutes'`),
     nonce: bytea('nonce')
         .notNull()
         .default(sql`gen_random_bytes(64)`),

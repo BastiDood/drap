@@ -85,7 +85,6 @@ export type NewDraft = typeof draft.$inferInsert;
 export const studentRank = app.table(
     'student_rank',
     {
-        id: bigint('id', { mode: 'bigint' }).notNull().generatedAlwaysAsIdentity().primaryKey(),
         createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
         draftId: bigint('draft_id', { mode: 'bigint' })
             .notNull()
