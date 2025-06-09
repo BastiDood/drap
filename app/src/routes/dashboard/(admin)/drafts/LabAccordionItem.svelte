@@ -2,7 +2,7 @@
     import { AccordionItem } from '@skeletonlabs/skeleton';
     import type { ComponentProps } from 'svelte';
     import Student from '$lib/users/Student.svelte';
-    import type { schema } from 'drap-database';
+    import type { schema } from '$lib/server/database';
 
     type Lab = Pick<schema.Lab, 'id' | 'name' | 'quota'>;
     type StudentProps = ComponentProps<Student>['user'];

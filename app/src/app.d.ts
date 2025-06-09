@@ -1,5 +1,5 @@
 declare namespace App {
     interface Locals {
-        db: import('drap-database').Database;
+        db: import('$lib/server/database').Database;
     }
 }

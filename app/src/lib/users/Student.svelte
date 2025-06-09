@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Avatar } from '@skeletonlabs/skeleton';
-    import type { schema } from 'drap-database';
+    import type { schema } from '$lib/server/database';
 
     interface Props extends Pick<schema.User, 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'> {
         labs: string[];

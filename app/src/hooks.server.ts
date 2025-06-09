@@ -1,10 +1,10 @@
-import { Database } from 'drap-database';
 import type { PrettyStream } from 'pino-pretty';
 import { pino } from 'pino';
 
 import { dev } from '$app/environment';
 
 import * as POSTGRES from '$lib/server/env/postgres';
+import { Database } from '$lib/server/database';
 
 // eslint-disable-next-line init-declarations
 let stream: PrettyStream | undefined;

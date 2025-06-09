@@ -1,7 +1,7 @@
 <script lang="ts">
     import { fromUnixTime, getUnixTime } from 'date-fns';
     import { groupby } from 'itertools';
-    import type { schema } from 'drap-database';
+    import type { schema } from '$lib/server/database';
 
     interface ChoiceRecord extends Pick<schema.FacultyChoice, 'draftId' | 'round' | 'labId' | 'createdAt' | 'userId'> {
         userEmail: schema.User['email'];

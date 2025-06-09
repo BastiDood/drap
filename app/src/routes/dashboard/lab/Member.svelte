@@ -2,7 +2,7 @@
     import { Avatar } from '@skeletonlabs/skeleton';
     import { Icon } from '@steeze-ui/svelte-icon';
     import { UserCircle } from '@steeze-ui/heroicons';
-    import type { schema } from 'drap-database';
+    import type { schema } from '$lib/server/database';
 
     type Props = Pick<schema.User, 'email' | 'givenName' | 'familyName' | 'avatarUrl'>;
 

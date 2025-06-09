@@ -4,7 +4,7 @@
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
     import { getToastStore } from '@skeletonlabs/skeleton';
-    import type { schema } from 'drap-database';
+    import type { schema } from '$lib/server/database';
 
     type Props = Pick<schema.Lab, 'id' | 'name'>;
 

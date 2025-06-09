@@ -1,7 +1,7 @@
 <script lang="ts">
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
-    import type { schema } from 'drap-database';
+    import type { schema } from '$lib/server/database';
 
     // eslint-disable-next-line init-declarations
     export let studentNumber: schema.User['studentNumber'];

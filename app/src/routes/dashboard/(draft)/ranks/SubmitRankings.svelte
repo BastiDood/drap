@@ -1,11 +1,11 @@
 <script lang="ts">
     import { ArrowDown, ArrowUp, XMark } from '@steeze-ui/heroicons';
-    import type { Draft } from 'drap-model/draft';
+    import type { Draft } from '$lib/models/draft';
     import { Icon } from '@steeze-ui/svelte-icon';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
     import { getToastStore } from '@skeletonlabs/skeleton';
-    import type { schema } from 'drap-database';
+    import type { schema } from '$lib/server/database';
 
     import ErrorAlert from '$lib/alerts/Error.svelte';
     import WarningAlert from '$lib/alerts/Warning.svelte';

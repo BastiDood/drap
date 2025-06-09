@@ -1,10 +1,10 @@
-import { IdToken, TokenResponse } from 'drap-model/oauth';
+import { IdToken, TokenResponse } from '$lib/models/oauth';
 import assert, { strictEqual } from 'node:assert/strict';
 import { isFuture, sub } from 'date-fns';
 import { parse, pick } from 'valibot';
 import type { Database } from '$lib/server/database';
-import { GmailMessageSendResult } from 'drap-model/email';
-import type { User } from 'drap-model/user';
+import { GmailMessageSendResult } from '$lib/models/email';
+import type { User } from '$lib/models/user';
 import { createMimeMessage } from 'mimetext/node';
 import { fetchJwks } from './jwks';
 import { jwtVerify } from 'jose';

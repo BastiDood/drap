@@ -2,7 +2,7 @@
     import { Avatar, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
-    import type { schema } from 'drap-database';
+    import type { schema } from '$lib/server/database';
 
     type Student = Pick<schema.User, 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'>;
 

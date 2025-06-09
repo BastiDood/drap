@@ -11,7 +11,7 @@
     import { Avatar } from '@skeletonlabs/skeleton';
     import { Icon } from '@steeze-ui/svelte-icon';
     import { enhance } from '$app/forms';
-    import type { schema } from 'drap-database';
+    import type { schema } from '$lib/server/database';
 
     interface Props extends Pick<schema.User, 'email' | 'givenName' | 'familyName' | 'avatarUrl'> {
         isActive: boolean;

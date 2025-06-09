@@ -1,5 +1,5 @@
 import * as GOOGLE from '$lib/server/env/google';
-import { OAUTH_SCOPE_STRING, SENDER_SCOPE_STRING } from 'drap-model/oauth';
+import { OAUTH_SCOPE_STRING, SENDER_SCOPE_STRING } from '$lib/models/oauth';
 import { error, redirect } from '@sveltejs/kit';
 import { Buffer } from 'node:buffer';
 

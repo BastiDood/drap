@@ -1,6 +1,6 @@
 <script lang="ts">
     import { Avatar } from '@skeletonlabs/skeleton';
-    import type { schema } from 'drap-database';
+    import type { schema } from '$lib/server/database';
 
     type Lab = Pick<schema.Lab, 'id' | 'name'>;
     type User = Pick<schema.User, 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'>;

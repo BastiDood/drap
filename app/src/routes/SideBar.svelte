@@ -17,7 +17,7 @@
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
     import { page } from '$app/stores';
-    import type { schema } from 'drap-database';
+    import type { schema } from '$lib/server/database';
 
     // eslint-disable-next-line init-declarations
     export let user: schema.User | undefined;

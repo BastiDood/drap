@@ -1,9 +1,9 @@
 import * as GOOGLE from '$lib/server/env/google';
-import { AuthorizationCode, IdToken, TokenResponse } from 'drap-model/oauth';
+import { AuthorizationCode, IdToken, TokenResponse } from '$lib/models/oauth';
 import { error, redirect } from '@sveltejs/kit';
 import { ok, strictEqual } from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
-import { fetchJwks } from 'drap-email/jwks';
+import { fetchJwks } from '$lib/server/email/jwks';
 import { jwtVerify } from 'jose';
 import { parse } from 'valibot';
 
