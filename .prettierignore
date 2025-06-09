@@ -2,6 +2,7 @@
 .svelte-kit
 build
 dist
+drizzle
 node_modules
 .env
 .env.*
