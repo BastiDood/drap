@@ -66,7 +66,7 @@
                 {#if available.length > 0}
                     <InterveneForm draft={draft.id} {labs} students={available} />
                 {:else}
-                    <p class="prose dark:prose-invert max-w-none">
+                    <p class="prose max-w-none dark:prose-invert">
                         Congratulations! All participants have been drafted. No action is needed here.
                     </p>
                 {/if}

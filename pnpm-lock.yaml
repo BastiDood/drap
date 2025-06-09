@@ -7,10 +7,92 @@ settings:
 importers:
 
   .:
+    dependencies:
+      '@skeletonlabs/skeleton':
+        specifier: ^2.10.2
+        version: 2.10.2(svelte@4.2.18)
+      '@steeze-ui/heroicons':
+        specifier: ^2.4.0
+        version: 2.4.0
+      '@steeze-ui/simple-icons':
+        specifier: ^1.9.0
+        version: 1.9.0
+      '@steeze-ui/svelte-icon':
+        specifier: ^1.5.0
+        version: 1.5.0(svelte@4.2.18)
+      '@sveltejs/kit':
+        specifier: ^2.5.22
+        version: 2.5.22(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.4.0(@types/node@22.3.0)))(svelte@4.2.18)(vite@5.4.0(@types/node@22.3.0))
+      date-fns:
+        specifier: ^3.6.0
+        version: 3.6.0
+      drizzle-orm:
+        specifier: ^0.44.2
+        version: 0.44.2(@types/pg@8.15.4)(pg@8.16.0)(postgres@3.4.4)
+      itertools:
+        specifier: ^2.3.2
+        version: 2.3.2
+      jose:
+        specifier: ^5.6.3
+        version: 5.6.3
+      just-group-by:
+        specifier: ^2.2.0
+        version: 2.2.0
+      mimetext:
+        specifier: ^3.0.24
+        version: 3.0.24
+      pg:
+        specifier: ^8.16.0
+        version: 8.16.0
+      pino:
+        specifier: ^9.3.2
+        version: 9.3.2
+      postgres:
+        specifier: ^3.4.4
+        version: 3.4.4
+      svelte:
+        specifier: ^4.2.18
+        version: 4.2.18
+      valibot:
+        specifier: ^0.37.0
+        version: 0.37.0(typescript@5.5.4)
     devDependencies:
       '@eslint/js':
         specifier: ^9.9.0
         version: 9.9.0
+      '@linthtml/linthtml':
+        specifier: ^0.10.1
+        version: 0.10.1(typescript@5.5.4)
+      '@linthtml/linthtml-config-recommended':
+        specifier: ^0.1.0
+        version: 0.1.0(@linthtml/linthtml@0.10.1(typescript@5.5.4))
+      '@skeletonlabs/tw-plugin':
+        specifier: ^0.4.0
+        version: 0.4.0(tailwindcss@3.4.10)
+      '@sveltejs/adapter-node':
+        specifier: ^5.2.2
+        version: 5.2.2(@sveltejs/kit@2.5.22(@sveltejs/vite-plugin-svelte@3.1.1(svelte@4.2.18)(vite@5.4.0(@types/node@22.3.0)))(svelte@4.2.18)(vite@5.4.0(@types/node@22.3.0)))
+      '@sveltejs/vite-plugin-svelte':
+        specifier: ^3.1.1
+        version: 3.1.1(svelte@4.2.18)(vite@5.4.0(@types/node@22.3.0))
+      '@tailwindcss/forms':
+        specifier: ^0.5.7
+        version: 0.5.7(tailwindcss@3.4.10)
+      '@tailwindcss/typography':
+        specifier: ^0.5.14
+        version: 0.5.14(tailwindcss@3.4.10)
+      '@types/node':
+        specifier: ^22.3.0
+        version: 22.3.0
+      '@types/pg':
+        specifier: ^8.15.4
+        version: 8.15.4
+      autoprefixer:
+        specifier: ^10.4.20
+        version: 10.4.20(postcss@8.4.41)
+      drizzle-kit:
+        specifier: ^0.31.1
+        version: 0.31.1
       eslint:
         specifier: ^9.9.0
         version: 9.9.0(jiti@1.21.6)
@@ -23,6 +105,9 @@ importers:
       globals:
         specifier: ^15.9.0
         version: 15.9.0
+      pino-pretty:
+        specifier: ^13.0.0
+        version: 13.0.0
       prettier:
         specifier: ^3.3.3
         version: 3.3.3
@@ -41,12 +126,24 @@ importers:
       stylelint-config-tailwindcss:
         specifier: ^0.0.7
         version: 0.0.7(stylelint@16.8.1(typescript@5.5.4))(tailwindcss@3.4.10)
+      svelte-check:
+        specifier: ^3.8.5
+        version: 3.8.5(postcss-load-config@4.0.2(postcss@8.4.41))(postcss@8.4.41)(svelte@4.2.18)
       svelte-eslint-parser:
         specifier: ^0.41.0
         version: 0.41.0(svelte@4.2.18)
+      tailwindcss:
+        specifier: ^3.4.10
+        version: 3.4.10
       typescript-eslint:
         specifier: ^8.1.0
         version: 8.1.0(eslint@9.9.0(jiti@1.21.6))(typescript@5.5.4)
+      vite:
+        specifier: ^5.4.0
+        version: 5.4.0(@types/node@22.3.0)
+      vite-plugin-tailwind-purgecss:
+        specifier: ^0.3.3
+        version: 0.3.3(tailwindcss@3.4.10)(vite@5.4.0(@types/node@22.3.0))
 
   app:
     dependencies:

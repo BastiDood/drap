@@ -112,7 +112,7 @@
     }}
 >
     <input type="hidden" name="draft" value={draftId} />
-    <div class="card {cardVariant} prose dark:prose-invert max-w-none p-4 transition">
+    <div class="card {cardVariant} prose max-w-none p-4 transition dark:prose-invert">
         <p>Lab preferences are ordered by preference from top (most preferred) to bottom (least preferred).</p>
         <p>
             {#if hasRemaining}

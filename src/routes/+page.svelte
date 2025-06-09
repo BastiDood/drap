@@ -14,7 +14,7 @@
     import logo from '$lib/favicon.ico?url';
 </script>
 
-<div class="prose dark:prose-invert max-w-none">
+<div class="prose max-w-none dark:prose-invert">
     <section>
         <h1>DRAP: Draft Ranking Automated Processor</h1>
         <p>
@@ -158,7 +158,7 @@
         <a
             target="_blank"
             href="https://github.com/BastiDood/drap"
-            class="btn btn-lg variant-filled-primary no-underline"
+            class="variant-filled-primary btn btn-lg no-underline"
         >
             <span><Icon src={Github} class="h-8" /></span>
             <span>BastiDood/drap</span>
@@ -166,7 +166,7 @@
         <a
             target="_blank"
             href="https://github.com/BastiDood/drap/fork"
-            class="btn btn-lg variant-filled-secondary no-underline"
+            class="variant-filled-secondary btn btn-lg no-underline"
         >
             <span><Icon src={DocumentDuplicate} class="h-8" /></span>
             <span>Fork the Repository</span>
@@ -174,12 +174,12 @@
         <a
             target="_blank"
             href="https://github.com/BastiDood/drap/issues/new"
-            class="btn btn-lg variant-filled-error no-underline"
+            class="variant-filled-error btn btn-lg no-underline"
         >
             <span><Icon src={BugAnt} class="h-8" /></span>
             <span>Report a Bug</span>
         </a>
-        <a href="/privacy/" class="btn btn-lg variant-filled-tertiary no-underline">
+        <a href="/privacy/" class="variant-filled-tertiary btn btn-lg no-underline">
             <span><Icon src={LockClosed} class="h-8" /></span>
             <span>Privacy Policy</span>
         </a>

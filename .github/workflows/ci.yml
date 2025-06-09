@@ -32,17 +32,7 @@ jobs:
             ${{ runner.os }}-pnpm-store-
       - name: Install Dependencies
         run: pnpm install
-      - name: Check Formatters
-        run: pnpm fmt
-      - name: Check HTML
-        run: pnpm --filter=drap-app lint:html
-      - name: Check CSS
-        run: pnpm --filter=drap-app lint:css
-      - name: Synchronize SvelteKit
-        run: pnpm --filter=drap-app sync
-      - name: Check JavaScript
-        run: pnpm lint:js
-      - name: Check Svelte
-        run: pnpm --filter=drap-app lint:svelte
+      - name: Run All Lints in Parallel
+        run: pnpm lint
       - name: Build App
-        run: pnpm --filter=drap-app build
+        run: pnpm build

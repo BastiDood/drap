@@ -10,7 +10,7 @@
     $: startTime = format(activePeriodStart, 'pp');
 </script>
 
-<div class="card prose dark:prose-invert max-w-none p-4">
+<div class="card prose max-w-none p-4 dark:prose-invert">
     <p>
         {#if currRound === null}
             <strong>Draft &num;{id}</strong> (which opened last <strong>{startDate}</strong> at

@@ -47,7 +47,7 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
             {@const labChoices = choices.filter(({ labId: choiceLab }) => choiceLab === labId)}
             {@const [choice] = labChoices}
             {#if typeof choice !== 'undefined'}
-                <div class="card bg-surface-500 space-y-1 p-4">
+                <div class="card space-y-1 bg-surface-500 p-4">
                     <strong class="uppercase">{labId}</strong> (Round {choice.round ?? 'Lottery'}):
                     {#if choice.userEmail === null || choice.studentEmail === null}
                         {#if choice.userEmail === null}
