@@ -1,8 +1,8 @@
 <script lang="ts">
+    import type { ComponentProps } from 'svelte';
     import Faculty from '$lib/users/Faculty.svelte';
     import Invited from '$lib/users/Invited.svelte';
     import type { schema } from 'drap-database';
-    import type { ComponentProps } from 'svelte';
 
     type FacultyPropsUser = ComponentProps<Faculty>['user'];
     interface FacultyUser extends FacultyPropsUser {
