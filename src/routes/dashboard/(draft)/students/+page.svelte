@@ -4,19 +4,18 @@
   import WarningAlert from '$lib/alerts/Warning.svelte';
   import { getOrdinalSuffix } from '$lib/ordinal';
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let data;
-  $: ({
+  const { data } = $props();
+  const {
     draft: { id, currRound },
     students,
     researchers,
     lab: { name, quota },
     isDone,
-  } = data);
+  } = $derived(data);
 
-  let draftees = [] as string[];
-  $: remainingQuota = quota - researchers.length;
-  $: remainingDraftees = remainingQuota - draftees.length;
+  let draftees = $state<string[]>([]);
+  const remainingQuota = $derived(quota - researchers.length);
+  const remainingDraftees = $derived(remainingQuota - draftees.length);
 </script>
 
 {#if currRound === null}

@@ -1,12 +1,11 @@
-<script>
+<script lang="ts">
   import './app.css';
   import { AppShell, Toast, initializeStores } from '@skeletonlabs/skeleton';
   import SideBar from './SideBar.svelte';
   import banner from '$lib/banner.png?url';
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let data;
-  $: ({ user } = data);
+  const { data, children } = $props();
+  const { user } = $derived(data);
 
   initializeStores();
 </script>
@@ -17,6 +16,8 @@
 
 <Toast />
 <AppShell>
-  <SideBar slot="sidebarLeft" {user} />
-  <div class="h-full space-y-4 p-4"><slot /></div>
+  {#snippet sidebarLeft()}
+    <SideBar {user} />
+  {/snippet}
+  <div class="h-full space-y-4 p-4">{@render children?.()}</div>
 </AppShell>

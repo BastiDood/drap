@@ -25,12 +25,12 @@
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';
 
-  interface Props extends Pick<schema.User, 'email' | 'givenName' | 'familyName' | 'avatarUrl'> {
+  interface User extends Pick<schema.User, 'email' | 'givenName' | 'familyName' | 'avatarUrl'> {
     isActive: boolean;
   }
 
   // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let senders: Props[];
+  export let senders: User[];
   let disabled = false;
 </script>
 

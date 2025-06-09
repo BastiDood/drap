@@ -4,8 +4,11 @@
   import { getToastStore } from '@skeletonlabs/skeleton';
   import type { schema } from '$lib/server/database';
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let draft: schema.Draft['id'];
+  interface Props {
+    draft: schema.Draft['id'];
+  }
+
+  const { draft }: Props = $props();
 
   const toast = getToastStore();
 </script>

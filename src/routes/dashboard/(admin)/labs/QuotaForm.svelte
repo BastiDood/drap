@@ -6,11 +6,13 @@
   import { getToastStore } from '@skeletonlabs/skeleton';
   import type { schema } from '$lib/server/database';
 
-  type Props = Pick<schema.Lab, 'id' | 'name' | 'quota'>;
+  type Lab = Pick<schema.Lab, 'id' | 'name' | 'quota'>;
+  interface Props {
+    labs: Lab[];
+  }
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let labs: Props[];
-  $: total = labs.reduce((total, { quota }) => total + quota, 0);
+  const { labs }: Props = $props();
+  const total = $derived(labs.reduce((total, { quota }) => total + quota, 0));
 
   const toast = getToastStore();
 </script>

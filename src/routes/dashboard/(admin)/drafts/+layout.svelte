@@ -1,9 +1,8 @@
-<script>
+<script lang="ts">
   import { format } from 'date-fns';
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let data;
-  $: ({ draft } = data);
+  const { data, children } = $props();
+  const { draft } = $derived(data);
 </script>
 
 {#if typeof draft !== 'undefined'}
@@ -24,4 +23,4 @@
     </p>
   </div>
 {/if}
-<slot />
+{@render children?.()}

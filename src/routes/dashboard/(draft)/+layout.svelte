@@ -1,13 +1,12 @@
-<script>
+<script lang="ts">
   import { format } from 'date-fns';
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let data;
-  $: ({
+  const { data, children } = $props();
+  const {
     draft: { id, currRound, maxRounds, activePeriodStart },
-  } = data);
-  $: startDate = format(activePeriodStart, 'PPP');
-  $: startTime = format(activePeriodStart, 'pp');
+  } = $derived(data);
+  const startDate = $derived(format(activePeriodStart, 'PPP'));
+  const startTime = $derived(format(activePeriodStart, 'pp'));
 </script>
 
 <div class="card prose max-w-none p-4 dark:prose-invert">
@@ -23,4 +22,4 @@
     {/if}
   </p>
 </div>
-<slot />
+{@render children?.()}

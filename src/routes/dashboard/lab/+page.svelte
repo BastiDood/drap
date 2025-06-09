@@ -1,8 +1,8 @@
-<script>
+<script lang="ts">
   import Member from './Member.svelte';
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let data;
-  $: ({ lab, heads, members } = data);
+
+  const { data } = $props();
+  const { lab, heads, members } = $derived(data);
 </script>
 
 <h2 class="h2">{lab}</h2>

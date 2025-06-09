@@ -1,11 +1,3 @@
-<script lang="ts" context="module">
-  const enum TabType {
-    Students = 0,
-    Labs = 1,
-    Logs = 2,
-  }
-</script>
-
 <script lang="ts">
   import {
     AcademicCap,
@@ -21,12 +13,12 @@
   import LabAccordionItem from './LabAccordionItem.svelte';
   import Student from '$lib/users/Student.svelte';
   import SystemLogsTab from './SystemLogsTab.svelte';
-
+  import { TabType } from './TabType';
   import type { schema } from '$lib/server/database';
 
   type Lab = Pick<schema.Lab, 'id' | 'name' | 'quota'>;
-  type SystemLogsProps = ComponentProps<SystemLogsTab>;
-  type StudentPropsUser = ComponentProps<Student>['user'];
+  type SystemLogsProps = ComponentProps<typeof SystemLogsTab>;
+  type StudentPropsUser = ComponentProps<typeof Student>['user'];
 
   interface StudentUser extends StudentPropsUser {
     id: schema.User['id'];

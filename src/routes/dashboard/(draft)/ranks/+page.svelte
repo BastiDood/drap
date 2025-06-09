@@ -1,16 +1,15 @@
-<script>
+<script lang="ts">
   import { ProgressBar } from '@skeletonlabs/skeleton';
   import SubmitRankings from './SubmitRankings.svelte';
   import WarningAlert from '$lib/alerts/Warning.svelte';
   import { format } from 'date-fns';
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let data;
-  $: ({
+  const { data } = $props();
+  const {
     draft: { id: draftId, currRound, maxRounds },
     availableLabs,
     rankings,
-  } = data);
+  } = $derived(data);
 </script>
 
 {#if typeof rankings === 'undefined'}

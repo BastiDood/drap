@@ -3,12 +3,8 @@
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let studentNumber: schema.User['studentNumber'];
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let givenName: schema.User['givenName'];
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let familyName: schema.User['familyName'];
+  type Props = Pick<schema.User, 'studentNumber' | 'givenName' | 'familyName'>;
+  const { studentNumber, givenName, familyName }: Props = $props();
 </script>
 
 <form
