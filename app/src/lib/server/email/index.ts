@@ -2,7 +2,7 @@ import { IdToken, TokenResponse } from 'drap-model/oauth';
 import assert, { strictEqual } from 'node:assert/strict';
 import { isFuture, sub } from 'date-fns';
 import { parse, pick } from 'valibot';
-import type { Database } from 'drap-database';
+import type { Database } from '$lib/server/database';
 import { GmailMessageSendResult } from 'drap-model/email';
 import type { User } from 'drap-model/user';
 import { createMimeMessage } from 'mimetext/node';
@@ -29,7 +29,7 @@ export class Emailer {
     /** Must be called within a transaction context for correctness. */
     async #getLatestCredentials() {
         const creds = await this.#db.getDesignatedSenderCredentials();
-        if (creds === null) return null;
+        if (typeof creds === 'undefined') return;
         if (isFuture(sub(creds.expiration, { minutes: 10 }))) return creds;
 
         // Refresh the access token if necessary
@@ -37,7 +37,7 @@ export class Emailer {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: new URLSearchParams({
-                refresh_token: creds.refresh_token,
+                refresh_token: creds.refreshToken,
                 client_id: this.#clientId,
                 client_secret: this.#clientSecret,
                 grant_type: 'refresh_token',
@@ -46,7 +46,7 @@ export class Emailer {
 
         const json = await res.json();
         const { id_token, access_token } = parse(TokenResponse, json);
-        creds.access_token = access_token; // overwritten credentials
+        creds.accessToken = access_token; // overwritten credentials
 
         const { payload } = await jwtVerify(id_token, fetchJwks, {
             issuer: 'https://accounts.google.com',
@@ -54,17 +54,17 @@ export class Emailer {
         });
 
         const token = parse(pick(IdToken, ['exp']), payload);
-        await this.#db.upsertCandidateSender(creds.email, token.exp, creds.access_token);
+        await this.#db.upsertCandidateSender(creds.email, token.exp, creds.accessToken);
         return creds;
     }
 
     /** Must be called within a transaction context for correctness. */
     async send(to: Email[], subject: string, data: string) {
         const creds = await this.#getLatestCredentials();
-        if (creds === null) return null;
+        if (typeof creds === 'undefined') return;
 
         const message = createMimeMessage();
-        message.setSender({ name: `[DRAP] ${creds.given_name} ${creds.family_name}`, addr: creds.email });
+        message.setSender({ name: `[DRAP] ${creds.givenName} ${creds.familyName}`, addr: creds.email });
         message.setRecipient(to);
         message.setSubject(subject);
         message.addMessage({ contentType: 'text/plain', data });
@@ -72,7 +72,7 @@ export class Emailer {
         const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
             method: 'POST',
             headers: {
-                Authorization: `Bearer ${creds.access_token}`,
+                Authorization: `Bearer ${creds.accessToken}`,
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({ raw: message.asEncoded() }),

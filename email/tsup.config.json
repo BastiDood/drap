@@ -1,9 +1,0 @@
-{
-    "target": "esnext",
-    "format": "esm",
-    "entry": ["src/main.ts"],
-    "noExternal": ["drap-database", "drap-model"],
-    "splitting": true,
-    "sourcemap": true,
-    "clean": true
-}
