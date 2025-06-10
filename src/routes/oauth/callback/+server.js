@@ -48,7 +48,7 @@ export async function GET({ fetch, locals: { db }, cookies, setHeaders, url: { s
 
     const token = parse(IdToken, payload);
     ok(token.email_verified);
-    strictEqual(Buffer.from(token.nonce, 'base64url').compare(Buffer.from(pending.nonce)), 0);
+    strictEqual(Buffer.from(token.nonce, 'base64url').compare(pending.nonce), 0);
 
     // Insert user as uninitialized by default
     const userId = await db.initUser(token.email);

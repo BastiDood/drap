@@ -1,7 +1,6 @@
 import * as GOOGLE from '$lib/server/env/google';
 import { OAUTH_SCOPE_STRING, SENDER_SCOPE_STRING } from '$lib/models/oauth';
 import { error, redirect } from '@sveltejs/kit';
-import { Buffer } from 'node:buffer';
 
 export async function GET({ locals: { db }, cookies, setHeaders, url: { searchParams } }) {
   setHeaders({ 'Cache-Control': 'no-store' });
@@ -27,7 +26,7 @@ export async function GET({ locals: { db }, cookies, setHeaders, url: { searchPa
   const params = new URLSearchParams({
     client_id: GOOGLE.OAUTH_CLIENT_ID,
     redirect_uri: GOOGLE.OAUTH_REDIRECT_URI,
-    nonce: Buffer.from(nonce).toString('base64url'),
+    nonce: nonce.toString('base64url'),
     hd: 'up.edu.ph',
     response_type: 'code',
   });
