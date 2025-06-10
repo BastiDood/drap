@@ -51,7 +51,7 @@ export async function GET({ fetch, locals: { db }, cookies, setHeaders, url: { s
     strictEqual(Buffer.from(token.nonce, 'base64url').compare(Buffer.from(pending.nonce)), 0);
 
     // Insert user as uninitialized by default
-    await db.initUser(token.email);
+    const userId = await db.initUser(token.email);
     const { isAdmin, labId } = await db.upsertOpenIdUser(
       token.email,
       token.sub,
@@ -59,7 +59,7 @@ export async function GET({ fetch, locals: { db }, cookies, setHeaders, url: { s
       token.family_name,
       token.picture,
     );
-    await db.insertValidSession(sid, token.email, token.exp);
+    await db.insertValidSession(sid, userId, token.exp);
 
     if (
       pending.hasExtendedScope &&
@@ -67,7 +67,7 @@ export async function GET({ fetch, locals: { db }, cookies, setHeaders, url: { s
       isAdmin &&
       labId === null
     )
-      await db.upsertCandidateSender(token.email, token.exp, access_token, refresh_token);
+      await db.upsertCandidateSender(userId, token.exp, access_token, refresh_token);
 
     return { hasExtendedScope: pending.hasExtendedScope, expires: token.exp };
   });
