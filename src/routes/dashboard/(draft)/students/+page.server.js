@@ -1,4 +1,4 @@
-import { validateEmail, validateString } from '$lib/forms';
+import { validateString } from '$lib/forms';
 import assert from 'node:assert/strict';
 import { error } from '@sveltejs/kit';
 
@@ -24,7 +24,7 @@ export const actions = {
 
     const data = await request.formData();
     const draft = BigInt(validateString(data.get('draft')));
-    const students = data.getAll('students').map(validateEmail);
+    const students = data.getAll('students').map(validateString);
 
     const { quota, selected } = await db.getLabQuotaAndSelectedStudentCountInDraft(
       draft,
@@ -36,7 +36,7 @@ export const actions = {
     if (total > quota) error(403);
 
     const lab = user.labId;
-    const faculty = user.email;
+    const faculty = user.id;
     await db.begin(async db => {
       await db.insertFacultyChoice(draft, lab, faculty, students);
 

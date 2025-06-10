@@ -362,6 +362,7 @@ export class Database implements Loggable {
 
     const students = await this.#db
       .select({
+        id: schema.user.id,
         email: schema.user.email,
         givenName: schema.user.givenName,
         familyName: schema.user.familyName,

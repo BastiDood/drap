@@ -25,7 +25,8 @@
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';
 
-  interface User extends Pick<schema.User, 'email' | 'givenName' | 'familyName' | 'avatarUrl'> {
+  interface User
+    extends Pick<schema.User, 'id' | 'email' | 'givenName' | 'familyName' | 'avatarUrl'> {
     isActive: boolean;
   }
 
@@ -35,7 +36,7 @@
 </script>
 
 <dl class="list-dl">
-  {#each senders as { email, givenName, familyName, avatarUrl, isActive } (email)}
+  {#each senders as { id, email, givenName, familyName, avatarUrl, isActive } (email)}
     {@const [action, variant, card, text, icon] = useSenderControls(isActive)}
     <div class="card {card} min-w-max">
       <span><Avatar slot="lead" src={avatarUrl} width="w-12" /></span>
@@ -55,7 +56,7 @@
             };
           }}
         >
-          <input type="hidden" name="email" value={email} />
+          <input type="hidden" name="user-id" value={id} />
           <button
             type="submit"
             {disabled}

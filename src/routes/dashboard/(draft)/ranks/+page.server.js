@@ -12,7 +12,7 @@ export async function load({ locals: { db }, parent }) {
     error(403);
   const [availableLabs, rankings] = await Promise.all([
     db.getLabRegistry(),
-    db.getStudentRankings(draft.id, user.email),
+    db.getStudentRankings(draft.id, user.id),
   ]);
   return { draft, availableLabs, rankings };
 }

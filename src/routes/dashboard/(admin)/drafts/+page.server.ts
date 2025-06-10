@@ -110,7 +110,7 @@ export const actions = {
     if (pairs.length === 0) return;
 
     await db.begin(async db => {
-      await db.insertLotteryChoices(draft, user.email, pairs);
+      await db.insertLotteryChoices(draft, user.id, pairs);
       // TODO: Reinstate notifications channel.
       // await db.postLotteryInterventionNotifications(draft, pairs);
       // await db.notifyDraftChannel();
