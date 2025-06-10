@@ -1,6 +1,6 @@
-import { validateString } from '$lib/forms';
 import assert from 'node:assert/strict';
 import { error } from '@sveltejs/kit';
+import { validateString } from '$lib/forms';
 
 export async function load({ locals: { db }, parent }) {
   const { user, draft } = await parent();
