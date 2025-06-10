@@ -24,13 +24,7 @@ export async function GET({ locals: { db }, cookies, setHeaders, url: { searchPa
     expires: expiration,
   });
 
-  // TODO: Use more secure CSRF token. Hash the entire session details instead of the public session ID.
-  const hashedSessionId = await crypto.subtle.digest(
-    'SHA-256',
-    new TextEncoder().encode(sessionId),
-  );
   const params = new URLSearchParams({
-    state: Buffer.from(hashedSessionId).toString('base64url'),
     client_id: GOOGLE.OAUTH_CLIENT_ID,
     redirect_uri: GOOGLE.OAUTH_REDIRECT_URI,
     nonce: Buffer.from(nonce).toString('base64url'),

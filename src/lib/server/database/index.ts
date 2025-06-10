@@ -63,7 +63,7 @@ export class Database implements Loggable {
       .returning({
         id: schema.pending.id,
         expiration: schema.pending.expiration,
-        nonce: schema.pending.expiration,
+        nonce: schema.pending.nonce,
       })
       .then(assertSingle);
   }
