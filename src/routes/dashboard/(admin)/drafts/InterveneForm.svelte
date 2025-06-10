@@ -13,12 +13,13 @@
     'id' | 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
   >;
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let draft: schema.Draft['id'];
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let labs: Lab[];
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let students: User[];
+  interface Props {
+    draft: schema.Draft['id'];
+    labs: Lab[];
+    students: User[];
+  }
+
+  const { draft, labs, students }: Props = $props();
 
   const toast = getToastStore();
 </script>

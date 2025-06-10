@@ -9,15 +9,20 @@
     studentEmail: schema.User['email'];
   }
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let records: ChoiceRecord[];
+  interface Props {
+    records: ChoiceRecord[];
+  }
 
-  let showAutomated = false;
+  const { records }: Props = $props();
 
-  $: events = Array.from(
-    groupby(records, ({ createdAt }) => getUnixTime(createdAt)),
-    ([timestamp, events]) => [timestamp, Array.from(events)] as const,
-  ).filter(([_, [event]]) => event?.userEmail !== null || showAutomated);
+  let showAutomated = $state(false);
+
+  const events = $derived(
+    Array.from(
+      groupby(records, ({ createdAt }) => getUnixTime(createdAt)),
+      ([timestamp, events]) => [timestamp, Array.from(events)] as const,
+    ).filter(([_, [event]]) => event?.userEmail !== null || showAutomated),
+  );
 </script>
 
 <!--

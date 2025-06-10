@@ -5,9 +5,8 @@
   import CreateForm from './CreateForm.svelte';
   import QuotaForm from './QuotaForm.svelte';
 
-  // eslint-disable-next-line
-  export let data;
-  $: ({ draft, labs } = data);
+  const { data } = $props();
+  const { draft, labs } = $derived(data);
 </script>
 
 {#if typeof draft === 'undefined' || draft.currRound === null}

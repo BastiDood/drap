@@ -16,29 +16,31 @@
   import { getOrdinalSuffix } from '$lib/ordinal';
   import { groupby } from 'itertools';
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let data;
-  $: ({
+  const { data } = $props();
+  const {
     did,
     draft: { currRound, maxRounds, activePeriodStart, activePeriodEnd },
     events,
-  } = data);
+  } = $derived(data);
 
   // TODO: How do we merge the creation and conclusion events into the same array?
-  $: entries = Array.from(
-    groupby(events, ({ createdAt }) => getUnixTime(createdAt)),
-    ([timestamp, events]) => [timestamp, Array.from(events)] as const,
+  const entries = $derived(
+    Array.from(
+      groupby(events, ({ createdAt }) => getUnixTime(createdAt)),
+      ([timestamp, events]) => [timestamp, Array.from(events)] as const,
+    ),
   );
 
-  $: startDateTime = format(activePeriodStart, 'PPPpp');
-  $: startIsoString = activePeriodStart.toISOString();
-  $: end =
+  const startDateTime = $derived(format(activePeriodStart, 'PPPpp'));
+  const startIsoString = $derived(activePeriodStart.toISOString());
+  const end = $derived(
     activePeriodEnd === null
       ? null
       : {
           endDateTime: format(activePeriodEnd, 'PPPpp'),
           endIsoString: activePeriodEnd.toISOString(),
-        };
+        },
+  );
 </script>
 
 <h2 class="h2">Draft &num;{did}</h2>

@@ -9,14 +9,15 @@
     'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
   >;
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let disabled: boolean;
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let draft: schema.Draft['id'];
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let students: Student[];
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let drafteeEmails: schema.User['email'][];
+  interface Props {
+    disabled: boolean;
+    draft: schema.Draft['id'];
+    students: Student[];
+    drafteeEmails: schema.User['email'][];
+  }
+
+  // eslint-disable-next-line prefer-const
+  let { disabled, draft, students, drafteeEmails = $bindable() }: Props = $props();
 </script>
 
 <form
@@ -43,7 +44,9 @@
   <ListBox multiple rounded="rounded" {disabled}>
     {#each students as { email, givenName, familyName, avatarUrl, studentNumber } (email)}
       <ListBoxItem bind:group={drafteeEmails} name="students" value={email}>
-        <Avatar slot="lead" src={avatarUrl} />
+        {#snippet lead()}
+          <Avatar src={avatarUrl} />
+        {/snippet}
         <div class="flex flex-col">
           <strong><span class="uppercase">{familyName}</span>, {givenName}</strong>
           {#if studentNumber !== null}

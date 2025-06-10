@@ -1,7 +1,7 @@
 <script>
   import ErrorAlert from '$lib/alerts/Error.svelte';
-  import { page } from '$app/stores';
-  $: ({ status, error } = $page);
+  import { page } from '$app/state';
+  const { status, error } = $derived(page);
 </script>
 
 {#if status === 499}

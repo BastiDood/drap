@@ -81,65 +81,83 @@
     </p>
     <Accordion autocollapse>
       <AccordionItem>
-        <Icon slot="lead" src={AcademicCap} class="h-8" />
-        <strong slot="summary">For Students</strong>
-        <ol slot="content">
-          <li>
-            Go to your <a href="/profile/">profile</a> and set your student number.
-            <em>Note that this can only be done once.</em>
-          </li>
-          <li>Set your <a href="/dashboard/ranks/">lab rankings and preferences</a>.</li>
-          <li>Track the progress of the draft in the <a href="/history/">history</a> page.</li>
-          <li>Wait until the draft is finished.</li>
-        </ol>
+        {#snippet lead()}
+          <Icon src={AcademicCap} class="h-8" />
+        {/snippet}
+        {#snippet summary()}
+          <strong>For Students</strong>
+        {/snippet}
+        {#snippet content()}
+          <ol>
+            <li>
+              Go to your <a href="/profile/">profile</a> and set your student number.
+              <em>Note that this can only be done once.</em>
+            </li>
+            <li>Set your <a href="/dashboard/ranks/">lab rankings and preferences</a>.</li>
+            <li>Track the progress of the draft in the <a href="/history/">history</a> page.</li>
+            <li>Wait until the draft is finished.</li>
+          </ol>
+        {/snippet}
       </AccordionItem>
       <AccordionItem>
-        <Icon slot="lead" src={Beaker} class="h-8" />
-        <strong slot="summary">For Lab Heads</strong>
-        <ol slot="content">
-          <li>Wait for the administrators to open a draft.</li>
-          <li>Track the progress of the draft in the <a href="/history/">history</a> page.</li>
-          <li>
-            Visit the <a href="/dashboard/students/">students</a> page to select draftees who chose your
-            lab.
-          </li>
-          <li>Wait until the regular draft process to finish.</li>
-          <li>
-            During the lottery stage, negotiate with the draft administrators to resolve the
-            membership of any remaining draftees.
-          </li>
-          <li>
-            Finally, after the manual interventions, wait for the results of the randomized
-            round-robin lottery (if there are any undrafted students).
-          </li>
-        </ol>
+        {#snippet lead()}
+          <Icon src={Beaker} class="h-8" />
+        {/snippet}
+        {#snippet summary()}
+          <strong>For Lab Heads</strong>
+        {/snippet}
+        {#snippet content()}
+          <ol>
+            <li>Wait for the administrators to open a draft.</li>
+            <li>Track the progress of the draft in the <a href="/history/">history</a> page.</li>
+            <li>
+              Visit the <a href="/dashboard/students/">students</a> page to select draftees who chose
+              your lab.
+            </li>
+            <li>Wait until the regular draft process to finish.</li>
+            <li>
+              During the lottery stage, negotiate with the draft administrators to resolve the
+              membership of any remaining draftees.
+            </li>
+            <li>
+              Finally, after the manual interventions, wait for the results of the randomized
+              round-robin lottery (if there are any undrafted students).
+            </li>
+          </ol>
+        {/snippet}
       </AccordionItem>
       <AccordionItem>
-        <Icon slot="lead" src={ShieldExclamation} class="h-8" />
-        <strong slot="summary">For Administrators</strong>
-        <ol slot="content">
-          <li>Set the <a href="/dashboard/labs/">lab quota</a>.</li>
-          <li>Initialize a <a href="/dashboard/drafts/">new draft</a>.</li>
-          <li>Wait for participating draftees to register their lab preferences.</li>
-          <li>
-            Officially <a href="/dashboard/drafts/">start the draft</a>. This will notify all of the
-            concerned lab heads of the interested draftees.
-          </li>
-          <li>Audit the progress of the draft in the <a href="/history/">history</a> page.</li>
-          <li>Wait for all rounds of the draft to finish.</li>
-          <li>
-            After the regular draft process, <a href="/dashboard/drafts/">resolve</a> the membership
-            of the remaining undrafted students by negotiating with the lab heads.
-          </li>
-          <li>
-            <a href="/dashboard/drafts/">Apply</a> the necessary manual interventions (i.e., assigning
-            students to their labs based on the agreed terms between labs)
-          </li>
-          <li>
-            <a href="/dashboard/drafts/">Conclude</a> the draft to proceed to the randomized round-robin
-            stage.
-          </li>
-        </ol>
+        {#snippet lead()}
+          <Icon src={ShieldExclamation} class="h-8" />
+        {/snippet}
+        {#snippet summary()}
+          <strong>For Administrators</strong>
+        {/snippet}
+        {#snippet content()}
+          <ol>
+            <li>Set the <a href="/dashboard/labs/">lab quota</a>.</li>
+            <li>Initialize a <a href="/dashboard/drafts/">new draft</a>.</li>
+            <li>Wait for participating draftees to register their lab preferences.</li>
+            <li>
+              Officially <a href="/dashboard/drafts/">start the draft</a>. This will notify all of
+              the concerned lab heads of the interested draftees.
+            </li>
+            <li>Audit the progress of the draft in the <a href="/history/">history</a> page.</li>
+            <li>Wait for all rounds of the draft to finish.</li>
+            <li>
+              After the regular draft process, <a href="/dashboard/drafts/">resolve</a> the membership
+              of the remaining undrafted students by negotiating with the lab heads.
+            </li>
+            <li>
+              <a href="/dashboard/drafts/">Apply</a> the necessary manual interventions (i.e., assigning
+              students to their labs based on the agreed terms between labs)
+            </li>
+            <li>
+              <a href="/dashboard/drafts/">Conclude</a> the draft to proceed to the randomized round-robin
+              stage.
+            </li>
+          </ol>
+        {/snippet}
       </AccordionItem>
     </Accordion>
   </section>

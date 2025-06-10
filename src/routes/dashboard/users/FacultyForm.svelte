@@ -6,10 +6,12 @@
   import { getToastStore } from '@skeletonlabs/skeleton';
   import type { schema } from '$lib/server/database';
 
-  type Props = Pick<schema.Lab, 'id' | 'name'>;
+  type Lab = Pick<schema.Lab, 'id' | 'name'>;
+  interface Props {
+    labs: Lab[];
+  }
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let labs: Props[];
+  const { labs }: Props = $props();
 
   const toast = getToastStore();
 </script>

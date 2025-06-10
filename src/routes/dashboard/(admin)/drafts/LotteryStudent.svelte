@@ -8,11 +8,13 @@
     'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
   >;
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let labs: Lab[];
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let user: User;
-  $: ({ email, givenName, familyName, avatarUrl, studentNumber } = user);
+  interface Props {
+    labs: Lab[];
+    user: User;
+  }
+
+  const { labs, user }: Props = $props();
+  const { email, givenName, familyName, avatarUrl, studentNumber } = $derived(user);
 </script>
 
 <span>

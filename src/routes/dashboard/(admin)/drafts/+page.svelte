@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import Dashboard from './Dashboard.svelte';
   import Student from '$lib/users/Student.svelte';
   import WarningAlert from '$lib/alerts/Warning.svelte';
@@ -8,9 +8,8 @@
   import InterveneForm from './InterveneForm.svelte';
   import StartForm from './StartForm.svelte';
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let data;
-  $: ({ draft, labs, records, available, selected } = data);
+  const { data } = $props();
+  const { draft, labs, records, available, selected } = $derived(data);
 </script>
 
 {#if draft === null}

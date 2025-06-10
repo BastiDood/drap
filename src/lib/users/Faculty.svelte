@@ -4,13 +4,16 @@
   import { UserCircle } from '@steeze-ui/heroicons';
   import type { schema } from '$lib/server/database';
 
-  interface Props extends Pick<schema.User, 'email' | 'givenName' | 'familyName' | 'avatarUrl'> {
+  interface User extends Pick<schema.User, 'email' | 'givenName' | 'familyName' | 'avatarUrl'> {
     labName: string | null;
   }
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let user: Props;
-  $: ({ email, givenName, familyName, avatarUrl, labName } = user);
+  interface Props {
+    user: User;
+  }
+
+  const { user }: Props = $props();
+  const { email, givenName, familyName, avatarUrl, labName } = $derived(user);
 </script>
 
 <a href="mailto:{email}">

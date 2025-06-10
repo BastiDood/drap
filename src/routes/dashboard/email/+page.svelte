@@ -6,13 +6,14 @@
   import ErrorAlert from '$lib/alerts/Error.svelte';
   import WarningAlert from '$lib/alerts/Warning.svelte';
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let data;
-  $: ({
+  const { data } = $props();
+  const {
     senders,
     user: { email },
-  } = data);
-  $: disabled = typeof senders.find(({ email: other }) => other === email) !== 'undefined';
+  } = $derived(data);
+  const disabled = $derived(
+    typeof senders.find(({ email: other }) => other === email) !== 'undefined',
+  );
 </script>
 
 <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-[auto_1fr]">

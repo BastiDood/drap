@@ -1,12 +1,11 @@
-<script>
+<script lang="ts">
   import ProfileForm from './ProfileForm.svelte';
   import WarningAlert from '$lib/alerts/Warning.svelte';
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let data;
-  $: ({
+  const { data } = $props();
+  const {
     user: { studentNumber, givenName, familyName },
-  } = data);
+  } = $derived(data);
 </script>
 
 <h1 class="h1">User Profile</h1>

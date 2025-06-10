@@ -11,20 +11,21 @@
   import WarningAlert from '$lib/alerts/Warning.svelte';
 
   type Lab = Pick<schema.Lab, 'id' | 'name'>;
+  interface Props {
+    draftId: Draft['draft_id'];
+    maxRounds: Draft['max_rounds'];
+    availableLabs: Lab[];
+  }
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let draftId: Draft['draft_id'];
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let maxRounds: Draft['max_rounds'];
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let availableLabs: Lab[];
+  // eslint-disable-next-line prefer-const
+  let { draftId, maxRounds, availableLabs }: Props = $props();
 
   const toast = getToastStore();
-  let selectedLabs: typeof availableLabs = [];
+  let selectedLabs = $state<typeof availableLabs>([]);
 
-  $: remaining = maxRounds - selectedLabs.length;
-  $: hasRemaining = remaining > 0;
-  $: cardVariant = hasRemaining ? 'variant-ghost-primary' : 'variant-ghost-secondary';
+  const remaining = $derived(maxRounds - selectedLabs.length);
+  const hasRemaining = $derived(remaining > 0);
+  const cardVariant = $derived(hasRemaining ? 'variant-ghost-primary' : 'variant-ghost-secondary');
 
   function selectLab(index: number) {
     if (selectedLabs.length >= maxRounds) return;
@@ -142,21 +143,21 @@
             <button
               type="button"
               class="variant-filled-success btn-icon btn-icon-sm"
-              on:click={moveLabUp.bind(null, idx)}
+              onclick={moveLabUp.bind(null, idx)}
             >
               <Icon src={ArrowUp} class="size-6" />
             </button>
             <button
               type="button"
               class="variant-filled-warning btn-icon btn-icon-sm"
-              on:click={moveLabDown.bind(null, idx)}
+              onclick={moveLabDown.bind(null, idx)}
             >
               <Icon src={ArrowDown} class="size-6" />
             </button>
             <button
               type="button"
               class="variant-filled-error btn-icon btn-icon-sm"
-              on:click={resetSelection.bind(null, idx)}
+              onclick={resetSelection.bind(null, idx)}
             >
               <Icon src={XMark} class="size-6" />
             </button>
@@ -175,7 +176,7 @@
       <li>
         <button
           class="card variant-soft-surface card-hover flex-auto p-4 transition"
-          on:click={selectLab.bind(null, idx)}>{name}</button
+          onclick={selectLab.bind(null, idx)}>{name}</button
         >
       </li>
     {/each}

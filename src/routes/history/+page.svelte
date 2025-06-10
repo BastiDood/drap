@@ -1,12 +1,11 @@
-<script>
+<script lang="ts">
   import { CheckCircle, Clock, Scale, Sparkles } from '@steeze-ui/heroicons';
   import { Icon } from '@steeze-ui/svelte-icon';
   import WarningAlert from '$lib/alerts/Warning.svelte';
   import { format } from 'date-fns';
 
-  // eslint-disable-next-line
-  export let data;
-  $: ({ drafts } = data);
+  const { data } = $props();
+  const { drafts } = $derived(data);
 </script>
 
 <h2 class="h2">Draft History</h2>
