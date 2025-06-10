@@ -283,7 +283,7 @@ export class Database implements Loggable {
         activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceDate),
       })
       .from(schema.draft)
-      .orderBy(desc(sql`_ DESC NULLS FIRST`));
+      .orderBy(({ activePeriodStart }) => sql`${desc(activePeriodStart)} NULLS FIRST`);
   }
 
   @timed async getDraftById(id: bigint) {
