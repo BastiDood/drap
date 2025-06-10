@@ -1,13 +1,13 @@
 <script lang="ts">
     import { ArrowRight } from '@steeze-ui/heroicons';
-    import type { Draft } from 'drap-model/draft';
     import { Icon } from '@steeze-ui/svelte-icon';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
     import { getToastStore } from '@skeletonlabs/skeleton';
+    import type { schema } from 'drap-database';
 
     // eslint-disable-next-line init-declarations
-    export let draft: Draft['draft_id'];
+    export let draft: schema.Draft['id'];
 
     const toast = getToastStore();
 </script>

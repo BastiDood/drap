@@ -1,13 +1,15 @@
 <script lang="ts">
     import { Icon } from '@steeze-ui/svelte-icon';
     import { PencilSquare } from '@steeze-ui/heroicons';
-    import type { RegisteredLabs } from 'drap-database';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
     import { getToastStore } from '@skeletonlabs/skeleton';
+    import type { schema } from 'drap-database';
+
+    type Props = Pick<schema.Lab, 'id' | 'name' | 'quota'>;
 
     // eslint-disable-next-line init-declarations
-    export let labs: RegisteredLabs;
+    export let labs: Props[];
     $: total = labs.reduce((total, { quota }) => total + quota, 0);
 
     const toast = getToastStore();
@@ -52,15 +54,15 @@
                 </tr>
             </thead>
             <tbody>
-                {#each labs as { lab_id, lab_name, quota } (lab_id)}
+                {#each labs as { id, name, quota } (id)}
                     {@const placeholder = quota.toString()}
                     <tr>
-                        <td class="!align-middle">{lab_name}</td>
+                        <td class="!align-middle">{name}</td>
                         <td class="table-cell-fit"
                             ><input
                                 type="number"
                                 min="0"
-                                name={lab_id}
+                                name={id}
                                 {placeholder}
                                 class="input variant-form-material px-2 py-1"
                             /></td

@@ -1,19 +1,21 @@
 <script lang="ts">
     import { Avatar } from '@skeletonlabs/skeleton';
     import { Icon } from '@steeze-ui/svelte-icon';
-    import type { QueriedLabMembers } from 'drap-database';
     import { UserCircle } from '@steeze-ui/heroicons';
+    import type { schema } from 'drap-database';
+
+    type Props = Pick<schema.User, 'email' | 'givenName' | 'familyName' | 'avatarUrl'>;
 
     // eslint-disable-next-line init-declarations
-    export let user: QueriedLabMembers[number];
-    $: ({ email, given_name, family_name, avatar } = user);
+    export let user: Props;
+    $: ({ email, givenName, familyName, avatarUrl } = user);
 </script>
 
 <a href="mailto:{email}">
-    <Avatar src={avatar} width="w-14"><Icon src={UserCircle} class="w-14" /></Avatar>
+    <Avatar src={avatarUrl} width="w-14"><Icon src={UserCircle} class="w-14" /></Avatar>
     <span class="flex flex-col">
-        {#if given_name.length > 0 && family_name.length > 0}
-            <strong><span class="uppercase">{family_name}</span>, {given_name}</strong>
+        {#if givenName.length > 0 && familyName.length > 0}
+            <strong><span class="uppercase">{familyName}</span>, {givenName}</strong>
         {/if}
         <span class="text-xs opacity-50">{email}</span>
     </span>

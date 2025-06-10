@@ -3,11 +3,19 @@
     "version": "0.0.0",
     "type": "module",
     "private": true,
-    "exports": "./src/database.ts",
+    "exports": "./src/index.ts",
+    "scripts": {
+        "db:generate": "drizzle-kit generate",
+        "db:migrate": "drizzle-kit migrate",
+        "db:studio": "drizzle-kit studio"
+    },
     "dependencies": {
-        "drap-model": "workspace:^",
-        "pino": "catalog:",
-        "postgres": "^3.4.4",
-        "valibot": "catalog:"
+        "drizzle-orm": "^0.44.2",
+        "pg": "^8.16.0",
+        "pino": "catalog:"
+    },
+    "devDependencies": {
+        "@types/pg": "^8.15.4",
+        "drizzle-kit": "^0.31.1"
     }
 }

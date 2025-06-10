@@ -1,19 +1,19 @@
 <script lang="ts">
     import { Avatar, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
-    import type { Draft } from 'drap-model/draft';
-    import type { QueriedLabMembers } from 'drap-database';
-    import type { User } from 'drap-model/user';
     import { assert } from '$lib/assert';
     import { enhance } from '$app/forms';
+    import type { schema } from 'drap-database';
+
+    type Student = Pick<schema.User, 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'>;
 
     // eslint-disable-next-line init-declarations
     export let disabled: boolean;
     // eslint-disable-next-line init-declarations
-    export let draft: Draft['draft_id'];
+    export let draft: schema.Draft['id'];
     // eslint-disable-next-line init-declarations
-    export let students: QueriedLabMembers;
+    export let students: Student[];
     // eslint-disable-next-line init-declarations
-    export let draftees: User['email'][];
+    export let drafteeEmails: schema.User['email'][];
 </script>
 
 <form
@@ -38,13 +38,13 @@
     <input type="hidden" name="draft" value={draft} />
     <button type="submit" class="variant-filled-primary btn w-full">Submit</button>
     <ListBox multiple rounded="rounded" {disabled}>
-        {#each students as { email, given_name, family_name, avatar, student_number } (email)}
-            <ListBoxItem bind:group={draftees} name="students" value={email}>
-                <Avatar slot="lead" src={avatar} />
+        {#each students as { email, givenName, familyName, avatarUrl, studentNumber } (email)}
+            <ListBoxItem bind:group={drafteeEmails} name="students" value={email}>
+                <Avatar slot="lead" src={avatarUrl} />
                 <div class="flex flex-col">
-                    <strong><span class="uppercase">{family_name}</span>, {given_name}</strong>
-                    {#if student_number !== null}
-                        <span class="text-sm opacity-50">{student_number}</span>
+                    <strong><span class="uppercase">{familyName}</span>, {givenName}</strong>
+                    {#if studentNumber !== null}
+                        <span class="text-sm opacity-50">{studentNumber}</span>
                     {/if}
                     <span class="text-xs opacity-50">{email}</span>
                 </div>

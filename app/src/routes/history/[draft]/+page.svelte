@@ -20,22 +20,22 @@
     export let data;
     $: ({
         did,
-        draft: { curr_round, max_rounds, active_period_start, active_period_end },
+        draft: { currRound, maxRounds, activePeriodStart, activePeriodEnd },
         events,
     } = data);
 
     // TODO: How do we merge the creation and conclusion events into the same array?
     $: entries = Array.from(
-        groupby(events, ({ created_at }) => getUnixTime(created_at)),
+        groupby(events, ({ createdAt }) => getUnixTime(createdAt)),
         ([timestamp, events]) => [timestamp, Array.from(events)] as const,
     );
 
-    $: startDateTime = format(active_period_start, 'PPPpp');
-    $: startIsoString = active_period_start.toISOString();
+    $: startDateTime = format(activePeriodStart, 'PPPpp');
+    $: startIsoString = activePeriodStart.toISOString();
     $: end =
-        active_period_end === null
+        activePeriodEnd === null
             ? null
-            : { endDateTime: format(active_period_end, 'PPPpp'), endIsoString: active_period_end.toISOString() };
+            : { endDateTime: format(activePeriodEnd, 'PPPpp'), endIsoString: activePeriodEnd.toISOString() };
 </script>
 
 <h2 class="h2">Draft &num;{did}</h2>
@@ -44,9 +44,9 @@
     <!-- Concluded Draft -->
     <Success>
         This draft was held from <strong><time datetime={startIsoString}>{startDateTime}</time></strong>
-        &ndash; <strong><time datetime={endIsoString}>{endDateTime}</time></strong> over {max_rounds} rounds.
+        &ndash; <strong><time datetime={endIsoString}>{endDateTime}</time></strong> over {maxRounds} rounds.
     </Success>
-{:else if curr_round === null}
+{:else if currRound === null}
     <!-- Lottery Stage -->
     <ProgressBar meter="bg-primary-600-300-token" />
     <div class="alert variant-ghost-secondary">
@@ -56,7 +56,7 @@
             in the lottery stage.
         </div>
     </div>
-{:else if curr_round === 0}
+{:else if currRound === 0}
     <!-- Registration Stage -->
     <div class="alert variant-ghost-tertiary">
         <Icon src={Clock} class="size-8" />
@@ -67,12 +67,12 @@
     </div>
 {:else}
     <!-- Regular Draft Process -->
-    <ProgressBar max={max_rounds} value={curr_round} meter="bg-primary-600-300-token" />
+    <ProgressBar max={maxRounds} value={currRound} meter="bg-primary-600-300-token" />
     <div class="alert variant-soft-secondary">
         <Icon src={Scale} class="size-8" />
         <div class="alert-message">
             This draft started last <strong><time datetime={startIsoString}>{startDateTime}</time></strong>
-            and is currently in Round {curr_round} of {max_rounds} in the regular draft process.
+            and is currently in Round {currRound} of {maxRounds} in the regular draft process.
         </div>
     </div>
 {/if}
@@ -103,14 +103,14 @@
                 >
                 <h4 class="h4 mb-2"><time datetime={date.toISOString()}>{heading}</time></h4>
                 <ol class="list">
-                    {#each events as { is_system, lab_id, round }}
+                    {#each events as { isSystem, labId, round }}
                         {#if round !== null}
                             {@const ordinal = round + getOrdinalSuffix(round)}
-                            {#if is_system}
+                            {#if isSystem}
                                 <li class="card variant-soft-surface px-3 py-1.5">
                                     <Icon src={Cog} class="size-4" theme="micro" />
                                     <span class="flex-auto"
-                                        >The system has skipped the <strong class="uppercase">{lab_id}</strong> for the {ordinal}
+                                        >The system has skipped the <strong class="uppercase">{labId}</strong> for the {ordinal}
                                         round due to insufficient quota and/or zero demand.</span
                                     >
                                 </li>
@@ -118,16 +118,16 @@
                                 <li class="card variant-ghost-secondary px-3 py-1.5">
                                     <Icon src={UserGroup} class="size-4" theme="micro" />
                                     <span class="flex-auto"
-                                        >The <strong class="uppercase">{lab_id}</strong> has selected their {ordinal} batch
+                                        >The <strong class="uppercase">{labId}</strong> has selected their {ordinal} batch
                                         of draftees.</span
                                     >
                                 </li>
                             {/if}
-                        {:else if is_system}
+                        {:else if isSystem}
                             <li class="card variant-ghost-error px-3 py-1.5">
                                 <Icon src={ExclamationTriangle} class="size-4" theme="micro" />
                                 <span class="flex-auto"
-                                    >A system-automated event for the <strong class="uppercase">{lab_id}</strong>
+                                    >A system-automated event for the <strong class="uppercase">{labId}</strong>
                                     occurred during a lottery. This should be impossible. Kindly
                                     <a href="https://github.com/BastiDood/drap/issues/new" class="anchor"
                                         >file an issue</a
@@ -138,7 +138,7 @@
                             <li class="card variant-ghost-tertiary px-3 py-1.5">
                                 <Icon src={ArrowPath} class="size-4" theme="micro" />
                                 <span class="flex-auto"
-                                    >The <strong class="uppercase">{lab_id}</strong> has obtained a batch of draftees from
+                                    >The <strong class="uppercase">{labId}</strong> has obtained a batch of draftees from
                                     the lottery round.</span
                                 >
                             </li>

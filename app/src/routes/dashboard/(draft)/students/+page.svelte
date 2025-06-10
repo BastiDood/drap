@@ -7,10 +7,10 @@
     // eslint-disable-next-line init-declarations
     export let data;
     $: ({
-        draft: { draft_id, curr_round },
+        draft: { id, currRound },
         students,
         researchers,
-        lab: { lab_name, quota },
+        lab: { name, quota },
         isDone,
     } = data);
 
@@ -19,11 +19,11 @@
     $: remainingDraftees = remainingQuota - draftees.length;
 </script>
 
-{#if curr_round === null}
+{#if currRound === null}
     <WarningAlert
         >The draft is now in the lottery stage. Kindly contact the draft administrators on how to proceed.</WarningAlert
     >
-{:else if curr_round === 0}
+{:else if currRound === 0}
     <WarningAlert
         >Students are still registering for this draft. Kindly wait for the draft administrators to officially open the
         draft.</WarningAlert
@@ -34,14 +34,14 @@
         required until the next one.</WarningAlert
     >
 {:else if students.length > 0}
-    {@const suffix = getOrdinalSuffix(curr_round)}
+    {@const suffix = getOrdinalSuffix(currRound)}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
         <div class="prose dark:prose-invert">
             <h2>Draft Picks</h2>
             <p>
-                Welcome to the draft! The <strong>{lab_name}</strong> has been allocated <strong>{quota}</strong> slots
-                in total. As a lab head, you may pick at most <strong>{remainingDraftees}</strong> more students in this
-                round. The following students have selected your lab as their <strong>{curr_round}{suffix}</strong>
+                Welcome to the draft! The <strong>{name}</strong> has been allocated <strong>{quota}</strong> slots in
+                total. As a lab head, you may pick at most <strong>{remainingDraftees}</strong> more students in this
+                round. The following students have selected your lab as their <strong>{currRound}{suffix}</strong>
                 choice. Simply click on the student's name to toggle the selection. By default, none are selected. Note that
                 you <em>not</em> required to exhaust your entire allocation in this round. You may hold off on some of your
                 slots for the next round.
@@ -52,7 +52,7 @@
                 heads and administrators will be notified when this happens.
             </p>
         </div>
-        <RankingsForm draft={draft_id} {students} bind:draftees disabled={remainingDraftees <= 0} />
+        <RankingsForm draft={id} {students} bind:drafteeEmails={draftees} disabled={remainingDraftees <= 0} />
     </div>
 {:else}
     <WarningAlert
@@ -63,13 +63,13 @@
     <h3 class="h3">Drafted Students from Previous Rounds</h3>
     <nav class="list-nav">
         <ul>
-            {#each researchers as { email, given_name, family_name, avatar, student_number } (email)}
+            {#each researchers as { email, givenName, familyName, avatarUrl, studentNumber } (email)}
                 <a href="mailto:{email}">
-                    <Avatar src={avatar} />
+                    <Avatar src={avatarUrl} />
                     <div class="flex flex-col">
-                        <strong><span class="uppercase">{family_name}</span>, {given_name}</strong>
-                        {#if student_number !== null}
-                            <span class="text-sm opacity-50">{student_number}</span>
+                        <strong><span class="uppercase">{familyName}</span>, {givenName}</strong>
+                        {#if studentNumber !== null}
+                            <span class="text-sm opacity-50">{studentNumber}</span>
                         {/if}
                         <span class="text-xs opacity-50">{email}</span>
                     </div>

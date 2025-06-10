@@ -7,23 +7,23 @@
     // eslint-disable-next-line init-declarations
     export let data;
     $: ({
-        draft: { draft_id, curr_round, max_rounds },
+        draft: { id: draftId, currRound, maxRounds },
         availableLabs,
         rankings,
     } = data);
 </script>
 
-{#if rankings === null}
-    <SubmitRankings draftId={draft_id} maxRounds={max_rounds} {availableLabs} />
+{#if typeof rankings === 'undefined'}
+    <SubmitRankings {draftId} {maxRounds} {availableLabs} />
 {:else}
-    {@const { created_at, labs } = rankings}
-    {@const creationDate = format(created_at, 'PPP')}
-    {@const creationTime = format(created_at, 'pp')}
-    {#if curr_round === null}
+    {@const { createdAt, labs } = rankings}
+    {@const creationDate = format(createdAt, 'PPP')}
+    {@const creationTime = format(createdAt, 'pp')}
+    {#if currRound === null}
         <WarningAlert>A lottery is currently ongoing. You may join again soon in the next draft.</WarningAlert>
     {:else}
         <WarningAlert>A draft is currently ongoing. You may no longer register.</WarningAlert>
-        <ProgressBar max={max_rounds} value={curr_round} meter="bg-primary-600-300-token" />
+        <ProgressBar max={maxRounds} value={currRound} meter="bg-primary-600-300-token" />
     {/if}
     <div class="card variant-ghost-secondary prose dark:prose-invert max-w-none p-4">
         <p>

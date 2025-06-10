@@ -3,7 +3,7 @@ import { validateEmail } from '$lib/forms';
 
 export async function load({ locals: { db }, parent }) {
     const { user } = await parent();
-    if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
+    if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
     return { senders: await db.getCandidateSenders() };
 }
 
@@ -13,8 +13,8 @@ export const actions = {
         if (typeof sid === 'undefined') error(401);
 
         const user = await db.getUserFromValidSession(sid);
-        if (user === null) error(401);
-        if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
+        if (typeof user === 'undefined') error(401);
+        if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
 
         const data = await request.formData();
         const email = validateEmail(data.get('email'));
@@ -26,8 +26,8 @@ export const actions = {
         if (typeof sid === 'undefined') error(401);
 
         const user = await db.getUserFromValidSession(sid);
-        if (user === null) error(401);
-        if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
+        if (typeof user === 'undefined') error(401);
+        if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
 
         const data = await request.formData();
         const email = validateEmail(data.get('email'));
@@ -35,8 +35,9 @@ export const actions = {
         await db.begin(async db => {
             const upsertDesignatedSender = await db.upsertDesignatedSender(email);
             db.logger.info({ upsertDesignatedSender });
-            await db.notifyDraftChannel();
-            await db.notifyUserChannel();
+            // TODO: Reinstate notifications channel.
+            // await db.notifyDraftChannel();
+            // await db.notifyUserChannel();
         });
     },
     async remove({ locals: { db }, cookies, request }) {
@@ -44,8 +45,8 @@ export const actions = {
         if (typeof sid === 'undefined') error(401);
 
         const user = await db.getUserFromValidSession(sid);
-        if (user === null) error(401);
-        if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
+        if (typeof user === 'undefined') error(401);
+        if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
 
         const data = await request.formData();
         const email = validateEmail(data.get('email'));

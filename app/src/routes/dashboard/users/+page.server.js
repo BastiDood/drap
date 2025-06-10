@@ -3,8 +3,7 @@ import { validateEmail, validateString } from '$lib/forms';
 
 export async function load({ locals: { db }, parent }) {
     const { user } = await parent();
-    if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
-    // TODO: Migrate to SQL pipelining.
+    if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
     const [labs, faculty] = await Promise.all([db.getLabRegistry(), db.getFacultyAndStaff()]);
     return { labs, faculty };
 }
@@ -15,8 +14,8 @@ export const actions = {
         if (typeof sid === 'undefined') error(401);
 
         const user = await db.getUserFromValidSession(sid);
-        if (user === null) error(401);
-        if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
+        if (typeof user === 'undefined') error(401);
+        if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
 
         const data = await request.formData();
         const email = validateEmail(data.get('email'));
@@ -28,8 +27,8 @@ export const actions = {
         if (typeof sid === 'undefined') error(401);
 
         const user = await db.getUserFromValidSession(sid);
-        if (user === null) error(401);
-        if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
+        if (typeof user === 'undefined') error(401);
+        if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
 
         const data = await request.formData();
         const email = validateEmail(data.get('email'));

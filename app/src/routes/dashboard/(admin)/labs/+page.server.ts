@@ -3,7 +3,7 @@ import { validateString } from '$lib/forms';
 
 export async function load({ locals: { db }, parent }) {
     const { user } = await parent();
-    if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
+    if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
     return { labs: await db.getLabRegistry() };
 }
 
@@ -20,11 +20,11 @@ export const actions = {
         if (typeof sid === 'undefined') error(401);
 
         const user = await db.getUserFromValidSession(sid);
-        if (user === null) error(401);
-        if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
+        if (typeof user === 'undefined') error(401);
+        if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
 
         const draft = await db.getActiveDraft();
-        if (draft !== null) error(403);
+        if (typeof draft !== 'undefined') error(403);
 
         const data = await request.formData();
         const id = validateString(data.get('id'));
@@ -37,11 +37,11 @@ export const actions = {
         if (typeof sid === 'undefined') error(401);
 
         const user = await db.getUserFromValidSession(sid);
-        if (user === null) error(401);
-        if (!user.is_admin || user.user_id === null || user.lab_id !== null) error(403);
+        if (typeof user === 'undefined') error(401);
+        if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
 
         const draft = await db.getActiveDraft();
-        if (draft !== null && draft.curr_round !== null && draft.curr_round > 0)
+        if (typeof draft !== 'undefined' && draft.currRound !== null && draft.currRound > 0)
             error(403, 'It is unsafe to update the lab quota while a draft is ongoing.');
 
         const data = await request.formData();

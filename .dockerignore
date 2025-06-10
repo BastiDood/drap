@@ -12,11 +12,15 @@
 Dockerfile
 LICENSE
 README.md
+docker-compose.yml
 eslint.config.js
 fly.toml
 
 build
 data
 dist
+docker
 node_modules
 postgres
+
+database/drizzle
