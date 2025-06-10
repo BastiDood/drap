@@ -1,0 +1,1 @@
+ALTER TABLE "drap"."user" ALTER COLUMN "id" SET DEFAULT gen_ulid();

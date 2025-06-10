@@ -15,6 +15,13 @@
       "when": 1749461788208,
       "tag": "0001_initial",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1749595128142,
+      "tag": "0002_user-generate-ulid",
+      "breakpoints": true
     }
   ]
 }
