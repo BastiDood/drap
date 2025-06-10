@@ -6,30 +6,33 @@ import { dev } from '$app/environment';
 import * as POSTGRES from '$lib/server/env/postgres';
 import { Database } from '$lib/server/database';
 
-// eslint-disable-next-line init-declarations
+// eslint-disable-next-line @typescript-eslint/init-declarations
 let stream: PrettyStream | undefined;
 if (dev) {
-    // Dynamic import is needed to remove from production builds.
-    const { PinoPretty: pretty } = await import('pino-pretty');
-    stream = pretty();
+  // Dynamic import is needed to remove from production builds.
+  const { PinoPretty: pretty } = await import('pino-pretty');
+  stream = pretty();
 }
 
 // This is only a base logger instance. We need to attach a request ID for each request.
 const logger = pino(stream);
 
 export async function handle({ event, resolve }) {
-    const requestLogger = logger.child({ requestId: crypto.randomUUID() });
-    requestLogger.info({ method: event.request.method, url: event.request.url });
+  const requestLogger = logger.child({ requestId: crypto.randomUUID() });
+  requestLogger.info({ method: event.request.method, url: event.request.url });
 
-    event.locals.db = Database.fromUrl(POSTGRES.URL, requestLogger);
+  event.locals.db = Database.fromUrl(POSTGRES.URL, requestLogger);
 
-    const start = performance.now();
-    try {
-        const response = await resolve(event);
-        event.locals.db.logger.info({ status: response.status, response_time: performance.now() - start });
-        return response;
-    } catch (error) {
-        event.locals.db.logger.error({ error, response_time: performance.now() - start });
-        throw error;
-    }
+  const start = performance.now();
+  try {
+    const response = await resolve(event);
+    event.locals.db.logger.info({
+      status: response.status,
+      response_time: performance.now() - start,
+    });
+    return response;
+  } catch (error) {
+    event.locals.db.logger.error({ error, response_time: performance.now() - start });
+    throw error;
+  }
 }

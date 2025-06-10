@@ -2,14 +2,14 @@ import { type InferOutput, boolean, date, instance, object, pipe, string, uuid }
 import { User } from './user';
 
 const CommonSchema = object({
-    session_id: pipe(string(), uuid()),
-    expiration: date(),
+  session_id: pipe(string(), uuid()),
+  expiration: date(),
 });
 
 export const Pending = object({
-    ...CommonSchema.entries,
-    nonce: instance(Uint8Array),
-    has_extended_scope: boolean(),
+  ...CommonSchema.entries,
+  nonce: instance(Uint8Array),
+  has_extended_scope: boolean(),
 });
 
 export const Session = object({ ...CommonSchema.entries, email: User.entries.email });
