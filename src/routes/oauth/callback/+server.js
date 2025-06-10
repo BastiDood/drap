@@ -18,21 +18,6 @@ export async function GET({ fetch, locals: { db }, cookies, setHeaders, url: { s
     error(400, 'Authorization code is missing.');
   }
 
-  const state = searchParams.get('state');
-  if (state === null) {
-    cookies.delete('sid', { path: '/', httpOnly: true, sameSite: 'lax' });
-    error(400, 'State challenge is missing.');
-  }
-
-  const hashedSessionId = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(sid));
-  if (Buffer.from(state, 'base64url').compare(new Uint8Array(hashedSessionId)) !== 0) {
-    cookies.delete('sid', { path: '/', httpOnly: true, sameSite: 'lax' });
-    error(
-      400,
-      'Session state mismatch detected. Please (1) refresh the page, (2) clear your browser cache cookies, or (3) log in again.',
-    );
-  }
-
   const body = new URLSearchParams({
     code: parse(AuthorizationCode, code),
     client_id: GOOGLE.OAUTH_CLIENT_ID,
@@ -63,10 +48,10 @@ export async function GET({ fetch, locals: { db }, cookies, setHeaders, url: { s
 
     const token = parse(IdToken, payload);
     ok(token.email_verified);
-    strictEqual(Buffer.from(token.nonce, 'base64url').compare(new Uint8Array(pending.nonce)), 0);
+    strictEqual(Buffer.from(token.nonce, 'base64url').compare(pending.nonce), 0);
 
     // Insert user as uninitialized by default
-    await db.initUser(token.email);
+    const userId = await db.initUser(token.email);
     const { isAdmin, labId } = await db.upsertOpenIdUser(
       token.email,
       token.sub,
@@ -74,7 +59,7 @@ export async function GET({ fetch, locals: { db }, cookies, setHeaders, url: { s
       token.family_name,
       token.picture,
     );
-    await db.insertValidSession(sid, token.email, token.exp);
+    await db.insertValidSession(sid, userId, token.exp);
 
     if (
       pending.hasExtendedScope &&
@@ -82,7 +67,7 @@ export async function GET({ fetch, locals: { db }, cookies, setHeaders, url: { s
       isAdmin &&
       labId === null
     )
-      await db.upsertCandidateSender(token.email, token.exp, access_token, refresh_token);
+      await db.upsertCandidateSender(userId, token.exp, access_token, refresh_token);
 
     return { hasExtendedScope: pending.hasExtendedScope, expires: token.exp };
   });

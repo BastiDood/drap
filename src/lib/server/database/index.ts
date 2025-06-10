@@ -63,7 +63,7 @@ export class Database implements Loggable {
       .returning({
         id: schema.pending.id,
         expiration: schema.pending.expiration,
-        nonce: schema.pending.expiration,
+        nonce: schema.pending.nonce,
       })
       .then(assertSingle);
   }
@@ -107,10 +107,16 @@ export class Database implements Loggable {
   }
 
   @timed async initUser(email: string) {
-    await this.#db
+    const { id } = await this.#db
       .insert(schema.user)
       .values({ email })
-      .onConflictDoNothing({ target: schema.user.email });
+      .onConflictDoUpdate({
+        target: schema.user.email,
+        set: { email: sql`excluded.${sql.raw(schema.user.email.name)}` },
+      })
+      .returning({ id: schema.user.id })
+      .then(assertSingle);
+    return id;
   }
 
   @timed async upsertOpenIdUser(
@@ -277,7 +283,7 @@ export class Database implements Loggable {
         activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceDate),
       })
       .from(schema.draft)
-      .orderBy(desc(sql`_ DESC NULLS FIRST`));
+      .orderBy(({ activePeriodStart }) => sql`${desc(activePeriodStart)} NULLS FIRST`);
   }
 
   @timed async getDraftById(id: bigint) {
@@ -356,6 +362,7 @@ export class Database implements Loggable {
 
     const students = await this.#db
       .select({
+        id: schema.user.id,
         email: schema.user.email,
         givenName: schema.user.givenName,
         familyName: schema.user.familyName,

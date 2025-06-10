@@ -6,7 +6,7 @@
 
   type Student = Pick<
     schema.User,
-    'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
+    'id' | 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
   >;
 
   interface Props {
@@ -42,8 +42,8 @@
   <input type="hidden" name="draft" value={draft} />
   <button type="submit" class="variant-filled-primary btn w-full">Submit</button>
   <ListBox multiple rounded="rounded" {disabled}>
-    {#each students as { email, givenName, familyName, avatarUrl, studentNumber } (email)}
-      <ListBoxItem bind:group={drafteeEmails} name="students" value={email}>
+    {#each students as { id, email, givenName, familyName, avatarUrl, studentNumber } (email)}
+      <ListBoxItem bind:group={drafteeEmails} name="students" value={id}>
         {#snippet lead()}
           <Avatar src={avatarUrl} />
         {/snippet}

@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { validateEmail } from '$lib/forms';
+import { validateString } from '$lib/forms';
 
 export async function load({ locals: { db }, parent }) {
   const { user } = await parent();
@@ -17,8 +17,8 @@ export const actions = {
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
 
     const data = await request.formData();
-    const email = validateEmail(data.get('email'));
-    if (await db.deleteDesignatedSender(email)) return;
+    const userId = validateString(data.get('user-id'));
+    if (await db.deleteDesignatedSender(userId)) return;
     error(404, 'Designated sender does not exist.');
   },
   async promote({ locals: { db }, cookies, request }) {
@@ -30,10 +30,10 @@ export const actions = {
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
 
     const data = await request.formData();
-    const email = validateEmail(data.get('email'));
+    const userId = validateString(data.get('user-id'));
 
     await db.begin(async db => {
-      const upsertDesignatedSender = await db.upsertDesignatedSender(email);
+      const upsertDesignatedSender = await db.upsertDesignatedSender(userId);
       db.logger.info({ upsertDesignatedSender });
       // TODO: Reinstate notifications channel.
       // await db.notifyDraftChannel();
@@ -49,8 +49,8 @@ export const actions = {
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
 
     const data = await request.formData();
-    const email = validateEmail(data.get('email'));
-    if (await db.deleteCandidateSender(email)) return;
+    const userId = validateString(data.get('user-id'));
+    if (await db.deleteCandidateSender(userId)) return;
     error(404, 'Sender email does not exist.');
   },
 };
