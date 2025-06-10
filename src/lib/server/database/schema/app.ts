@@ -45,7 +45,7 @@ export const user = app.table(
     id: ulid('id')
       .primaryKey()
       .notNull()
-      .default(sql`gen_random_uuid()`),
+      .default(sql`gen_ulid()`),
     createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
     studentNumber: bigint('student_number', { mode: 'bigint' }).unique(),
     isAdmin: boolean('is_admin').notNull().default(false),
