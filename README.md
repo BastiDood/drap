@@ -42,9 +42,6 @@ pnpm fmt # prettier
 
 # Apply formatting auto-fix.
 pnpm fmt:fix # prettier --write .
-
-# Generate SvelteKit-specific typings.
-pnpm --filter=drap-app sync
 ```
 
 ### Linting the Codebase
@@ -52,9 +49,9 @@ pnpm --filter=drap-app sync
 ```bash
 # Check linting rules.
 pnpm lint:js
-pnpm --filter=drap-app lint:html
-pnpm --filter=drap-app lint:css
-pnpm --filter=drap-app lint:svelte
+pnpm lint:html
+pnpm lint:css
+pnpm lint:svelte
 
 # Perform all lints in parallel.
 pnpm --parallel --recursive '/^lint:/'
@@ -64,25 +61,18 @@ pnpm --parallel --recursive '/^lint:/'
 
 ```bash
 # Run the Vite dev server for SvelteKit.
-pnpm --filter=drap-app dev
+pnpm dev
 
 # Run the Vite preview server for SvelteKit.
-pnpm --filter=drap-app preview
-
-# Run the SWC-backed runner for the TypeScript worker.
-pnpm --filter=drap-email start
+pnpm preview
 ```
 
 ### Building the Applications
 
 ```bash
 # Build the main web application (SvelteKit).
-pnpm --filter=drap-app build
+pnpm build
 node --env-file=.env app/build/index.js
-
-# Build the background email worker (TypeScript).
-pnpm --filter=drap-email build
-node --env-file=.env --enable-source-maps email/dist/main.js
 
 # Build all applications in parallel.
 pnpm --parallel --recursive build

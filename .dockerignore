@@ -17,10 +17,7 @@ eslint.config.js
 fly.toml
 
 build
-data
 dist
 docker
+drizzle
 node_modules
-postgres
-
-database/drizzle

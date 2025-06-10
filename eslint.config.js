@@ -110,7 +110,7 @@ export default tsEslint.config(
         },
     },
     {
-        ignores: ['**/node_modules/**/*', 'app/.svelte-kit/**/*', 'app/build/**/*', 'email/dist/**/*'],
+        ignores: ['**/node_modules/**/*', '.svelte-kit/**/*', 'build/**/*'],
     },
     eslintPrettierConfig,
 );
