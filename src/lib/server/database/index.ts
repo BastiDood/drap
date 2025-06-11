@@ -142,8 +142,8 @@ export class Database implements Loggable {
       .then(assertSingle);
   }
 
-  @timed async updateProfileBySession(
-    sid: string,
+  @timed async updateProfileByUserId(
+    uid: string,
     studentNumber: bigint | null,
     given: string,
     family: string,
@@ -155,8 +155,7 @@ export class Database implements Loggable {
         givenName: given,
         familyName: family,
       })
-      .from(schema.session)
-      .where(and(eq(schema.session.id, sid), eq(schema.session.userId, schema.user.id)));
+      .where(and(eq(schema.user.id, uid)));
   }
 
   @timed async insertNewLab(id: string, name: string) {

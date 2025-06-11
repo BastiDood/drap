@@ -4,11 +4,14 @@ import { validateEmail, validateString } from '$lib/forms';
 import assert from 'node:assert/strict';
 import groupBy from 'just-group-by';
 
-export async function load({ locals: { db }, parent }) {
-  const { user, draft } = await parent();
+export async function load({ locals: { db, session }, parent }) {
+  if (typeof session?.user === 'undefined') redirect(307, '/oauth/login/');
+
+  const { user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
 
   const labs = await db.getLabRegistry();
+  const { draft } = await parent();
   if (typeof draft === 'undefined')
     return { draft: null, labs, available: [], selected: [], records: [] };
 
@@ -33,12 +36,10 @@ function* mapRowTuples(data: FormData) {
 const ZIP_NOT_EQUAL = Symbol('ZIP_NOT_EQUAL');
 
 export const actions = {
-  async init({ locals: { db }, cookies, request }) {
-    const sid = cookies.get('sid');
-    if (typeof sid === 'undefined') error(401);
+  async init({ locals: { db, session }, request }) {
+    if (typeof session?.user === 'undefined') error(401);
 
-    const user = await db.getUserFromValidSession(sid);
-    if (typeof user === 'undefined') error(401);
+    const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
 
     const data = await request.formData();
@@ -46,12 +47,10 @@ export const actions = {
     const initDraft = await db.initDraft(rounds);
     db.logger.info({ initDraft });
   },
-  async start({ locals: { db }, cookies, request }) {
-    const sid = cookies.get('sid');
-    if (typeof sid === 'undefined') error(401);
+  async start({ locals: { db, session }, request }) {
+    if (typeof session?.user === 'undefined') error(401);
 
-    const user = await db.getUserFromValidSession(sid);
-    if (typeof user === 'undefined') error(401);
+    const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
 
     const isValid = await db.isValidTotalLabQuota();
@@ -92,12 +91,10 @@ export const actions = {
       }
     });
   },
-  async intervene({ locals: { db }, cookies, request }) {
-    const sid = cookies.get('sid');
-    if (typeof sid === 'undefined') error(401);
+  async intervene({ locals: { db, session }, request }) {
+    if (typeof session?.user === 'undefined') error(401);
 
-    const user = await db.getUserFromValidSession(sid);
-    if (typeof user === 'undefined') error(401);
+    const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
 
     // TODO: Assert that we are indeed in the lottery phase.
@@ -116,12 +113,10 @@ export const actions = {
       // await db.notifyDraftChannel();
     });
   },
-  async conclude({ locals: { db }, cookies, request }) {
-    const sid = cookies.get('sid');
-    if (typeof sid === 'undefined') error(401);
+  async conclude({ locals: { db, session }, request }) {
+    if (typeof session?.user === 'undefined') error(401);
 
-    const user = await db.getUserFromValidSession(sid);
-    if (typeof user === 'undefined') error(401);
+    const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
 
     const data = await request.formData();
@@ -139,7 +134,7 @@ export const actions = {
         // TODO: Reinstate notifications channel.
         // await db.postLotteryInterventionNotifications(draft, pairs);
         const pairs = zip(emails, schedule);
-        if (pairs.length > 0) await db.insertLotteryChoices(draft, user.email, pairs);
+        if (pairs.length > 0) await db.insertLotteryChoices(draft, user.id, pairs);
 
         const concludeDraft = await db.concludeDraft(draft);
         db.logger.info({ concludeDraft });

@@ -1,8 +1,10 @@
-import { error, fail } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import { validateString } from '$lib/forms';
 
-export async function load({ locals: { db }, parent }) {
-  const { user, draft } = await parent();
+export async function load({ locals: { db, session }, parent }) {
+  if (typeof session?.user === 'undefined') redirect(307, '/oauth/login/');
+
+  const { user } = session;
   if (
     user.isAdmin ||
     user.googleUserId === null ||
@@ -10,20 +12,21 @@ export async function load({ locals: { db }, parent }) {
     user.studentNumber === null
   )
     error(403);
+
+  const { draft } = await parent();
   const [availableLabs, rankings] = await Promise.all([
     db.getLabRegistry(),
     db.getStudentRankings(draft.id, user.id),
   ]);
+
   return { draft, availableLabs, rankings };
 }
 
 export const actions = {
-  async default({ locals: { db }, cookies, request }) {
-    const sid = cookies.get('sid');
-    if (typeof sid === 'undefined') error(401);
+  async default({ locals: { db, session }, request }) {
+    if (typeof session?.user === 'undefined') error(401);
 
-    const user = await db.getUserFromValidSession(sid);
-    if (typeof user === 'undefined') error(401);
+    const { user } = session;
     if (
       user.isAdmin ||
       user.googleUserId === null ||
@@ -39,6 +42,7 @@ export const actions = {
 
     const maxRounds = await db.getMaxRoundInDraft(draft);
     if (typeof maxRounds === 'undefined') error(404);
+
     if (labs.length > maxRounds) error(400);
 
     if (await db.insertStudentRanking(draft, user.email, labs)) return;

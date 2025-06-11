@@ -7,10 +7,15 @@ import { fetchJwks } from '$lib/server/email/jwks';
 import { jwtVerify } from 'jose';
 import { parse } from 'valibot';
 
-export async function GET({ fetch, locals: { db }, cookies, setHeaders, url: { searchParams } }) {
+export async function GET({
+  fetch,
+  locals: { db, session },
+  cookies,
+  setHeaders,
+  url: { searchParams },
+}) {
   setHeaders({ 'Cache-Control': 'no-store' });
-  const sid = cookies.get('sid');
-  if (typeof sid === 'undefined') redirect(307, '/oauth/login/');
+  if (typeof session === 'undefined') redirect(307, '/oauth/login/');
 
   const code = searchParams.get('code');
   if (code === null) {
@@ -26,6 +31,7 @@ export async function GET({ fetch, locals: { db }, cookies, setHeaders, url: { s
     grant_type: 'authorization_code',
   });
 
+  const sid = session.id;
   const { hasExtendedScope, expires } = await db.begin(async db => {
     const pending = await db.deletePendingSession(sid);
     if (typeof pending === 'undefined') redirect(307, '/oauth/login/');
