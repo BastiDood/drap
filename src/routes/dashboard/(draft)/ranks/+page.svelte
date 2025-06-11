@@ -26,7 +26,7 @@
     <WarningAlert>A draft is currently ongoing. You may no longer register.</WarningAlert>
     <ProgressBar max={maxRounds} value={currRound} meter="bg-primary-600-300-token" />
   {/if}
-  <div class="card variant-ghost-secondary prose max-w-none p-4 dark:prose-invert">
+  <div class="card variant-ghost-secondary prose dark:prose-invert max-w-none p-4">
     <p>
       You have already submitted your lab preferences for this draft last <strong
         >{creationDate}</strong

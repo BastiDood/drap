@@ -86,7 +86,7 @@
   <ol class="border-surface-500-400-token relative border-s">
     {#if end !== null}
       {@const { endIsoString, endDateTime } = end}
-      <li class="mb-10 ms-6">
+      <li class="ms-6 mb-10">
         <span
           class="bg-primary-300-600-token ring-primary-900-50-token absolute -start-3 flex size-6 items-center justify-center rounded-full ring-2"
           ><Icon src={CalendarDays} class="size-4" theme="micro" /></span
@@ -102,7 +102,7 @@
     {#each entries as [unix, events] (unix)}
       {@const date = fromUnixTime(unix)}
       {@const heading = format(date, 'PPPpp')}
-      <li class="mb-10 ms-6">
+      <li class="ms-6 mb-10">
         <span
           class="bg-primary-300-600-token ring-primary-900-50-token absolute -start-3 flex size-6 items-center justify-center rounded-full ring-2"
           ><Icon src={CalendarDays} class="size-4" theme="micro" /></span
@@ -153,7 +153,7 @@
         </ol>
       </li>
     {/each}
-    <li class="mb-10 ms-6">
+    <li class="ms-6 mb-10">
       <span
         class="bg-primary-300-600-token ring-primary-900-50-token absolute -start-3 flex size-6 items-center justify-center rounded-full ring-2"
         ><Icon src={CalendarDays} class="size-4" theme="micro" /></span

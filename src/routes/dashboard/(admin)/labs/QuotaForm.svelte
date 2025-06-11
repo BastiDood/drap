@@ -48,7 +48,7 @@
   }}
 >
   <div class="table-container">
-    <table class="table table-hover table-comfortable">
+    <table class="table-hover table-comfortable table">
       <thead>
         <tr>
           <th>Laboratory</th>

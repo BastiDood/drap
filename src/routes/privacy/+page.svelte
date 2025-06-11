@@ -1,4 +1,4 @@
-<section class="prose max-w-none dark:prose-invert">
+<section class="prose dark:prose-invert max-w-none">
   <h1>Privacy Policy</h1>
   <section>
     <h2>Introduction</h2>

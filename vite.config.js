@@ -1,11 +1,9 @@
-import autoprefixer from 'autoprefixer';
 import { defineConfig } from 'vite';
-import { purgeCss } from 'vite-plugin-tailwind-purgecss';
 import { sveltekit } from '@sveltejs/kit/vite';
-import tailwind from 'tailwindcss';
+
+import tailwind from '@tailwindcss/vite';
 
 export default defineConfig({
-  plugins: [sveltekit(), purgeCss()],
+  plugins: [tailwind(), sveltekit()],
   build: { assetsInlineLimit: 0 },
-  css: { postcss: { plugins: [tailwind, autoprefixer] } },
 });
