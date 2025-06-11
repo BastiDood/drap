@@ -22,13 +22,13 @@ const logger = pino(stream);
 export async function handle({ event, resolve }) {
   const { cookies, locals, request } = event;
 
-  const requestLogger = logger.child({ 
+  const requestLogger = logger.child({
     requestId: crypto.randomUUID(),
     method: request.method,
-    url: request.url
+    url: request.url,
   });
 
-  requestLogger.info("request initiated");
+  requestLogger.info('request initiated');
 
   locals.db = Database.fromUrl(POSTGRES.URL, requestLogger);
 
@@ -53,14 +53,16 @@ export async function handle({ event, resolve }) {
 }
 
 export function handleError({ error, event }) {
-    if (isValiError(error)) {
-        const valibotErrorPaths = error.issues.map(issue => getDotPath(issue)).filter(path => path !== null);
-        event.locals.db.logger.fatal({ valibotErrorPaths }, error.message);
-    } else if (error instanceof AssertionError) {
-        event.locals.db.logger.fatal({ nodeAssertionError: error }, error.message);
-    } else if (error instanceof Error) {
-        event.locals.db.logger.fatal({ error }, error.message);
-    } else {
-        event.locals.db.logger.fatal({ unknownError: error });
-    }
+  if (isValiError(error)) {
+    const valibotErrorPaths = error.issues
+      .map(issue => getDotPath(issue))
+      .filter(path => path !== null);
+    event.locals.db.logger.fatal({ valibotErrorPaths }, error.message);
+  } else if (error instanceof AssertionError) {
+    event.locals.db.logger.fatal({ nodeAssertionError: error }, error.message);
+  } else if (error instanceof Error) {
+    event.locals.db.logger.fatal({ error }, error.message);
+  } else {
+    event.locals.db.logger.fatal({ unknownError: error });
+  }
 }
