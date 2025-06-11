@@ -436,7 +436,7 @@ export class Database implements Loggable {
         .with(draftsCte)
         .select({
           labId: schema.facultyChoiceUser.labId,
-          draftees: count(schema.facultyChoiceUser.studentUserId),
+          draftees: count(schema.facultyChoiceUser.studentUserId).as('draftees'),
         })
         .from(draftsCte)
         .innerJoin(
@@ -469,14 +469,14 @@ export class Database implements Loggable {
       this.#db
         .select({
           labId: preferredSubquery.labId,
-          preferrers: countDistinct(preferredSubquery.studentUserId),
+          preferrers: countDistinct(preferredSubquery.studentUserId).as('preferrers'),
         })
         .from(preferredSubquery)
         .groupBy(preferredSubquery.labId),
     );
 
-    await this.#db.insert(schema.facultyChoice).select(
-      this.#db
+    await this.#db.transaction(async txn => {
+      const toAcknowledge = await txn
         .with(draftsCte, draftedCte, preferredCte)
         .select({ draftId: draftsCte.draftId, round: draftsCte.currRound, labId: schema.lab.id })
         .from(draftsCte)
@@ -486,10 +486,12 @@ export class Database implements Loggable {
         .where(
           or(
             gte(sql`coalesce(${draftedCte.draftees}, 0)`, schema.lab.quota),
-            eq(preferredCte.preferrers, 0),
+            eq(sql`coalesce(${preferredCte.preferrers}, 0)`, 0),
           ),
-        ),
-    );
+        );
+
+      for (const row of toAcknowledge) await txn.insert(schema.facultyChoice).values(row);
+    });
   }
 
   @timed async getLabQuotaAndSelectedStudentCountInDraft(did: bigint, lid: string) {
