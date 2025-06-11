@@ -22,8 +22,13 @@ const logger = pino(stream);
 export async function handle({ event, resolve }) {
   const { cookies, locals, request } = event;
 
-  const requestLogger = logger.child({ requestId: crypto.randomUUID() });
-  requestLogger.info({ method: request.method, url: request.url });
+  const requestLogger = logger.child({ 
+    requestId: crypto.randomUUID(),
+    method: request.method,
+    url: request.url
+  });
+
+  requestLogger.info("request initiated");
 
   locals.db = Database.fromUrl(POSTGRES.URL, requestLogger);
 
