@@ -475,21 +475,26 @@ export class Database implements Loggable {
         .groupBy(preferredSubquery.labId),
     );
 
-    await this.#db.insert(schema.facultyChoice).select(
-      this.#db
-        .with(draftsCte, draftedCte, preferredCte)
-        .select({ draftId: draftsCte.draftId, round: draftsCte.currRound, labId: schema.lab.id })
-        .from(draftsCte)
-        .crossJoin(schema.lab)
-        .leftJoin(draftedCte, eq(schema.lab.id, draftedCte.labId))
-        .leftJoin(preferredCte, eq(schema.lab.id, preferredCte.labId))
-        .where(
-          or(
-            gte(sql`coalesce(${draftedCte.draftees}, 0)`, schema.lab.quota),
-            eq(preferredCte.preferrers, 0),
-          ),
-        ),
-    );
+    await this.#db.transaction(
+      async (txn) => {
+        const toAcknowledge = await txn
+          .with(draftsCte, draftedCte, preferredCte)
+          .select({ draftId: draftsCte.draftId, round: draftsCte.currRound, labId: schema.lab.id })
+          .from(draftsCte)
+          .crossJoin(schema.lab)
+          .leftJoin(draftedCte, eq(schema.lab.id, draftedCte.labId))
+          .leftJoin(preferredCte, eq(schema.lab.id, preferredCte.labId))
+          .where(
+            or(
+              gte(sql`coalesce(${draftedCte.draftees}, 0)`, schema.lab.quota),
+              eq(preferredCte.preferrers, 0),
+            ),
+          )
+
+        for (const row of toAcknowledge) 
+          await txn.insert(schema.facultyChoice).values(row);
+      }
+    )
   }
 
   @timed async getLabQuotaAndSelectedStudentCountInDraft(did: bigint, lid: string) {
