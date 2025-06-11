@@ -17,7 +17,8 @@ export const actions = {
     if (typeof session === 'undefined') error(401);
     if (!dev) error(403);
 
-    const emailLeader = crypto.randomUUID().slice(0, 8);
+    const dummyId = crypto.randomUUID();
+    const emailLeader = dummyId.slice(0, 8);
     const dummyEmail = `${emailLeader}@dummy.com`;
 
     // log the current user out
@@ -30,8 +31,14 @@ export const actions = {
 
     // log the dummy user in
     db.logger.warn({ dummyEmail }, 'inserting dummy user')
-    const dummyUserId = await db.initUser(dummyEmail);
-    const dummySessionId = await db.insertDummySession(dummyUserId);
+    const dummyUserId = await db.upsertOpenIdUser(
+      dummyEmail,
+      crypto.randomUUID(),
+      "Dummy",
+      `${emailLeader}`,
+      `https://avatar.iran.liara.run/username?username=${dummyEmail}`
+    );
+    const dummySessionId = await db.insertDummySession(dummyUserId.id);
 
     cookies.set('sid', dummySessionId, { path: '/', httpOnly: true, sameSite: 'lax' });
     redirect(307, '/');
