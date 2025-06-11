@@ -7,6 +7,7 @@
     ClipboardDocumentList,
     Clock,
     Envelope,
+    FaceSmile,
     Home,
     LockClosed,
     QueueList,
@@ -18,6 +19,7 @@
   import { enhance } from '$app/forms';
   import { page } from '$app/stores';
   import type { schema } from '$lib/server/database';
+  import { dev } from '$app/environment';
 
   // eslint-disable-next-line @typescript-eslint/init-declarations
   export let user: schema.User | undefined;
@@ -97,6 +99,29 @@
         </a>
       </div>
     {:else}
+      {#if dev}
+        <form
+          method="post"
+          action="/?/dummy"
+          class="p-2"
+          use:enhance={({ submitter }) => {
+            assert(submitter !== null);
+            assert(submitter instanceof HTMLButtonElement);
+            submitter.disabled = true;
+            return async ({ update }) => {
+              submitter.disabled = false;
+              await update();
+            };
+          }}
+        >
+          <button
+            type="submit"
+            class="variant-soft-tertiary btn-icon btn-icon-sm aspect-square w-full"
+          >
+            <Icon slot="trail" src={FaceSmile} class="w-full p-2" />
+          </button>
+        </form>  
+      {/if}
       <form
         method="post"
         action="/?/logout"
