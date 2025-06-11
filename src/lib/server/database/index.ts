@@ -88,8 +88,8 @@ export class Database implements Loggable {
       .values({ userId: dummyUserId, expiration: new Date(Date.now() + 3600000) })
       .returning({ sessionId: schema.session.id })
       .then(assertSingle);
-    return sessionId
-  } 
+    return sessionId;
+  }
 
   @timed async insertValidSession(id: string, userId: string, expiration: Date) {
     const { rowCount } = await this.#db.insert(schema.session).values({ id, userId, expiration });

@@ -120,7 +120,7 @@
           >
             <Icon slot="trail" src={FaceSmile} class="w-full p-2" />
           </button>
-        </form>  
+        </form>
       {/if}
       <form
         method="post"
