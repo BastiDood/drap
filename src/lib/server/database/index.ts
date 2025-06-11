@@ -436,7 +436,7 @@ export class Database implements Loggable {
         .with(draftsCte)
         .select({
           labId: schema.facultyChoiceUser.labId,
-          draftees: count(schema.facultyChoiceUser.studentUserId),
+          draftees: count(schema.facultyChoiceUser.studentUserId).as("draftees"),
         })
         .from(draftsCte)
         .innerJoin(
@@ -469,7 +469,7 @@ export class Database implements Loggable {
       this.#db
         .select({
           labId: preferredSubquery.labId,
-          preferrers: countDistinct(preferredSubquery.studentUserId),
+          preferrers: countDistinct(preferredSubquery.studentUserId).as("preferrers"),
         })
         .from(preferredSubquery)
         .groupBy(preferredSubquery.labId),
