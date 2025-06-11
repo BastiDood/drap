@@ -436,7 +436,7 @@ export class Database implements Loggable {
         .with(draftsCte)
         .select({
           labId: schema.facultyChoiceUser.labId,
-          draftees: count(schema.facultyChoiceUser.studentUserId).as("draftees"),
+          draftees: count(schema.facultyChoiceUser.studentUserId).as('draftees'),
         })
         .from(draftsCte)
         .innerJoin(
@@ -469,32 +469,29 @@ export class Database implements Loggable {
       this.#db
         .select({
           labId: preferredSubquery.labId,
-          preferrers: countDistinct(preferredSubquery.studentUserId).as("preferrers"),
+          preferrers: countDistinct(preferredSubquery.studentUserId).as('preferrers'),
         })
         .from(preferredSubquery)
         .groupBy(preferredSubquery.labId),
     );
 
-    await this.#db.transaction(
-      async (txn) => {
-        const toAcknowledge = await txn
-          .with(draftsCte, draftedCte, preferredCte)
-          .select({ draftId: draftsCte.draftId, round: draftsCte.currRound, labId: schema.lab.id })
-          .from(draftsCte)
-          .crossJoin(schema.lab)
-          .leftJoin(draftedCte, eq(schema.lab.id, draftedCte.labId))
-          .leftJoin(preferredCte, eq(schema.lab.id, preferredCte.labId))
-          .where(
-            or(
-              gte(sql`coalesce(${draftedCte.draftees}, 0)`, schema.lab.quota),
-              eq(sql`coalesce(${preferredCte.preferrers}, 0)`, 0),
-            ),
-          )
+    await this.#db.transaction(async txn => {
+      const toAcknowledge = await txn
+        .with(draftsCte, draftedCte, preferredCte)
+        .select({ draftId: draftsCte.draftId, round: draftsCte.currRound, labId: schema.lab.id })
+        .from(draftsCte)
+        .crossJoin(schema.lab)
+        .leftJoin(draftedCte, eq(schema.lab.id, draftedCte.labId))
+        .leftJoin(preferredCte, eq(schema.lab.id, preferredCte.labId))
+        .where(
+          or(
+            gte(sql`coalesce(${draftedCte.draftees}, 0)`, schema.lab.quota),
+            eq(sql`coalesce(${preferredCte.preferrers}, 0)`, 0),
+          ),
+        );
 
-        for (const row of toAcknowledge) 
-          await txn.insert(schema.facultyChoice).values(row);
-      }
-    )
+      for (const row of toAcknowledge) await txn.insert(schema.facultyChoice).values(row);
+    });
   }
 
   @timed async getLabQuotaAndSelectedStudentCountInDraft(did: bigint, lid: string) {
