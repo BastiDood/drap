@@ -487,7 +487,7 @@ export class Database implements Loggable {
           .where(
             or(
               gte(sql`coalesce(${draftedCte.draftees}, 0)`, schema.lab.quota),
-              eq(preferredCte.preferrers, 0),
+              eq(sql`coalesce(${preferredCte.preferrers}, 0)`, 0),
             ),
           )
 
