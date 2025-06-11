@@ -148,7 +148,7 @@ export class Database implements Loggable {
           avatarUrl: sql`excluded.${sql.raw(schema.user.avatarUrl.name)}`,
         },
       })
-      .returning({ isAdmin: schema.user.isAdmin, labId: schema.user.labId })
+      .returning({ id: schema.user.id, isAdmin: schema.user.isAdmin, labId: schema.user.labId })
       .then(assertSingle);
   }
 
