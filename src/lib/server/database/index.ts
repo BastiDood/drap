@@ -589,8 +589,8 @@ export class Database implements Loggable {
     const sub = this.#db
       .select({
         createdAt: schema.studentRank.createdAt,
-        idx: sql`generate_subscripts(${schema.studentRank.labs}, 1)`,
-        labId: sql`unnest(${schema.studentRank.labs})`,
+        idx: sql`generate_subscripts(${schema.studentRank.labs}, 1)`.as('sub_idx'),
+        labId: sql`unnest(${schema.studentRank.labs})`.as('sub_lab_id'),
       })
       .from(schema.studentRank)
       .where(and(eq(schema.studentRank.draftId, did), eq(schema.studentRank.userId, uid)))
