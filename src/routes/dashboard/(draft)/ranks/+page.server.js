@@ -45,7 +45,7 @@ export const actions = {
 
     if (labs.length > maxRounds) error(400);
 
-    if (await db.insertStudentRanking(draft, user.email, labs)) return;
+    if (await db.insertStudentRanking(draft, user.id, labs)) return;
     return fail(403);
   },
 };
