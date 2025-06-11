@@ -81,6 +81,16 @@ export class Database implements Loggable {
       .then(assertOptional);
   }
 
+  @timed async insertDummySession(dummyUserId: string) {
+    // create a session that expires after an hour
+    const { sessionId } = await this.#db
+      .insert(schema.session)
+      .values({ userId: dummyUserId, expiration: new Date(Date.now() + 3600000) })
+      .returning({ sessionId: schema.session.id })
+      .then(assertSingle);
+    return sessionId
+  } 
+
   @timed async insertValidSession(id: string, userId: string, expiration: Date) {
     const { rowCount } = await this.#db.insert(schema.session).values({ id, userId, expiration });
     strictEqual(rowCount, 1, 'only one session must be inserted');
