@@ -1,11 +1,14 @@
+import { error, redirect } from '@sveltejs/kit';
 import assert from 'node:assert/strict';
-import { error } from '@sveltejs/kit';
 import { validateString } from '$lib/forms';
 
-export async function load({ locals: { db }, parent }) {
-  const { user, draft } = await parent();
+export async function load({ locals: { db, session }, parent }) {
+  if (typeof session?.user === 'undefined') redirect(307, '/oauth/login/');
+
+  const { user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId === null) error(403);
 
+  const { draft } = await parent();
   const { lab, students, researchers, isDone } =
     await db.getLabAndRemainingStudentsInDraftWithLabPreference(draft.id, user.labId);
   if (typeof lab === 'undefined') error(404);
@@ -14,12 +17,10 @@ export async function load({ locals: { db }, parent }) {
 }
 
 export const actions = {
-  async rankings({ locals: { db }, cookies, request }) {
-    const sid = cookies.get('sid');
-    if (typeof sid === 'undefined') error(401);
+  async rankings({ locals: { db, session }, request }) {
+    if (typeof session?.user === 'undefined') error(401);
 
-    const user = await db.getUserFromValidSession(sid);
-    if (typeof user === 'undefined') error(401);
+    const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId === null) error(403);
 
     const data = await request.formData();

@@ -1,9 +1,12 @@
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import { validateString } from '$lib/forms';
 
-export async function load({ locals: { db }, parent }) {
-  const { user } = await parent();
+export async function load({ locals: { db, session } }) {
+  if (typeof session?.user === 'undefined') redirect(307, '/oauth/login/');
+
+  const { user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
+
   return { labs: await db.getLabRegistry() };
 }
 
@@ -15,12 +18,10 @@ function* mapRowTuples(data: FormData) {
 }
 
 export const actions = {
-  async lab({ locals: { db }, cookies, request }) {
-    const sid = cookies.get('sid');
-    if (typeof sid === 'undefined') error(401);
+  async lab({ locals: { db, session }, request }) {
+    if (typeof session?.user === 'undefined') error(401);
 
-    const user = await db.getUserFromValidSession(sid);
-    if (typeof user === 'undefined') error(401);
+    const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
 
     const draft = await db.getActiveDraft();
@@ -32,12 +33,10 @@ export const actions = {
     const insertNewLab = await db.insertNewLab(id, lab);
     db.logger.info({ insertNewLab });
   },
-  async quota({ locals: { db }, cookies, request }) {
-    const sid = cookies.get('sid');
-    if (typeof sid === 'undefined') error(401);
+  async quota({ locals: { db, session }, request }) {
+    if (typeof session?.user === 'undefined') error(401);
 
-    const user = await db.getUserFromValidSession(sid);
-    if (typeof user === 'undefined') error(401);
+    const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
 
     const draft = await db.getActiveDraft();

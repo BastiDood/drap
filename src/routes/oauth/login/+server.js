@@ -2,17 +2,15 @@ import * as GOOGLE from '$lib/server/env/google';
 import { OAUTH_SCOPE_STRING, SENDER_SCOPE_STRING } from '$lib/models/oauth';
 import { error, redirect } from '@sveltejs/kit';
 
-export async function GET({ locals: { db }, cookies, setHeaders, url: { searchParams } }) {
+export async function GET({ locals: { db, session }, cookies, setHeaders, url: { searchParams } }) {
   setHeaders({ 'Cache-Control': 'no-store' });
-  const sid = cookies.get('sid');
+
   const hasExtendedScope = searchParams.has('extended');
-  if (typeof sid !== 'undefined') {
+  if (typeof session?.user !== 'undefined') {
     // Allow only admins through extended scope flow
-    const user = await db.getUserFromValidSession(sid);
-    if (user !== null) {
-      if (!hasExtendedScope) redirect(307, '/');
-      if (user?.googleUserId === null || !user?.isAdmin || user.labId !== null) error(403);
-    }
+    if (!hasExtendedScope) redirect(307, '/');
+    if (session.user.googleUserId === null || !session.user.isAdmin || session.user.labId !== null)
+      error(403);
   }
 
   const { id: sessionId, nonce, expiration } = await db.generatePendingSession(hasExtendedScope);
