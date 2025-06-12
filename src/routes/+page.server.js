@@ -27,7 +27,7 @@ export const actions = {
       dummyEmail,
       crypto.randomUUID(),
       'Dummy',
-      `${emailLeader}`,
+      emailLeader,
       `https://avatar.iran.liara.run/username?username=${dummyEmail}`,
     );
     const dummySessionId = await db.insertDummySession(dummyUserId.id);
