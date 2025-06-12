@@ -30,7 +30,7 @@ export const actions = {
             '',
             'Dummy',
             emailLeader,
-            `https://avatar.vercel.sh/${dummyId}`,
+            `https://avatar.vercel.sh/${dummyId}.svg`,
           );
           const dummySessionId = await db.insertDummySession(dummyUserId.id);
 
