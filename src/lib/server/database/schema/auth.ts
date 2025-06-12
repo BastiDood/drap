@@ -25,7 +25,10 @@ export type Pending = typeof pending.$inferSelect;
 export type NewPending = typeof pending.$inferInsert;
 
 export const session = auth.table('session', {
-  id: ulid('id').notNull().primaryKey(),
+  id: ulid('id')
+    .notNull()
+    .primaryKey()
+    .default(sql`gen_ulid()`),
   expiration: timestamp('expiration', { mode: 'date' }).notNull(),
   userId: ulid('user_id')
     .notNull()
