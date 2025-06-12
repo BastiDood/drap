@@ -10,7 +10,7 @@
   const { children }: Props = $props();
 </script>
 
-<div class="alert variant-soft-success">
-  <Icon {src} class="size-8" />
-  <div class="alert-message">{@render children?.()}</div>
+<div class="card preset-tonal-success flex items-center gap-2 p-4 shadow-sm">
+  <Icon {src} class="max-w-8" />
+  <div>{@render children?.()}</div>
 </div>

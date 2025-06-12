@@ -62,9 +62,13 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
             {:else}
               <!-- If a faculty member selected no students -->
               <span
-                >This selection of <span class="variant-ghost-primary badge">no</span> students was
-                performed by faculty member
-                <span class="variant-ghost-secondary badge">{choice.userEmail}</span></span
+                >This selection of <span
+                  class="preset-tonal-primary border-primary-500 badge border">no</span
+                >
+                students was performed by faculty member
+                <span class="preset-tonal-secondary border-secondary-500 badge border"
+                  >{choice.userEmail}</span
+                ></span
               >
             {/if}
           {:else}
@@ -72,10 +76,14 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
             <span
               >This selection of
               {#each labChoices as { studentEmail } (studentEmail)}
-                <span class="variant-ghost-primary badge">{studentEmail}</span>
+                <span class="preset-tonal-primary border-primary-500 badge border"
+                  >{studentEmail}</span
+                >
               {/each}
               was performed by
-              <span class="variant-ghost-secondary badge">{choice.userEmail}</span></span
+              <span class="preset-tonal-secondary border-secondary-500 badge border"
+                >{choice.userEmail}</span
+              ></span
             >
           {/if}
         </div>

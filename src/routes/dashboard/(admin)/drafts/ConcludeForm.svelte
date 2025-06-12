@@ -3,8 +3,8 @@
   import { Icon } from '@steeze-ui/svelte-icon';
   import { assert } from '$lib/assert';
   import { enhance } from '$app/forms';
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import type { schema } from '$lib/server/database';
+  import { useToaster } from '$lib/toast';
 
   interface Props {
     draft: schema.Draft['id'];
@@ -12,7 +12,7 @@
 
   const { draft }: Props = $props();
 
-  const toast = getToastStore();
+  const toaster = useToaster();
 </script>
 
 <form
@@ -32,17 +32,16 @@
       await update();
       if (result.type === 'failure') {
         assert(result.status === 403);
-        toast.trigger({
-          message:
+        toaster.error({
+          title:
             'The total of all lab quota does not match the number of eligible students in the lottery.',
-          background: 'variant-filled-error',
         });
       }
     };
   }}
 >
   <input type="hidden" name="draft" value={draft} />
-  <button type="submit" class="variant-filled-primary btn btn-lg w-full">
+  <button type="submit" class="preset-filled-primary-500 btn btn-lg w-full">
     <Icon src={ArrowRight} class="size-8" />
     <span>Conclude Draft</span>
   </button>

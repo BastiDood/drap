@@ -92,7 +92,7 @@
     </p>
     <p>
       Report a privacy security incident or personal data breach using email subject
-      “Incident/Breach &ndash; Name of the Unit” at <a href="mailto:dpo.updiliman@up.edu.ph"
+      “Incident/Breach – Name of the Unit” at <a href="mailto:dpo.updiliman@up.edu.ph"
         >dpo.updiliman@up.edu.ph</a
       >.
     </p>

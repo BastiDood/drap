@@ -69,7 +69,7 @@ pnpm lint:eslint
 pnpm lint:svelte
 
 # Perform all lints in parallel.
-pnpm --parallel --recursive '/^lint:/'
+pnpm lint
 ```
 
 ### Running the Development Server

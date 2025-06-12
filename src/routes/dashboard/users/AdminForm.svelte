@@ -3,8 +3,8 @@
   import { PaperAirplane } from '@steeze-ui/heroicons';
   import { assert } from '$lib/assert';
   import { enhance } from '$app/forms';
-  import { getToastStore } from '@skeletonlabs/skeleton';
-  const toast = getToastStore();
+  import { useToaster } from '$lib/toast';
+  const toaster = useToaster();
 </script>
 
 <form
@@ -20,17 +20,11 @@
       await update();
       switch (result.type) {
         case 'success':
-          toast.trigger({
-            message: 'Successfully invited a new draft administrator.',
-            background: 'variant-filled-success',
-          });
+          toaster.success({ title: 'Successfully invited a new draft administrator.' });
           break;
         case 'failure':
           assert(result.status === 409);
-          toast.trigger({
-            message: 'User or invite already exists.',
-            background: 'variant-filled-error',
-          });
+          toaster.error({ title: 'User or invite already exists.' });
           break;
         default:
           break;
@@ -38,12 +32,18 @@
     };
   }}
 >
-  <label>
+  <label class="label">
     <span>Email</span>
-    <div class="input-group input-group-divider grid-cols-[auto_1fr_auto]">
-      <div class="input-group-shim"><Icon src={PaperAirplane} class="size-6" /></div>
-      <input type="email" required name="email" placeholder="example@up.edu.ph" class="px-4 py-2" />
-      <button class="variant-filled-primary">Invite</button>
+    <div class="input-group grid-cols-[auto_1fr_auto]">
+      <div class="ig-cell preset-tonal"><Icon src={PaperAirplane} class="size-6" /></div>
+      <input
+        type="email"
+        required
+        name="email"
+        placeholder="example@up.edu.ph"
+        class="ig-input px-4 py-2"
+      />
+      <button class="ig-btn preset-filled-primary-500">Invite</button>
     </div>
   </label>
 </form>

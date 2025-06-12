@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { Avatar, ListBox, ListBoxItem } from '@skeletonlabs/skeleton';
+  import { Avatar } from '@skeletonlabs/skeleton-svelte';
+  import { SvelteSet } from 'svelte/reactivity';
   import { assert } from '$lib/assert';
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';
@@ -13,17 +14,17 @@
     disabled: boolean;
     draft: schema.Draft['id'];
     students: Student[];
-    drafteeEmails: schema.User['email'][];
+    drafteeIds: SvelteSet<schema.User['id']>;
   }
 
   // eslint-disable-next-line prefer-const
-  let { disabled, draft, students, drafteeEmails = $bindable() }: Props = $props();
+  let { disabled, draft, students, drafteeIds = $bindable() }: Props = $props();
 </script>
 
 <form
+  inert={disabled}
   method="post"
   action="/dashboard/students/?/rankings"
-  class="flex min-w-max flex-col gap-1"
   use:enhance={({ formData, submitter, cancel }) => {
     const count = formData.getAll('students').length;
     if (!confirm(`Are you sure you want to select these ${count} students?`)) {
@@ -38,23 +39,36 @@
       await update();
     };
   }}
+  class="flex min-w-max flex-col gap-4 inert:opacity-20"
 >
   <input type="hidden" name="draft" value={draft} />
-  <button type="submit" class="variant-filled-primary btn w-full">Submit</button>
-  <ListBox multiple rounded="rounded" {disabled}>
-    {#each students as { id, email, givenName, familyName, avatarUrl, studentNumber } (email)}
-      <ListBoxItem bind:group={drafteeEmails} name="students" value={id}>
-        {#snippet lead()}
-          <Avatar src={avatarUrl} />
-        {/snippet}
-        <div class="flex flex-col">
-          <strong><span class="uppercase">{familyName}</span>, {givenName}</strong>
-          {#if studentNumber !== null}
-            <span class="text-sm opacity-50">{studentNumber}</span>
-          {/if}
-          <span class="text-xs opacity-50">{email}</span>
-        </div>
-      </ListBoxItem>
+  {#each drafteeIds as id (id)}
+    <input type="hidden" name="students" value={id} />
+  {/each}
+  <button type="submit" class="preset-filled-primary-500 btn w-full">Submit</button>
+  <ul class="space-y-1">
+    {#each students as { id, email, givenName, familyName, avatarUrl, studentNumber } (id)}
+      {@const selected = drafteeIds.has(id)}
+      {@const action: (value: string) => void = selected ? drafteeIds.delete : drafteeIds.add}
+      <li
+        data-selected={selected}
+        class="preset-filled-surface-100-900 hover:preset-filled-surface-200-800 data-[selected=true]:preset-filled-surface-500 cursor-pointer rounded-md transition-colors duration-150"
+      >
+        <button
+          type="button"
+          class="flex w-full items-center gap-3 p-2"
+          onclick={action.bind(drafteeIds, id)}
+        >
+          <Avatar src={avatarUrl} name="{givenName} {familyName}" />
+          <div class="flex flex-col">
+            <strong><span class="uppercase">{familyName}</span>, {givenName}</strong>
+            {#if studentNumber !== null}
+              <span class="text-start text-sm opacity-50">{studentNumber}</span>
+            {/if}
+            <span class="text-start text-xs opacity-50">{email}</span>
+          </div>
+        </button>
+      </li>
     {/each}
-  </ListBox>
+  </ul>
 </form>

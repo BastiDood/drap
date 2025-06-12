@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Avatar } from '@skeletonlabs/skeleton';
+  import { Avatar } from '@skeletonlabs/skeleton-svelte';
   import type { schema } from '$lib/server/database';
 
   type Lab = Pick<schema.Lab, 'id' | 'name'>;
@@ -18,7 +18,7 @@
 </script>
 
 <span>
-  <Avatar src={avatarUrl} width="w-20" />
+  <Avatar src={avatarUrl} name="{givenName} {familyName}" size="size-20" />
 </span>
 <span class="flex w-full flex-col">
   <strong class="text-sm"><span class="uppercase">{familyName}</span>, {givenName}</strong>

@@ -7,103 +7,177 @@
     ClipboardDocumentList,
     Clock,
     Envelope,
-    FaceSmile,
     Home,
     LockClosed,
     QueueList,
+    UserPlus,
     Users,
   } from '@steeze-ui/heroicons';
-  import { AppRail, AppRailAnchor, Avatar, LightSwitch } from '@skeletonlabs/skeleton';
+  import { Avatar, Navigation } from '@skeletonlabs/skeleton-svelte';
   import { Icon } from '@steeze-ui/svelte-icon';
   import { assert } from '$lib/assert';
   import { dev } from '$app/environment';
   import { enhance } from '$app/forms';
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import type { schema } from '$lib/server/database';
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let user: schema.User | undefined;
+  interface Props {
+    user?: schema.User;
+  }
 
-  $: ({ pathname } = $page.url);
+  const { user }: Props = $props();
+  const { pathname } = $derived(page.url);
 </script>
 
-<AppRail width="w-20">
-  <div slot="lead" class="my-4 flex items-center justify-center"><LightSwitch /></div>
-  <AppRailAnchor href="/" selected={pathname === '/'}>
-    <Icon src={Home} slot="lead" class="h-8" />
-    <span>Home</span>
-  </AppRailAnchor>
-  {#if typeof user !== 'undefined' && user.googleUserId !== null}
-    <AppRailAnchor href="/profile/" selected={pathname === '/profile/'}>
-      <Avatar slot="lead" width="w-8" src={user.avatarUrl} />
-      <span>Profile</span>
-    </AppRailAnchor>
-    {#if user.labId === null}
-      {#if user.isAdmin}
-        <!-- Registered Admin -->
-        <AppRailAnchor href="/dashboard/labs/" selected={pathname === '/dashboard/labs/'}>
-          <Icon src={Beaker} slot="lead" class="h-8" />
-          <span>Labs</span>
-        </AppRailAnchor>
-        <AppRailAnchor href="/dashboard/users/" selected={pathname === '/dashboard/users/'}>
-          <Icon src={Users} slot="lead" class="h-8" />
-          <span>Users</span>
-        </AppRailAnchor>
-        <AppRailAnchor href="/dashboard/drafts/" selected={pathname === '/dashboard/drafts/'}>
-          <Icon src={ClipboardDocumentList} slot="lead" class="h-8" />
-          <span>Drafts</span>
-        </AppRailAnchor>
-        <AppRailAnchor href="/dashboard/email/" selected={pathname === '/dashboard/email/'}>
-          <Icon src={Envelope} slot="lead" class="h-8" />
-          <span>Email</span>
-        </AppRailAnchor>
-      {:else if user.studentNumber !== null}
-        <!-- Registered User -->
-        <AppRailAnchor href="/dashboard/ranks/" selected={pathname === '/dashboard/ranks/'}>
-          <Icon src={QueueList} slot="lead" class="h-8" />
-          <span>Ranks</span>
-        </AppRailAnchor>
-      {/if}
-    {:else}
-      <!-- Registered Researcher -->
-      <AppRailAnchor href="/dashboard/lab/" selected={pathname === '/dashboard/lab/'}>
-        <Icon src={Beaker} slot="lead" class="h-8" />
-        <span>Lab</span>
-      </AppRailAnchor>
-      {#if user.isAdmin}
-        <!-- Registered Faculty -->
-        <AppRailAnchor href="/dashboard/students/" selected={pathname === '/dashboard/students/'}>
-          <Icon src={AcademicCap} slot="lead" class="h-8" />
-          <span>Students</span>
-        </AppRailAnchor>
+<Navigation.Rail
+  width="w-16"
+  padding="p-0"
+  headerGap="gap-0"
+  tilesGap="gap-0"
+  tilesJustify="justify-start"
+  footerGap="gap-0"
+  footerClasses="my-1"
+  classes="border-primary-950 justify-between border-r-1 shadow-lg"
+>
+  {#snippet tiles()}
+    <Navigation.Tile
+      href="/"
+      label="Home"
+      selected={pathname === '/'}
+      padding="px-4 py-2"
+      rounded="rounded-none"
+      hover="hover:preset-tonal-primary"
+      classes="flex-col transition-colors duration-150"
+    >
+      <Icon src={Home} class="size-8" />
+    </Navigation.Tile>
+    {#if typeof user !== 'undefined' && user.googleUserId !== null}
+      <Navigation.Tile
+        href="/profile/"
+        label="Profile"
+        selected={pathname === '/profile/'}
+        padding="px-4 py-2"
+        rounded="rounded-none"
+        hover="hover:preset-tonal-primary"
+        classes="flex-col transition-colors duration-150"
+      >
+        <Avatar src={user.avatarUrl} name="{user.givenName} {user.familyName}" size="size-8" />
+      </Navigation.Tile>
+      {#if user.labId === null}
+        {#if user.isAdmin}
+          <Navigation.Tile
+            href="/dashboard/labs/"
+            label="Labs"
+            selected={pathname === '/dashboard/labs/'}
+            padding="px-4 py-2"
+            rounded="rounded-none"
+            hover="hover:preset-tonal-primary"
+            classes="flex-col transition-colors duration-150"
+          >
+            <Icon src={Beaker} class="size-8" />
+          </Navigation.Tile>
+          <Navigation.Tile
+            href="/dashboard/users/"
+            label="Users"
+            selected={pathname === '/dashboard/users/'}
+            padding="px-4 py-2"
+            rounded="rounded-none"
+            hover="hover:preset-tonal-primary"
+            classes="flex-col transition-colors duration-150"
+          >
+            <Icon src={Users} class="size-8" />
+          </Navigation.Tile>
+          <Navigation.Tile
+            href="/dashboard/drafts/"
+            label="Drafts"
+            selected={pathname === '/dashboard/drafts/'}
+            padding="px-4 py-2"
+            rounded="rounded-none"
+            hover="hover:preset-tonal-primary"
+            classes="flex-col transition-colors duration-150"
+          >
+            <Icon src={ClipboardDocumentList} class="size-8" />
+          </Navigation.Tile>
+          <Navigation.Tile
+            href="/dashboard/email/"
+            label="Email"
+            selected={pathname === '/dashboard/email/'}
+            padding="px-4 py-2"
+            rounded="rounded-none"
+            hover="hover:preset-tonal-primary"
+            classes="flex-col transition-colors duration-150"
+          >
+            <Icon src={Envelope} class="size-8" />
+          </Navigation.Tile>
+        {:else if user.studentNumber !== null}
+          <Navigation.Tile
+            href="/dashboard/ranks/"
+            label="Ranks"
+            selected={pathname === '/dashboard/ranks/'}
+            padding="px-4 py-2"
+            rounded="rounded-none"
+            hover="hover:preset-tonal-primary"
+            classes="flex-col transition-colors duration-150"
+          >
+            <Icon src={QueueList} class="size-8" />
+          </Navigation.Tile>
+        {/if}
+      {:else}
+        <Navigation.Tile
+          href="/dashboard/lab/"
+          label="Lab"
+          selected={pathname === '/dashboard/lab/'}
+          padding="px-4 py-2"
+          rounded="rounded-none"
+          hover="hover:preset-tonal-primary"
+          classes="flex-col transition-colors duration-150"
+        >
+          <Icon src={Beaker} class="size-8" />
+        </Navigation.Tile>
+        {#if user.isAdmin}
+          <Navigation.Tile
+            href="/dashboard/students/"
+            label="Students"
+            selected={pathname === '/dashboard/students/'}
+            padding="px-4 py-2"
+            rounded="rounded-none"
+            hover="hover:preset-tonal-primary"
+            classes="flex-col transition-colors duration-150"
+          >
+            <Icon src={AcademicCap} class="size-8" />
+          </Navigation.Tile>
+        {/if}
       {/if}
     {/if}
-  {/if}
-  <AppRailAnchor href="/history/" selected={pathname.startsWith('/history/')}>
-    <Icon src={Clock} slot="lead" class="h-8" />
-    <span>History</span>
-  </AppRailAnchor>
-  <AppRailAnchor href="/privacy/" selected={pathname === '/privacy/'}>
-    <Icon src={LockClosed} slot="lead" class="h-8" />
-    <span>Privacy</span>
-  </AppRailAnchor>
-  <svelte:fragment slot="trail">
+    <Navigation.Tile
+      href="/history/"
+      label="History"
+      selected={pathname.startsWith('/history/')}
+      padding="px-4 py-2"
+      rounded="rounded-none"
+      hover="hover:preset-tonal-primary"
+      classes="flex-col transition-colors duration-150"
+    >
+      <Icon src={Clock} class="size-8" />
+    </Navigation.Tile>
+    <Navigation.Tile
+      href="/privacy/"
+      label="Privacy"
+      selected={pathname === '/privacy/'}
+      padding="px-4 py-2"
+      rounded="rounded-none"
+      hover="hover:preset-tonal-primary"
+      classes="flex-col transition-colors duration-150"
+    >
+      <Icon src={LockClosed} class="size-8" />
+    </Navigation.Tile>
+  {/snippet}
+  {#snippet footer()}
     {#if typeof user === 'undefined'}
-      <div class="p-2">
-        <a
-          href="/oauth/login/"
-          rel="external"
-          class="variant-soft-primary btn-icon btn-icon-sm aspect-square w-full"
-        >
-          <Icon slot="trail" src={ArrowRightEndOnRectangle} class="w-full p-2" />
-        </a>
-      </div>
-    {:else}
       {#if dev}
         <form
           method="post"
           action="/?/dummy"
-          class="p-2"
           use:enhance={({ submitter }) => {
             assert(submitter !== null);
             assert(submitter instanceof HTMLButtonElement);
@@ -113,15 +187,26 @@
               await update();
             };
           }}
+          class="p-1"
         >
           <button
             type="submit"
-            class="variant-soft-tertiary btn-icon btn-icon-sm aspect-square w-full"
+            class="preset-filled-secondary-100-900 hover:preset-tonal-secondary size-full rounded-full p-3 transition-colors duration-150"
           >
-            <Icon slot="trail" src={FaceSmile} class="w-full p-2" />
+            <Icon src={UserPlus} />
           </button>
         </form>
       {/if}
+      <div class="p-1">
+        <a
+          href="/oauth/login/"
+          rel="external"
+          class="preset-filled-tertiary-100-900 hover:preset-tonal-tertiary block rounded-full p-3 transition-colors duration-150"
+        >
+          <Icon src={ArrowRightEndOnRectangle} />
+        </a>
+      </div>
+    {:else}
       <form
         method="post"
         action="/?/logout"
@@ -138,11 +223,11 @@
       >
         <button
           type="submit"
-          class="variant-soft-tertiary btn-icon btn-icon-sm aspect-square w-full"
+          class="preset-filled-tertiary-100-900 hover:preset-tonal-tertiary size-full rounded-full p-3 transition-colors duration-150"
         >
-          <Icon slot="trail" src={ArrowRightStartOnRectangle} class="w-full p-2" />
+          <Icon src={ArrowRightStartOnRectangle} />
         </button>
       </form>
     {/if}
-  </svelte:fragment>
-</AppRail>
+  {/snippet}
+</Navigation.Rail>

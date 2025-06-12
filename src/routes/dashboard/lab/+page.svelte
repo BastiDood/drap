@@ -9,17 +9,25 @@
 <div class="grid grid-cols-2 gap-4">
   <nav class="list-nav space-y-2">
     <h3 class="h3">Heads</h3>
-    <ul>
+    <ul class="space-y-1">
       {#each heads as user (user.email)}
-        <li><Member {user} /></li>
+        <li
+          class="preset-filled-surface-100-900 hover:preset-filled-surface-200-800 rounded-md p-2 transition-colors duration-150"
+        >
+          <Member {user} />
+        </li>
       {/each}
     </ul>
   </nav>
   <nav class="list-nav space-y-2">
     <h3 class="h3">Members</h3>
-    <ul>
+    <ul class="space-y-1">
       {#each members as user (user.email)}
-        <li><Member {user} /></li>
+        <li
+          class="preset-filled-surface-100-900 hover:preset-filled-surface-200-800 rounded-md p-2 transition-colors duration-150"
+        >
+          <Member {user} />
+        </li>
       {/each}
     </ul>
   </nav>
