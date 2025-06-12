@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { Avatar } from '@skeletonlabs/skeleton';
+  import { Avatar } from '@skeletonlabs/skeleton-svelte';
   import RankingsForm from './RankingsForm.svelte';
+  import { SvelteSet } from 'svelte/reactivity';
   import WarningAlert from '$lib/alerts/Warning.svelte';
   import { getOrdinalSuffix } from '$lib/ordinal';
 
@@ -13,9 +14,9 @@
     isDone,
   } = $derived(data);
 
-  let draftees = $state<string[]>([]);
+  const draftees = new SvelteSet<string>();
   const remainingQuota = $derived(quota - researchers.length);
-  const remainingDraftees = $derived(remainingQuota - draftees.length);
+  const remainingDraftees = $derived(remainingQuota - draftees.size);
 </script>
 
 {#if currRound === null}
@@ -54,12 +55,7 @@
         <em>automatically</em> begins. All lab heads and administrators will be notified when this happens.
       </p>
     </div>
-    <RankingsForm
-      draft={id}
-      {students}
-      bind:drafteeEmails={draftees}
-      disabled={remainingDraftees <= 0}
-    />
+    <RankingsForm draft={id} {students} drafteeIds={draftees} disabled={remainingDraftees <= 0} />
   </div>
 {:else}
   <WarningAlert
@@ -69,11 +65,14 @@
 {#if researchers.length > 0}
   <h3 class="h3">Drafted Students from Previous Rounds</h3>
   <nav class="list-nav">
-    <ul>
+    <ul class="space-y-1">
       {#each researchers as { email, givenName, familyName, avatarUrl, studentNumber } (email)}
-        <a href="mailto:{email}">
-          <Avatar src={avatarUrl} />
-          <div class="flex flex-col">
+        <a
+          href="mailto:{email}"
+          class="preset-filled-surface-100-900 hover:preset-filled-surface-200-800 flex items-center gap-3 rounded-md p-2 transition-colors duration-150"
+        >
+          <Avatar src={avatarUrl} name="{givenName} {familyName}" />
+          <div class="flex grow flex-col">
             <strong><span class="uppercase">{familyName}</span>, {givenName}</strong>
             {#if studentNumber !== null}
               <span class="text-sm opacity-50">{studentNumber}</span>

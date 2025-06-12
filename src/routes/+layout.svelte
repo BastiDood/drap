@@ -1,23 +1,22 @@
 <script lang="ts">
   import './app.css';
-  import { AppShell, Toast, initializeStores } from '@skeletonlabs/skeleton';
   import SideBar from './SideBar.svelte';
+  import { Toaster } from '@skeletonlabs/skeleton-svelte';
   import banner from '$lib/banner.png?url';
+  import { initToaster } from '$lib/toast';
 
   const { data, children } = $props();
   const { user } = $derived(data);
 
-  initializeStores();
+  const toaster = initToaster();
 </script>
 
 <svelte:head>
   <meta property="og:image" content="https://drap.dcs.upd.edu.ph{banner}" />
 </svelte:head>
 
-<Toast />
-<AppShell>
-  {#snippet sidebarLeft()}
-    <SideBar {user} />
-  {/snippet}
-  <div class="h-full space-y-4 p-4">{@render children?.()}</div>
-</AppShell>
+<Toaster {toaster} />
+<div class="flex h-dvh overflow-hidden">
+  <SideBar {user} />
+  <div class="grow space-y-4 overflow-y-auto p-4">{@render children?.()}</div>
+</div>

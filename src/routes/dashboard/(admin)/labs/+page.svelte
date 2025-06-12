@@ -22,7 +22,7 @@
   {@const startTime = format(activePeriodStart, 'pp')}
   <WarningAlert>
     <span>
-      <strong>Draft &num;{draftId}</strong> started last <strong>{startDate}</strong> at
+      <strong>Draft #{draftId}</strong> started last <strong>{startDate}</strong> at
       <strong>{startTime}</strong> and is now in Round <strong>{currRound}</strong> of
       <strong>{maxRounds}</strong>. It's unsafe to update the lab quota while a draft is in
       progress.

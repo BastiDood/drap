@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Avatar } from '@skeletonlabs/skeleton';
+  import { Avatar } from '@skeletonlabs/skeleton-svelte';
   import type { schema } from '$lib/server/database';
 
   interface User
@@ -20,7 +20,7 @@
 </script>
 
 <a href="mailto:{email}" class="grid w-full grid-cols-[auto_1fr] items-center gap-2 p-4">
-  <span><Avatar src={avatarUrl} width="w-20" /></span>
+  <Avatar src={avatarUrl} name="{givenName} {familyName}" size="size-20" />
   <span class="flex flex-col">
     {#if givenName.length > 0 && familyName.length > 0}
       <strong><span class="uppercase">{familyName}</span>, {givenName}</strong>
@@ -32,10 +32,14 @@
     <div class="space-x-1">
       {#if labId === null}
         {#each labs as lab (lab)}
-          <span class="variant-ghost-tertiary badge text-xs uppercase">{lab}</span>
+          <span class="preset-tonal-tertiary border-tertiary-500 badge border text-xs uppercase">
+            {lab}
+          </span>
         {/each}
       {:else}
-        <span class="variant-ghost-primary badge text-xs uppercase">{labId}</span>
+        <span class="preset-tonal-primary border-primary-500 badge border text-xs uppercase">
+          {labId}
+        </span>
       {/if}
     </div>
   </span>

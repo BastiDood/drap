@@ -3,8 +3,9 @@
   import { PlusCircle } from '@steeze-ui/heroicons';
   import { assert } from '$lib/assert';
   import { enhance } from '$app/forms';
-  import { getToastStore } from '@skeletonlabs/skeleton';
-  const toast = getToastStore();
+  import { useToaster } from '$lib/toast';
+
+  const toaster = useToaster();
 </script>
 
 <form
@@ -20,16 +21,10 @@
       await update();
       switch (result.type) {
         case 'success':
-          toast.trigger({
-            message: 'Created new laboratory.',
-            background: 'variant-filled-success',
-          });
+          toaster.success({ title: 'Created new laboratory.' });
           break;
         case 'failure':
-          toast.trigger({
-            message: 'Failed to create a new laboratory.',
-            background: 'variant-filled-error',
-          });
+          toaster.error({ title: 'Failed to create a new laboratory.' });
           break;
         default:
           break;
@@ -37,7 +32,7 @@
     };
   }}
 >
-  <label>
+  <label class="label">
     <span>Lab ID</span>
     <input
       type="text"
@@ -48,7 +43,7 @@
       class="input variant-form-material px-2 py-1"
     />
   </label>
-  <label>
+  <label class="label">
     <span>Lab Name</span>
     <input
       type="text"
@@ -58,7 +53,7 @@
       class="input variant-form-material px-2 py-1"
     />
   </label>
-  <button type="submit" class="variant-filled-primary btn w-full">
+  <button type="submit" class="preset-filled-primary-500 btn w-full">
     <span><Icon src={PlusCircle} class="h-6" /></span>
     <span>Create Lab</span>
   </button>

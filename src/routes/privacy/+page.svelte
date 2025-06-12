@@ -1,4 +1,4 @@
-<section class="prose max-w-none dark:prose-invert">
+<section class="prose dark:prose-invert max-w-none">
   <h1>Privacy Policy</h1>
   <section>
     <h2>Introduction</h2>
@@ -92,7 +92,7 @@
     </p>
     <p>
       Report a privacy security incident or personal data breach using email subject
-      “Incident/Breach &ndash; Name of the Unit” at <a href="mailto:dpo.updiliman@up.edu.ph"
+      “Incident/Breach – Name of the Unit” at <a href="mailto:dpo.updiliman@up.edu.ph"
         >dpo.updiliman@up.edu.ph</a
       >.
     </p>

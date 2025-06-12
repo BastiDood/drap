@@ -53,7 +53,7 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
       {@const labChoices = choices.filter(({ labId: choiceLab }) => choiceLab === labId)}
       {@const [choice] = labChoices}
       {#if typeof choice !== 'undefined'}
-        <div class="card space-y-1 bg-surface-500 p-4">
+        <div class="card bg-surface-500 space-y-1 p-4">
           <strong class="uppercase">{labId}</strong> (Round {choice.round ?? 'Lottery'}):
           {#if choice.userEmail === null || choice.studentEmail === null}
             {#if choice.userEmail === null}
@@ -62,9 +62,13 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
             {:else}
               <!-- If a faculty member selected no students -->
               <span
-                >This selection of <span class="variant-ghost-primary badge">no</span> students was
-                performed by faculty member
-                <span class="variant-ghost-secondary badge">{choice.userEmail}</span></span
+                >This selection of <span
+                  class="preset-tonal-primary border-primary-500 badge border">no</span
+                >
+                students was performed by faculty member
+                <span class="preset-tonal-secondary border-secondary-500 badge border"
+                  >{choice.userEmail}</span
+                ></span
               >
             {/if}
           {:else}
@@ -72,10 +76,14 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
             <span
               >This selection of
               {#each labChoices as { studentEmail } (studentEmail)}
-                <span class="variant-ghost-primary badge">{studentEmail}</span>
+                <span class="preset-tonal-primary border-primary-500 badge border"
+                  >{studentEmail}</span
+                >
               {/each}
               was performed by
-              <span class="variant-ghost-secondary badge">{choice.userEmail}</span></span
+              <span class="preset-tonal-secondary border-secondary-500 badge border"
+                >{choice.userEmail}</span
+              ></span
             >
           {/if}
         </div>

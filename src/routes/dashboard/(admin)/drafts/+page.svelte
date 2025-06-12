@@ -33,9 +33,9 @@
     <div class="prose dark:prose-invert">
       <h3>Lottery</h3>
       <p>
-        Draft &num;{draft.id} is almost done! The final stage is the lottery phase, where the remaining
-        undrafted students are randomly assigned to their labs. Before the system automatically randomizes
-        anything, administrators are given a final chance to manually intervene with the draft results.
+        Draft #{draft.id} is almost done! The final stage is the lottery phase, where the remaining undrafted
+        students are randomly assigned to their labs. Before the system automatically randomizes anything,
+        administrators are given a final chance to manually intervene with the draft results.
       </p>
       <ul>
         <li>
@@ -63,21 +63,25 @@
       <ConcludeForm draft={draft.id} />
     </div>
     <div class="min-w-max space-y-2">
-      <nav class="card list-nav variant-ghost-warning space-y-4 p-4">
+      <nav class="card preset-tonal-warning border-warning-500 space-y-4 border p-4">
         <h3 class="h3">Eligible for Lottery ({available.length})</h3>
         {#if available.length > 0}
           <InterveneForm draft={draft.id} {labs} students={available} />
         {:else}
-          <p class="prose max-w-none dark:prose-invert">
+          <p class="prose dark:prose-invert max-w-none">
             Congratulations! All participants have been drafted. No action is needed here.
           </p>
         {/if}
       </nav>
-      <nav class="card list-nav variant-ghost-success space-y-4 p-4">
+      <nav class="card preset-tonal-success border-success-500 space-y-4 border p-4">
         <h3 class="h3">Already Drafted ({selected.length})</h3>
-        <ul class="list">
+        <ul class="space-y-1">
           {#each selected as { id, ...user } (id)}
-            <li><Student {user} /></li>
+            <li
+              class="preset-filled-surface-100-900 hover:preset-filled-surface-200-800 rounded-md p-2 transition-colors duration-150"
+            >
+              <Student {user} />
+            </li>
           {/each}
         </ul>
       </nav>

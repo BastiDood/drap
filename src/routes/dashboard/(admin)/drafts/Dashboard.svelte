@@ -6,9 +6,8 @@
     PaperClip,
     QuestionMarkCircle,
   } from '@steeze-ui/heroicons';
-  import { Accordion, AccordionItem, Tab, TabGroup } from '@skeletonlabs/skeleton';
+  import { Accordion, Tabs } from '@skeletonlabs/skeleton-svelte';
   import type { ComponentProps } from 'svelte';
-  import ErrorAlert from '$lib/alerts/Error.svelte';
   import { Icon } from '@steeze-ui/svelte-icon';
   import LabAccordionItem from './LabAccordionItem.svelte';
   import Student from '$lib/users/Student.svelte';
@@ -24,69 +23,95 @@
     id: schema.User['id'];
   }
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let round: number;
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let labs: Lab[];
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let records: SystemLogsProps['records'];
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let available: StudentUser[];
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let selected: StudentUser[];
+  interface Props {
+    round: number;
+    labs: Lab[];
+    records: SystemLogsProps['records'];
+    available: StudentUser[];
+    selected: StudentUser[];
+  }
 
-  $: total = available.length + selected.length;
+  const { round, labs, records, available, selected }: Props = $props();
+  const total = $derived(available.length + selected.length);
 
-  let group = TabType.Students;
+  let group = $state(TabType.Students);
 </script>
 
-<TabGroup>
-  <Tab bind:group name="students" value={TabType.Students}>
-    <Icon src={AcademicCap} slot="lead" class="h-8" />
-    <span>Registered Students</span>
-  </Tab>
-  <Tab bind:group name="labs" value={TabType.Labs}>
-    <Icon src={Beaker} slot="lead" class="h-8" />
-    <span>Laboratories</span>
-  </Tab>
-  <Tab bind:group name="logs" value={TabType.Logs}>
-    <Icon src={PaperClip} slot="lead" class="h-8" />
-    <span>System Logs</span>
-  </Tab>
-  <svelte:fragment slot="panel">
-    {#if group === TabType.Students}
-      <Accordion>
-        <AccordionItem open>
-          <Icon src={CheckCircle} slot="lead" class="h-8" />
-          <span slot="summary">Pending Selection ({available.length}/{total})</span>
-          <svelte:fragment slot="content">
+<Tabs
+  value={group}
+  onValueChange={({ value }) => {
+    switch (value) {
+      case TabType.Students:
+      case TabType.Labs:
+      case TabType.Logs:
+        group = value;
+        break;
+      default:
+        break;
+    }
+  }}
+>
+  {#snippet list()}
+    <Tabs.Control value={TabType.Students}>
+      <Icon src={AcademicCap} class="h-8" />
+      <span>Registered Students</span>
+    </Tabs.Control>
+    <Tabs.Control value={TabType.Labs}>
+      <Icon src={Beaker} class="h-8" />
+      <span>Laboratories</span>
+    </Tabs.Control>
+    <Tabs.Control value={TabType.Logs}>
+      <Icon src={PaperClip} class="h-8" />
+      <span>System Logs</span>
+    </Tabs.Control>
+  {/snippet}
+  {#snippet content()}
+    <Tabs.Panel value={TabType.Students}>
+      <Accordion multiple>
+        <Accordion.Item value="pending-selection">
+          {#snippet lead()}
+            <Icon src={CheckCircle} class="h-8" />
+          {/snippet}
+          {#snippet control()}
+            <span>Pending Selection ({available.length}/{total})</span>
+          {/snippet}
+          {#snippet panel()}
             {#each available as { id, ...student } (id)}
               <Student user={student} />
             {/each}
-          </svelte:fragment>
-        </AccordionItem>
-        <AccordionItem>
-          <Icon src={QuestionMarkCircle} slot="lead" class="h-8" />
-          <span slot="summary">Already Drafted ({selected.length}/{total})</span>
-          <svelte:fragment slot="content">
+          {/snippet}
+        </Accordion.Item>
+        <Accordion.Item value="already-drafted">
+          {#snippet lead()}
+            <Icon src={QuestionMarkCircle} class="h-8" />
+          {/snippet}
+          {#snippet control()}
+            <span>Already Drafted ({selected.length}/{total})</span>
+          {/snippet}
+          {#snippet panel()}
             {#each selected as { id, ...student } (id)}
               <Student user={student} />
             {/each}
-          </svelte:fragment>
-        </AccordionItem>
+          {/snippet}
+        </Accordion.Item>
       </Accordion>
-    {:else if group === TabType.Labs}
-      <Accordion>
+    </Tabs.Panel>
+    <Tabs.Panel value={TabType.Labs}>
+      <Accordion multiple collapsible>
         {#each labs as lab (lab.id)}
-          <div class="card space-y-4 p-4">
-            <LabAccordionItem {lab} {round} {available} {selected} />
-          </div>
+          <Accordion.Item value={lab.id}>
+            {#snippet control()}{lab.name}{/snippet}
+            {#snippet panel()}
+              <div class="card space-y-4 p-4">
+                <LabAccordionItem {lab} {round} {available} {selected} />
+              </div>
+            {/snippet}
+          </Accordion.Item>
         {/each}
       </Accordion>
-    {:else if group === TabType.Logs}
+    </Tabs.Panel>
+    <Tabs.Panel value={TabType.Logs}>
       <SystemLogsTab {records} />
-    {:else}
-      <ErrorAlert>This is an unexpected tab state. Kindly report this bug.</ErrorAlert>
-    {/if}
-  </svelte:fragment>
-</TabGroup>
+    </Tabs.Panel>
+  {/snippet}
+</Tabs>

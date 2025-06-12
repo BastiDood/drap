@@ -1,7 +1,7 @@
 <script lang="ts">
   import { run } from 'svelte/legacy';
 
-  import { AccordionItem } from '@skeletonlabs/skeleton';
+  import { Accordion } from '@skeletonlabs/skeleton-svelte';
   import type { ComponentProps } from 'svelte';
   import Student from '$lib/users/Student.svelte';
   import type { schema } from '$lib/server/database';
@@ -28,12 +28,10 @@
   });
   const preferred = $derived(available.filter(val => val.labs[round - 1] === lab.id));
   const interested = $derived(available.filter(val => val.labs.slice(round).includes(lab.id)));
-
-  let isOpen = $state(false);
 </script>
 
-<AccordionItem bind:open={isOpen}>
-  {#snippet summary()}
+<Accordion.Item value={lab.id}>
+  {#snippet control()}
     <div class="flex justify-between">
       {#if lab.quota === 0}
         <h5 class="h5 text-gray-400">{lab.name}</h5>
@@ -43,19 +41,22 @@
         <h5 class="h5 text-warning-500">{lab.name}</h5>
       {/if}
       <span>
-        <span class="variant-ghost-primary badge font-mono text-xs uppercase"
-          >{selected.length} {isOpen ? 'members' : ''}</span
+        <span
+          class="preset-tonal-primary border-primary-500 badge border font-mono text-xs uppercase"
+          >{selected.length} Members</span
         >
-        <span class="variant-ghost-tertiary badge font-mono text-xs uppercase"
-          >{preferred.length} {isOpen ? 'preferred' : ''}</span
+        <span
+          class="preset-tonal-tertiary border-tertiary-500 badge border font-mono text-xs uppercase"
+          >{preferred.length} preferred</span
         >
-        <span class="variant-ghost-warning badge font-mono text-xs uppercase"
-          >{lab.quota} {isOpen ? 'maximum' : ''}</span
+        <span
+          class="preset-tonal-warning border-warning-500 badge border font-mono text-xs uppercase"
+          >{lab.quota} maximum</span
         >
       </span>
     </div>
   {/snippet}
-  {#snippet content()}
+  {#snippet panel()}
     <div>
       <hr class="p-2" />
       <div class="grid grid-cols-3">
@@ -88,4 +89,4 @@
       </div>
     </div>
   {/snippet}
-</AccordionItem>
+</Accordion.Item>

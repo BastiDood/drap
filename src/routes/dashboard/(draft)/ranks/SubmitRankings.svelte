@@ -4,8 +4,8 @@
   import { Icon } from '@steeze-ui/svelte-icon';
   import { assert } from '$lib/assert';
   import { enhance } from '$app/forms';
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import type { schema } from '$lib/server/database';
+  import { useToaster } from '$lib/toast';
 
   import ErrorAlert from '$lib/alerts/Error.svelte';
   import WarningAlert from '$lib/alerts/Warning.svelte';
@@ -18,20 +18,24 @@
   }
 
   // eslint-disable-next-line prefer-const
-  let { draftId, maxRounds, availableLabs }: Props = $props();
+  let { draftId, maxRounds, availableLabs = $bindable() }: Props = $props();
 
-  const toast = getToastStore();
+  const toaster = useToaster();
   let selectedLabs = $state<typeof availableLabs>([]);
 
   const remaining = $derived(maxRounds - selectedLabs.length);
   const hasRemaining = $derived(remaining > 0);
-  const cardVariant = $derived(hasRemaining ? 'variant-ghost-primary' : 'variant-ghost-secondary');
+  const cardVariant = $derived(
+    hasRemaining
+      ? 'preset-tonal-primary border border-primary-500'
+      : 'preset-tonal-secondary border border-secondary-500',
+  );
 
   function selectLab(index: number) {
     if (selectedLabs.length >= maxRounds) return;
     selectedLabs.push(...availableLabs.splice(index, 1));
-    availableLabs = availableLabs;
     selectedLabs = selectedLabs;
+    availableLabs = availableLabs;
   }
 
   function moveLabUp(above: number) {
@@ -64,8 +68,6 @@
 
   function resetSelection(index: number) {
     availableLabs.push(...selectedLabs.splice(index, 1));
-    availableLabs = availableLabs;
-    selectedLabs = selectedLabs;
   }
 </script>
 
@@ -85,24 +87,15 @@
       await update({ reset: false });
       switch (result.type) {
         case 'success':
-          toast.trigger({
-            message: 'Uploaded your lab preferences.',
-            background: 'variant-filled-success',
-          });
+          toaster.success({ title: 'Uploaded your lab preferences.' });
           break;
         case 'failure':
           switch (result.status) {
             case 400:
-              toast.trigger({
-                message: 'Empty submissions are not allowed.',
-                background: 'variant-filled-error',
-              });
+              toaster.error({ title: 'Empty submissions are not allowed.' });
               break;
             case 403:
-              toast.trigger({
-                message: 'You have already set your lab preferences before.',
-                background: 'variant-filled-error',
-              });
+              toaster.error({ title: 'You have already set your lab preferences before.' });
               break;
             default:
               break;
@@ -115,7 +108,7 @@
   }}
 >
   <input type="hidden" name="draft" value={draftId} />
-  <div class="card {cardVariant} prose max-w-none p-4 transition dark:prose-invert">
+  <div class="card {cardVariant} prose dark:prose-invert max-w-none p-4 transition duration-150">
     <p>
       Lab preferences are ordered by preference from top (most preferred) to bottom (least
       preferred).
@@ -127,41 +120,43 @@
         You may no longer select any more labs.
       {/if}
     </p>
-    <button type="submit" class="variant-filled-primary btn">Submit Lab Preferences</button>
+    <button type="submit" class="preset-filled-primary-500 btn">Submit Lab Preferences</button>
   </div>
-  <hr class="!border-surface-400-500-token !border-t-4" />
+  <hr class="!border-surface-500 !border-t-4" />
   {#if selectedLabs.length > 0}
-    <ol class="list">
+    <ol class="space-y-2">
       {#each selectedLabs as { id, name }, idx (id)}
         <input type="hidden" name="labs" value={id} />
-        <li class="card variant-ghost-surface card-hover p-4">
-          <span class="text-md variant-filled-secondary badge-icon p-4 text-lg font-bold"
-            >{idx + 1}</span
-          >
-          <span class="flex-auto">{name}</span>
-          <span class="flex gap-2">
-            <button
-              type="button"
-              class="variant-filled-success btn-icon btn-icon-sm"
-              onclick={moveLabUp.bind(null, idx)}
-            >
-              <Icon src={ArrowUp} class="size-6" />
-            </button>
-            <button
-              type="button"
-              class="variant-filled-warning btn-icon btn-icon-sm"
-              onclick={moveLabDown.bind(null, idx)}
-            >
-              <Icon src={ArrowDown} class="size-6" />
-            </button>
-            <button
-              type="button"
-              class="variant-filled-error btn-icon btn-icon-sm"
-              onclick={resetSelection.bind(null, idx)}
-            >
-              <Icon src={XMark} class="size-6" />
-            </button>
-          </span>
+        <li class="card preset-tonal-surface border-surface-500 card-hover border p-4">
+          <div class="flex items-center gap-3">
+            <div class="text-md preset-filled-secondary-500 badge-icon p-4 text-lg font-bold">
+              {idx + 1}
+            </div>
+            <div class="grow">{name}</div>
+            <div class="flex gap-2">
+              <button
+                type="button"
+                class="preset-filled-success-500 btn-icon btn-icon-sm"
+                onclick={moveLabUp.bind(null, idx)}
+              >
+                <Icon src={ArrowUp} class="size-6" />
+              </button>
+              <button
+                type="button"
+                class="preset-filled-warning-500 btn-icon btn-icon-sm"
+                onclick={moveLabDown.bind(null, idx)}
+              >
+                <Icon src={ArrowDown} class="size-6" />
+              </button>
+              <button
+                type="button"
+                class="preset-filled-error-500 btn-icon btn-icon-sm"
+                onclick={resetSelection.bind(null, idx)}
+              >
+                <Icon src={XMark} class="size-6" />
+              </button>
+            </div>
+          </div>
         </li>
       {/each}
     </ol>
@@ -169,15 +164,20 @@
     <WarningAlert>No labs selected yet.</WarningAlert>
   {/if}
 </form>
-<hr class="!border-surface-400-500-token !border-t-4" />
+<hr class="!border-surface-500 !border-t-4" />
 {#if availableLabs.length > 0}
-  <ul class="list">
+  <ul
+    inert={selectedLabs.length >= maxRounds}
+    class="space-y-1 overflow-hidden rounded-xl inert:opacity-20"
+  >
     {#each availableLabs as { id, name }, idx (id)}
       <li>
         <button
-          class="card variant-soft-surface card-hover flex-auto p-4 transition"
-          onclick={selectLab.bind(null, idx)}>{name}</button
+          class="preset-filled-surface-200-800 hover:preset-filled-surface-100-900 w-full flex-auto p-4 transition duration-150"
+          onclick={selectLab.bind(null, idx)}
         >
+          {name}
+        </button>
       </li>
     {/each}
   </ul>

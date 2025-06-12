@@ -4,8 +4,8 @@
   import { ShieldExclamation } from '@steeze-ui/heroicons';
   import { assert } from '$lib/assert';
   import { enhance } from '$app/forms';
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import type { schema } from '$lib/server/database';
+  import { useToaster } from '$lib/toast';
 
   type Lab = Pick<schema.Lab, 'id' | 'name'>;
   type User = Pick<
@@ -21,7 +21,7 @@
 
   const { draft, labs, students }: Props = $props();
 
-  const toast = getToastStore();
+  const toaster = useToaster();
 </script>
 
 <form
@@ -40,10 +40,7 @@
       submitter.disabled = false;
       await update();
       if (result.type === 'success')
-        toast.trigger({
-          message: 'Successfully applied the interventions.',
-          background: 'variant-filled-success',
-        });
+        toaster.success({ title: 'Successfully applied the interventions.' });
     };
   }}
 >
@@ -53,7 +50,7 @@
     {/each}
   </ul>
   <input type="hidden" name="draft" value={draft} />
-  <button type="submit" class="!variant-glass-warning btn btn-lg w-full">
+  <button type="submit" class="!preset-tonal-warning btn btn-lg w-full">
     <Icon src={ShieldExclamation} class="size-8" />
     <span>Apply Interventions</span>
   </button>

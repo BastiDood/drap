@@ -22,7 +22,7 @@
   }}
 >
   <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
-    <label>
+    <label class="label">
       <span>Student Number</span>
       {#if studentNumber === null}
         <input
@@ -46,7 +46,7 @@
         />
       {/if}
     </label>
-    <label>
+    <label class="label">
       <span>Given Name</span>
       <input
         required
@@ -57,7 +57,7 @@
         class="input variant-form-material px-2 py-1"
       />
     </label>
-    <label>
+    <label class="label">
       <span>Family Name</span>
       <input
         required
@@ -69,5 +69,5 @@
       />
     </label>
   </div>
-  <button type="submit" class="variant-filled-primary btn">Update</button>
+  <button type="submit" class="preset-filled-primary-500 btn">Update</button>
 </form>

@@ -1,8 +1,8 @@
 <script lang="ts">
   import { assert } from '$lib/assert';
   import { enhance } from '$app/forms';
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import type { schema } from '$lib/server/database';
+  import { useToaster } from '$lib/toast';
 
   interface Props {
     draft: schema.Draft['id'];
@@ -10,7 +10,7 @@
 
   const { draft }: Props = $props();
 
-  const toast = getToastStore();
+  const toaster = useToaster();
 </script>
 
 <form
@@ -30,17 +30,15 @@
       if (result.type === 'failure')
         switch (result.status) {
           case 497:
-            toast.trigger({
-              message: 'Cannot start the draft when there are not enough participants.',
-              background: 'variant-filled-error',
-              autohide: false,
+            toaster.error({
+              title: 'Cannot start the draft when there are not enough participants.',
+              duration: Infinity,
             });
             break;
           case 498:
-            toast.trigger({
-              message: 'Cannot start the draft when the total lab quota is zero.',
-              background: 'variant-filled-error',
-              autohide: false,
+            toaster.error({
+              title: 'Cannot start the draft when the total lab quota is zero.',
+              duration: Infinity,
             });
             break;
           default:
@@ -50,5 +48,7 @@
   }}
 >
   <input type="hidden" name="draft" value={draft} />
-  <button type="submit" class="variant-ghost-warning btn w-full">Start Draft</button>
+  <button type="submit" class="preset-tonal-warning border-warning-500 btn w-full border"
+    >Start Draft</button
+  >
 </form>

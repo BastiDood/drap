@@ -3,8 +3,8 @@
   import { PencilSquare } from '@steeze-ui/heroicons';
   import { assert } from '$lib/assert';
   import { enhance } from '$app/forms';
-  import { getToastStore } from '@skeletonlabs/skeleton';
   import type { schema } from '$lib/server/database';
+  import { useToaster } from '$lib/toast';
 
   type Lab = Pick<schema.Lab, 'id' | 'name' | 'quota'>;
   interface Props {
@@ -14,7 +14,7 @@
   const { labs }: Props = $props();
   const total = $derived(labs.reduce((total, { quota }) => total + quota, 0));
 
-  const toast = getToastStore();
+  const toaster = useToaster();
 </script>
 
 <form
@@ -30,16 +30,10 @@
       await update();
       switch (result.type) {
         case 'success':
-          toast.trigger({
-            message: 'Successfully updated the lab quotas.',
-            background: 'variant-filled-success',
-          });
+          toaster.success({ title: 'Successfully updated the lab quotas.' });
           break;
         case 'failure':
-          toast.trigger({
-            message: 'Failed to update the lab quotas.',
-            background: 'variant-filled-error',
-          });
+          toaster.error({ title: 'Failed to update the lab quotas.' });
           break;
         default:
           break;
@@ -48,7 +42,7 @@
   }}
 >
   <div class="table-container">
-    <table class="table table-hover table-comfortable">
+    <table class=" table-comfortable table">
       <thead>
         <tr>
           <th>Laboratory</th>
@@ -74,7 +68,7 @@
       </tbody>
     </table>
   </div>
-  <button type="submit" class="variant-filled-primary btn w-full">
+  <button type="submit" class="preset-filled-primary-500 btn w-full">
     <span><Icon src={PencilSquare} class="h-6" /></span>
     <span>Update Lab Quota</span>
   </button>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ProgressBar } from '@skeletonlabs/skeleton';
+  import { Progress } from '@skeletonlabs/skeleton-svelte';
   import SubmitRankings from './SubmitRankings.svelte';
   import WarningAlert from '$lib/alerts/Warning.svelte';
   import { format } from 'date-fns';
@@ -24,9 +24,11 @@
     >
   {:else}
     <WarningAlert>A draft is currently ongoing. You may no longer register.</WarningAlert>
-    <ProgressBar max={maxRounds} value={currRound} meter="bg-primary-600-300-token" />
+    <Progress max={maxRounds} value={currRound} meterBg="bg-primary-700-300" />
   {/if}
-  <div class="card variant-ghost-secondary prose max-w-none p-4 dark:prose-invert">
+  <div
+    class="card preset-tonal-secondary border-secondary-500 prose dark:prose-invert max-w-none border p-4"
+  >
     <p>
       You have already submitted your lab preferences for this draft last <strong
         >{creationDate}</strong

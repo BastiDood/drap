@@ -4,15 +4,15 @@
     return isActive
       ? ([
           'demote',
-          'variant-filled-warning',
-          'variant-ghost-surface',
+          'preset-filled-warning-500',
+          'preset-tonal-surface border border-surface-500',
           'Demote',
           ArrowDown,
         ] as const)
       : ([
           'promote',
-          'variant-filled-success',
-          'variant-soft-surface',
+          'preset-filled-success-500',
+          'preset-tonal-surface',
           'Promote',
           ArrowUp,
         ] as const);
@@ -20,7 +20,7 @@
 </script>
 
 <script lang="ts">
-  import { Avatar } from '@skeletonlabs/skeleton';
+  import { Avatar } from '@skeletonlabs/skeleton-svelte';
   import { Icon } from '@steeze-ui/svelte-icon';
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';
@@ -39,7 +39,7 @@
   {#each senders as { id, email, givenName, familyName, avatarUrl, isActive } (email)}
     {@const [action, variant, card, text, icon] = useSenderControls(isActive)}
     <div class="card {card} min-w-max">
-      <span><Avatar slot="lead" src={avatarUrl} width="w-12" /></span>
+      <span><Avatar src={avatarUrl} name="{givenName} {familyName}" size="size-12" /></span>
       <span class="flex-auto">
         <dt><strong><span class="uppercase">{familyName}</span>, {givenName}</strong></dt>
         <dd class="text-sm opacity-50">{email}</dd>
@@ -70,7 +70,7 @@
             type="submit"
             {disabled}
             formaction="/dashboard/email/?/remove"
-            class="variant-filled-error btn btn-sm"
+            class="preset-filled-error-500 btn btn-sm"
           >
             <span><Icon src={XMark} class="h-6" /></span>
             <span>Remove</span>

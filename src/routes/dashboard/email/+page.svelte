@@ -17,7 +17,7 @@
 </script>
 
 <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-[auto_1fr]">
-  <div class="prose max-w-none dark:prose-invert lg:max-w-prose">
+  <div class="prose dark:prose-invert max-w-none lg:max-w-prose">
     <h2>Email Notifications</h2>
     <p>
       To enable email notifications, one of the draft administrators must first volunteer themselves
@@ -37,7 +37,7 @@
     </p>
     <form method="get" action="/oauth/login/">
       <input type="hidden" name="extended" />
-      <button type="submit" {disabled} class="not-prose variant-filled-primary btn w-full">
+      <button type="submit" {disabled} class="not-prose preset-filled-primary-500 btn w-full">
         <span><Icon src={ShieldExclamation} class="h-8" /></span>
         <span>Volunteer as a Candidate Sender</span>
       </button>
