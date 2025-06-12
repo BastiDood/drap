@@ -14,8 +14,8 @@ export const actions = {
     redirect(307, '/');
   },
   async dummy({ locals: { db, session }, cookies }) {
-    if (typeof session === 'undefined') error(401);
     if (!dev) error(403);
+    if (typeof session === 'undefined') error(401);
 
     const dummyId = crypto.randomUUID();
     const emailLeader = dummyId.slice(0, 8);
