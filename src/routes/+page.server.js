@@ -13,26 +13,29 @@ export const actions = {
     cookies.delete('sid', { path: '/', httpOnly: true, sameSite: 'lax' });
     redirect(307, '/');
   },
-  async dummy({ locals: { db, session }, cookies }) {
-    if (!dev) error(403);
-    if (typeof session === 'undefined') error(401);
+  ...(dev
+    ? {}
+    : {
+        async dummy({ locals: { db, session }, cookies }) {
+          if (typeof session === 'undefined') error(401);
 
-    const dummyId = crypto.randomUUID();
-    const emailLeader = dummyId.slice(0, 8);
-    const dummyEmail = `${emailLeader}@dummy.com`;
+          const dummyId = crypto.randomUUID();
+          const emailLeader = dummyId.slice(0, 8);
+          const dummyEmail = `${emailLeader}@dummy.com`;
 
-    // log the dummy user in
-    db.logger.warn({ dummyEmail }, 'inserting dummy user');
-    const dummyUserId = await db.upsertOpenIdUser(
-      dummyEmail,
-      '',
-      'Dummy',
-      emailLeader,
-      `https://avatar.iran.liara.run/username?username=${dummyEmail}`,
-    );
-    const dummySessionId = await db.insertDummySession(dummyUserId.id);
+          // log the dummy user in
+          db.logger.warn({ dummyEmail }, 'inserting dummy user');
+          const dummyUserId = await db.upsertOpenIdUser(
+            dummyEmail,
+            '',
+            'Dummy',
+            emailLeader,
+            `https://avatar.vercel.sh/${dummyId}`,
+          );
+          const dummySessionId = await db.insertDummySession(dummyUserId.id);
 
-    cookies.set('sid', dummySessionId, { path: '/', httpOnly: true, sameSite: 'lax' });
-    redirect(307, '/');
-  },
+          cookies.set('sid', dummySessionId, { path: '/', httpOnly: true, sameSite: 'lax' });
+          redirect(307, '/');
+        },
+      }),
 };
