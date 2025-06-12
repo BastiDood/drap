@@ -112,45 +112,53 @@
           ><Icon src={CalendarDays} class="size-4" theme="micro" /></span
         >
         <h4 class="h4 mb-2"><time datetime={date.toISOString()}>{heading}</time></h4>
-        <ol class="list">
+        <ol class="space-y-1">
           {#each events as { isSystem, labId, round }, index (index)}
             {#if round !== null}
               {@const ordinal = round + getOrdinalSuffix(round)}
               {#if isSystem}
-                <li class="card preset-tonal-surface px-3 py-1.5">
-                  <Icon src={Cog} class="size-4" theme="micro" />
-                  <span class="flex-auto"
-                    >The system has skipped the <strong class="uppercase">{labId}</strong> for the {ordinal}
-                    round due to insufficient quota and/or zero demand.</span
-                  >
+                <li class="card preset-tonal-warning border-warning-500 border px-3 py-1.5">
+                  <div class="flex items-center gap-3">
+                    <Icon src={Cog} class="size-4" theme="micro" />
+                    <span>
+                      The system has skipped the <strong class="uppercase">{labId}</strong> for the {ordinal}
+                      round due to insufficient quota and/or zero demand.
+                    </span>
+                  </div>
                 </li>
               {:else}
                 <li class="card preset-tonal-secondary border-secondary-500 border px-3 py-1.5">
-                  <Icon src={UserGroup} class="size-4" theme="micro" />
-                  <span class="flex-auto"
-                    >The <strong class="uppercase">{labId}</strong> has selected their {ordinal} batch
-                    of draftees.</span
-                  >
+                  <div class="flex items-center gap-3">
+                    <Icon src={UserGroup} class="size-4" theme="micro" />
+                    <span>
+                      The <strong class="uppercase">{labId}</strong> has selected their {ordinal} batch
+                      of draftees.
+                    </span>
+                  </div>
                 </li>
               {/if}
             {:else if isSystem}
               <li class="card preset-tonal-error border-error-500 border px-3 py-1.5">
-                <Icon src={ExclamationTriangle} class="size-4" theme="micro" />
-                <span class="flex-auto"
-                  >A system-automated event for the <strong class="uppercase">{labId}</strong>
-                  occurred during a lottery. This should be impossible. Kindly
-                  <a href="https://github.com/BastiDood/drap/issues/new" class="anchor"
-                    >file an issue</a
-                  > and report this bug there.</span
-                >
+                <div class="flex items-center gap-3">
+                  <Icon src={ExclamationTriangle} class="size-4" theme="micro" />
+                  <span>
+                    A system-automated event for the <strong class="uppercase">{labId}</strong>
+                    occurred during a lottery. This should be impossible. Kindly
+                    <a href="https://github.com/BastiDood/drap/issues/new" class="anchor"
+                      >file an issue</a
+                    > and report this bug there.
+                  </span>
+                </div>
               </li>
             {:else}
               <li class="card preset-tonal-tertiary border-tertiary-500 border px-3 py-1.5">
-                <Icon src={ArrowPath} class="size-4" theme="micro" />
-                <span class="flex-auto"
-                  >The <strong class="uppercase">{labId}</strong> has obtained a batch of draftees from
-                  the lottery round.</span
-                >
+                <div class="flex items-center gap-3">
+                  <Icon src={ArrowPath} class="size-4" theme="micro" />
+                  <span>
+                    The <strong class="uppercase">{labId}</strong> has obtained a batch of draftees from
+                    the lottery round.
+                  </span>
+                </div>
               </li>
             {/if}
           {/each}
@@ -165,7 +173,7 @@
       <h4 class="h4 mb-2"><time datetime={startIsoString}>{startDateTime}</time></h4>
       <ol class="list">
         <li class="card preset-tonal-success border-success-500 border px-3 py-1.5">
-          <span class="flex-auto">Draft #{did} was created.</span>
+          Draft #{did} was created.
         </li>
       </ol>
     </li>

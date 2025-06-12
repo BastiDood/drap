@@ -20,7 +20,7 @@
 </script>
 
 <a href="mailto:{email}" class="grid w-full grid-cols-[auto_1fr] items-center gap-2 p-4">
-  <span><Avatar src={avatarUrl} name="{givenName} {familyName}" size="size-20" /></span>
+  <Avatar src={avatarUrl} name="{givenName} {familyName}" size="size-20" />
   <span class="flex flex-col">
     {#if givenName.length > 0 && familyName.length > 0}
       <strong><span class="uppercase">{familyName}</span>, {givenName}</strong>

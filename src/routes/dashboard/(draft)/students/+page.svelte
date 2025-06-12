@@ -69,10 +69,10 @@
       {#each researchers as { email, givenName, familyName, avatarUrl, studentNumber } (email)}
         <a
           href="mailto:{email}"
-          class="preset-filled-surface-100-900 hover:preset-filled-surface-200-800 rounded-md p-2 transition-colors duration-150"
+          class="preset-filled-surface-100-900 hover:preset-filled-surface-200-800 flex items-center gap-3 rounded-md p-2 transition-colors duration-150"
         >
           <Avatar src={avatarUrl} name="{givenName} {familyName}" />
-          <div class="flex flex-col">
+          <div class="flex grow flex-col">
             <strong><span class="uppercase">{familyName}</span>, {givenName}</strong>
             {#if studentNumber !== null}
               <span class="text-sm opacity-50">{studentNumber}</span>
