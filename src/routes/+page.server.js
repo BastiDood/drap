@@ -14,11 +14,8 @@ export const actions = {
     redirect(307, '/');
   },
   ...(dev
-    ? {}
-    : {
-        async dummy({ locals: { db, session }, cookies }) {
-          if (typeof session === 'undefined') error(401);
-
+    ? {
+        async dummy({ locals: { db }, cookies }) {
           const dummyId = crypto.randomUUID();
           const emailLeader = dummyId.slice(0, 8);
           const dummyEmail = `${emailLeader}@dummy.com`;
@@ -37,5 +34,6 @@ export const actions = {
           cookies.set('sid', dummySessionId, { path: '/', httpOnly: true, sameSite: 'lax' });
           redirect(307, '/');
         },
-      }),
+      }
+    : {}),
 };
