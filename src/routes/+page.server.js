@@ -21,14 +21,6 @@ export const actions = {
     const emailLeader = dummyId.slice(0, 8);
     const dummyEmail = `${emailLeader}@dummy.com`;
 
-    // log the current user out
-    const deleted = await db.deleteValidSession(session.id);
-    if (typeof deleted === 'undefined')
-      db.logger.warn('attempt to delete non-existent/expired session');
-    else db.logger.info({ deleteValidSession: deleted });
-
-    cookies.delete('sid', { path: '/', httpOnly: true, sameSite: 'lax' });
-
     // log the dummy user in
     db.logger.warn({ dummyEmail }, 'inserting dummy user');
     const dummyUserId = await db.upsertOpenIdUser(
