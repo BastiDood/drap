@@ -25,7 +25,7 @@ export const actions = {
     db.logger.warn({ dummyEmail }, 'inserting dummy user');
     const dummyUserId = await db.upsertOpenIdUser(
       dummyEmail,
-      crypto.randomUUID(),
+      '',
       'Dummy',
       emailLeader,
       `https://avatar.iran.liara.run/username?username=${dummyEmail}`,
