@@ -34,5 +34,6 @@ export const actions = {
           cookies.set('sid', dummySessionId, { path: '/', httpOnly: true, sameSite: 'lax' });
           redirect(307, '/');
         },
-    }: {}),
+      }
+    : {}),
 };
