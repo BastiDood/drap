@@ -16,10 +16,10 @@
   import { AppRail, AppRailAnchor, Avatar, LightSwitch } from '@skeletonlabs/skeleton';
   import { Icon } from '@steeze-ui/svelte-icon';
   import { assert } from '$lib/assert';
+  import { dev } from '$app/environment';
   import { enhance } from '$app/forms';
   import { page } from '$app/stores';
   import type { schema } from '$lib/server/database';
-  import { dev } from '$app/environment';
 
   // eslint-disable-next-line @typescript-eslint/init-declarations
   export let user: schema.User | undefined;
