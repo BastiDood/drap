@@ -102,6 +102,29 @@ export const studentRank = app.table(
 export type StudentRank = typeof studentRank.$inferSelect;
 export type NewStudentRank = typeof studentRank.$inferInsert;
 
+export const studentRankLab = app.table(
+  'student_rank_lab',
+  {
+    draftId: bigint('draft_id', { mode: 'bigint' })
+      .notNull()
+      .references(() => draft.id, { onUpdate: 'cascade' }),
+    userId: ulid('user_id')
+      .notNull()
+      .references(() => user.id, { onUpdate: 'cascade' }),
+    labId: text('lab_id')
+      .notNull()
+      .references(() => lab.id, { onUpdate: 'cascade' }),
+    index: bigint('index', { mode: 'bigint' })
+      .notNull(),
+    remark: text('remarks')
+      .notNull()
+      .default(''),
+  },
+  ({ draftId, userId, labId }) => [primaryKey({ columns: [draftId, userId, labId] })]
+)
+export type StudentRankLab = typeof studentRankLab.$inferSelect;
+export type NewStudentRankLab = typeof studentRankLab.$inferInsert;
+
 export const facultyChoice = app.table(
   'faculty_choice',
   {
