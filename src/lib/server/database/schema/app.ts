@@ -113,14 +113,11 @@ export const studentRankLab = app.table(
     labId: text('lab_id')
       .notNull()
       .references(() => lab.id, { onUpdate: 'cascade' }),
-    index: bigint('index', { mode: 'bigint' })
-      .notNull(),
-    remark: text('remark')
-      .notNull()
-      .default(''),
+    index: bigint('index', { mode: 'bigint' }).notNull(),
+    remark: text('remark').notNull().default(''),
   },
-  ({ draftId, userId, labId }) => [primaryKey({ columns: [draftId, userId, labId] })]
-)
+  ({ draftId, userId, labId }) => [primaryKey({ columns: [draftId, userId, labId] })],
+);
 export type StudentRankLab = typeof studentRankLab.$inferSelect;
 export type NewStudentRankLab = typeof studentRankLab.$inferInsert;
 

@@ -340,7 +340,11 @@ export class Database implements Loggable {
         familyName: schema.user.familyName,
         avatarUrl: schema.user.avatarUrl,
         studentNumber: schema.user.studentNumber,
-        labs: sql`array_agg(${schema.studentRankLab.labId} ORDER BY ${schema.studentRankLab.index})`.as('labs'),
+        labs: sql<
+          string[]
+        >`array_agg(${schema.studentRankLab.labId} ORDER BY ${schema.studentRankLab.index})`.as(
+          'labs',
+        ),
         labId: schema.facultyChoiceUser.labId,
       })
       .from(schema.studentRank)
@@ -361,13 +365,13 @@ export class Database implements Loggable {
       )
       .where(eq(schema.studentRank.draftId, draftId))
       .groupBy(
-        schema.user.id, 
-        schema.user.email, 
+        schema.user.id,
+        schema.user.email,
         schema.user.givenName,
         schema.user.familyName,
         schema.user.avatarUrl,
         schema.user.studentNumber,
-        schema.facultyChoiceUser.labId
+        schema.facultyChoiceUser.labId,
       )
       .orderBy(schema.user.familyName);
   }
@@ -393,7 +397,7 @@ export class Database implements Loggable {
         familyName: schema.user.familyName,
         avatarUrl: schema.user.avatarUrl,
         studentNumber: schema.user.studentNumber,
-        remark: schema.studentRankLab.remark
+        remark: schema.studentRankLab.remark,
       })
       .from(schema.studentRank)
       .innerJoin(schema.draft, eq(schema.studentRank.draftId, schema.draft.id))
@@ -405,11 +409,11 @@ export class Database implements Loggable {
         ),
       )
       .leftJoin(
-        schema.studentRankLab, 
+        schema.studentRankLab,
         and(
           eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
-          eq(schema.studentRank.userId, schema.studentRankLab.userId)
-        )
+          eq(schema.studentRank.userId, schema.studentRankLab.userId),
+        ),
       )
       .innerJoin(schema.user, eq(schema.studentRank.userId, schema.user.id))
       .where(
@@ -417,7 +421,7 @@ export class Database implements Loggable {
           eq(schema.studentRank.draftId, draftId),
           isNull(schema.facultyChoiceUser.studentUserId),
           eq(schema.studentRankLab.index, schema.draft.currRound),
-          eq(schema.studentRankLab.labId, labId)
+          eq(schema.studentRankLab.labId, labId),
         ),
       );
 
@@ -499,17 +503,17 @@ export class Database implements Loggable {
         ),
       )
       .leftJoin(
-        schema.studentRankLab, 
+        schema.studentRankLab,
         and(
           eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
-          eq(schema.studentRank.userId, schema.studentRankLab.userId)
-        )
+          eq(schema.studentRank.userId, schema.studentRankLab.userId),
+        ),
       )
       .where(
         and(
           isNull(schema.facultyChoiceUser.studentUserId),
           eq(schema.studentRankLab.index, draftsCte.currRound),
-        )
+        ),
       )
       .as('_');
     const preferredCte = this.#db.$with('_preferred').as(
@@ -619,25 +623,27 @@ export class Database implements Loggable {
     return activePeriodEnd;
   }
 
-  @timed async insertStudentRanking(draftId: bigint, userId: string, labs: string[], remarks: string[]) {
+  @timed async insertStudentRanking(
+    draftId: bigint,
+    userId: string,
+    labs: string[],
+    remarks: string[],
+  ) {
     await this.#db.transaction(async txn => {
       await txn
         .insert(schema.studentRank)
         .values({ draftId, userId })
         .onConflictDoNothing({ target: [schema.studentRank.draftId, schema.studentRank.userId] });
-      
+
       for (let idx = 0; idx < labs.length; idx++) {
         const labId = labs[idx];
         const remark = remarks[idx];
         const index = BigInt(idx + 1);
 
-        if (labId && typeof remark !== 'undefined') { 
-          await txn
-            .insert(schema.studentRankLab)
-            .values({ draftId, userId, labId, index, remark });
-        }
-      };
-    })
+        if (labId && typeof remark !== 'undefined')
+          await txn.insert(schema.studentRankLab).values({ draftId, userId, labId, index, remark });
+      }
+    });
   }
 
   @timed async getStudentRankings(draftId: bigint, userId: string) {
@@ -649,23 +655,14 @@ export class Database implements Loggable {
       })
       .from(schema.studentRank)
       .leftJoin(
-        schema.studentRankLab, 
+        schema.studentRankLab,
         and(
           eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
-          eq(schema.studentRank.userId, schema.studentRankLab.userId)
-        )
+          eq(schema.studentRank.userId, schema.studentRankLab.userId),
+        ),
       )
-      .where(
-        and(
-          eq(schema.studentRank.draftId, draftId), 
-          eq(schema.studentRank.userId, userId)
-        )
-      )
-      .groupBy(
-        schema.studentRank.createdAt, 
-        schema.studentRank.draftId, 
-        schema.studentRank.userId
-      )
+      .where(and(eq(schema.studentRank.draftId, draftId), eq(schema.studentRank.userId, userId)))
+      .groupBy(schema.studentRank.createdAt, schema.studentRank.draftId, schema.studentRank.userId)
       .as('_');
 
     return await this.#db

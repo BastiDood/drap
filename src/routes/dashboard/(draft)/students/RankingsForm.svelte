@@ -56,7 +56,7 @@
       >
         <button
           type="button"
-          class="flex flex-col w-full gap-3 p-2"
+          class="flex w-full flex-col gap-3 p-2"
           onclick={action.bind(drafteeIds, id)}
         >
           <div class="flex items-center gap-3 p-2">
@@ -71,7 +71,7 @@
           </div>
           <div class="flex flex-col gap-2">
             <span class="text-start"><strong>Remarks</strong></span>
-            <p class="text-start text-sm opacity-50 max-h-24 overflow-y-scroll">
+            <p class="max-h-24 overflow-y-scroll text-start text-sm opacity-50">
               {remark ?? ''}
             </p>
           </div>

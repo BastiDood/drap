@@ -9,8 +9,7 @@ export function validateString(param: FormDataEntryValue | null) {
 }
 
 export function validateMaybeEmptyString(param: FormDataEntryValue | null) {
-  if (param === null || param instanceof File)
-    error(400, 'Expected string paramater.');
+  if (param === null || param instanceof File) error(400, 'Expected string paramater.');
   return param;
 }
 
