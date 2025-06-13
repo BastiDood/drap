@@ -38,6 +38,8 @@ export const actions = {
     const data = await request.formData();
     const draft = BigInt(validateString(data.get('draft')));
     const labs = data.getAll('labs').map(validateString);
+    const remarks = data.getAll('remarks').map(validateString);
+
     if (labs.length <= 0) return fail(400);
 
     const maxRounds = await db.getMaxRoundInDraft(draft);
@@ -45,7 +47,7 @@ export const actions = {
 
     if (labs.length > maxRounds) error(400);
 
-    if (await db.insertStudentRanking(draft, user.id, labs)) return;
-    return fail(403);
+    await db.insertStudentRanking(draft, user.id, labs, remarks);
+    // TODO: Add proper logging/handling of insert errors.
   },
 };

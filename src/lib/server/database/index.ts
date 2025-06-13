@@ -582,19 +582,25 @@ export class Database implements Loggable {
     return activePeriodEnd;
   }
 
-  @timed async insertStudentRanking(draftId: bigint, userId: string, labs: string[]) {
-    const { rowCount } = await this.#db
-      .insert(schema.studentRank)
-      .values({ draftId, userId, labs })
-      .onConflictDoNothing({ target: [schema.studentRank.draftId, schema.studentRank.userId] });
-    switch (rowCount) {
-      case 0:
-        return false;
-      case 1:
-        return true;
-      default:
-        fail(`insertStudentRanking => unexpected insertion count ${count}`);
-    }
+  @timed async insertStudentRanking(draftId: bigint, userId: string, labs: string[], remarks: string[]) {
+    await this.#db.transaction(async txn => {
+      await txn
+        .insert(schema.studentRank)
+        .values({ draftId, userId, labs })
+        .onConflictDoNothing({ target: [schema.studentRank.draftId, schema.studentRank.userId] });
+      
+      for (let idx = 0; idx < labs.length; idx++) {
+        const labId = labs[idx];
+        const remark = remarks[idx];
+        const index = BigInt(idx + 1);
+
+        if (labId && remark) { 
+          await txn
+            .insert(schema.studentRankLab)
+            .values({ draftId, userId, labId, index, remark });
+        }
+      };
+    })
   }
 
   @timed async getStudentRankings(did: bigint, uid: string) {
