@@ -133,6 +133,7 @@
               {idx + 1}
             </div>
             <div class="grow">{name}</div>
+            <textarea class="card preset-tonal-surface border-surface-500 h-16 min-h-16" name="remarks" placeholder="Remarks"></textarea>
             <div class="flex gap-2">
               <button
                 type="button"
