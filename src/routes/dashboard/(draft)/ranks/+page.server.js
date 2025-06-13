@@ -1,5 +1,5 @@
 import { error, fail, redirect } from '@sveltejs/kit';
-import { validateString } from '$lib/forms';
+import { validateMaybeEmptyString, validateString } from '$lib/forms';
 
 export async function load({ locals: { db, session }, parent }) {
   if (typeof session?.user === 'undefined') redirect(307, '/oauth/login/');
@@ -38,13 +38,13 @@ export const actions = {
     const data = await request.formData();
     const draft = BigInt(validateString(data.get('draft')));
     const labs = data.getAll('labs').map(validateString);
-    const remarks = data.getAll('remarks').map(validateString);
-
+    const remarks = data.getAll('remarks').map(validateMaybeEmptyString);
+    
     if (labs.length <= 0) return fail(400);
-
+    
     const maxRounds = await db.getMaxRoundInDraft(draft);
     if (typeof maxRounds === 'undefined') error(404);
-
+    
     if (labs.length > maxRounds) error(400);
 
     await db.insertStudentRanking(draft, user.id, labs, remarks);

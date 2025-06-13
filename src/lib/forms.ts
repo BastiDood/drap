@@ -8,6 +8,12 @@ export function validateString(param: FormDataEntryValue | null) {
   return param;
 }
 
+export function validateMaybeEmptyString(param: FormDataEntryValue | null) {
+  if (param === null || param instanceof File)
+    error(400, 'Expected string paramater.');
+  return param;
+}
+
 export function validateEmail(param: FormDataEntryValue | null) {
   const email = validateString(param);
   const result = safeParse(User.entries.email, email);

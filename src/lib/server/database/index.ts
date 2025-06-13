@@ -631,7 +631,7 @@ export class Database implements Loggable {
         const remark = remarks[idx];
         const index = BigInt(idx + 1);
 
-        if (labId && remark) { 
+        if (labId && typeof remark !== 'undefined') { 
           await txn
             .insert(schema.studentRankLab)
             .values({ draftId, userId, labId, index, remark });
