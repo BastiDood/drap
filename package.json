@@ -24,7 +24,7 @@
     "@steeze-ui/heroicons": "^2.4.2",
     "@steeze-ui/simple-icons": "^1.10.1",
     "@steeze-ui/svelte-icon": "~1.6.2",
-    "@sveltejs/kit": "^2.21.4",
+    "@sveltejs/kit": "^2.21.5",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.44.2",
     "itertools": "^2.4.1",
