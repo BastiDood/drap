@@ -1,0 +1,1 @@
+ALTER TABLE "drap"."student_rank" DROP COLUMN "labs";

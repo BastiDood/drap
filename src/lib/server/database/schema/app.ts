@@ -95,7 +95,6 @@ export const studentRank = app.table(
     userId: ulid('user_id')
       .notNull()
       .references(() => user.id, { onUpdate: 'cascade' }),
-    labs: text('labs').array().notNull(), // REFERENCES (EACH ELEMENT OF app.lab) app.lab (lab_id)
   },
   ({ draftId, userId }) => [primaryKey({ columns: [draftId, userId] })],
 );

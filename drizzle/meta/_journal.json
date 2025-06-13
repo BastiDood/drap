@@ -29,6 +29,13 @@
       "when": 1749806331943,
       "tag": "0003_add-student-rank-lab",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1749832553607,
+      "tag": "0004_remove-labs",
+      "breakpoints": true
     }
   ]
 }
