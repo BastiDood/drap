@@ -8,7 +8,7 @@
   type Student = Pick<
     schema.User,
     'id' | 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
-  > & { remark: string };
+  > & { remark: string | null };
 
   interface Props {
     disabled: boolean;
@@ -72,7 +72,7 @@
           <div class="flex flex-col gap-2">
             <span class="text-start"><strong>Remarks</strong></span>
             <p class="text-start text-sm opacity-50 max-h-24 overflow-y-scroll">
-              {remark}
+              {remark ?? ''}
             </p>
           </div>
         </button>
