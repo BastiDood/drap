@@ -114,6 +114,10 @@
       preferred).
     </p>
     <p>
+      You may also include remarks alongside your lab rankings. These remarks will only be visible
+      to the heads of the labs you have selected.
+    </p>
+    <p>
       {#if hasRemaining}
         You may select up to <strong>{remaining}</strong> labs left.
       {:else}
