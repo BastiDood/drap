@@ -8,7 +8,7 @@
   type Student = Pick<
     schema.User,
     'id' | 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
-  >;
+  > & { remark: string };
 
   interface Props {
     disabled: boolean;
@@ -39,7 +39,7 @@
       await update();
     };
   }}
-  class="flex min-w-max flex-col gap-4 inert:opacity-20"
+  class="flex flex-col gap-4 inert:opacity-20"
 >
   <input type="hidden" name="draft" value={draft} />
   {#each drafteeIds as id (id)}
@@ -47,7 +47,7 @@
   {/each}
   <button type="submit" class="preset-filled-primary-500 btn w-full">Submit</button>
   <ul class="space-y-1">
-    {#each students as { id, email, givenName, familyName, avatarUrl, studentNumber } (id)}
+    {#each students as { id, email, givenName, familyName, avatarUrl, studentNumber, remark } (id)}
       {@const selected = drafteeIds.has(id)}
       {@const action: (value: string) => void = selected ? drafteeIds.delete : drafteeIds.add}
       <li
@@ -56,16 +56,24 @@
       >
         <button
           type="button"
-          class="flex w-full items-center gap-3 p-2"
+          class="flex flex-col w-full gap-3 p-2"
           onclick={action.bind(drafteeIds, id)}
         >
-          <Avatar src={avatarUrl} name="{givenName} {familyName}" />
-          <div class="flex flex-col">
-            <strong><span class="uppercase">{familyName}</span>, {givenName}</strong>
-            {#if studentNumber !== null}
-              <span class="text-start text-sm opacity-50">{studentNumber}</span>
-            {/if}
-            <span class="text-start text-xs opacity-50">{email}</span>
+          <div class="flex items-center gap-3 p-2">
+            <Avatar src={avatarUrl} name="{givenName} {familyName}" />
+            <div class="flex flex-col">
+              <strong><span class="uppercase">{familyName}</span>, {givenName}</strong>
+              {#if studentNumber !== null}
+                <span class="text-start text-sm opacity-50">{studentNumber}</span>
+              {/if}
+              <span class="text-start text-xs opacity-50">{email}</span>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2">
+            <span class="text-start"><strong>Remarks</strong></span>
+            <p class="text-start text-sm opacity-50 max-h-24 overflow-y-scroll">
+              {remark}
+            </p>
           </div>
         </button>
       </li>

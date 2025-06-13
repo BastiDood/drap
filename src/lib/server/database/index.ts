@@ -393,6 +393,7 @@ export class Database implements Loggable {
         familyName: schema.user.familyName,
         avatarUrl: schema.user.avatarUrl,
         studentNumber: schema.user.studentNumber,
+        remark: schema.studentRankLab.remark
       })
       .from(schema.studentRank)
       .innerJoin(schema.draft, eq(schema.studentRank.draftId, schema.draft.id))
