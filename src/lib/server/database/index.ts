@@ -340,7 +340,7 @@ export class Database implements Loggable {
         familyName: schema.user.familyName,
         avatarUrl: schema.user.avatarUrl,
         studentNumber: schema.user.studentNumber,
-        labs: schema.studentRank.labs,
+        labs: sql`array_agg(${schema.studentRankLab.labId} ORDER BY ${schema.studentRankLab.index})`.as('labs'),
         labId: schema.facultyChoiceUser.labId,
       })
       .from(schema.studentRank)
@@ -352,7 +352,23 @@ export class Database implements Loggable {
           eq(schema.studentRank.userId, schema.facultyChoiceUser.studentUserId),
         ),
       )
+      .leftJoin(
+        schema.studentRankLab,
+        and(
+          eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
+          eq(schema.studentRank.userId, schema.studentRankLab.userId),
+        ),
+      )
       .where(eq(schema.studentRank.draftId, draftId))
+      .groupBy(
+        schema.user.id, 
+        schema.user.email, 
+        schema.user.givenName,
+        schema.user.familyName,
+        schema.user.avatarUrl,
+        schema.user.studentNumber,
+        schema.facultyChoiceUser.labId
+      )
       .orderBy(schema.user.familyName);
   }
 
@@ -387,12 +403,20 @@ export class Database implements Loggable {
           eq(schema.studentRank.userId, schema.facultyChoiceUser.studentUserId),
         ),
       )
+      .leftJoin(
+        schema.studentRankLab, 
+        and(
+          eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
+          eq(schema.studentRank.userId, schema.studentRankLab.userId)
+        )
+      )
       .innerJoin(schema.user, eq(schema.studentRank.userId, schema.user.id))
       .where(
         and(
           eq(schema.studentRank.draftId, draftId),
           isNull(schema.facultyChoiceUser.studentUserId),
-          sql`${schema.studentRank.labs}[${schema.draft.currRound}] = ${labId}`,
+          eq(schema.studentRankLab.index, schema.draft.currRound),
+          eq(schema.studentRankLab.labId, labId)
         ),
       );
 
@@ -461,7 +485,7 @@ export class Database implements Loggable {
     const preferredSubquery = this.#db
       .with(draftsCte)
       .select({
-        labId: sql`${schema.studentRank.labs}[${draftsCte.currRound}]`.as('_lab_id'),
+        labId: schema.studentRankLab.labId,
         studentUserId: schema.studentRank.userId,
       })
       .from(draftsCte)
@@ -473,7 +497,19 @@ export class Database implements Loggable {
           eq(schema.studentRank.userId, schema.facultyChoiceUser.studentUserId),
         ),
       )
-      .where(isNull(schema.facultyChoiceUser.studentUserId))
+      .leftJoin(
+        schema.studentRankLab, 
+        and(
+          eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
+          eq(schema.studentRank.userId, schema.studentRankLab.userId)
+        )
+      )
+      .where(
+        and(
+          isNull(schema.facultyChoiceUser.studentUserId),
+          eq(schema.studentRankLab.index, draftsCte.currRound),
+        )
+      )
       .as('_');
     const preferredCte = this.#db.$with('_preferred').as(
       this.#db
@@ -586,7 +622,7 @@ export class Database implements Loggable {
     await this.#db.transaction(async txn => {
       await txn
         .insert(schema.studentRank)
-        .values({ draftId, userId, labs })
+        .values({ draftId, userId })
         .onConflictDoNothing({ target: [schema.studentRank.draftId, schema.studentRank.userId] });
       
       for (let idx = 0; idx < labs.length; idx++) {
@@ -603,16 +639,34 @@ export class Database implements Loggable {
     })
   }
 
-  @timed async getStudentRankings(did: bigint, uid: string) {
+  @timed async getStudentRankings(draftId: bigint, userId: string) {
     const sub = this.#db
       .select({
         createdAt: schema.studentRank.createdAt,
-        idx: sql`generate_subscripts(${schema.studentRank.labs}, 1)`.as('sub_idx'),
-        labId: sql`unnest(${schema.studentRank.labs})`.as('sub_lab_id'),
+        idx: sql`unnest(array_agg(${schema.studentRankLab.index}))`.as('sub_idx'),
+        labId: sql`unnest(array_agg(${schema.studentRankLab.labId}))`.as('sub_lab_id'),
       })
       .from(schema.studentRank)
-      .where(and(eq(schema.studentRank.draftId, did), eq(schema.studentRank.userId, uid)))
+      .leftJoin(
+        schema.studentRankLab, 
+        and(
+          eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
+          eq(schema.studentRank.userId, schema.studentRankLab.userId)
+        )
+      )
+      .where(
+        and(
+          eq(schema.studentRank.draftId, draftId), 
+          eq(schema.studentRank.userId, userId)
+        )
+      )
+      .groupBy(
+        schema.studentRank.createdAt, 
+        schema.studentRank.draftId, 
+        schema.studentRank.userId
+      )
       .as('_');
+
     return await this.#db
       .select({
         createdAt: sub.createdAt,
