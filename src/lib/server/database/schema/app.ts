@@ -115,7 +115,7 @@ export const studentRankLab = app.table(
       .references(() => lab.id, { onUpdate: 'cascade' }),
     index: bigint('index', { mode: 'bigint' })
       .notNull(),
-    remark: text('remarks')
+    remark: text('remark')
       .notNull()
       .default(''),
   },
