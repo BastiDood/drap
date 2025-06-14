@@ -22,6 +22,13 @@
       "when": 1749595128142,
       "tag": "0002_user-generate-ulid",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1749927505352,
+      "tag": "0003_add-student-rank-lab-table",
+      "breakpoints": true
     }
   ]
 }
