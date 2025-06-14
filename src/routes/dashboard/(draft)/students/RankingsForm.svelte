@@ -5,10 +5,12 @@
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';
 
-  type Student = Pick<
+  interface Student extends Pick<
     schema.User,
     'id' | 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
-  > & { remark: string | null };
+  > { 
+    remark: schema.StudentRankLab['remark']; 
+  };
 
   interface Props {
     disabled: boolean;
@@ -72,7 +74,7 @@
           <div class="flex flex-col gap-2">
             <span class="text-start"><strong>Remarks</strong></span>
             <p class="max-h-24 overflow-y-scroll text-start text-sm opacity-50">
-              {remark ?? ''}
+              {remark}
             </p>
           </div>
         </button>

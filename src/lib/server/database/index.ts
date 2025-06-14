@@ -356,7 +356,7 @@ export class Database implements Loggable {
           eq(schema.studentRank.userId, schema.facultyChoiceUser.studentUserId),
         ),
       )
-      .leftJoin(
+      .innerJoin(
         schema.studentRankLab,
         and(
           eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
@@ -408,7 +408,7 @@ export class Database implements Loggable {
           eq(schema.studentRank.userId, schema.facultyChoiceUser.studentUserId),
         ),
       )
-      .leftJoin(
+      .innerJoin(
         schema.studentRankLab,
         and(
           eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
@@ -502,7 +502,7 @@ export class Database implements Loggable {
           eq(schema.studentRank.userId, schema.facultyChoiceUser.studentUserId),
         ),
       )
-      .leftJoin(
+      .innerJoin(
         schema.studentRankLab,
         and(
           eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
@@ -654,7 +654,7 @@ export class Database implements Loggable {
         labId: sql`unnest(array_agg(${schema.studentRankLab.labId}))`.as('sub_lab_id'),
       })
       .from(schema.studentRank)
-      .leftJoin(
+      .innerJoin(
         schema.studentRankLab,
         and(
           eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
