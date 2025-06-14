@@ -6,8 +6,8 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 
 import * as schema from './schema';
 import { type Loggable, timed } from './decorators';
+import { enumerate, izip } from 'itertools';
 import { alias } from 'drizzle-orm/pg-core';
-import { izip, enumerate } from 'itertools';
 
 function init(url: string) {
   return drizzle(url, { schema });
@@ -365,10 +365,7 @@ export class Database implements Loggable {
         ),
       )
       .where(eq(schema.studentRank.draftId, draftId))
-      .groupBy(
-        schema.user.id,
-        schema.facultyChoiceUser.labId,
-      )
+      .groupBy(schema.user.id, schema.facultyChoiceUser.labId)
       .orderBy(schema.user.familyName);
   }
 
@@ -631,9 +628,10 @@ export class Database implements Loggable {
         .values({ draftId, userId })
         .onConflictDoNothing({ target: [schema.studentRank.draftId, schema.studentRank.userId] });
 
-      for (const [index, [labId, remark]] of enumerate(izip(labs, remarks))) {
-        await txn.insert(schema.studentRankLab).values({ draftId, userId, labId, index: BigInt(index + 1), remark });
-      }
+      for (const [index, [labId, remark]] of enumerate(izip(labs, remarks)))
+        await txn
+          .insert(schema.studentRankLab)
+          .values({ draftId, userId, labId, index: BigInt(index + 1), remark });
     });
   }
 
