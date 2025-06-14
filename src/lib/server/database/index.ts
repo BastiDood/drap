@@ -7,6 +7,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import * as schema from './schema';
 import { type Loggable, timed } from './decorators';
 import { alias } from 'drizzle-orm/pg-core';
+import { izip, enumerate } from 'itertools';
 
 function init(url: string) {
   return drizzle(url, { schema });
@@ -635,13 +636,8 @@ export class Database implements Loggable {
         .values({ draftId, userId })
         .onConflictDoNothing({ target: [schema.studentRank.draftId, schema.studentRank.userId] });
 
-      for (let idx = 0; idx < labs.length; idx++) {
-        const labId = labs[idx];
-        const remark = remarks[idx];
-        const index = BigInt(idx + 1);
-
-        if (labId && typeof remark !== 'undefined')
-          await txn.insert(schema.studentRankLab).values({ draftId, userId, labId, index, remark });
+      for (const [index, [labId, remark]] of enumerate(izip(labs, remarks))) {
+        await txn.insert(schema.studentRankLab).values({ draftId, userId, labId, index: BigInt(index + 1), remark });
       }
     });
   }
