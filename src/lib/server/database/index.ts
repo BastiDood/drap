@@ -641,8 +641,8 @@ export class Database implements Loggable {
     const sub = this.#db
       .select({
         createdAt: schema.studentRank.createdAt,
-        idx: sql`unnest(array_agg(${schema.studentRankLab.index}))`.as('sub_idx'),
-        labId: sql`unnest(array_agg(${schema.studentRankLab.labId}))`.as('sub_lab_id'),
+        index: schema.studentRankLab.index,
+        labId: schema.studentRankLab.labId,
       })
       .from(schema.studentRank)
       .innerJoin(
@@ -653,13 +653,12 @@ export class Database implements Loggable {
         ),
       )
       .where(and(eq(schema.studentRank.draftId, draftId), eq(schema.studentRank.userId, userId)))
-      .groupBy(schema.studentRank.createdAt, schema.studentRank.draftId, schema.studentRank.userId)
       .as('_');
 
     return await this.#db
       .select({
         createdAt: sub.createdAt,
-        labs: sql<string[]>`array_agg(${schema.lab.name} ORDER BY ${sub.idx})`,
+        labs: sql<string[]>`array_agg(${schema.lab.name} ORDER BY ${sub.index})`,
       })
       .from(sub)
       .innerJoin(schema.lab, eq(sub.labId, schema.lab.id))
