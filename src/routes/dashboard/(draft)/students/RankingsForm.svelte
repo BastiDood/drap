@@ -71,12 +71,14 @@
               <span class="text-start text-xs opacity-50">{email}</span>
             </div>
           </div>
-          <div class="flex flex-col gap-2">
-            <span class="text-start"><strong>Remarks</strong></span>
-            <p class="max-h-24 overflow-y-scroll text-start text-sm opacity-50">
-              {remark}
-            </p>
-          </div>
+          {#if remark.length > 0}
+            <div class="flex flex-col gap-2">
+              <span class="text-start"><strong>Remarks</strong></span>
+              <p class="max-h-24 overflow-y-scroll text-start text-sm opacity-50">
+                {remark}
+              </p>
+            </div>
+          {/if}
         </button>
       </li>
     {/each}
