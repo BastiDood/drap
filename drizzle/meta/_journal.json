@@ -43,6 +43,13 @@
       "when": 1749841454775,
       "tag": "0005_rename-remarks-to-remark",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1749925296071,
+      "tag": "0006_limit-remark-1028-characters",
+      "breakpoints": true
     }
   ]
 }

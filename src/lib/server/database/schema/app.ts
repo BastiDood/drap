@@ -9,6 +9,7 @@ import {
   text,
   timestamp,
   unique,
+  varchar,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
@@ -114,7 +115,7 @@ export const studentRankLab = app.table(
       .notNull()
       .references(() => lab.id, { onUpdate: 'cascade' }),
     index: bigint('index', { mode: 'bigint' }).notNull(),
-    remark: text('remark').notNull().default(''),
+    remark: varchar('remark', { length: 1028 }).notNull().default(''),
   },
   ({ draftId, userId, labId }) => [primaryKey({ columns: [draftId, userId, labId] })],
 );
