@@ -367,11 +367,6 @@ export class Database implements Loggable {
       .where(eq(schema.studentRank.draftId, draftId))
       .groupBy(
         schema.user.id,
-        schema.user.email,
-        schema.user.givenName,
-        schema.user.familyName,
-        schema.user.avatarUrl,
-        schema.user.studentNumber,
         schema.facultyChoiceUser.labId,
       )
       .orderBy(schema.user.familyName);
