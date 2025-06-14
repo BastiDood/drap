@@ -1,5 +1,5 @@
 {
-  "id": "73802778-2d03-4d82-8966-76c76b0661f6",
+  "id": "7be48a90-c533-42b3-a04b-5dce01720914",
   "prevId": "a732efa2-3776-48a5-a9a4-467f71ed96a3",
   "version": "7",
   "dialect": "postgresql",
@@ -367,12 +367,6 @@
           "type": "ulid",
           "primaryKey": false,
           "notNull": true
-        },
-        "labs": {
-          "name": "labs",
-          "type": "text[]",
-          "primaryKey": false,
-          "notNull": true
         }
       },
       "indexes": {},
@@ -448,9 +442,9 @@
           "primaryKey": false,
           "notNull": true
         },
-        "remarks": {
-          "name": "remarks",
-          "type": "text",
+        "remark": {
+          "name": "remark",
+          "type": "varchar(1028)",
           "primaryKey": false,
           "notNull": true,
           "default": "''"

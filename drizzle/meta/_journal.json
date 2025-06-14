@@ -26,29 +26,8 @@
     {
       "idx": 3,
       "version": "7",
-      "when": 1749806331943,
-      "tag": "0003_add-student-rank-lab",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1749832553607,
-      "tag": "0004_remove-labs",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1749841454775,
-      "tag": "0005_rename-remarks-to-remark",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1749925296071,
-      "tag": "0006_limit-remark-1028-characters",
+      "when": 1749927505352,
+      "tag": "0003_add-student-rank-lab-table",
       "breakpoints": true
     }
   ]

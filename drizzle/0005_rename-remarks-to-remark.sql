@@ -1,1 +1,0 @@
-ALTER TABLE "drap"."student_rank_lab" RENAME COLUMN "remarks" TO "remark";
