@@ -9,6 +9,7 @@ import {
   text,
   timestamp,
   unique,
+  varchar,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
@@ -95,12 +96,31 @@ export const studentRank = app.table(
     userId: ulid('user_id')
       .notNull()
       .references(() => user.id, { onUpdate: 'cascade' }),
-    labs: text('labs').array().notNull(), // REFERENCES (EACH ELEMENT OF app.lab) app.lab (lab_id)
   },
   ({ draftId, userId }) => [primaryKey({ columns: [draftId, userId] })],
 );
 export type StudentRank = typeof studentRank.$inferSelect;
 export type NewStudentRank = typeof studentRank.$inferInsert;
+
+export const studentRankLab = app.table(
+  'student_rank_lab',
+  {
+    draftId: bigint('draft_id', { mode: 'bigint' })
+      .notNull()
+      .references(() => draft.id, { onUpdate: 'cascade' }),
+    userId: ulid('user_id')
+      .notNull()
+      .references(() => user.id, { onUpdate: 'cascade' }),
+    labId: text('lab_id')
+      .notNull()
+      .references(() => lab.id, { onUpdate: 'cascade' }),
+    index: bigint('index', { mode: 'bigint' }).notNull(),
+    remark: varchar('remark', { length: 1028 }).notNull().default(''),
+  },
+  ({ draftId, userId, labId }) => [primaryKey({ columns: [draftId, userId, labId] })],
+);
+export type StudentRankLab = typeof studentRankLab.$inferSelect;
+export type NewStudentRankLab = typeof studentRankLab.$inferInsert;
 
 export const facultyChoice = app.table(
   'faculty_choice',

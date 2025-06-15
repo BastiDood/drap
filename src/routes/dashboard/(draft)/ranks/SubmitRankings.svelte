@@ -114,6 +114,10 @@
       preferred).
     </p>
     <p>
+      You may also include remarks alongside your lab rankings. These remarks will only be visible
+      to the heads of the labs you have selected.
+    </p>
+    <p>
       {#if hasRemaining}
         You may select up to <strong>{remaining}</strong> labs left.
       {:else}
@@ -133,6 +137,12 @@
               {idx + 1}
             </div>
             <div class="grow">{name}</div>
+            <textarea
+              class="card preset-tonal-surface border-surface-500 h-16 min-h-16"
+              name="remarks"
+              placeholder="Remarks"
+              maxlength="1028"
+            ></textarea>
             <div class="flex gap-2">
               <button
                 type="button"
