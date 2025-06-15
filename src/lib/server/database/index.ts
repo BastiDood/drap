@@ -6,6 +6,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 
 import * as schema from './schema';
 import { type Loggable, timed } from './decorators';
+import { array, parse, string } from 'valibot';
 import { enumerate, izip } from 'itertools';
 import { alias } from 'drizzle-orm/pg-core';
 
@@ -341,11 +342,9 @@ export class Database implements Loggable {
         familyName: schema.user.familyName,
         avatarUrl: schema.user.avatarUrl,
         studentNumber: schema.user.studentNumber,
-        labs: sql<
-          string[]
-        >`array_agg(${schema.studentRankLab.labId} ORDER BY ${schema.studentRankLab.index})`.as(
-          'labs',
-        ),
+        labs: sql`array_agg(${schema.studentRankLab.labId} ORDER BY ${schema.studentRankLab.index})`
+          .mapWith(value => parse(array(string()), value))
+          .as('labs'),
         labId: schema.facultyChoiceUser.labId,
       })
       .from(schema.studentRank)
