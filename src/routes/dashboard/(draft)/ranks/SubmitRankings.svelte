@@ -1,6 +1,5 @@
 <script lang="ts">
   import { ArrowDown, ArrowUp, XMark } from '@steeze-ui/heroicons';
-  import type { Draft } from '$lib/models/draft';
   import { Icon } from '@steeze-ui/svelte-icon';
   import { assert } from '$lib/assert';
   import { enhance } from '$app/forms';
@@ -12,8 +11,8 @@
 
   type Lab = Pick<schema.Lab, 'id' | 'name'>;
   interface Props {
-    draftId: Draft['draft_id'];
-    maxRounds: Draft['max_rounds'];
+    draftId: schema.Draft['id'];
+    maxRounds: schema.Draft['maxRounds'];
     availableLabs: Lab[];
   }
 

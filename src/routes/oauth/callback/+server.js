@@ -1,5 +1,5 @@
 import * as GOOGLE from '$lib/server/env/google';
-import { AuthorizationCode, IdToken, TokenResponse } from '$lib/models/oauth';
+import { AuthorizationCode, IdToken, TokenResponse } from '$lib/server/models/oauth';
 import { error, redirect } from '@sveltejs/kit';
 import { ok, strictEqual } from 'node:assert/strict';
 import { Buffer } from 'node:buffer';

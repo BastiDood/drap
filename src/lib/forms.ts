@@ -1,6 +1,5 @@
-import { User } from '$lib/models/user';
+import { email, pipe, safeParse, string } from 'valibot';
 import { error } from '@sveltejs/kit';
-import { safeParse } from 'valibot';
 
 export function validateString(param: FormDataEntryValue | null) {
   if (param === null || param instanceof File || param.length === 0)
@@ -13,9 +12,10 @@ export function validateMaybeEmptyString(param: FormDataEntryValue | null) {
   return param;
 }
 
+const emailString = pipe(string(), email());
 export function validateEmail(param: FormDataEntryValue | null) {
   const email = validateString(param);
-  const result = safeParse(User.entries.email, email);
+  const result = safeParse(emailString, email);
   if (result.success) return result.output;
   error(400, 'Expected email parameter.');
 }

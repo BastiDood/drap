@@ -16,7 +16,6 @@ import {
   union,
   url,
 } from 'valibot';
-import { User } from './user';
 
 const OAUTH_SCOPES = [
   'openid',
@@ -61,7 +60,7 @@ export const IdToken = object({
   // OpenID audience.
   aud: string(),
   // OpenID subject. Typically the globally unique Google user ID.
-  sub: User.entries.user_id.wrapped,
+  sub: string(),
   // Creation time (in seconds).
   iat: UnixTimeSecs,
   // Expiration time (in seconds) on or after which the token is invalid.

@@ -1,5 +1,5 @@
 import * as GOOGLE from '$lib/server/env/google';
-import { OAUTH_SCOPE_STRING, SENDER_SCOPE_STRING } from '$lib/models/oauth';
+import { OAUTH_SCOPE_STRING, SENDER_SCOPE_STRING } from '$lib/server/models/oauth';
 import { error, redirect } from '@sveltejs/kit';
 
 export async function GET({ locals: { db, session }, cookies, setHeaders, url: { searchParams } }) {

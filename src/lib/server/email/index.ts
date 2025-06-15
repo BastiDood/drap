@@ -1,15 +1,14 @@
-import { IdToken, TokenResponse } from '$lib/models/oauth';
+import type { Database, schema } from '$lib/server/database';
+import { IdToken, TokenResponse } from '$lib/server/models/oauth';
 import assert, { strictEqual } from 'node:assert/strict';
 import { isFuture, sub } from 'date-fns';
 import { parse, pick } from 'valibot';
-import type { Database } from '$lib/server/database';
-import { GmailMessageSendResult } from '$lib/models/email';
-import type { User } from '$lib/models/user';
+import { GmailMessageSendResult } from '$lib/server/models/email';
 import { createMimeMessage } from 'mimetext/node';
 import { fetchJwks } from './jwks';
 import { jwtVerify } from 'jose';
 
-export type Email = User['email'];
+export type Email = schema.User['email'];
 
 export class Emailer {
   #db: Database;
