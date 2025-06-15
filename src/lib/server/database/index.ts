@@ -10,6 +10,8 @@ import { array, parse, string } from 'valibot';
 import { enumerate, izip } from 'itertools';
 import { alias } from 'drizzle-orm/pg-core';
 
+const StringArray = array(string());
+
 function init(url: string) {
   return drizzle(url, { schema });
 }
@@ -343,7 +345,7 @@ export class Database implements Loggable {
         avatarUrl: schema.user.avatarUrl,
         studentNumber: schema.user.studentNumber,
         labs: sql`array_agg(${schema.studentRankLab.labId} ORDER BY ${schema.studentRankLab.index})`
-          .mapWith(value => parse(array(string()), value))
+          .mapWith(value => parse(StringArray, value))
           .as('labs'),
         labId: schema.facultyChoiceUser.labId,
       })
