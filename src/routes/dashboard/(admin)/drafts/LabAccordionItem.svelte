@@ -59,7 +59,7 @@
   {#snippet panel()}
     <div>
       <hr class="p-2" />
-      <div class="grid grid-cols-3">
+      <div class="grid lg:grid-cols-3">
         <div>
           Members / Already Selected
           {#each selected as { id, ...student } (id)}
