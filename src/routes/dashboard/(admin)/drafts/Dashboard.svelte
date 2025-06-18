@@ -76,9 +76,11 @@
             <span>Pending Selection ({available.length}/{total})</span>
           {/snippet}
           {#snippet panel()}
-            {#each available as { id, ...student } (id)}
-              <Student user={student} />
-            {/each}
+            <div class="flex flex-col gap-2">
+              {#each available as { id, ...student } (id)}
+                <Student user={student} />
+              {/each}
+            </div>
           {/snippet}
         </Accordion.Item>
         <Accordion.Item value="already-drafted">
@@ -89,9 +91,11 @@
             <span>Already Drafted ({selected.length}/{total})</span>
           {/snippet}
           {#snippet panel()}
-            {#each selected as { id, ...student } (id)}
-              <Student user={student} />
-            {/each}
+            <div class="flex flex-col gap-2">
+              {#each selected as { id, ...student } (id)}
+                <Student user={student} />
+              {/each}
+            </div>
           {/snippet}
         </Accordion.Item>
       </Accordion>
