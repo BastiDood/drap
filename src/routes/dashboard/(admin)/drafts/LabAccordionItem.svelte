@@ -59,8 +59,8 @@
   {#snippet panel()}
     <div>
       <hr class="p-2" />
-      <div class="grid grid-cols-3">
-        <div>
+      <div class="grid lg:grid-cols-3">
+        <div class="flex flex-col gap-2">
           Members / Already Selected
           {#each selected as { id, ...student } (id)}
             <Student user={student} />
@@ -68,7 +68,7 @@
             <div class="space-y-4 m-2 p-2 italic">No students selected yet.</div>
           {/each}
         </div>
-        <div>
+        <div class="flex flex-col gap-2">
           Preferred This Round
           {#each preferred as { id, ...student } (id)}
             <Student user={student} />
@@ -76,7 +76,7 @@
             <div class="space-y-4 m-2 p-2 italic">No students prefer this lab for this round.</div>
           {/each}
         </div>
-        <div>
+        <div class="flex flex-col gap-2">
           Interested in Future Rounds
           {#each interested as { id, ...student } (id)}
             <Student user={student} />

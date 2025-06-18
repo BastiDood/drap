@@ -130,18 +130,14 @@
     <ol class="space-y-2">
       {#each selectedLabs as { id, name }, idx (id)}
         <input type="hidden" name="labs" value={id} />
-        <li class="card preset-tonal-surface border-surface-500 card-hover border p-4">
+        <li
+          class="card preset-tonal-surface border-surface-500 card-hover flex flex-col gap-4 border p-4"
+        >
           <div class="flex items-center gap-3">
             <div class="text-md preset-filled-secondary-500 badge-icon p-4 text-lg font-bold">
               {idx + 1}
             </div>
             <div class="grow">{name}</div>
-            <textarea
-              class="card preset-tonal-surface border-surface-500 h-16 min-h-16"
-              name="remarks"
-              placeholder="Remarks"
-              maxlength="1028"
-            ></textarea>
             <div class="flex gap-2">
               <button
                 type="button"
@@ -166,6 +162,12 @@
               </button>
             </div>
           </div>
+          <textarea
+            class="card preset-filled-surface-200-800 border-surface-500 h-16 min-h-16 w-full"
+            name="remarks"
+            placeholder="Remarks"
+            maxlength="1028"
+          ></textarea>
         </li>
       {/each}
     </ol>

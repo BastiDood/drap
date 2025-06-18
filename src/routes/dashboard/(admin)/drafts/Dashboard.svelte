@@ -76,9 +76,11 @@
             <span>Pending Selection ({available.length}/{total})</span>
           {/snippet}
           {#snippet panel()}
-            {#each available as { id, ...student } (id)}
-              <Student user={student} />
-            {/each}
+            <div class="flex flex-col gap-2">
+              {#each available as { id, ...student } (id)}
+                <Student user={student} />
+              {/each}
+            </div>
           {/snippet}
         </Accordion.Item>
         <Accordion.Item value="already-drafted">
@@ -89,9 +91,11 @@
             <span>Already Drafted ({selected.length}/{total})</span>
           {/snippet}
           {#snippet panel()}
-            {#each selected as { id, ...student } (id)}
-              <Student user={student} />
-            {/each}
+            <div class="flex flex-col gap-2">
+              {#each selected as { id, ...student } (id)}
+                <Student user={student} />
+              {/each}
+            </div>
           {/snippet}
         </Accordion.Item>
       </Accordion>
@@ -99,14 +103,7 @@
     <Tabs.Panel value={TabType.Labs}>
       <Accordion multiple collapsible>
         {#each labs as lab (lab.id)}
-          <Accordion.Item value={lab.id}>
-            {#snippet control()}{lab.name}{/snippet}
-            {#snippet panel()}
-              <div class="card space-y-4 p-4">
-                <LabAccordionItem {lab} {round} {available} {selected} />
-              </div>
-            {/snippet}
-          </Accordion.Item>
+          <LabAccordionItem {lab} {round} {available} {selected} />
         {/each}
       </Accordion>
     </Tabs.Panel>

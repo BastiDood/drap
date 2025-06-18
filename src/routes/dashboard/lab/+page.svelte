@@ -6,7 +6,7 @@
 </script>
 
 <h2 class="h2">{lab}</h2>
-<div class="grid grid-cols-2 gap-4">
+<div class="grid gap-4 md:grid-cols-2">
   <nav class="list-nav space-y-2">
     <h3 class="h3">Heads</h3>
     <ul class="space-y-1">

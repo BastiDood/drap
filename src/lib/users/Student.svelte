@@ -19,7 +19,10 @@
   const { email, givenName, familyName, avatarUrl, studentNumber, labs, labId } = $derived(user);
 </script>
 
-<a href="mailto:{email}" class="grid w-full grid-cols-[auto_1fr] items-center gap-2 p-4">
+<a
+  href="mailto:{email}"
+  class="preset-filled-surface-100-900 hover:preset-filled-surface-200-800 grid w-full grid-cols-[auto_1fr] items-center gap-2 rounded-md p-2 transition-colors duration-150"
+>
   <Avatar src={avatarUrl} name="{givenName} {familyName}" size="size-20" />
   <span class="flex flex-col">
     {#if givenName.length > 0 && familyName.length > 0}
