@@ -99,14 +99,7 @@
     <Tabs.Panel value={TabType.Labs}>
       <Accordion multiple collapsible>
         {#each labs as lab (lab.id)}
-          <Accordion.Item value={lab.id}>
-            {#snippet control()}{lab.name}{/snippet}
-            {#snippet panel()}
-              <div class="card space-y-4 p-4">
-                <LabAccordionItem {lab} {round} {available} {selected} />
-              </div>
-            {/snippet}
-          </Accordion.Item>
+          <LabAccordionItem {lab} {round} {available} {selected} />
         {/each}
       </Accordion>
     </Tabs.Panel>
