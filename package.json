@@ -9,11 +9,11 @@
     "build": "vite build",
     "preview": "vite preview",
     "prepare": "svelte-kit sync",
-    "fmt": "prettier --check .",
-    "fmt:fix": "prettier --write .",
-    "lint": "pnpm /^lint:/",
+    "fmt": "prettier --experimental-cli . --check",
+    "fmt:fix": "prettier --experimental-cli . --write",
+    "lint": "pnpm run --parallel /^lint:/",
     "lint:svelte": "svelte-check --tsconfig ./tsconfig.json",
-    "lint:eslint": "eslint",
+    "lint:eslint": "eslint --cache",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"
@@ -61,5 +61,12 @@
     "tailwindcss": "^4.1.10",
     "typescript-eslint": "^8.34.1",
     "vite": "^6.3.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@tailwindcss/oxide",
+      "core-js-pure",
+      "esbuild"
+    ]
   }
 }
