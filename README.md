@@ -92,10 +92,11 @@ node --env-file=.env build/index.js
 
 ## Acknowledgements
 
-The DRAP project, licensed under the [GNU Affero General Public License v3], was originally developed by [Sebastian Luis S. Ortiz][BastiDood] and [Victor Edwin E. Reyes][VeeIsForVanana] as a service project under the [UP Center for Student Innovations]. The DRAP [logo](./static/favicon.ico) and [banner](./src/lib/banner.png) were originally designed and created by [Angelica Julianne A. Raborar][Anjellyrika].
+The DRAP project, licensed under the [GNU Affero General Public License v3], was originally developed by [Sebastian Luis S. Ortiz][BastiDood], [Victor Edwin E. Reyes][VeeIsForVanana], and [Ehren A. Castillo][ehrelevant] as a service project under the [UP Center for Student Innovations]. The DRAP [logo](./static/favicon.ico) and [banner](./src/lib/banner.png) were originally designed and created by [Angelica Julianne A. Raborar][Anjellyrika].
 
 [BastiDood]: https://github.com/BastiDood
-[VeeIsForVanana]: https://github.com/VeeIsForVanana
+[VeeIsForVanana]: https://github.com/VeeIsForVictor
+[ehrelevant]: https://github.com/ehrelevant
 [Anjellyrika]: https://github.com/Anjellyrika
 [UP Center for Student Innovations]: https://up-csi.org/
 [GNU Affero General Public License v3]: ./LICENSE
