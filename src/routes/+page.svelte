@@ -180,9 +180,10 @@
       href="https://github.com/BastiDood/drap/blob/bbd5be8b2b3528d2ba28643a91212c2abaa38ce7/LICENSE"
       >GNU Affero General Public License v3</a
     >, was originally developed by
-    <a target="_blank" href="https://github.com/BastiDood">Sebastian Luis S. Ortiz</a>
-    and <a target="_blank" href="https://github.com/VeeIsForVanana">Victor Edwin E. Reyes</a> as a
-    service project under the
+    <a target="_blank" href="https://github.com/BastiDood">Sebastian Luis S. Ortiz</a>,
+    <a target="_blank" href="https://github.com/VeeIsForVictor">Victor Edwin E. Reyes</a>, and
+    <a target="_blank" href="https://github.com/ehrelevant">Ehren A. Castillo</a> as a service
+    project under the
     <a target="_blank" href="https://up-csi.org/">UP Center for Student Innovations</a>. The DRAP
     <a target="_blank" href="/favicon.ico">logo</a>
     and <a target="_blank" href={banner}>banner</a> were originally designed and created by
