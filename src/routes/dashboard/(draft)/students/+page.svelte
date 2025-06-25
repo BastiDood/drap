@@ -14,7 +14,7 @@
     isDone,
   } = $derived(data);
 
-  let draftees = $state(new SvelteSet<string>());
+  const draftees = new SvelteSet<string>();
   const remainingQuota = $derived(quota - researchers.length);
   const remainingDraftees = $derived(remainingQuota - draftees.size);
 </script>
@@ -42,7 +42,8 @@
       <p>
         Welcome to the draft! The <strong>{name}</strong> has been allocated
         <strong>{quota}</strong>
-        slots in total. As a lab head, you may pick at most <strong>{remainingDraftees}</strong>
+        slots in total. As a lab head, you may pick at most
+        <strong>{Math.max(remainingDraftees, 0)}</strong>
         more students in this round. The following students have selected your lab as their
         <strong>{currRound}{suffix}</strong>
         choice. Simply click on the student's name to toggle the selection. By default, none are selected.
@@ -55,12 +56,7 @@
         <em>automatically</em> begins. All lab heads and administrators will be notified when this happens.
       </p>
     </div>
-    <RankingsForm
-      draft={id}
-      {students}
-      bind:drafteeIds={draftees}
-      disabled={remainingDraftees <= 0}
-    />
+    <RankingsForm draft={id} {students} drafteeIds={draftees} disabled={remainingDraftees < 0} />
   </div>
 {:else}
   <WarningAlert

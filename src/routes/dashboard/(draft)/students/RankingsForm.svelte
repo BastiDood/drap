@@ -25,7 +25,6 @@
 </script>
 
 <form
-  inert={disabled}
   method="post"
   action="/dashboard/students/?/rankings"
   use:enhance={({ formData, submitter, cancel }) => {
@@ -48,7 +47,7 @@
   {#each drafteeIds as id (id)}
     <input type="hidden" name="students" value={id} />
   {/each}
-  <button type="submit" class="preset-filled-primary-500 btn w-full">Submit</button>
+  <button type="submit" class="preset-filled-primary-500 btn w-full" {disabled}>Submit</button>
   <ul class="space-y-1">
     {#each students as { id, email, givenName, familyName, avatarUrl, studentNumber, remark } (id)}
       {@const selected = drafteeIds.has(id)}
