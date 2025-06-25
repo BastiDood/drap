@@ -24,7 +24,7 @@ export const actions = {
           db.logger.warn({ dummyEmail }, 'inserting dummy user');
           const dummyUserId = await db.upsertOpenIdUser(
             dummyEmail,
-            '',
+            null,
             'Dummy',
             emailLeader,
             `https://avatar.vercel.sh/${dummyId}.svg`,

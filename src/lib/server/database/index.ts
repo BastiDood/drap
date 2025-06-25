@@ -135,7 +135,7 @@ export class Database implements Loggable {
 
   @timed async upsertOpenIdUser(
     email: string,
-    uid: string,
+    uid: string | null,
     given: string,
     family: string,
     avatar: string,
