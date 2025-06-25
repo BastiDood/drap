@@ -55,7 +55,12 @@
         <em>automatically</em> begins. All lab heads and administrators will be notified when this happens.
       </p>
     </div>
-    <RankingsForm draft={id} {students} bind:drafteeIds={draftees} disabled={remainingDraftees <= 0} />
+    <RankingsForm
+      draft={id}
+      {students}
+      bind:drafteeIds={draftees}
+      disabled={remainingDraftees <= 0}
+    />
   </div>
 {:else}
   <WarningAlert
