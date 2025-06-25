@@ -14,7 +14,7 @@
     isDone,
   } = $derived(data);
 
-  const draftees = new SvelteSet<string>();
+  let draftees = $state(new SvelteSet<string>());
   const remainingQuota = $derived(quota - researchers.length);
   const remainingDraftees = $derived(remainingQuota - draftees.size);
 </script>
@@ -55,7 +55,7 @@
         <em>automatically</em> begins. All lab heads and administrators will be notified when this happens.
       </p>
     </div>
-    <RankingsForm draft={id} {students} drafteeIds={draftees} disabled={remainingDraftees <= 0} />
+    <RankingsForm draft={id} {students} bind:drafteeIds={draftees} disabled={remainingDraftees <= 0} />
   </div>
 {:else}
   <WarningAlert
