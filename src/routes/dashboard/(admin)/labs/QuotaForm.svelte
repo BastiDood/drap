@@ -12,7 +12,7 @@
   }
 
   const { labs }: Props = $props();
-  const total = $derived(labs.reduce((total, { quota }) => total + quota, 0));
+  const total = $derived(labs.reduce((total, { quota, deletedAt }) => total + (deletedAt ? 0 : quota), 0));
 
   const toaster = useToaster();
 </script>
@@ -84,6 +84,7 @@
                 min="0"
                 name={id}
                 {placeholder}
+                disabled={deletedAt !== null}
                 class="input variant-form-material px-2 py-1"
               /></td
             >
