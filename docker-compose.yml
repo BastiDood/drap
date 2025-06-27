@@ -1,11 +1,21 @@
 services:
+  www:
+    build: .
+    profiles:
+      - prod
+    restart: always
+    ports:
+      - 3000:3000
+    env_file:
+      - .env
   db:
     build: ./docker/postgres
+    profiles:
+      - dev
+      - prod
     restart: always
     ports:
       - 5432:5432
-    profiles:
-      - dev
     volumes:
       - postgres:/var/lib/postgresql/data
     healthcheck:
