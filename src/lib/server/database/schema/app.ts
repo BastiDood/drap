@@ -25,7 +25,7 @@ export const lab = app.table(
     id: text('lab_id').primaryKey().notNull(),
     name: text('lab_name').unique().notNull(),
     quota: smallint('quota').notNull().default(0),
-    deletedAt: timestamp('deleted_at', { mode: 'date' }) // when NULL, lab is not yet deleted
+    deletedAt: timestamp('deleted_at', { mode: 'date' }), // when NULL, lab is not yet deleted
   },
   ({ quota }) => [check('lab_quota_non_negative_check', sql`${quota} >= 0`)],
 );

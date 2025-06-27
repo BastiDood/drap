@@ -27,15 +27,15 @@
     submitter.disabled = true;
     let successMessage = 'Successfully updated the lab quotas.';
     let errorMessage = 'Failed to update the lab quotas.';
-    if (submitter.id.includes("delete:")) {
-      const labId = submitter.id.split(':')[1]
-      assert(typeof labId != 'undefined')
+    if (submitter.id.includes('delete:')) {
+      const labId = submitter.id.split(':')[1];
+      assert(typeof labId != 'undefined');
       formData.append('delete', labId);
       successMessage = `Successfully deleted the lab with id: ${labId}`;
       errorMessage = `Failed to delete the lab with id: ${labId}`;
-    } else if (submitter.id.includes("restore:")) {
-      const labId = submitter.id.split(':')[1]
-      assert(typeof labId != 'undefined')
+    } else if (submitter.id.includes('restore:')) {
+      const labId = submitter.id.split(':')[1];
+      assert(typeof labId != 'undefined');
       formData.append('restore', labId);
       successMessage = `Successfully restored the lab with id: ${labId}`;
       errorMessage = `Failed to restore the lab with id: ${labId}`;
@@ -81,9 +81,17 @@
             >
             <td class="table-cell-fit">
               {#if deletedAt === null}
-                <button formaction="?/delete" class="preset-filled-error-500 btn w-full" id="delete:{id}">Delete</button>
-                {:else}
-                <button formaction="?/restore" class="preset-filled-warning-500 btn w-full" id="restore:{id}">Restore</button>
+                <button
+                  formaction="?/delete"
+                  class="preset-filled-error-500 btn w-full"
+                  id="delete:{id}">Delete</button
+                >
+              {:else}
+                <button
+                  formaction="?/restore"
+                  class="preset-filled-warning-500 btn w-full"
+                  id="restore:{id}">Restore</button
+                >
               {/if}
             </td>
           </tr>
