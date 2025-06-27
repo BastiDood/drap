@@ -14,10 +14,13 @@ export async function load({ locals: { db, session }, parent }) {
     error(403);
 
   const { draft } = await parent();
-  const [availableLabs, rankings] = await Promise.all([
-    db.getLabRegistry(),
-    db.getStudentRankings(draft.id, user.id),
-  ]);
+  const rankings = await db.getStudentRankings(draft.id, user.id);
+  let availableLabs = await db.getLabRegistry();
+
+  // filter and get only un-deleted labs
+  availableLabs = availableLabs.filter(
+    ({ deletedAt }) => deletedAt !== null
+  )
 
   return { draft, availableLabs, rankings };
 }
