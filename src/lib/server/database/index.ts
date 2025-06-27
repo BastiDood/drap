@@ -186,7 +186,7 @@ export class Database implements Loggable {
 
   @timed async getLabRegistry() {
     return await this.#db.query.lab.findMany({
-      columns: { id: true, name: true, quota: true },
+      columns: { id: true, name: true, quota: true, deletedAt: true },
       orderBy: ({ name }) => name,
     });
   }
