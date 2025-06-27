@@ -177,7 +177,7 @@ export class Database implements Loggable {
   }
 
   @timed async deleteLab(id: string) {
-    await this.#db.update(schema.lab).set({ deletedAt: new Date() }).where(eq(schema.lab.id, id));
+    await this.#db.update(schema.lab).set({ deletedAt: new Date(), quota: 0 }).where(eq(schema.lab.id, id));
   }
 
   @timed async restoreLab(id: string) {
