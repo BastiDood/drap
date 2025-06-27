@@ -69,7 +69,15 @@
         {#each labs as { id, name, quota, deletedAt } (id)}
           {@const placeholder = quota.toString()}
           <tr>
-            <td class="!align-middle">{name}</td>
+            <td class="!align-middle">
+              {#if deletedAt === null}
+                {name}
+              {:else}
+                <strike>
+                  {name}
+                </strike>
+              {/if}
+            </td>
             <td class="table-cell-fit"
               ><input
                 type="number"
