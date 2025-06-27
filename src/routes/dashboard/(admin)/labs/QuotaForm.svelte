@@ -25,24 +25,30 @@
     assert(submitter !== null);
     assert(submitter instanceof HTMLButtonElement);
     submitter.disabled = true;
+    let successMessage = 'Successfully updated the lab quotas.';
+    let errorMessage = 'Failed to update the lab quotas.';
     if (submitter.id.includes("delete:")) {
       const labId = submitter.id.split(':')[1]
       assert(typeof labId != 'undefined')
       formData.append('delete', labId);
+      successMessage = `Successfully deleted the lab with id: ${labId}`;
+      errorMessage = `Failed to delete the lab with id: ${labId}`;
     } else if (submitter.id.includes("restore:")) {
       const labId = submitter.id.split(':')[1]
       assert(typeof labId != 'undefined')
       formData.append('restore', labId);
+      successMessage = `Successfully restored the lab with id: ${labId}`;
+      errorMessage = `Failed to restore the lab with id: ${labId}`;
     }
     return async ({ update, result }) => {
       submitter.disabled = false;
       await update();
       switch (result.type) {
         case 'success':
-          toaster.success({ title: 'Successfully updated the lab quotas.' });
+          toaster.success({ title: successMessage });
           break;
         case 'failure':
-          toaster.error({ title: 'Failed to update the lab quotas.' });
+          toaster.error({ title: errorMessage });
           break;
         default:
           break;
