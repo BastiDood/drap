@@ -46,4 +46,26 @@ export const actions = {
     const data = await request.formData();
     await db.updateLabQuotas(mapRowTuples(data));
   },
+  async delete({ locals: { db, session }, request }) {
+    if (typeof session?.user === 'undefined') error(401);
+
+    const { user } = session;
+    if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
+
+    const data = await request.formData();
+    const id = validateString(data.get('delete'));
+
+    await db.deleteLab(id);
+  },
+  async restore({ locals: { db, session }, request }) {
+    if (typeof session?.user === 'undefined') error(401);
+
+    const { user } = session;
+    if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
+
+    const data = await request.formData();
+    const id = validateString(data.get('restore'));
+
+    await db.deleteLab(id);
+  },
 };
