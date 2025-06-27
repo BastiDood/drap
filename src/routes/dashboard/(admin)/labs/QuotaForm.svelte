@@ -74,7 +74,7 @@
               /></td
             >
             <td class="table-cell-fit">
-              {#if deletedAt !== null}
+              {#if deletedAt === null}
                 <button formaction="?/delete" class="preset-filled-error-500 btn w-full" id="delete:{id}">Delete</button>
                 {:else}
                 <button formaction="?/restore" class="preset-filled-warning-500 btn w-full" id="restore:{id}">Restore</button>
