@@ -66,6 +66,6 @@ export const actions = {
     const data = await request.formData();
     const id = validateString(data.get('restore'));
 
-    await db.deleteLab(id);
+    await db.restoreLab(id);
   },
 };
