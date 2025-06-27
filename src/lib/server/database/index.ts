@@ -176,6 +176,14 @@ export class Database implements Loggable {
     await this.#db.insert(schema.lab).values({ id, name });
   }
 
+  @timed async deleteLab(id: string) {
+    await this.#db.update(schema.lab).set({ deletedAt: new Date() }).where(eq(schema.lab.id, id));
+  }
+
+  @timed async restoreLab(id: string) {
+    await this.#db.update(schema.lab).set({ deletedAt: null }).where(eq(schema.lab.id, id));
+  }
+
   @timed async getLabRegistry() {
     return await this.#db.query.lab.findMany({
       columns: { id: true, name: true, quota: true },
