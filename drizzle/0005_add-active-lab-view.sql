@@ -1,0 +1,1 @@
+CREATE VIEW "drap"."active_lab_view" AS (select "created_at", "lab_id", "lab_name", "quota", "deleted_at" from "drap"."lab" where "drap"."lab"."deleted_at" is null);
