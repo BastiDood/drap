@@ -210,10 +210,11 @@ export class Database implements Loggable {
     return result;
   }
 
-  @timed async getLabCount() {
+  @timed async getLabCount(activeOnly = true) {
+    const targetSchema = activeOnly ? schema.activeLabView : schema.lab;
     const { result } = await this.#db
-      .select({ result: count(schema.lab.id) })
-      .from(schema.lab)
+      .select({ result: count(targetSchema.id) })
+      .from(targetSchema)
       .then(assertSingle);
     return result;
   }
