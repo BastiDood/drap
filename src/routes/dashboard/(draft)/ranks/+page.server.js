@@ -18,9 +18,7 @@ export async function load({ locals: { db, session }, parent }) {
   let availableLabs = await db.getLabRegistry();
 
   // filter and get only un-deleted labs
-  availableLabs = availableLabs.filter(
-    ({ deletedAt }) => deletedAt !== null
-  )
+  availableLabs = availableLabs.filter(({ deletedAt }) => deletedAt !== null);
 
   return { draft, availableLabs, rankings };
 }

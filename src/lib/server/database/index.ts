@@ -177,7 +177,10 @@ export class Database implements Loggable {
   }
 
   @timed async deleteLab(id: string) {
-    await this.#db.update(schema.lab).set({ deletedAt: new Date(), quota: 0 }).where(eq(schema.lab.id, id));
+    await this.#db
+      .update(schema.lab)
+      .set({ deletedAt: new Date(), quota: 0 })
+      .where(eq(schema.lab.id, id));
   }
 
   @timed async restoreLab(id: string) {
@@ -185,21 +188,20 @@ export class Database implements Loggable {
   }
 
   @timed async getLabRegistry(activeOnly = true) {
-    if (activeOnly) 
+    if (activeOnly)
       return await this.#db
         .select({
           id: schema.activeLabView.id,
           name: schema.activeLabView.name,
           quota: schema.activeLabView.quota,
-          deletedAt: schema.activeLabView.deletedAt
+          deletedAt: schema.activeLabView.deletedAt,
         })
         .from(schema.activeLabView)
         .orderBy(({ name }) => name);
     return await this.#db.query.lab.findMany({
-        columns: { id: true, name: true, quota: true, deletedAt: true },
-        orderBy: ({ name }) => name,
-      });
-    
+      columns: { id: true, name: true, quota: true, deletedAt: true },
+      orderBy: ({ name }) => name,
+    });
   }
 
   @timed async isValidTotalLabQuota() {
@@ -543,7 +545,11 @@ export class Database implements Loggable {
     await this.#db.transaction(async txn => {
       const toAcknowledge = await txn
         .with(draftsCte, draftedCte, preferredCte)
-        .select({ draftId: draftsCte.draftId, round: draftsCte.currRound, labId: schema.activeLabView.id })
+        .select({
+          draftId: draftsCte.draftId,
+          round: draftsCte.currRound,
+          labId: schema.activeLabView.id,
+        })
         .from(draftsCte)
         .crossJoin(schema.activeLabView)
         .leftJoin(draftedCte, eq(schema.activeLabView.id, draftedCte.labId))

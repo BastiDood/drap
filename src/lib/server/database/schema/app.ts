@@ -32,7 +32,9 @@ export const lab = app.table(
 export type Lab = typeof lab.$inferSelect;
 export type NewLab = typeof lab.$inferInsert;
 
-export const activeLabView = app.view("active_lab_view").as((qb) => qb.select().from(lab).where(isNull(lab.deletedAt)))
+export const activeLabView = app
+  .view('active_lab_view')
+  .as(qb => qb.select().from(lab).where(isNull(lab.deletedAt)));
 
 // match is_admin, user_id, lab_id:
 //     case FALSE, NULL, NULL: Invited User
