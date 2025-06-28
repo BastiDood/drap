@@ -30,14 +30,16 @@
     let successMessage = 'Successfully updated the lab quotas.';
     let errorMessage = 'Failed to update the lab quotas.';
     if (submitter.id.includes('delete:')) {
-      const labId = submitter.id.split(':')[1];
-      assert(typeof labId != 'undefined');
+      const [deleteElement, labId] = submitter.id.split(':');
+      assert(deleteElement === 'delete');
+      assert(typeof labId !== 'undefined');
       formData.append('delete', labId);
       successMessage = `Successfully deleted the lab with id: ${labId}`;
       errorMessage = `Failed to delete the lab with id: ${labId}`;
     } else if (submitter.id.includes('restore:')) {
-      const labId = submitter.id.split(':')[1];
-      assert(typeof labId != 'undefined');
+      const [restoreElement, labId] = submitter.id.split(':');
+      assert(restoreElement === 'restore');
+      assert(typeof labId !== 'undefined');
       formData.append('restore', labId);
       successMessage = `Successfully restored the lab with id: ${labId}`;
       errorMessage = `Failed to restore the lab with id: ${labId}`;
