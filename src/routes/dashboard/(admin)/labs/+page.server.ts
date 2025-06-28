@@ -7,7 +7,7 @@ export async function load({ locals: { db, session } }) {
   const { user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
 
-  return { labs: await db.getLabRegistry() };
+  return { labs: await db.getLabRegistry(false) };
 }
 
 function* mapRowTuples(data: FormData) {
