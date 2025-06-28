@@ -543,14 +543,14 @@ export class Database implements Loggable {
     await this.#db.transaction(async txn => {
       const toAcknowledge = await txn
         .with(draftsCte, draftedCte, preferredCte)
-        .select({ draftId: draftsCte.draftId, round: draftsCte.currRound, labId: schema.lab.id })
+        .select({ draftId: draftsCte.draftId, round: draftsCte.currRound, labId: schema.activeLabView.id })
         .from(draftsCte)
-        .crossJoin(schema.lab)
-        .leftJoin(draftedCte, eq(schema.lab.id, draftedCte.labId))
-        .leftJoin(preferredCte, eq(schema.lab.id, preferredCte.labId))
+        .crossJoin(schema.activeLabView)
+        .leftJoin(draftedCte, eq(schema.activeLabView.id, draftedCte.labId))
+        .leftJoin(preferredCte, eq(schema.activeLabView.id, preferredCte.labId))
         .where(
           or(
-            gte(sql`coalesce(${draftedCte.draftees}, 0)`, schema.lab.quota),
+            gte(sql`coalesce(${draftedCte.draftees}, 0)`, schema.activeLabView.quota),
             eq(sql`coalesce(${preferredCte.preferrers}, 0)`, 0),
           ),
         );
