@@ -15,10 +15,7 @@ export async function load({ locals: { db, session }, parent }) {
 
   const { draft } = await parent();
   const rankings = await db.getStudentRankings(draft.id, user.id);
-  let availableLabs = await db.getLabRegistry();
-
-  // filter and get only un-deleted labs
-  availableLabs = availableLabs.filter(({ deletedAt }) => deletedAt !== null);
+  const availableLabs = await db.getLabRegistry();
 
   return { draft, availableLabs, rankings };
 }
