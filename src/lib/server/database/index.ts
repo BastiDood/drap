@@ -677,10 +677,10 @@ export class Database implements Loggable {
     return await this.#db
       .select({
         createdAt: sub.createdAt,
-        labs: sql<string[]>`array_agg(${schema.lab.name} ORDER BY ${sub.index})`,
+        labs: sql<string[]>`array_agg(${schema.activeLabView.name} ORDER BY ${sub.index})`,
       })
       .from(sub)
-      .innerJoin(schema.lab, eq(sub.labId, schema.lab.id))
+      .innerJoin(schema.activeLabView, eq(sub.labId, schema.activeLabView.id))
       .groupBy(sub.createdAt)
       .then(assertOptional);
   }
