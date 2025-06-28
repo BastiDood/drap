@@ -184,11 +184,22 @@ export class Database implements Loggable {
     await this.#db.update(schema.lab).set({ deletedAt: null }).where(eq(schema.lab.id, id));
   }
 
-  @timed async getLabRegistry() {
+  @timed async getLabRegistry(activeOnly = true) {
+    if (activeOnly) 
+      return await this.#db
+        .select({
+          id: schema.activeLabView.id,
+          name: schema.activeLabView.name,
+          quota: schema.activeLabView.quota,
+          deletedAt: schema.activeLabView.deletedAt
+        })
+        .from(schema.activeLabView)
+        .orderBy(({ name }) => name);
     return await this.#db.query.lab.findMany({
-      columns: { id: true, name: true, quota: true, deletedAt: true },
-      orderBy: ({ name }) => name,
-    });
+        columns: { id: true, name: true, quota: true, deletedAt: true },
+        orderBy: ({ name }) => name,
+      });
+    
   }
 
   @timed async isValidTotalLabQuota() {
