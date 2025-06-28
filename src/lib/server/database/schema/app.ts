@@ -11,7 +11,7 @@ import {
   unique,
   varchar,
 } from 'drizzle-orm/pg-core';
-import { sql } from 'drizzle-orm';
+import { isNull, sql } from 'drizzle-orm';
 
 import { tstzrange } from './custom/tstzrange';
 import { ulid } from './custom/ulid';
@@ -31,6 +31,8 @@ export const lab = app.table(
 );
 export type Lab = typeof lab.$inferSelect;
 export type NewLab = typeof lab.$inferInsert;
+
+export const activeLabView = app.view("active_lab_view").as((qb) => qb.select().from(lab).where(isNull(lab.deletedAt)))
 
 // match is_admin, user_id, lab_id:
 //     case FALSE, NULL, NULL: Invited User
