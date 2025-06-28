@@ -878,7 +878,7 @@ export class Database implements Loggable {
     });
     if (typeof draft === 'undefined') return;
 
-    const labs = await this.#db.query.lab.findMany({ columns: { id: true } });
+    const labs = await this.#db.select().from(schema.activeLabView);
     if (labs.length === 0) return;
 
     await this.#db
@@ -933,9 +933,9 @@ export class Database implements Loggable {
       .where(eq(schema.facultyChoice.draftId, draftId))
       .as('_');
     const { pendingCount } = await this.#db
-      .select({ pendingCount: count(schema.lab.id) })
-      .from(schema.lab)
-      .leftJoin(subquery, eq(schema.lab.id, subquery.labId))
+      .select({ pendingCount: count(schema.activeLabView.id) })
+      .from(schema.activeLabView)
+      .leftJoin(subquery, eq(schema.activeLabView.id, subquery.labId))
       .where(isNull(subquery.labId))
       .then(assertSingle);
     return pendingCount;
