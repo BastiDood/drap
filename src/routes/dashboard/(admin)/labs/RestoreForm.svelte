@@ -1,18 +1,18 @@
 <script lang="ts">
-    import { enhance } from "$app/forms";
-    import type { schema } from "$lib/server/database";
-    import { assert } from "$lib/assert";
-    import { useToaster } from "$lib/toast";
+  import { enhance } from '$app/forms';
+  import type { schema } from '$lib/server/database';
+  import { assert } from '$lib/assert';
+  import { useToaster } from '$lib/toast';
 
-    type Lab = Pick<schema.Lab, 'id' | 'name' | 'quota' | 'deletedAt'>;
+  type Lab = Pick<schema.Lab, 'id' | 'name' | 'quota' | 'deletedAt'>;
 
-    interface Props {
-        deletedLabs: Lab[]
-    }
+  interface Props {
+    deletedLabs: Lab[];
+  }
 
-    const { deletedLabs }: Props = $props();
+  const { deletedLabs }: Props = $props();
 
-    const toaster = useToaster();
+  const toaster = useToaster();
 </script>
 
 <form
@@ -45,41 +45,39 @@
     };
   }}
 >
-    <div class="table-container">
-        <table class=" table-comfortable table">
-        <thead>
-            <tr>
-                <th>Laboratory</th>
-                <th>Deleted at</th>
-                <th class="table-cell-fit">Restore</th>
-            </tr>
-        </thead>
-        <tbody>
-            {#each deletedLabs as { id, name, deletedAt } (id)}
-            {@const deleteDate = deletedAt?.toLocaleDateString()}
-            <tr>
-                <td class="!align-middle">
-                    {name}
-                </td>
-                <td class="table-cell-fit">
-                    {deleteDate}
-                </td>
-                <td class="table-cell-fit">
-                    <button
-                        type="submit"
-                        class="preset-filled-warning-500 btn w-full"
-                        id="restore:{id}">Restore</button
-                    >
-                </td>
-            </tr>
-            {:else}
-            <tr>
-                <td colspan=2>
-                    <em class="text-surface-400">No deleted labs to restore</em>
-                </td>
-            </tr>
-            {/each}
-        </tbody>
-        </table>
-    </div>
+  <div class="table-container">
+    <table class=" table-comfortable table">
+      <thead>
+        <tr>
+          <th>Laboratory</th>
+          <th>Deleted at</th>
+          <th class="table-cell-fit">Restore</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each deletedLabs as { id, name, deletedAt } (id)}
+          {@const deleteDate = deletedAt?.toLocaleDateString()}
+          <tr>
+            <td class="!align-middle">
+              {name}
+            </td>
+            <td class="table-cell-fit">
+              {deleteDate}
+            </td>
+            <td class="table-cell-fit">
+              <button type="submit" class="preset-filled-warning-500 btn w-full" id="restore:{id}"
+                >Restore</button
+              >
+            </td>
+          </tr>
+        {:else}
+          <tr>
+            <td colspan="2">
+              <em class="text-surface-400">No deleted labs to restore</em>
+            </td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+  </div>
 </form>
