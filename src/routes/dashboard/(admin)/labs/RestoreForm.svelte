@@ -15,36 +15,6 @@
   const toaster = useToaster();
 </script>
 
-<form
-  method="post"
-  action="/dashboard/labs/?/restore"
-  class="space-y-4"
-  use:enhance={({ submitter, formData }) => {
-    assert(submitter !== null);
-    assert(submitter instanceof HTMLButtonElement);
-    submitter.disabled = true;
-    const [restoreElement, labId] = submitter.id.split(':');
-    assert(restoreElement === 'restore');
-    assert(typeof labId !== 'undefined');
-    formData.append('restore', labId);
-    const successMessage = `Successfully restored the lab with id: ${labId}`;
-    const errorMessage = `Failed to restore the lab with id: ${labId}`;
-    return async ({ update, result }) => {
-      submitter.disabled = false;
-      await update();
-      switch (result.type) {
-        case 'success':
-          toaster.success({ title: successMessage });
-          break;
-        case 'failure':
-          toaster.error({ title: errorMessage });
-          break;
-        default:
-          break;
-      }
-    };
-  }}
->
   <div class="table-container">
     <table class=" table-comfortable table">
       <thead>
@@ -65,11 +35,37 @@
               {deleteDate}
             </td>
             <td class="table-cell-fit">
-              <button type="submit" class="preset-filled-warning-500 btn w-full" id="restore:{id}"
-                >Restore</button
+              <form
+                method="post"
+                action="/dashboard/labs/?/restore"
+                class="space-y-4"
+                use:enhance={({ submitter }) => {
+                  assert(submitter !== null);
+                  assert(submitter instanceof HTMLButtonElement);
+                  submitter.disabled = true;
+                  return async ({ update, result }) => {
+                    submitter.disabled = false;
+                    await update();
+                    switch (result.type) {
+                      case 'success':
+                        toaster.success({ title: `Successfully restored ${name} (${id})` });
+                        break;
+                      case 'failure':
+                        toaster.error({ title: `Failed to restore ${name} (${id})` });
+                        break;
+                      default:
+                        break;
+                    }
+                  };
+                }}
               >
+                <input type="hidden" name="restore" value={id}>
+                <button type="submit" class="preset-filled-warning-500 btn w-full" id="restore:{id}"
+                  >Restore</button
+                >
+              </form>
             </td>
-          </tr>
+        </tr>
         {:else}
           <tr>
             <td colspan="2">
@@ -80,4 +76,3 @@
       </tbody>
     </table>
   </div>
-</form>
