@@ -22,9 +22,9 @@
         a new one.
       </p>
       <p class="text-warning-500">
-        Please be aware that once the draft starts and students are allowed to register, 
-        <strong class="text-warning-500">no labs can be deleted or restored</strong>. 
-        Further, once student registration is closed and control handed off to lab heads, 
+        Please be aware that once the draft starts and students are allowed to register,
+        <strong class="text-warning-500">no labs can be deleted or restored</strong>. Further, once
+        student registration is closed and control handed off to lab heads,
         <strong class="text-warning-500">lab quotas can no longer be adjusted</strong>
       </p>
       <p>
