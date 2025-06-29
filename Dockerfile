@@ -10,13 +10,14 @@ RUN pnpm fetch
 COPY . .
 
 RUN pnpm install --offline
-RUN pnpm --prod deploy /build
-RUN pnpm build
+
+RUN pnpm build && pnpm prune --prod --ignore-scripts
 
 FROM gcr.io/distroless/nodejs22-debian12:nonroot-amd64 AS deploy
 
 WORKDIR /app
-COPY --from=build /app/build/ .
+COPY --from=build /app/node_modules node_modules/
+COPY --from=build /app/build/ build/
 
 # This is the command to start the SvelteKit server. The background email worker
 # should be spawned as a separate process somehow. When deploying to Fly.io
@@ -25,4 +26,4 @@ COPY --from=build /app/build/ .
 # # default entry point, the following `CMD` starts the SvelteKit server.
 ENV PORT=3000
 EXPOSE 3000
-CMD ["index.js"]
+CMD ["build/index.js"]
