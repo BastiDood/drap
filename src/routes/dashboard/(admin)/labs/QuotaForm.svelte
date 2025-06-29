@@ -77,9 +77,7 @@
               {#if deletedAt === null}
                 {name}
               {:else}
-                <strike>
-                  {name}
-                </strike>
+                <strike>{name}</strike>
               {/if}
             </td>
             <td class="table-cell-fit"
