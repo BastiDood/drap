@@ -679,7 +679,9 @@ export class Database implements Loggable {
     return await this.#db
       .select({
         createdAt: sub.createdAt,
-        labs: sql<string[]>`array_agg(${schema.activeLabView.name} ORDER BY ${sub.index})`,
+        labs: sql`array_agg(${schema.activeLabView.name} ORDER BY ${sub.index})`.mapWith(vals =>
+          parse(StringArray, vals),
+        ),
       })
       .from(sub)
       .innerJoin(schema.activeLabView, eq(sub.labId, schema.activeLabView.id))
