@@ -9,8 +9,8 @@
   const { data } = $props();
   const { draft, labs } = $derived(data);
 
-  let deletedLabs = $derived(labs.filter(lab => lab.deletedAt !== null));
-  let activeLabs = $derived(labs.filter(lab => lab.deletedAt === null));
+  const deletedLabs = $derived(labs.filter(lab => lab.deletedAt !== null));
+  const activeLabs = $derived(labs.filter(lab => lab.deletedAt === null));
 
   let isRestoreFormVisible = $state(false);
 </script>

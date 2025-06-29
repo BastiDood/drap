@@ -1,7 +1,7 @@
 <script lang="ts">
+  import { assert } from '$lib/assert';
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';
-  import { assert } from '$lib/assert';
   import { useToaster } from '$lib/toast';
 
   type Lab = Pick<schema.Lab, 'id' | 'name' | 'quota' | 'deletedAt'>;
@@ -27,8 +27,8 @@
     assert(restoreElement === 'restore');
     assert(typeof labId !== 'undefined');
     formData.append('restore', labId);
-    let successMessage = `Successfully restored the lab with id: ${labId}`;
-    let errorMessage = `Failed to restore the lab with id: ${labId}`;
+    const successMessage = `Successfully restored the lab with id: ${labId}`;
+    const errorMessage = `Failed to restore the lab with id: ${labId}`;
     return async ({ update, result }) => {
       submitter.disabled = false;
       await update();
