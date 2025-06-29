@@ -9,8 +9,13 @@
   const { data } = $props();
   const { draft, labs } = $derived(data);
 
-  const deletedLabs = $derived(labs.filter(lab => lab.deletedAt !== null));
-  const activeLabs = $derived(labs.filter(lab => lab.deletedAt === null));
+  const { deletedLabs, activeLabs } = $derived(Object.groupBy(
+    labs,
+    ({ deletedAt }) => deletedAt === null ? "activeLabs" : "deletedLabs" 
+  ))
+
+  // const deletedLabs = $derived(labs.filter(lab => lab.deletedAt !== null));
+  // const activeLabs = $derived(labs.filter(lab => lab.deletedAt === null));
 
   let isRestoreFormVisible = $state(false);
 </script>
@@ -37,14 +42,14 @@
         {/if}
       </label>
       {#if isRestoreFormVisible}
-        <RestoreForm {deletedLabs} />
+        <RestoreForm deletedLabs={deletedLabs ?? []} />
       {:else}
-        <QuotaForm {activeLabs} isDeleteAllowed={true} />
+        <QuotaForm activeLabs={activeLabs ?? []} isDeleteAllowed={true} />
       {/if}
     </div>
   </div>
 {:else if draft.currRound === 0}
-  <QuotaForm {activeLabs} isDeleteAllowed={false} />
+  <QuotaForm activeLabs={activeLabs ?? []} isDeleteAllowed={false} />
 {:else}
   {@const { id: draftId, activePeriodStart, currRound, maxRounds } = draft}
   {@const startDate = format(activePeriodStart, 'PPP')}
