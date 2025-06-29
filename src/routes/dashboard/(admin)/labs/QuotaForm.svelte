@@ -8,12 +8,12 @@
 
   type Lab = Pick<schema.Lab, 'id' | 'name' | 'quota' | 'deletedAt'>;
   interface Props {
-    labs: Lab[];
+    activeLabs: Lab[];
   }
 
-  const { labs }: Props = $props();
+  const { activeLabs }: Props = $props();
   const total = $derived(
-    labs.reduce((total, { quota, deletedAt }) => total + (deletedAt ? 0 : quota), 0),
+    activeLabs.reduce((total, { quota, deletedAt }) => total + (deletedAt ? 0 : quota), 0),
   );
 
   const toaster = useToaster();
@@ -70,7 +70,7 @@
         </tr>
       </thead>
       <tbody>
-        {#each labs as { id, name, quota, deletedAt } (id)}
+        {#each activeLabs as { id, name, quota, deletedAt } (id)}
           {@const placeholder = quota.toString()}
           <tr>
             <td class="!align-middle">
