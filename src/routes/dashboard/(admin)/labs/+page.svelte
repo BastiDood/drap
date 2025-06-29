@@ -9,10 +9,9 @@
   const { data } = $props();
   const { draft, labs } = $derived(data);
 
-  const { deletedLabs, activeLabs } = $derived(Object.groupBy(
-    labs,
-    ({ deletedAt }) => deletedAt === null ? "activeLabs" : "deletedLabs" 
-  ))
+  const { deletedLabs, activeLabs } = $derived(
+    Object.groupBy(labs, ({ deletedAt }) => (deletedAt === null ? 'activeLabs' : 'deletedLabs')),
+  );
 
   // const deletedLabs = $derived(labs.filter(lab => lab.deletedAt !== null));
   // const activeLabs = $derived(labs.filter(lab => lab.deletedAt === null));
