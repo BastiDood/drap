@@ -189,15 +189,15 @@ export class Database implements Loggable {
 
   @timed async getLabRegistry(activeOnly = true) {
     const targetSchema = activeOnly ? schema.activeLabView : schema.lab;
-      return await this.#db
-        .select({
-          id: targetSchema.id,
-          name: targetSchema.name,
-          quota: targetSchema.quota,
-          deletedAt: targetSchema.deletedAt,
-        })
-        .from(targetSchema)
-        .orderBy(({ name }) => name);
+    return await this.#db
+      .select({
+        id: targetSchema.id,
+        name: targetSchema.name,
+        quota: targetSchema.quota,
+        deletedAt: targetSchema.deletedAt,
+      })
+      .from(targetSchema)
+      .orderBy(({ name }) => name);
   }
 
   @timed async isValidTotalLabQuota() {
