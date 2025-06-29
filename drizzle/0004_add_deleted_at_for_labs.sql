@@ -1,0 +1,1 @@
+ALTER TABLE "drap"."lab" ADD COLUMN "deleted_at" timestamp;

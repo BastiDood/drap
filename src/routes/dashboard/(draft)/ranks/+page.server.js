@@ -14,9 +14,10 @@ export async function load({ locals: { db, session }, parent }) {
     error(403);
 
   const { draft } = await parent();
-  const [availableLabs, rankings] = await Promise.all([
-    db.getLabRegistry(),
+
+  const [rankings, availableLabs] = await Promise.all([
     db.getStudentRankings(draft.id, user.id),
+    db.getLabRegistry(true),
   ]);
 
   return { draft, availableLabs, rankings };

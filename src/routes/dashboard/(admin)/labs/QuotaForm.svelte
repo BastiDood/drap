@@ -6,13 +6,16 @@
   import type { schema } from '$lib/server/database';
   import { useToaster } from '$lib/toast';
 
-  type Lab = Pick<schema.Lab, 'id' | 'name' | 'quota'>;
+  type Lab = Pick<schema.Lab, 'id' | 'name' | 'quota' | 'deletedAt'>;
   interface Props {
-    labs: Lab[];
+    activeLabs: Lab[];
+    isDeleteAllowed: boolean;
   }
 
-  const { labs }: Props = $props();
-  const total = $derived(labs.reduce((total, { quota }) => total + quota, 0));
+  const { activeLabs, isDeleteAllowed }: Props = $props();
+  const total = $derived(
+    activeLabs.reduce((total, { quota, deletedAt }) => total + (deletedAt ? 0 : quota), 0),
+  );
 
   const toaster = useToaster();
 </script>
@@ -21,19 +24,29 @@
   method="post"
   action="/dashboard/labs/?/quota"
   class="space-y-4"
-  use:enhance={({ submitter }) => {
+  use:enhance={({ submitter, formData }) => {
     assert(submitter !== null);
     assert(submitter instanceof HTMLButtonElement);
     submitter.disabled = true;
+    let successMessage = 'Successfully updated the lab quotas.';
+    let errorMessage = 'Failed to update the lab quotas.';
+    if (submitter.id.includes('delete:')) {
+      const [deleteElement, labId] = submitter.id.split(':');
+      assert(deleteElement === 'delete');
+      assert(typeof labId !== 'undefined');
+      formData.append('delete', labId);
+      successMessage = `Successfully deleted the lab with id: ${labId}`;
+      errorMessage = `Failed to delete the lab with id: ${labId}`;
+    }
     return async ({ update, result }) => {
       submitter.disabled = false;
       await update();
       switch (result.type) {
         case 'success':
-          toaster.success({ title: 'Successfully updated the lab quotas.' });
+          toaster.success({ title: successMessage });
           break;
         case 'failure':
-          toaster.error({ title: 'Failed to update the lab quotas.' });
+          toaster.error({ title: errorMessage });
           break;
         default:
           break;
@@ -47,22 +60,41 @@
         <tr>
           <th>Laboratory</th>
           <th class="table-cell-fit">Quota ({total})</th>
+          {#if isDeleteAllowed}
+            <th class="table-cell-fit">Delete</th>
+          {/if}
         </tr>
       </thead>
       <tbody>
-        {#each labs as { id, name, quota } (id)}
+        {#each activeLabs as { id, name, quota, deletedAt } (id)}
           {@const placeholder = quota.toString()}
           <tr>
-            <td class="!align-middle">{name}</td>
+            <td class="!align-middle">
+              {#if deletedAt === null}
+                {name}
+              {:else}
+                <strike>{name}</strike>
+              {/if}
+            </td>
             <td class="table-cell-fit"
               ><input
                 type="number"
                 min="0"
                 name={id}
                 {placeholder}
+                disabled={deletedAt !== null}
                 class="input variant-form-material px-2 py-1"
               /></td
             >
+            {#if isDeleteAllowed}
+              <td class="table-cell-fit">
+                <button
+                  formaction="/dashboard/labs/?/delete"
+                  class="preset-filled-error-500 btn w-full"
+                  id="delete:{id}">Delete</button
+                >
+              </td>
+            {/if}
           </tr>
         {/each}
       </tbody>

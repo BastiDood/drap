@@ -176,11 +176,28 @@ export class Database implements Loggable {
     await this.#db.insert(schema.lab).values({ id, name });
   }
 
-  @timed async getLabRegistry() {
-    return await this.#db.query.lab.findMany({
-      columns: { id: true, name: true, quota: true },
-      orderBy: ({ name }) => name,
-    });
+  @timed async deleteLab(id: string) {
+    await this.#db
+      .update(schema.lab)
+      .set({ deletedAt: new Date(), quota: 0 })
+      .where(eq(schema.lab.id, id));
+  }
+
+  @timed async restoreLab(id: string) {
+    await this.#db.update(schema.lab).set({ deletedAt: null }).where(eq(schema.lab.id, id));
+  }
+
+  @timed async getLabRegistry(activeOnly = true) {
+    const targetSchema = activeOnly ? schema.activeLabView : schema.lab;
+    return await this.#db
+      .select({
+        id: targetSchema.id,
+        name: targetSchema.name,
+        quota: targetSchema.quota,
+        deletedAt: targetSchema.deletedAt,
+      })
+      .from(targetSchema)
+      .orderBy(({ name }) => name);
   }
 
   @timed async isValidTotalLabQuota() {
@@ -191,10 +208,11 @@ export class Database implements Loggable {
     return result;
   }
 
-  @timed async getLabCount() {
+  @timed async getLabCount(activeOnly = true) {
+    const targetSchema = activeOnly ? schema.activeLabView : schema.lab;
     const { result } = await this.#db
-      .select({ result: count(schema.lab.id) })
-      .from(schema.lab)
+      .select({ result: count(targetSchema.id) })
+      .from(targetSchema)
       .then(assertSingle);
     return result;
   }
@@ -523,14 +541,18 @@ export class Database implements Loggable {
     await this.#db.transaction(async txn => {
       const toAcknowledge = await txn
         .with(draftsCte, draftedCte, preferredCte)
-        .select({ draftId: draftsCte.draftId, round: draftsCte.currRound, labId: schema.lab.id })
+        .select({
+          draftId: draftsCte.draftId,
+          round: draftsCte.currRound,
+          labId: schema.activeLabView.id,
+        })
         .from(draftsCte)
-        .crossJoin(schema.lab)
-        .leftJoin(draftedCte, eq(schema.lab.id, draftedCte.labId))
-        .leftJoin(preferredCte, eq(schema.lab.id, preferredCte.labId))
+        .crossJoin(schema.activeLabView)
+        .leftJoin(draftedCte, eq(schema.activeLabView.id, draftedCte.labId))
+        .leftJoin(preferredCte, eq(schema.activeLabView.id, preferredCte.labId))
         .where(
           or(
-            gte(sql`coalesce(${draftedCte.draftees}, 0)`, schema.lab.quota),
+            gte(sql`coalesce(${draftedCte.draftees}, 0)`, schema.activeLabView.quota),
             eq(sql`coalesce(${preferredCte.preferrers}, 0)`, 0),
           ),
         );
@@ -657,10 +679,10 @@ export class Database implements Loggable {
     return await this.#db
       .select({
         createdAt: sub.createdAt,
-        labs: sql<string[]>`array_agg(${schema.lab.name} ORDER BY ${sub.index})`,
+        labs: sql<string[]>`array_agg(${schema.activeLabView.name} ORDER BY ${sub.index})`,
       })
       .from(sub)
-      .innerJoin(schema.lab, eq(sub.labId, schema.lab.id))
+      .innerJoin(schema.activeLabView, eq(sub.labId, schema.activeLabView.id))
       .groupBy(sub.createdAt)
       .then(assertOptional);
   }
@@ -858,7 +880,7 @@ export class Database implements Loggable {
     });
     if (typeof draft === 'undefined') return;
 
-    const labs = await this.#db.query.lab.findMany({ columns: { id: true } });
+    const labs = await this.#db.select().from(schema.activeLabView);
     if (labs.length === 0) return;
 
     await this.#db
@@ -913,9 +935,9 @@ export class Database implements Loggable {
       .where(eq(schema.facultyChoice.draftId, draftId))
       .as('_');
     const { pendingCount } = await this.#db
-      .select({ pendingCount: count(schema.lab.id) })
-      .from(schema.lab)
-      .leftJoin(subquery, eq(schema.lab.id, subquery.labId))
+      .select({ pendingCount: count(schema.activeLabView.id) })
+      .from(schema.activeLabView)
+      .leftJoin(subquery, eq(schema.activeLabView.id, subquery.labId))
       .where(isNull(subquery.labId))
       .then(assertSingle);
     return pendingCount;

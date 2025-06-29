@@ -4,18 +4,51 @@
 
   import CreateForm from './CreateForm.svelte';
   import QuotaForm from './QuotaForm.svelte';
+  import RestoreForm from './RestoreForm.svelte';
 
   const { data } = $props();
   const { draft, labs } = $derived(data);
+
+  const { deletedLabs, activeLabs } = $derived(
+    Object.groupBy(labs, ({ deletedAt }) => (deletedAt === null ? 'activeLabs' : 'deletedLabs')),
+  );
+
+  // const deletedLabs = $derived(labs.filter(lab => lab.deletedAt !== null));
+  // const activeLabs = $derived(labs.filter(lab => lab.deletedAt === null));
+
+  let isRestoreFormVisible = $state(false);
 </script>
 
 {#if typeof draft === 'undefined' || draft.currRound === null}
   <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-[56ch_1fr]">
     <CreateForm />
-    <QuotaForm {labs} />
+    <div class="flex w-full flex-col gap-y-4">
+      <label
+        class="btn preset-filled-surface-500 flex w-48 cursor-pointer items-center"
+        for="see-deleted"
+      >
+        <input
+          class="hidden"
+          type="checkbox"
+          name="see-deleted"
+          id="see-deleted"
+          bind:checked={isRestoreFormVisible}
+        />
+        {#if isRestoreFormVisible}
+          <p>Set Lab Quotas</p>
+        {:else}
+          <p>See Deleted Labs</p>
+        {/if}
+      </label>
+      {#if isRestoreFormVisible}
+        <RestoreForm deletedLabs={deletedLabs ?? []} />
+      {:else}
+        <QuotaForm activeLabs={activeLabs ?? []} isDeleteAllowed={true} />
+      {/if}
+    </div>
   </div>
 {:else if draft.currRound === 0}
-  <QuotaForm {labs} />
+  <QuotaForm activeLabs={activeLabs ?? []} isDeleteAllowed={false} />
 {:else}
   {@const { id: draftId, activePeriodStart, currRound, maxRounds } = draft}
   {@const startDate = format(activePeriodStart, 'PPP')}

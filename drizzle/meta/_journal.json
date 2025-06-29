@@ -29,6 +29,20 @@
       "when": 1749927505352,
       "tag": "0003_add-student-rank-lab-table",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1751005538065,
+      "tag": "0004_add_deleted_at_for_labs",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1751135444930,
+      "tag": "0005_add-active-lab-view",
+      "breakpoints": true
     }
   ]
 }
