@@ -37,13 +37,6 @@
       formData.append('delete', labId);
       successMessage = `Successfully deleted the lab with id: ${labId}`;
       errorMessage = `Failed to delete the lab with id: ${labId}`;
-    } else if (submitter.id.includes('restore:')) {
-      const [restoreElement, labId] = submitter.id.split(':');
-      assert(restoreElement === 'restore');
-      assert(typeof labId !== 'undefined');
-      formData.append('restore', labId);
-      successMessage = `Successfully restored the lab with id: ${labId}`;
-      errorMessage = `Failed to restore the lab with id: ${labId}`;
     }
     return async ({ update, result }) => {
       submitter.disabled = false;
