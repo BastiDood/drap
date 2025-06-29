@@ -9,9 +9,10 @@
   type Lab = Pick<schema.Lab, 'id' | 'name' | 'quota' | 'deletedAt'>;
   interface Props {
     activeLabs: Lab[];
+    isDeleteAllowed: boolean;
   }
 
-  const { activeLabs }: Props = $props();
+  const { activeLabs, isDeleteAllowed }: Props = $props();
   const total = $derived(
     activeLabs.reduce((total, { quota, deletedAt }) => total + (deletedAt ? 0 : quota), 0),
   );
@@ -66,7 +67,9 @@
         <tr>
           <th>Laboratory</th>
           <th class="table-cell-fit">Quota ({total})</th>
-          <th class="table-cell-fit">Delete/Restore</th>
+          {#if isDeleteAllowed}
+            <th class="table-cell-fit">Delete</th>
+          {/if}
         </tr>
       </thead>
       <tbody>
@@ -90,21 +93,15 @@
                 class="input variant-form-material px-2 py-1"
               /></td
             >
-            <td class="table-cell-fit">
-              {#if deletedAt === null}
+            {#if isDeleteAllowed}
+              <td class="table-cell-fit">
                 <button
                   formaction="/dashboard/labs/?/delete"
                   class="preset-filled-error-500 btn w-full"
                   id="delete:{id}">Delete</button
                 >
-              {:else}
-                <button
-                  formaction="/dashboard/labs/?/restore"
-                  class="preset-filled-warning-500 btn w-full"
-                  id="restore:{id}">Restore</button
-                >
-              {/if}
-            </td>
+              </td>
+            {/if}
           </tr>
         {/each}
       </tbody>

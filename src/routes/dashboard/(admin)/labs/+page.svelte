@@ -10,6 +10,7 @@
   const { draft, labs } = $derived(data);
 
   let deletedLabs = $derived(labs.filter((lab) => lab.deletedAt !== null));
+  let activeLabs = $derived(labs.filter((lab) => lab.deletedAt === null));
 
   let isRestoreFormVisible = $state(false);
 </script>
@@ -18,7 +19,7 @@
   <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-[56ch_1fr]">
     <CreateForm />
     <div class="flex flex-col w-full gap-y-4">
-      <label class="flex btn preset-filled-surface-500 w-48 items-center" for="see-deleted">
+      <label class="flex btn preset-filled-surface-500 w-48 items-center cursor-pointer" for="see-deleted">
         <input class="hidden" type="checkbox" name="see-deleted" id="see-deleted" bind:checked={isRestoreFormVisible}>
         {#if isRestoreFormVisible}
           <p>Set Lab Quotas</p>
@@ -27,14 +28,14 @@
         {/if}
       </label>
       {#if isRestoreFormVisible}
-        <RestoreForm />
+        <RestoreForm {deletedLabs}/>
       {:else}
-        <QuotaForm {labs} />
+        <QuotaForm {activeLabs} isDeleteAllowed={true} />
       {/if}
     </div>
   </div>
 {:else if draft.currRound === 0}
-  <QuotaForm {labs} />
+  <QuotaForm {activeLabs} isDeleteAllowed={false} />
 {:else}
   {@const { id: draftId, activePeriodStart, currRound, maxRounds } = draft}
   {@const startDate = format(activePeriodStart, 'PPP')}
