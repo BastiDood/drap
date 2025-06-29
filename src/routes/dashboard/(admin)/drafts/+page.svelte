@@ -21,6 +21,12 @@
         drafts happening at the moment, but as an administrator, you have the authorization to start
         a new one.
       </p>
+      <p class="text-warning-500">
+        Please be aware that once the draft starts and students are allowed to register, 
+        <strong class="text-warning-500">no labs can be deleted or restored</strong>. 
+        Further, once student registration is closed and control handed off to lab heads, 
+        <strong class="text-warning-500">lab quotas can no longer be adjusted</strong>
+      </p>
       <p>
         To begin, simply provide the the maximum number of rounds for the upcoming draft. This has
         historically been set to <strong>5</strong>.
