@@ -49,15 +49,20 @@
         <table class=" table-comfortable table">
         <thead>
             <tr>
-            <th>Laboratory</th>
-            <th class="table-cell-fit">Restore</th>
+                <th>Laboratory</th>
+                <th>Deleted at</th>
+                <th class="table-cell-fit">Restore</th>
             </tr>
         </thead>
         <tbody>
             {#each deletedLabs as { id, name, deletedAt } (id)}
+            {@const deleteDate = deletedAt?.toLocaleDateString()}
             <tr>
                 <td class="!align-middle">
-                {name}
+                    {name}
+                </td>
+                <td class="table-cell-fit">
+                    {deleteDate}
                 </td>
                 <td class="table-cell-fit">
                     <button
@@ -65,6 +70,12 @@
                         class="preset-filled-warning-500 btn w-full"
                         id="restore:{id}">Restore</button
                     >
+                </td>
+            </tr>
+            {:else}
+            <tr>
+                <td colspan=2>
+                    <em class="text-surface-400">No deleted labs to restore</em>
                 </td>
             </tr>
             {/each}
