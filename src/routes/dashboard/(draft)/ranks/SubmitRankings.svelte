@@ -1,8 +1,14 @@
+<script module>
+  const DURATION = 150;
+</script>
+
 <script lang="ts">
   import { ArrowDown, ArrowUp, XMark } from '@steeze-ui/heroicons';
   import { Icon } from '@steeze-ui/svelte-icon';
   import { assert } from '$lib/assert';
+  import { crossfade } from 'svelte/transition';
   import { enhance } from '$app/forms';
+  import { flip } from 'svelte/animate';
   import type { schema } from '$lib/server/database';
   import { useToaster } from '$lib/toast';
 
@@ -68,6 +74,8 @@
   function resetSelection(index: number) {
     availableLabs.push(...selectedLabs.splice(index, 1));
   }
+
+  const [send, receive] = crossfade({ duration: DURATION });
 </script>
 
 <form
@@ -129,10 +137,13 @@
   {#if selectedLabs.length > 0}
     <ol class="space-y-2">
       {#each selectedLabs as { id, name }, idx (id)}
-        <input type="hidden" name="labs" value={id} />
         <li
           class="card preset-tonal-surface border-surface-500 card-hover flex flex-col gap-4 border p-4"
+          in:receive={{ key: id }}
+          out:send={{ key: id }}
+          animate:flip={{ duration: DURATION }}
         >
+          <input type="hidden" name="labs" value={id} />
           <div class="flex items-center gap-3">
             <div class="text-md preset-filled-secondary-500 badge-icon p-4 text-lg font-bold">
               {idx + 1}
@@ -143,6 +154,7 @@
                 type="button"
                 class="preset-filled-success-500 btn-icon btn-icon-sm"
                 onclick={moveLabUp.bind(null, idx)}
+                disabled={idx <= 0}
               >
                 <Icon src={ArrowUp} class="size-6" />
               </button>
@@ -150,6 +162,7 @@
                 type="button"
                 class="preset-filled-warning-500 btn-icon btn-icon-sm"
                 onclick={moveLabDown.bind(null, idx)}
+                disabled={idx >= selectedLabs.length - 1}
               >
                 <Icon src={ArrowDown} class="size-6" />
               </button>
