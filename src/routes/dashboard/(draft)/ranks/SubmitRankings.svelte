@@ -178,7 +178,7 @@
           <textarea
             class="card preset-filled-surface-200-800 border-surface-500 h-16 min-h-16 w-full"
             name="remarks"
-            placeholder="Remarks"
+            placeholder="Hi, my name is... I would like to do more research on..."
             maxlength="1028"
           ></textarea>
         </li>
