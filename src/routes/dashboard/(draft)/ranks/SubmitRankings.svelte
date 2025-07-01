@@ -1,5 +1,5 @@
 <script module>
-  const DURATION = 150;
+  const DURATION = { duration: 250 };
 </script>
 
 <script lang="ts">
@@ -75,7 +75,7 @@
     availableLabs.push(...selectedLabs.splice(index, 1));
   }
 
-  const [send, receive] = crossfade({ duration: DURATION });
+  const [send, receive] = crossfade(DURATION);
 </script>
 
 <form
@@ -137,11 +137,12 @@
   {#if selectedLabs.length > 0}
     <ol class="space-y-2">
       {#each selectedLabs as { id, name }, idx (id)}
+        {@const config = { key: id }}
         <li
           class="card preset-tonal-surface border-surface-500 card-hover flex flex-col gap-4 border p-4"
-          in:receive={{ key: id }}
-          out:send={{ key: id }}
-          animate:flip={{ duration: DURATION }}
+          in:receive={config}
+          out:send={config}
+          animate:flip={DURATION}
         >
           <input type="hidden" name="labs" value={id} />
           <div class="flex items-center gap-3">
