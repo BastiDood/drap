@@ -25,6 +25,7 @@
     "@steeze-ui/simple-icons": "^1.10.1",
     "@steeze-ui/svelte-icon": "~1.6.2",
     "@sveltejs/kit": "^2.22.5",
+    "bullmq": "^5.56.0",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.44.2",
     "itertools": "^2.4.1",
