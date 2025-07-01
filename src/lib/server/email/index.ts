@@ -8,7 +8,7 @@ import { createMimeMessage } from 'mimetext/node';
 import { fetchJwks } from './jwks';
 import { jwtVerify } from 'jose';
 
-export type Email = schema.User['email'];
+export type EmailAddress = schema.User['email'];
 
 export class Emailer {
   #db: Database;
@@ -58,7 +58,7 @@ export class Emailer {
   }
 
   /** Must be called within a transaction context for correctness. */
-  async send(to: Email[], subject: string, data: string) {
+  async send(to: EmailAddress[], subject: string, data: string) {
     const creds = await this.#getLatestCredentials();
     if (typeof creds === 'undefined') return;
 

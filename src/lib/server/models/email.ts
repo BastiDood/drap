@@ -7,3 +7,11 @@ export const GmailMessageSendResult = object({
 });
 
 export type GmailMessageSendResult = InferOutput<typeof GmailMessageSendResult>;
+
+export const EmailSendRequest = object({
+  to: array(string()),
+  subject: string(),
+  data: string(),
+});
+
+export type EmailSendRequest = InferOutput<typeof EmailSendRequest>;
