@@ -79,5 +79,5 @@ export async function GET({
   });
 
   cookies.set('sid', sid, { path: '/', httpOnly: true, sameSite: 'lax', expires });
-  redirect(307, hasExtendedScope ? '/dashboard/email/' : '/');
+  redirect(303, hasExtendedScope ? '/dashboard/email/' : '/');
 }

@@ -154,6 +154,6 @@ export const actions = {
       throw err;
     }
 
-    redirect(307, `/history/${draft}/`);
+    redirect(303, `/history/${draft}/`);
   },
 };

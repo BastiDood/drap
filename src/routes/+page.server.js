@@ -11,7 +11,7 @@ export const actions = {
     else db.logger.info({ deleteValidSession: deleted });
 
     cookies.delete('sid', { path: '/', httpOnly: true, sameSite: 'lax' });
-    redirect(307, '/');
+    redirect(303, '/');
   },
   ...(dev
     ? {
@@ -32,7 +32,7 @@ export const actions = {
           const dummySessionId = await db.insertDummySession(dummyUserId.id);
 
           cookies.set('sid', dummySessionId, { path: '/', httpOnly: true, sameSite: 'lax' });
-          redirect(307, '/');
+          redirect(303, '/');
         },
       }
     : {}),

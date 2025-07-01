@@ -38,5 +38,5 @@ export async function GET({ locals: { db, session }, cookies, setHeaders, url: {
     params.set('scope', OAUTH_SCOPE_STRING);
   }
 
-  redirect(307, `https://accounts.google.com/o/oauth2/v2/auth?${params}`);
+  redirect(303, `https://accounts.google.com/o/oauth2/v2/auth?${params}`);
 }
