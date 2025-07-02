@@ -44,8 +44,7 @@
     <h2>Data Security Measures</h2>
     <p>
       Security measures are implemented to protect your personal information from unauthorized
-      access, and disclosure. This includes measures inherent to Google OAuth 2.0 and those of the
-      cloud hosting provider <a target="_blank" href="https://fly.io/">Fly.io</a>.
+      access, and disclosure. This includes measures inherent to Google OAuth 2.0.
     </p>
   </section>
   <section>
@@ -53,7 +52,7 @@
     <p>
       We do not sell nor trade your personal information to third parties. However, your data is
       shared with trusted service providers necessary for the operation and provision of services of
-      DRAP (e.g., Google OAuth 2.0 and Fly.io).
+      DRAP (e.g., Google OAuth 2.0).
     </p>
   </section>
   <section>
