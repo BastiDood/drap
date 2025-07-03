@@ -23,6 +23,8 @@ export class EmailQueue implements Loggable {
         
         this.#queueEvents.on('completed', this.#onCompleted);
         this.#queueEvents.on('failed', this.#onFailed);
+
+        this.#logger.info('email queue setup complete');
     }
 
     #onCompleted(args: { jobId: string }) {
