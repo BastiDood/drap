@@ -1,9 +1,11 @@
 import type { Database, schema } from '$lib/server/database';
+import { EmailSendRequest, GmailMessageSendResult } from '$lib/server/models/email';
+import { GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET } from '$env/static/private';
 import { IdToken, TokenResponse } from '$lib/server/models/oauth';
 import assert, { strictEqual } from 'node:assert/strict';
 import { isFuture, sub } from 'date-fns';
 import { parse, pick } from 'valibot';
-import { GmailMessageSendResult } from '$lib/server/models/email';
+import type { Job } from 'bullmq';
 import { createMimeMessage } from 'mimetext/node';
 import { fetchJwks } from './jwks';
 import { jwtVerify } from 'jose';
@@ -83,5 +85,13 @@ export class Emailer {
 
     const json = await response.json();
     return parse(GmailMessageSendResult, json);
+  }
+}
+
+export function initializeProcessor(db: Database) {
+  return async function processor(job: Job<EmailSendRequest>) {
+    const { to, subject, data } = job.data;
+    const emailer = new Emailer(db, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET);
+    return await emailer.send(to, subject, data);
   }
 }
