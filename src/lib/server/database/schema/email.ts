@@ -32,6 +32,8 @@ export const notification = email.table('notification', {
   notificationId: ulid('notification_id')
     .notNull()
     .primaryKey(),
-  deliveredAt: timestamp('delivered_at', { mode: 'date' }).notNull(),
-  data: jsonb('metadata')
+  deliveredAt: timestamp('delivered_at', { mode: 'date' }).notNull().defaultNow(),
+  data: jsonb('metadata').notNull()
 })
+export type Notification = typeof notification.$inferSelect;
+export type NewNotification = typeof notification.$inferInsert;
