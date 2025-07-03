@@ -5,7 +5,7 @@ import { EmailSendRequest } from '$lib/server/models/email';
 import type { Logger } from 'pino';
 import { ulid } from 'ulid';
 
-export class EmailQueue implements Loggable {
+export class NotificationDispatcher implements Loggable {
   #queue: Queue;
   #queueEvents: QueueEvents;
   #logger: Logger;
