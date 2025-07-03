@@ -27,12 +27,12 @@ export async function GET({ locals: { db, session }, cookies, setHeaders, url: {
     nonce: nonce.toString('base64url'),
     hd: 'up.edu.ph',
     response_type: 'code',
+    prompt: 'select_account',
   });
 
   if (hasExtendedScope) {
     params.set('access_type', 'offline');
     params.set('scope', SENDER_SCOPE_STRING);
-    params.set('prompt', 'consent');
   } else {
     params.set('access_type', 'online');
     params.set('scope', OAUTH_SCOPE_STRING);
