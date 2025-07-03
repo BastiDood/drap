@@ -8,6 +8,8 @@ import * as POSTGRES from '$lib/server/env/postgres';
 import { AssertionError } from 'assert';
 import { Database } from '$lib/server/database';
 import { EmailQueue } from '$lib/server/email/queue';
+import { Worker } from 'bullmq';
+import { initializeProcessor } from '$lib/server/email';
 
 // eslint-disable-next-line @typescript-eslint/init-declarations
 let stream: PrettyStream | undefined;
@@ -22,6 +24,13 @@ const logger = pino(stream);
 
 // This is the global email queue, it should only be attached to /api/email requests
 const emailQueue = new EmailQueue(logger);
+
+// This is the global email worker
+// eslint-disable-next-line no-new
+new Worker(
+  'emailqueue', 
+  initializeProcessor(Database.fromUrl(POSTGRES.URL, logger)),
+);
 
 export async function handle({ event, resolve }) {
   const { cookies, locals, request, url } = event;
