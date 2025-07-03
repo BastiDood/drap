@@ -9,6 +9,7 @@ import { type Loggable, timed } from './decorators';
 import { array, parse, string } from 'valibot';
 import { enumerate, izip } from 'itertools';
 import { alias } from 'drizzle-orm/pg-core';
+import { notification } from './schema/email';
 
 const StringArray = array(string());
 
@@ -999,5 +1000,27 @@ export class Database implements Loggable {
       default:
         fail(`inviteNewFacultyOrStaff => unexpected insertion count ${rowCount}`);
     }
+  }
+
+  @timed async insertNotification(data: Notification) {
+    const { id } = await this.#db
+      .insert(schema.notification)
+      .values({ data })
+      .returning({ id: schema.notification.id })
+      .onConflictDoNothing()
+      .then(assertSingle);
+
+    return id;
+  }
+
+  @timed async markNotificationDelivered(id: string) {
+    const { returnedId } = await this.#db
+      .update(schema.notification)
+      .set({ deliveredAt: new Date() })
+      .where(eq(schema.notification.id, id))
+      .returning({ returnedId: schema.notification.id })
+      .then(assertSingle)
+    
+    return returnedId;
   }
 }
