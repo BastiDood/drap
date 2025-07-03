@@ -9,7 +9,6 @@ import { type Loggable, timed } from './decorators';
 import { array, parse, string } from 'valibot';
 import { enumerate, izip } from 'itertools';
 import { alias } from 'drizzle-orm/pg-core';
-import { notification } from './schema/email';
 
 const StringArray = array(string());
 
@@ -1022,5 +1021,15 @@ export class Database implements Loggable {
       .then(assertSingle)
     
     return returnedId;
+  }
+
+  @timed async retrieveNotification(id: string) {
+    const result = await this.#db
+      .select({ data: schema.notification.data, deliveredAt: schema.notification.deliveredAt })
+      .from(schema.notification)
+      .where(eq(schema.notification.id, id))
+      .then(assertSingle)
+    
+      return result;
   }
 }
