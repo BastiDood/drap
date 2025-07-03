@@ -1,12 +1,13 @@
 import { BULLMQ_HOST, BULLMQ_PORT } from '$lib/server/env/bullmq';
 import { type Loggable, timed } from '$lib/server/database/decorators';
+import { Queue, QueueEvents } from 'bullmq';
 import { EmailSendRequest } from '$lib/server/models/email';
 import type { Logger } from 'pino';
-import { Queue } from 'bullmq';
 import { ulid } from 'ulid';
 
 export class EmailQueue implements Loggable {
     #queue: Queue;
+    #queueEvents: QueueEvents;
     #logger: Logger;
     
     constructor(logger: Logger) {
@@ -18,6 +19,18 @@ export class EmailQueue implements Loggable {
         })
 
         this.#logger = logger;
+        this.#queueEvents = new QueueEvents('emailqueue');
+        
+        this.#queueEvents.on('completed', this.#onCompleted);
+        this.#queueEvents.on('failed', this.#onFailed);
+    }
+
+    #onCompleted(args: { jobId: string }) {
+        this.#logger.info('email job completed', args);
+    }
+
+    #onFailed(args: { jobId: string }) {
+        this.#logger.error('email job failed', args)
     }
 
     get logger() {
