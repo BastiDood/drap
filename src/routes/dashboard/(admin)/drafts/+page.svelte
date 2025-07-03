@@ -115,8 +115,8 @@
       </section>
       <StartForm draft={draft.id} />
     </div>
-    <nav class="list-nav w-full">
-      <ul class="list">
+    <nav class="w-full">
+      <ul class="space-y-1">
         {#each available as { id, ...user } (id)}
           <li><Student {user} /></li>
         {/each}
