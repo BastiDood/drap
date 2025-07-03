@@ -7,6 +7,7 @@ import { dev } from '$app/environment';
 import * as POSTGRES from '$lib/server/env/postgres';
 import { AssertionError } from 'assert';
 import { Database } from '$lib/server/database';
+import { EmailQueue } from '$lib/server/email/queue';
 
 // eslint-disable-next-line @typescript-eslint/init-declarations
 let stream: PrettyStream | undefined;
@@ -19,8 +20,11 @@ if (dev) {
 // This is only a base logger instance. We need to attach a request ID for each request.
 const logger = pino(stream);
 
+// This is the global email queue, it should only be attached to /api/email requests
+const emailQueue = new EmailQueue(logger);
+
 export async function handle({ event, resolve }) {
-  const { cookies, locals, request } = event;
+  const { cookies, locals, request, url } = event;
 
   const requestLogger = logger.child({
     requestId: crypto.randomUUID(),
@@ -31,6 +35,9 @@ export async function handle({ event, resolve }) {
   requestLogger.info('request initiated');
 
   locals.db = Database.fromUrl(POSTGRES.URL, requestLogger);
+  
+  if (url.origin.includes('api')) 
+    locals.mailQueue = emailQueue;
 
   const sid = cookies.get('sid');
   if (typeof sid !== 'undefined') {
