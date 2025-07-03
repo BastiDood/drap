@@ -6,46 +6,46 @@ import type { Logger } from 'pino';
 import { ulid } from 'ulid';
 
 export class EmailQueue implements Loggable {
-    #queue: Queue;
-    #queueEvents: QueueEvents;
-    #logger: Logger;
-    
-    constructor(logger: Logger) {
-        this.#queue = new Queue<EmailSendRequest>('emailqueue', {
-            connection: {
-                host: BULLMQ_HOST,
-                port: parseInt(BULLMQ_PORT ?? "", 10)
-            }
-        })
+  #queue: Queue;
+  #queueEvents: QueueEvents;
+  #logger: Logger;
 
-        this.#logger = logger;
-        this.#queueEvents = new QueueEvents('emailqueue');
-        
-        this.#queueEvents.on('completed', this.#onCompleted);
-        this.#queueEvents.on('failed', this.#onFailed);
+  constructor(logger: Logger) {
+    this.#queue = new Queue<EmailSendRequest>('emailqueue', {
+      connection: {
+        host: BULLMQ_HOST,
+        port: parseInt(BULLMQ_PORT ?? '', 10),
+      },
+    });
 
-        this.#logger.info('email queue setup complete');
-    }
+    this.#logger = logger;
+    this.#queueEvents = new QueueEvents('emailqueue');
 
-    #onCompleted(args: { jobId: string }) {
-        this.#logger.info('email job completed', args);
-    }
+    this.#queueEvents.on('completed', this.#onCompleted);
+    this.#queueEvents.on('failed', this.#onFailed);
 
-    #onFailed(args: { jobId: string }) {
-        this.#logger.error('email job failed', args)
-    }
+    this.#logger.info('email queue setup complete');
+  }
 
-    get logger() {
-        return this.#logger;
-    }
-    
-    @timed async sendEmailRequest(emailRequest: EmailSendRequest) {
-        const requestId = ulid();
-        
-        const job = await this.#queue.add(requestId, emailRequest);
+  #onCompleted(args: { jobId: string }) {
+    this.#logger.info('email job completed', args);
+  }
 
-        this.#logger.info({ job })
+  #onFailed(args: { jobId: string }) {
+    this.#logger.error('email job failed', args);
+  }
 
-        return job;
-    }
+  get logger() {
+    return this.#logger;
+  }
+
+  @timed async sendEmailRequest(emailRequest: EmailSendRequest) {
+    const requestId = ulid();
+
+    const job = await this.#queue.add(requestId, emailRequest);
+
+    this.#logger.info({ job });
+
+    return job;
+  }
 }
