@@ -7,7 +7,7 @@ import { dev } from '$app/environment';
 import * as POSTGRES from '$lib/server/env/postgres';
 import { AssertionError } from 'assert';
 import { Database } from '$lib/server/database';
-import { EmailQueue } from '$lib/server/email/queue';
+import { NotificationDispatcher } from '$lib/server/email/dispatch';
 import { Worker } from 'bullmq';
 import { initializeProcessor } from '$lib/server/email';
 
@@ -23,7 +23,7 @@ if (dev) {
 const logger = pino(stream);
 
 // This is the global email queue, it should only be attached to /api/email requests
-const emailQueue = new EmailQueue(logger);
+const notificationDispatcher = new NotificationDispatcher(logger);
 
 // This is the global email worker
 // eslint-disable-next-line no-new
@@ -46,7 +46,7 @@ export async function handle({ event, resolve }) {
   locals.db = Database.fromUrl(POSTGRES.URL, requestLogger);
   
   if (url.origin.includes('api')) 
-    locals.mailQueue = emailQueue;
+    locals.mailQueue = notificationDispatcher;
 
   const sid = cookies.get('sid');
   if (typeof sid !== 'undefined') {
