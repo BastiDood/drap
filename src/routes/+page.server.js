@@ -3,7 +3,10 @@ import { dev } from '$app/environment';
 
 export const actions = {
   async logout({ locals: { db, session }, cookies }) {
-    if (typeof session === 'undefined') error(401);
+    if (typeof session === 'undefined') {
+      db.logger.error('attempt to logout without session');
+      error(401);
+    }
 
     const deleted = await db.deleteValidSession(session.id);
     if (typeof deleted === 'undefined')
@@ -22,15 +25,16 @@ export const actions = {
 
           // log the dummy user in
           db.logger.warn({ dummyEmail }, 'inserting dummy user');
-          const dummyUserId = await db.upsertOpenIdUser(
+          const dummyUser = await db.upsertOpenIdUser(
             dummyEmail,
             crypto.randomUUID(), // HACK: this is not a valid Google account identifier.
             'Dummy',
             emailLeader,
             `https://avatar.vercel.sh/${dummyId}.svg`,
           );
-          const dummySessionId = await db.insertDummySession(dummyUserId.id);
+          db.logger.info(dummyUser, 'dummy user inserted');
 
+          const dummySessionId = await db.insertDummySession(dummyUser.id);
           cookies.set('sid', dummySessionId, { path: '/', httpOnly: true, sameSite: 'lax' });
           redirect(303, '/');
         },

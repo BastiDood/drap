@@ -6,14 +6,32 @@ export async function GET({ locals: { db, session }, cookies, setHeaders, url: {
   setHeaders({ 'Cache-Control': 'no-store' });
 
   const hasExtendedScope = searchParams.has('extended');
+  db.logger.info({ hasExtendedScope }, 'requested login');
+
   if (typeof session?.user !== 'undefined') {
-    // Allow only admins through extended scope flow
-    if (!hasExtendedScope) redirect(307, '/');
-    if (session.user.googleUserId === null || !session.user.isAdmin || session.user.labId !== null)
+    if (!hasExtendedScope) {
+      db.logger.error('attempt to login with extended scope without admin privileges');
+      redirect(307, '/');
+    }
+    if (
+      session.user.googleUserId === null ||
+      !session.user.isAdmin ||
+      session.user.labId !== null
+    ) {
+      db.logger.error(
+        {
+          isAdmin: session.user.isAdmin,
+          googleUserId: session.user.googleUserId,
+          labId: session.user.labId,
+        },
+        'attempt to login with extended scope without admin privileges',
+      );
       error(403);
+    }
   }
 
   const { id: sessionId, nonce, expiration } = await db.generatePendingSession(hasExtendedScope);
+  db.logger.info({ sessionId, expiration }, 'pending session generated');
   cookies.set('sid', sessionId, {
     path: '/',
     httpOnly: true,

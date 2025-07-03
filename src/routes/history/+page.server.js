@@ -1,3 +1,5 @@
 export async function load({ locals: { db } }) {
-  return { drafts: await db.getDrafts() };
+  const drafts = await db.getDrafts();
+  db.logger.info({ draftCount: drafts.length }, 'drafts fetched');
+  return { drafts };
 }
