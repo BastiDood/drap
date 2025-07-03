@@ -1,7 +1,6 @@
 import { jsonb, pgSchema, text, timestamp } from 'drizzle-orm/pg-core';
-
+import { sql } from 'drizzle-orm';
 import { ulid } from './custom/ulid';
-
 import { user } from './app';
 
 export const email = pgSchema('email');
@@ -29,10 +28,11 @@ export type DesignatedSender = typeof designatedSender.$inferSelect;
 export type NewDesignatedSender = typeof designatedSender.$inferInsert;
 
 export const notification = email.table('notification', {
-  notificationId: ulid('notification_id')
-    .notNull()
-    .primaryKey(),
-  deliveredAt: timestamp('delivered_at', { mode: 'date' }).notNull().defaultNow(),
+  id: ulid('id')
+    .primaryKey()
+    .default(sql`gen_ulid()`),
+  createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+  deliveredAt: timestamp('delivered_at', { mode: 'date' }),
   data: jsonb('metadata').notNull()
 })
 export type Notification = typeof notification.$inferSelect;
