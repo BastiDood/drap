@@ -15,7 +15,7 @@
 {#if typeof rankings === 'undefined'}
   <SubmitRankings {draftId} {maxRounds} {availableLabs} />
 {:else}
-  {@const { createdAt, labs } = rankings}
+  {@const { createdAt, labRemarks } = rankings}
   {@const creationDate = format(createdAt, 'PPP')}
   {@const creationTime = format(createdAt, 'pp')}
   {#if currRound === null}
@@ -36,10 +36,18 @@
       at
       <strong>{creationTime}</strong>.
     </p>
-    {#if labs.length > 0}
+    {#if labRemarks.length > 0}
       <ol>
-        {#each labs as lab (lab)}
-          <li>{lab}</li>
+        {#each labRemarks as { lab, remark } (lab)}
+          <li>
+            {lab}
+            {#if remark.length > 0}
+              <p class="text-sm">
+                <strong>Remarks:</strong>
+                {remark}
+              </p>
+            {/if}
+          </li>
         {/each}
       </ol>
     {:else}
