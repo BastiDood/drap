@@ -6,11 +6,12 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 
 import * as schema from './schema';
 import { type Loggable, timed } from './decorators';
-import { array, parse, string } from 'valibot';
+import { array, object, parse, string } from 'valibot';
 import { enumerate, izip } from 'itertools';
 import { alias } from 'drizzle-orm/pg-core';
 
 const StringArray = array(string());
+const LabRemark = array(object({ lab: string(), remark: string() }));
 
 function init(url: string) {
   return drizzle(url, { schema });
@@ -680,12 +681,10 @@ export class Database implements Loggable {
     return await this.#db
       .select({
         createdAt: sub.createdAt,
-        labs: sql`array_agg(${schema.activeLabView.name} ORDER BY ${sub.index})`.mapWith(vals =>
-          parse(StringArray, vals),
-        ),
-        remarks: sql`array_agg(${sub.remark} ORDER BY ${sub.index})`.mapWith(vals =>
-          parse(StringArray, vals),
-        ),
+        labRemarks:
+          sql`jsonb_agg(jsonb_build_object('lab', ${schema.activeLabView.name}, 'remark', ${sub.remark}) ORDER BY ${sub.index})`.mapWith(
+            vals => parse(LabRemark, vals),
+          ),
       })
       .from(sub)
       .innerJoin(schema.activeLabView, eq(sub.labId, schema.activeLabView.id))

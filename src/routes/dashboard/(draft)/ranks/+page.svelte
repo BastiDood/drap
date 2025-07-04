@@ -3,7 +3,6 @@
   import SubmitRankings from './SubmitRankings.svelte';
   import WarningAlert from '$lib/alerts/Warning.svelte';
   import { format } from 'date-fns';
-  import { zip } from 'itertools';
 
   const { data } = $props();
   const {
@@ -16,7 +15,7 @@
 {#if typeof rankings === 'undefined'}
   <SubmitRankings {draftId} {maxRounds} {availableLabs} />
 {:else}
-  {@const { createdAt, labs, remarks } = rankings}
+  {@const { createdAt, labRemarks } = rankings}
   {@const creationDate = format(createdAt, 'PPP')}
   {@const creationTime = format(createdAt, 'pp')}
   {#if currRound === null}
@@ -37,9 +36,9 @@
       at
       <strong>{creationTime}</strong>.
     </p>
-    {#if labs.length > 0}
+    {#if labRemarks.length > 0}
       <ol>
-        {#each zip(labs, remarks) as [lab, remark] (lab)}
+        {#each labRemarks as { lab, remark } (lab)}
           <li>
             {lab}
             {#if remark.length > 0}
