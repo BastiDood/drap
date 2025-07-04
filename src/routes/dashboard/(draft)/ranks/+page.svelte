@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { zip } from 'itertools';
   import { Progress } from '@skeletonlabs/skeleton-svelte';
   import SubmitRankings from './SubmitRankings.svelte';
   import WarningAlert from '$lib/alerts/Warning.svelte';
@@ -15,7 +16,7 @@
 {#if typeof rankings === 'undefined'}
   <SubmitRankings {draftId} {maxRounds} {availableLabs} />
 {:else}
-  {@const { createdAt, labs } = rankings}
+  {@const { createdAt, labs, remarks } = rankings}
   {@const creationDate = format(createdAt, 'PPP')}
   {@const creationTime = format(createdAt, 'pp')}
   {#if currRound === null}
@@ -38,8 +39,16 @@
     </p>
     {#if labs.length > 0}
       <ol>
-        {#each labs as lab (lab)}
-          <li>{lab}</li>
+        {#each zip(labs, remarks) as [lab, remark] (lab)}
+          <li>
+            {lab}
+            {#if remark.length > 0}
+              <p class="text-sm">
+                <strong>Remarks:</strong>
+                {remark}
+              </p>
+            {/if}
+          </li>
         {/each}
       </ol>
     {:else}
