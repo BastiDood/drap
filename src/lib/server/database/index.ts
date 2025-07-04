@@ -664,6 +664,7 @@ export class Database implements Loggable {
         createdAt: schema.studentRank.createdAt,
         index: schema.studentRankLab.index,
         labId: schema.studentRankLab.labId,
+        remark: schema.studentRankLab.remark,
       })
       .from(schema.studentRank)
       .innerJoin(
@@ -680,6 +681,9 @@ export class Database implements Loggable {
       .select({
         createdAt: sub.createdAt,
         labs: sql`array_agg(${schema.activeLabView.name} ORDER BY ${sub.index})`.mapWith(vals =>
+          parse(StringArray, vals),
+        ),
+        remarks: sql`array_agg(${sub.remark} ORDER BY ${sub.index})`.mapWith(vals =>
           parse(StringArray, vals),
         ),
       })
