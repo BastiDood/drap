@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { zip } from 'itertools';
   import { Progress } from '@skeletonlabs/skeleton-svelte';
   import SubmitRankings from './SubmitRankings.svelte';
   import WarningAlert from '$lib/alerts/Warning.svelte';
   import { format } from 'date-fns';
+  import { zip } from 'itertools';
 
   const { data } = $props();
   const {
