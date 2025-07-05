@@ -1,11 +1,12 @@
 import { BULLMQ_HOST, BULLMQ_PORT } from '$lib/server/env/bullmq';
-import type { BaseDraftNotif, Notification } from '$lib/server/models/notification';
+import { Notification, type BaseDraftNotif } from '$lib/server/models/notification';
 import { type Loggable, timed } from '$lib/server/database/decorators';
 import { Queue, QueueEvents } from 'bullmq';
 import type { Database } from '$lib/server/database';
 import type { Logger } from 'pino';
 import type { User } from '$lib/server/database/schema';
 import { error } from '@sveltejs/kit';
+import { parse } from 'valibot';
 
 export const queueName = 'notifqueue';
 
@@ -42,7 +43,10 @@ export class NotificationDispatcher implements Loggable {
   }
 
   async #sendNotificationRequest(notifRequest: Notification) {
-    const requestId = await this.#db.insertNotification(notifRequest);
+    // one last sanity check to gatekeep the queue
+    const parsedNotifRequest = parse(Notification, notifRequest);
+
+    const requestId = await this.#db.insertNotification(parsedNotifRequest);
 
     this.#logger.info('new notification request received');
 
