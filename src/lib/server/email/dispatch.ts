@@ -1,5 +1,5 @@
 import { BULLMQ_HOST, BULLMQ_PORT } from '$lib/server/env/bullmq';
-import { Notification, type BaseDraftNotif } from '$lib/server/models/notification';
+import { type BaseDraftNotif, Notification } from '$lib/server/models/notification';
 import { type Loggable, timed } from '$lib/server/database/decorators';
 import { Queue, QueueEvents } from 'bullmq';
 import type { Database } from '$lib/server/database';
@@ -77,16 +77,16 @@ export class NotificationDispatcher implements Loggable {
     return this.#sendNotificationRequest({ ...baseNotif, type: 'RoundStart' })
   }
 
-  @timed async dispatchRoundSubmittedNotif() {
+  @timed async dispatchRoundSubmittedNotif(labId: string, labName: string) {
     const baseNotif = await this.#constructDraftNotification();
 
-    return this.#sendNotificationRequest({ ...baseNotif, type: 'RoundSubmit' });
+    return this.#sendNotificationRequest({ ...baseNotif, type: 'RoundSubmit', labName, labId });
   }
 
-  @timed async dispatchLotteryInterventionNotif() {
+  @timed async dispatchLotteryInterventionNotif(labId: string, labName: string, givenName: string, familyName: string, email: string) {
     const baseNotif = await this.#constructDraftNotification();
 
-    return this.#sendNotificationRequest({ ...baseNotif, type: 'LotteryIntervention' });
+    return this.#sendNotificationRequest({ ...baseNotif, type: 'LotteryIntervention', labId, labName, givenName, familyName, email });
   }
 
   @timed async dispatchDraftConcludedNotif() {

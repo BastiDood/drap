@@ -26,6 +26,7 @@ const LotteryInterventionNotif = object({
     labId: string(),
     labName: string(),
     givenName: string(),
+    familyName: string(),
     email: pipe(string(), email())
 })
 
