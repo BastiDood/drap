@@ -36,7 +36,7 @@ new Worker(
 );
 
 export async function handle({ event, resolve }) {
-  const { cookies, locals, request, url } = event;
+  const { cookies, locals, request } = event;
 
   const requestLogger = logger.child({
     requestId: crypto.randomUUID(),
@@ -47,9 +47,7 @@ export async function handle({ event, resolve }) {
   requestLogger.info('request initiated');
 
   locals.db = Database.fromUrl(POSTGRES.URL, requestLogger);
-  
-  if (url.origin.includes('api')) 
-    locals.mailQueue = notificationDispatcher;
+  locals.dispatch = notificationDispatcher;
 
   const sid = cookies.get('sid');
   if (typeof sid !== 'undefined') {
