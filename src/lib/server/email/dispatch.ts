@@ -55,6 +55,9 @@ export class NotificationDispatcher implements Loggable {
 
   async #constructDraftNotification(): Promise<BaseDraftNotif> {
     const currentDraft = await this.#db.getActiveDraft();
+
+    this.#logger.info('new draft notification constructed')
+
     if (typeof currentDraft === 'undefined') 
       return error(
         500,
