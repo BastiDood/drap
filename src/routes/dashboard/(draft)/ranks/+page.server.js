@@ -33,7 +33,11 @@ export async function load({ locals: { db, session }, parent }) {
   ]);
 
   if (typeof rankings === 'undefined') db.logger.warn('no rankings submitted yet');
-  else db.logger.info({ rankingsLabCount: rankings.labRemarks.length }, 'rankings previously submitted');
+  else
+    db.logger.info(
+      { rankingsLabCount: rankings.labRemarks.length },
+      'rankings previously submitted',
+    );
 
   db.logger.trace({ availableLabCount: availableLabs.length }, 'available labs fetched');
 
