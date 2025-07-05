@@ -35,5 +35,5 @@ export const notification = email.table('notification', {
   deliveredAt: timestamp('delivered_at', { mode: 'date' }),
   data: jsonb('metadata').notNull()
 })
-export type Notification = typeof notification.$inferSelect;
-export type NewNotification = typeof notification.$inferInsert;
+export type NotificationRequest = typeof notification.$inferSelect;
+export type NewNotificationRequest = typeof notification.$inferInsert;
