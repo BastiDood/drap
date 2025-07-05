@@ -9,17 +9,25 @@ export type BaseDraftNotif = InferOutput<typeof BaseDraftNotif>;
 
 const DraftRoundStartedNotif = object({
     ...BaseDraftNotif.entries,
-    type: literal('RoundStart')
+    type: literal('RoundStart'),
+    round: number()
 })
 
 const DraftRoundSubmittedNotif = object({
     ...BaseDraftNotif.entries,
-    type: literal('RoundSubmit')
+    type: literal('RoundSubmit'),
+    round: number(),
+    labId: string(),
+    labName: string()
 })
 
 const LotteryInterventionNotif = object({
     ...BaseDraftNotif.entries,
-    type: literal('LotteryIntervention')
+    type: literal('LotteryIntervention'),
+    labId: string(),
+    labName: string(),
+    givenName: string(),
+    email: pipe(string(), email())
 })
 
 const DraftConcludedNotif = object({
