@@ -1,8 +1,10 @@
 import { BULLMQ_HOST, BULLMQ_PORT } from '$lib/server/env/bullmq';
 import { type Loggable, timed } from '$lib/server/database/decorators';
 import { Queue, QueueEvents } from 'bullmq';
+import type { Database } from '$lib/server/database';
 import { EmailSendRequest } from '$lib/server/models/email';
 import type { Logger } from 'pino';
+import type { Notification } from '$lib/server/models/notification';
 import { ulid } from 'ulid';
 
 export const queueName = 'notifqueue';
@@ -11,8 +13,9 @@ export class NotificationDispatcher implements Loggable {
   #queue: Queue;
   #queueEvents: QueueEvents;
   #logger: Logger;
+  #db: Database
 
-  constructor(logger: Logger) {
+  constructor(logger: Logger, db: Database) {
     this.#queue = new Queue<EmailSendRequest>(queueName, {
       connection: {
         host: BULLMQ_HOST,
@@ -22,6 +25,7 @@ export class NotificationDispatcher implements Loggable {
 
     this.#logger = logger;
     this.#queueEvents = new QueueEvents(queueName);
+    this.#db = db;
 
     this.#queueEvents.on('completed', this.#onCompleted);
     this.#queueEvents.on('failed', this.#onFailed);
@@ -41,10 +45,10 @@ export class NotificationDispatcher implements Loggable {
     return this.#logger;
   }
 
-  @timed async sendEmailRequest(emailRequest: EmailSendRequest) {
+  @timed async sendNotificationRequest(notifRequest: Notification) {
     const requestId = ulid();
 
-    const job = await this.#queue.add(requestId, emailRequest);
+    const job = await this.#queue.add(requestId, notifRequest);
 
     this.#logger.info({ job });
 
