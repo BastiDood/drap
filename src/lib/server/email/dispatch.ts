@@ -4,6 +4,7 @@ import { type Loggable, timed } from '$lib/server/database/decorators';
 import { Queue, QueueEvents } from 'bullmq';
 import type { Database } from '$lib/server/database';
 import type { Logger } from 'pino';
+import type { User } from '$lib/server/database/schema';
 import { error } from '@sveltejs/kit';
 
 export const queueName = 'notifqueue';
@@ -85,6 +86,17 @@ export class NotificationDispatcher implements Loggable {
     const baseNotif = await this.#constructDraftNotification();
 
     return this.#sendNotificationRequest({ ...baseNotif, type: 'Concluded' });
+  }
+
+  @timed async dispatchUserNotif(user: User, labName: string) {
+
+    return await this.#sendNotificationRequest({
+      target: 'User',
+      email: user.email,
+      givenName: user.givenName,
+      familyName: user.familyName,
+      labName
+    })
   }
 
   get logger() {
