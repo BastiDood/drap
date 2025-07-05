@@ -22,14 +22,17 @@ if (dev) {
 // This is only a base logger instance. We need to attach a request ID for each request.
 const logger = pino(stream);
 
+// This is the database used by the notification system
+const notificationDB = Database.fromUrl(POSTGRES.URL, logger.child({ notifications: 'db' }));
+
 // This is the global email queue, it should only be attached to /api/email requests
-const notificationDispatcher = new NotificationDispatcher(logger);
+const notificationDispatcher = new NotificationDispatcher(logger.child({ notifications: 'dispatch' }), notificationDB);
 
 // This is the global email worker
 // eslint-disable-next-line no-new
 new Worker(
   queueName, 
-  initializeProcessor(Database.fromUrl(POSTGRES.URL, logger)),
+  initializeProcessor(notificationDB),
 );
 
 export async function handle({ event, resolve }) {
