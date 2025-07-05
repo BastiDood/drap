@@ -1,14 +1,14 @@
 import { getDotPath, isValiError } from 'valibot';
 import type { PrettyStream } from 'pino-pretty';
+import { Worker } from 'bullmq';
 import { pino } from 'pino';
 
 import { dev } from '$app/environment';
 
 import * as POSTGRES from '$lib/server/env/postgres';
+import { NotificationDispatcher, queueName } from '$lib/server/email/dispatch';
 import { AssertionError } from 'assert';
 import { Database } from '$lib/server/database';
-import { NotificationDispatcher } from '$lib/server/email/dispatch';
-import { Worker } from 'bullmq';
 import { initializeProcessor } from '$lib/server/email';
 
 // eslint-disable-next-line @typescript-eslint/init-declarations
@@ -28,7 +28,7 @@ const notificationDispatcher = new NotificationDispatcher(logger);
 // This is the global email worker
 // eslint-disable-next-line no-new
 new Worker(
-  'emailqueue', 
+  queueName, 
   initializeProcessor(Database.fromUrl(POSTGRES.URL, logger)),
 );
 

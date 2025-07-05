@@ -5,13 +5,15 @@ import { EmailSendRequest } from '$lib/server/models/email';
 import type { Logger } from 'pino';
 import { ulid } from 'ulid';
 
+export const queueName = 'notifqueue';
+
 export class NotificationDispatcher implements Loggable {
   #queue: Queue;
   #queueEvents: QueueEvents;
   #logger: Logger;
 
   constructor(logger: Logger) {
-    this.#queue = new Queue<EmailSendRequest>('emailqueue', {
+    this.#queue = new Queue<EmailSendRequest>(queueName, {
       connection: {
         host: BULLMQ_HOST,
         port: parseInt(BULLMQ_PORT ?? '', 10),
@@ -19,7 +21,7 @@ export class NotificationDispatcher implements Loggable {
     });
 
     this.#logger = logger;
-    this.#queueEvents = new QueueEvents('emailqueue');
+    this.#queueEvents = new QueueEvents(queueName);
 
     this.#queueEvents.on('completed', this.#onCompleted);
     this.#queueEvents.on('failed', this.#onFailed);
