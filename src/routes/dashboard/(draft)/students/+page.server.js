@@ -3,58 +3,101 @@ import assert from 'node:assert/strict';
 import { validateString } from '$lib/forms';
 
 export async function load({ locals: { db, session }, parent }) {
-  if (typeof session?.user === 'undefined') redirect(307, '/oauth/login/');
+  if (typeof session?.user === 'undefined') {
+    db.logger.error('attempt to access students page without session');
+    redirect(307, '/oauth/login/');
+  }
 
   const { user } = session;
-  if (!user.isAdmin || user.googleUserId === null || user.labId === null) error(403);
+  if (!user.isAdmin || user.googleUserId === null || user.labId === null) {
+    db.logger.error(
+      { isAdmin: user.isAdmin, googleUserId: user.googleUserId, labId: user.labId },
+      'insufficient permissions to access students page',
+    );
+    error(403);
+  }
 
   const { draft } = await parent();
+  if (typeof draft === 'undefined') {
+    db.logger.error('no active draft found');
+    error(404);
+  }
+
+  db.logger.info(draft, 'active draft found');
+
   const { lab, students, researchers, isDone } =
     await db.getLabAndRemainingStudentsInDraftWithLabPreference(draft.id, user.labId);
-  if (typeof lab === 'undefined') error(404);
+  if (typeof lab === 'undefined') {
+    db.logger.error('lab not found');
+    error(404);
+  }
 
+  db.logger.info({ lab, students, researchers, isDone }, 'lab and students fetched');
   return { draft, lab, students, researchers, isDone };
 }
 
 export const actions = {
   async rankings({ locals: { db, session }, request }) {
-    if (typeof session?.user === 'undefined') error(401);
+    if (typeof session?.user === 'undefined') {
+      db.logger.error('attempt to submit rankings without session');
+      error(401);
+    }
 
     const { user } = session;
-    if (!user.isAdmin || user.googleUserId === null || user.labId === null) error(403);
+    if (!user.isAdmin || user.googleUserId === null || user.labId === null) {
+      db.logger.error(
+        { isAdmin: user.isAdmin, googleUserId: user.googleUserId, labId: user.labId },
+        'insufficient permissions to submit rankings',
+      );
+      error(403);
+    }
+
+    const lab = user.labId;
+    const faculty = user.id;
+    db.logger.info({ lab, faculty }, 'submitting rankings on behalf of lab head');
 
     const data = await request.formData();
-    const draft = BigInt(validateString(data.get('draft')));
+    const draftId = BigInt(validateString(data.get('draft')));
+    db.logger.info({ draftId }, 'draft submitted');
+
     const students = data.getAll('students').map(validateString);
+    db.logger.info({ students }, 'students submitted');
 
     const { quota, selected } = await db.getLabQuotaAndSelectedStudentCountInDraft(
-      draft,
+      draftId,
       user.labId,
     );
     assert(typeof quota !== 'undefined');
 
     const total = selected + students.length;
-    if (total > quota) error(403);
+    if (total > quota) {
+      db.logger.error({ total, quota }, 'total students exceeds quota');
+      error(403);
+    }
 
-    const lab = user.labId;
-    const faculty = user.id;
+    db.logger.info({ total, quota }, 'total students still within quota');
+
     await db.begin(async db => {
-      await db.insertFacultyChoice(draft, lab, faculty, students);
+      await db.insertFacultyChoice(draftId, lab, faculty, students);
+      db.logger.info({ studentCount: students.length }, 'students inserted into faculty choice');
 
       // TODO: Reinstate notifications channel.
       // const postDraftRoundSubmittedNotification = await db.postDraftRoundSubmittedNotification(draft, lab);
       // db.logger.info({ postDraftRoundSubmittedNotification });
 
       while (true) {
-        const count = await db.getPendingLabCountInDraft(draft);
-        if (count > 0) break;
+        const count = await db.getPendingLabCountInDraft(draftId);
+        if (count > 0) {
+          db.logger.info({ pendingLabCount: count }, 'more pending labs found');
+          break;
+        }
 
-        const incrementDraftRound = await db.incrementDraftRound(draft);
-        db.logger.info({ incrementDraftRound });
+        const incrementDraftRound = await db.incrementDraftRound(draftId);
         assert(
           typeof incrementDraftRound !== 'undefined',
           'The draft to be incremented does not exist.',
         );
+        db.logger.info(incrementDraftRound, 'draft round incremented');
 
         // TODO: Reinstate notifications channel.
         // const postDraftRoundStartedNotification = await db.postDraftRoundStartedNotification(
@@ -63,15 +106,19 @@ export const actions = {
         // );
         // db.logger.info({ postDraftRoundStartedNotification });
 
-        if (incrementDraftRound.currRound === null) break;
+        if (incrementDraftRound.currRound === null) {
+          db.logger.info('lottery round reached');
+          break;
+        }
 
-        const autoAcknowledgeLabsWithoutPreferences =
-          await db.autoAcknowledgeLabsWithoutPreferences(draft);
-        db.logger.info({ autoAcknowledgeLabsWithoutPreferences });
+        await db.autoAcknowledgeLabsWithoutPreferences(draftId);
+        db.logger.info('labs without preferences auto-acknowledged');
       }
 
       // TODO: Do notification as final step to ensure consistency
       // await db.notifyDraftChannel();
     });
+
+    db.logger.info('student rankings submitted');
   },
 };

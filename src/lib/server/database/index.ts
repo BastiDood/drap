@@ -121,19 +121,6 @@ export class Database implements Loggable {
       .then(assertOptional);
   }
 
-  @timed async initUser(email: string) {
-    const { id } = await this.#db
-      .insert(schema.user)
-      .values({ email })
-      .onConflictDoUpdate({
-        target: schema.user.email,
-        set: { email: sql`excluded.${sql.raw(schema.user.email.name)}` },
-      })
-      .returning({ id: schema.user.id })
-      .then(assertSingle);
-    return id;
-  }
-
   @timed async upsertOpenIdUser(
     email: string,
     uid: string | null,
