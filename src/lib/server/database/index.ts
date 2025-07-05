@@ -8,6 +8,7 @@ import * as schema from './schema';
 import { type Loggable, timed } from './decorators';
 import { array, object, parse, string } from 'valibot';
 import { enumerate, izip } from 'itertools';
+import { Notification } from '$lib/server/models/notification';
 import { alias } from 'drizzle-orm/pg-core';
 
 const StringArray = array(string());
