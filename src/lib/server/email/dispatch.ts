@@ -5,7 +5,6 @@ import type { Database } from '$lib/server/database';
 import { EmailSendRequest } from '$lib/server/models/email';
 import type { Logger } from 'pino';
 import type { Notification } from '$lib/server/models/notification';
-import { ulid } from 'ulid';
 
 export const queueName = 'notifqueue';
 
@@ -46,7 +45,7 @@ export class NotificationDispatcher implements Loggable {
   }
 
   @timed async sendNotificationRequest(notifRequest: Notification) {
-    const requestId = ulid();
+    const requestId = await this.#db.insertNotification(notifRequest);
 
     const job = await this.#queue.add(requestId, notifRequest);
 
