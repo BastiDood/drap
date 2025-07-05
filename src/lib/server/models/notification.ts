@@ -30,9 +30,9 @@ const DraftConcludedNotif = object({
 const BaseUserNotif = object({
     target: literal('User'),
     email: pipe(string(),email()),
-    given_name: string(),
-    family_name: string(),
-    lab_name: string()
+    givenName: string(),
+    familyName: string(),
+    labName: string()
 })
 
 export type BaseUserNotif = InferOutput<typeof BaseUserNotif>;
