@@ -68,7 +68,7 @@ export class NotificationDispatcher implements Loggable {
         'unexpected draft notif call'
       );
     
-    return { target: 'Draft', draftId: Number(currentDraft.id) };
+    return { target: 'Draft', draftId: Number(currentDraft.id), round: currentDraft.currRound };
   }
 
   @timed async dispatchDraftRoundStartNotif() {

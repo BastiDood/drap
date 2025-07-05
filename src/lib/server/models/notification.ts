@@ -1,8 +1,9 @@
-import { type InferOutput, email, literal, number, object, pipe, string, variant } from "valibot";
+import { type InferOutput, email, literal, nullable, number, object, pipe, string, variant } from "valibot";
 
 const BaseDraftNotif = object({
     target: literal('Draft'),
-    draftId: number()
+    draftId: number(),
+    round: nullable(number()),
 })
 
 export type BaseDraftNotif = InferOutput<typeof BaseDraftNotif>;
@@ -10,13 +11,11 @@ export type BaseDraftNotif = InferOutput<typeof BaseDraftNotif>;
 const DraftRoundStartedNotif = object({
     ...BaseDraftNotif.entries,
     type: literal('RoundStart'),
-    round: number()
 })
 
 const DraftRoundSubmittedNotif = object({
     ...BaseDraftNotif.entries,
     type: literal('RoundSubmit'),
-    round: number(),
     labId: string(),
     labName: string()
 })
