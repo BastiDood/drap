@@ -1,9 +1,10 @@
 import { BULLMQ_HOST, BULLMQ_PORT } from '$lib/server/env/bullmq';
+import type { BaseDraftNotif, Notification } from '$lib/server/models/notification';
 import { type Loggable, timed } from '$lib/server/database/decorators';
 import { Queue, QueueEvents } from 'bullmq';
 import type { Database } from '$lib/server/database';
 import type { Logger } from 'pino';
-import type { Notification } from '$lib/server/models/notification';
+import { error } from '@sveltejs/kit';
 
 export const queueName = 'notifqueue';
 
@@ -39,11 +40,7 @@ export class NotificationDispatcher implements Loggable {
     this.#logger.error('email job failed', args);
   }
 
-  get logger() {
-    return this.#logger;
-  }
-
-  @timed async sendNotificationRequest(notifRequest: Notification) {
+  async #sendNotificationRequest(notifRequest: Notification) {
     const requestId = await this.#db.insertNotification(notifRequest);
 
     this.#logger.info('new notification request received');
@@ -53,5 +50,44 @@ export class NotificationDispatcher implements Loggable {
     this.#logger.info({ job }, 'new job created');
 
     return job;
+  }
+
+  async #constructDraftNotification(): Promise<BaseDraftNotif> {
+    const currentDraft = await this.#db.getActiveDraft();
+    if (typeof currentDraft === 'undefined') 
+      return error(
+        500,
+        'unexpected draft notif call'
+      );
+    
+    return { target: 'Draft', draftId: Number(currentDraft.id) };
+  }
+
+  @timed async dispatchDraftRoundStartNotif() {
+    const baseNotif = await this.#constructDraftNotification();
+    
+    return this.#sendNotificationRequest({ ...baseNotif, type: 'RoundStart' })
+  }
+
+  @timed async dispatchRoundSubmittedNotif() {
+    const baseNotif = await this.#constructDraftNotification();
+
+    return this.#sendNotificationRequest({ ...baseNotif, type: 'RoundSubmit' });
+  }
+
+  @timed async dispatchLotteryInterventionNotif() {
+    const baseNotif = await this.#constructDraftNotification();
+
+    return this.#sendNotificationRequest({ ...baseNotif, type: 'LotteryIntervention' });
+  }
+
+  @timed async dispatchDraftConcludedNotif() {
+    const baseNotif = await this.#constructDraftNotification();
+
+    return this.#sendNotificationRequest({ ...baseNotif, type: 'Concluded' });
+  }
+
+  get logger() {
+    return this.#logger;
   }
 }
