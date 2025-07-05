@@ -5,6 +5,8 @@ const BaseDraftNotif = object({
     draftId: number()
 })
 
+export type BaseDraftNotif = InferOutput<typeof BaseDraftNotif>;
+
 const DraftRoundStartedNotif = object({
     ...BaseDraftNotif.entries,
     type: literal('RoundStart')
@@ -32,6 +34,8 @@ const BaseUserNotif = object({
     family_name: string(),
     lab_name: string()
 })
+
+export type BaseUserNotif = InferOutput<typeof BaseUserNotif>;
 
 export const Notification = variant(
     'target',
