@@ -2,7 +2,6 @@ import { BULLMQ_HOST, BULLMQ_PORT } from '$lib/server/env/bullmq';
 import { type Loggable, timed } from '$lib/server/database/decorators';
 import { Queue, QueueEvents } from 'bullmq';
 import type { Database } from '$lib/server/database';
-import { EmailSendRequest } from '$lib/server/models/email';
 import type { Logger } from 'pino';
 import type { Notification } from '$lib/server/models/notification';
 
@@ -15,7 +14,7 @@ export class NotificationDispatcher implements Loggable {
   #db: Database
 
   constructor(logger: Logger, db: Database) {
-    this.#queue = new Queue<EmailSendRequest>(queueName, {
+    this.#queue = new Queue<string>(queueName, {
       connection: {
         host: BULLMQ_HOST,
         port: parseInt(BULLMQ_PORT ?? '', 10),
@@ -47,9 +46,11 @@ export class NotificationDispatcher implements Loggable {
   @timed async sendNotificationRequest(notifRequest: Notification) {
     const requestId = await this.#db.insertNotification(notifRequest);
 
-    const job = await this.#queue.add(requestId, notifRequest);
+    this.#logger.info('new notification request received');
 
-    this.#logger.info({ job });
+    const job = await this.#queue.add(requestId, requestId);
+
+    this.#logger.info({ job }, 'new job created');
 
     return job;
   }
