@@ -10,6 +10,7 @@ import { array, object, parse, string } from 'valibot';
 import { enumerate, izip } from 'itertools';
 import { Notification } from '$lib/server/models/notification';
 import { alias } from 'drizzle-orm/pg-core';
+import { IdToken } from '../models/oauth';
 
 const StringArray = array(string());
 const LabRemark = array(object({ lab: string(), remark: string() }));
@@ -187,6 +188,17 @@ export class Database implements Loggable {
       })
       .from(targetSchema)
       .orderBy(({ name }) => name);
+  }
+
+  @timed async getLabById(id: string) {
+    return await this.#db
+      .select({
+        id: schema.lab.id,
+        name: schema.lab.name
+      })
+      .from(schema.lab)
+      .where(eq(schema.lab.id, id))
+      .then(assertSingle)
   }
 
   @timed async isValidTotalLabQuota() {
