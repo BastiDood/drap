@@ -26,14 +26,14 @@ const logger = pino(stream);
 const notificationDB = Database.fromUrl(POSTGRES.URL, logger.child({ notifications: 'db' }));
 
 // This is the global email queue, it should only be attached to /api/email requests
-const notificationDispatcher = new NotificationDispatcher(logger.child({ notifications: 'dispatch' }), notificationDB);
+const notificationDispatcher = new NotificationDispatcher(
+  logger.child({ notifications: 'dispatch' }),
+  notificationDB,
+);
 
 // This is the global email worker
 // eslint-disable-next-line no-new
-new Worker(
-  queueName, 
-  initializeProcessor(notificationDB),
-);
+new Worker(queueName, initializeProcessor(notificationDB));
 
 export async function handle({ event, resolve }) {
   const { cookies, locals, request } = event;

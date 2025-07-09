@@ -1009,8 +1009,8 @@ export class Database implements Loggable {
       .set({ deliveredAt: new Date() })
       .where(eq(schema.notification.id, id))
       .returning({ returnedId: schema.notification.id })
-      .then(assertSingle)
-    
+      .then(assertSingle);
+
     return returnedId;
   }
 
@@ -1019,8 +1019,8 @@ export class Database implements Loggable {
       .select({ data: schema.notification.data, deliveredAt: schema.notification.deliveredAt })
       .from(schema.notification)
       .where(eq(schema.notification.id, id))
-      .then(assertSingle)
-    
-      return result;
+      .then(assertSingle);
+
+    return result;
   }
 }

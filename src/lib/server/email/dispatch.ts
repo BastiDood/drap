@@ -1,5 +1,9 @@
 import { BULLMQ_HOST, BULLMQ_PORT } from '$lib/server/env/bullmq';
-import { type BaseDraftNotif, Notification, QueuedNotification } from '$lib/server/models/notification';
+import {
+  type BaseDraftNotif,
+  Notification,
+  QueuedNotification,
+} from '$lib/server/models/notification';
 import { type Loggable, timed } from '$lib/server/database/decorators';
 import { Queue, QueueEvents } from 'bullmq';
 import type { Database } from '$lib/server/database';
@@ -14,7 +18,7 @@ export class NotificationDispatcher implements Loggable {
   #queue: Queue;
   #queueEvents: QueueEvents;
   #logger: Logger;
-  #db: Database
+  #db: Database;
 
   constructor(logger: Logger, db: Database) {
     this.#queue = new Queue<QueuedNotification>(queueName, {
@@ -60,21 +64,17 @@ export class NotificationDispatcher implements Loggable {
   async #constructDraftNotification(): Promise<BaseDraftNotif> {
     const currentDraft = await this.#db.getActiveDraft();
 
-    this.#logger.info('new draft notification constructed')
+    this.#logger.info('new draft notification constructed');
 
-    if (typeof currentDraft === 'undefined') 
-      return error(
-        500,
-        'unexpected draft notif call'
-      );
-    
+    if (typeof currentDraft === 'undefined') return error(500, 'unexpected draft notif call');
+
     return { target: 'Draft', draftId: Number(currentDraft.id), round: currentDraft.currRound };
   }
 
   @timed async dispatchDraftRoundStartNotif() {
     const baseNotif = await this.#constructDraftNotification();
-    
-    return this.#sendNotificationRequest({ ...baseNotif, type: 'RoundStart' })
+
+    return this.#sendNotificationRequest({ ...baseNotif, type: 'RoundStart' });
   }
 
   @timed async dispatchRoundSubmittedNotif(labId: string, labName: string) {
@@ -83,10 +83,24 @@ export class NotificationDispatcher implements Loggable {
     return this.#sendNotificationRequest({ ...baseNotif, type: 'RoundSubmit', labName, labId });
   }
 
-  @timed async dispatchLotteryInterventionNotif(labId: string, labName: string, givenName: string, familyName: string, email: string) {
+  @timed async dispatchLotteryInterventionNotif(
+    labId: string,
+    labName: string,
+    givenName: string,
+    familyName: string,
+    email: string,
+  ) {
     const baseNotif = await this.#constructDraftNotification();
 
-    return this.#sendNotificationRequest({ ...baseNotif, type: 'LotteryIntervention', labId, labName, givenName, familyName, email });
+    return this.#sendNotificationRequest({
+      ...baseNotif,
+      type: 'LotteryIntervention',
+      labId,
+      labName,
+      givenName,
+      familyName,
+      email,
+    });
   }
 
   @timed async dispatchDraftConcludedNotif() {
@@ -102,8 +116,8 @@ export class NotificationDispatcher implements Loggable {
       givenName: user.givenName,
       familyName: user.familyName,
       labName,
-      labId
-    })
+      labId,
+    });
   }
 
   get logger() {

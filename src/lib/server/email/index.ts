@@ -93,63 +93,68 @@ export class Emailer {
 export function initializeProcessor(db: Database, logger: Logger) {
   const emailer = new Emailer(db, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET);
 
-  async function processDraftNotification(notifRequest: Notification, txn: Database, emailer: Emailer) {
+  async function processDraftNotification(
+    notifRequest: Notification,
+    txn: Database,
+    emailer: Emailer,
+  ) {
     assert(notifRequest.target === 'Draft');
     const meta = (() => {
-        switch (notifRequest.type) {
-          case 'RoundStart': {
-            const body = notifRequest.round === null 
+      switch (notifRequest.type) {
+        case 'RoundStart': {
+          const body =
+            notifRequest.round === null
               ? {
                   subject: `[DRAP] Lottery Round for Draft #${notifRequest.draftId} has begun!`,
-                  message: `The lottery round for Draft #${notifRequest.draftId} has begun. For lab heads, kindly coordinate with the draft administrators for the next steps.`
+                  message: `The lottery round for Draft #${notifRequest.draftId} has begun. For lab heads, kindly coordinate with the draft administrators for the next steps.`,
                 }
               : {
                   subject: `[DRAP] Round #${notifRequest.round} for Draft #${notifRequest.draftId} has begun!`,
                   message: `Round #${notifRequest.round} for Draft #${notifRequest.draftId} has begun. For lab heads, kindly check the students module to see the list of students who have chosen your lab.`,
-                }
-            const facultyAndStaffEmails = txn.getFacultyAndStaff().then(
-              (result) => result.map(({ email }) => email)
-            );
-            return { emails: facultyAndStaffEmails, ...body }
-          }
-          case 'RoundSubmit': 
-            return {
-              emails: txn.getValidStaffEmails(),
-              subject: `[DRAP] Acknowledgement from ${notifRequest.labId.toUpperCase()} for Round #${notifRequest.round} of Draft #${notifRequest.draftId}`,
-              message: `The ${notifRequest.labName} has submitted their student preferences for Round #${notifRequest.round} of Draft #${notifRequest.draftId}.`,
-            };
-          case 'LotteryIntervention': {
-            const facultyAndStaffEmails = txn.getFacultyAndStaff().then(
-              (result) => result.map(({ email }) => email)
-            );
-
-            return {
-              emails: facultyAndStaffEmails,
-              subject: `[DRAP] Lottery Intervention for ${notifRequest.labId.toUpperCase()} in Draft #${notifRequest.draftId}`,
-              message: `${notifRequest.givenName} ${notifRequest.familyName} <${notifRequest.email}> has been manually assigned to ${notifRequest.labName} during the lottery round of Draft #${notifRequest.draftId}.`,
-            };
-          }
-          case 'Concluded': {
-            const facultyAndStaffEmails = txn.getFacultyAndStaff().then(
-              (result) => result.map(({ email }) => email)
-            );
-
-            return {
-                emails: facultyAndStaffEmails,
-                subject: `[DRAP] Draft #${notifRequest.draftId} Concluded`,
-                message: `Draft #${notifRequest.draftId} has just concluded. See the new roster of researchers using the lab module.`,
-            };
-          }
-          default: 
-            return null;
+                };
+          const facultyAndStaffEmails = txn
+            .getFacultyAndStaff()
+            .then(result => result.map(({ email }) => email));
+          return { emails: facultyAndStaffEmails, ...body };
         }
-      })();
-      assert(meta !== null);
+        case 'RoundSubmit':
+          return {
+            emails: txn.getValidStaffEmails(),
+            subject: `[DRAP] Acknowledgement from ${notifRequest.labId.toUpperCase()} for Round #${notifRequest.round} of Draft #${notifRequest.draftId}`,
+            message: `The ${notifRequest.labName} has submitted their student preferences for Round #${notifRequest.round} of Draft #${notifRequest.draftId}.`,
+          };
+        case 'LotteryIntervention': {
+          const facultyAndStaffEmails = txn
+            .getFacultyAndStaff()
+            .then(result => result.map(({ email }) => email));
 
-      const email = await emailer.send(await meta.emails, meta.subject, meta.message);
+          return {
+            emails: facultyAndStaffEmails,
+            subject: `[DRAP] Lottery Intervention for ${notifRequest.labId.toUpperCase()} in Draft #${notifRequest.draftId}`,
+            message: `${notifRequest.givenName} ${notifRequest.familyName} <${notifRequest.email}> has been manually assigned to ${notifRequest.labName} during the lottery round of Draft #${notifRequest.draftId}.`,
+          };
+        }
+        case 'Concluded': {
+          const facultyAndStaffEmails = txn
+            .getFacultyAndStaff()
+            .then(result => result.map(({ email }) => email));
 
-      return email;
-    }
+          return {
+            emails: facultyAndStaffEmails,
+            subject: `[DRAP] Draft #${notifRequest.draftId} Concluded`,
+            message: `Draft #${notifRequest.draftId} has just concluded. See the new roster of researchers using the lab module.`,
+          };
+        }
+        default:
+          return null;
+      }
+    })();
+    assert(meta !== null);
+
+    const email = await emailer.send(await meta.emails, meta.subject, meta.message);
+
+    return email;
+  }
 
   function processUserNotification(notifRequest: Notification, emailer: Emailer) {
     assert(notifRequest.target === 'User');
@@ -157,25 +162,27 @@ export function initializeProcessor(db: Database, logger: Logger) {
     const email = emailer.send(
       [notifRequest.email],
       `[DRAP] Assigned to ${notifRequest.labId.toUpperCase()}`,
-       `Hello, ${notifRequest.givenName} ${notifRequest.familyName}! Kindly note that you have been assigned to the ${notifRequest.labName}.`
+      `Hello, ${notifRequest.givenName} ${notifRequest.familyName}! Kindly note that you have been assigned to the ${notifRequest.labName}.`,
     );
 
     return email;
   }
 
   return async function processor(job: Job<QueuedNotification>) {
-    const { data: { requestId } } = job;
-    
+    const {
+      data: { requestId },
+    } = job;
+
     const { data, deliveredAt } = await emailer.db.getNotification(requestId);
 
     if (deliveredAt !== null) {
       logger.warn('attempted to process delivered notification');
-      return ;
+      return;
     }
 
     const notifRequest = parse(Notification, data);
 
-    emailer.db.begin(async (txn) => {
+    emailer.db.begin(async txn => {
       const result = await (async () => {
         switch (notifRequest.target) {
           case 'Draft': {
@@ -186,7 +193,7 @@ export function initializeProcessor(db: Database, logger: Logger) {
           }
           default: {
             logger.error('unknown notification request target');
-            throw Error("unknown notification request target");
+            throw Error('unknown notification request target');
           }
         }
       })();
@@ -197,6 +204,6 @@ export function initializeProcessor(db: Database, logger: Logger) {
       }
 
       await txn.markNotificationDelivered(requestId);
-    })
-  }
+    });
+  };
 }
