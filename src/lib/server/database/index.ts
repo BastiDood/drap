@@ -102,6 +102,14 @@ export class Database implements Loggable {
     strictEqual(rowCount, 1, 'only one session must be inserted');
   }
 
+  @timed async getUserById(id: string) {
+    return await this.#db
+      .select()
+      .from(schema.user)
+      .where(eq(schema.user.id, id))
+      .then(assertSingle)
+  }
+
   @timed async getUserFromValidSession(sid: string) {
     const result = await this.#db.query.session.findFirst({
       columns: {},
