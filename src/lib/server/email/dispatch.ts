@@ -1,5 +1,5 @@
 import { BULLMQ_HOST, BULLMQ_PORT } from '$lib/server/env/bullmq';
-import { type BaseDraftNotif, Notification } from '$lib/server/models/notification';
+import { type BaseDraftNotif, Notification, QueuedNotification } from '$lib/server/models/notification';
 import { type Loggable, timed } from '$lib/server/database/decorators';
 import { Queue, QueueEvents } from 'bullmq';
 import type { Database } from '$lib/server/database';
@@ -17,7 +17,7 @@ export class NotificationDispatcher implements Loggable {
   #db: Database
 
   constructor(logger: Logger, db: Database) {
-    this.#queue = new Queue<string>(queueName, {
+    this.#queue = new Queue<QueuedNotification>(queueName, {
       connection: {
         host: BULLMQ_HOST,
         port: parseInt(BULLMQ_PORT ?? '', 10),
@@ -50,7 +50,7 @@ export class NotificationDispatcher implements Loggable {
 
     this.#logger.info('new notification request received');
 
-    const job = await this.#queue.add(requestId, requestId);
+    const job = await this.#queue.add(requestId, { requestId }, { jobId: requestId });
 
     this.#logger.info({ job }, 'new job created');
 

@@ -6,7 +6,7 @@ import assert, { strictEqual } from 'node:assert/strict';
 import { isFuture, sub } from 'date-fns';
 import { parse, pick } from 'valibot';
 import type { Job } from 'bullmq';
-import type { Notification } from '$lib/server/models/notification';
+import type { Notification, QueuedNotification } from '$lib/server/models/notification';
 import { createMimeMessage } from 'mimetext/node';
 import { fetchJwks } from './jwks';
 import { jwtVerify } from 'jose';
@@ -162,8 +162,8 @@ export function initializeProcessor(db: Database) {
     return email;
   }
 
-  return async function processor(job: Job<EmailSendRequest>) {
-    const { to, subject, data } = job.data;
-    return await emailer.send(to, subject, data);
+  return async function processor(job: Job<QueuedNotification>) {
+    const { requestId } = job;
+    
   }
 }

@@ -55,3 +55,9 @@ export const Notification = variant(
 )
 
 export type Notification = InferOutput<typeof Notification>;
+
+export const QueuedNotification = object({
+    requestId: string()
+})
+
+export type QueuedNotification = InferOutput<typeof QueuedNotification>;
