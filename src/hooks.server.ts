@@ -33,7 +33,7 @@ const notificationDispatcher = new NotificationDispatcher(
 
 // This is the global email worker
 // eslint-disable-next-line no-new
-new Worker(queueName, initializeProcessor(notificationDB));
+new Worker(queueName, initializeProcessor(notificationDB, logger.child({ notifications: 'processor' })));
 
 export async function handle({ event, resolve }) {
   const { cookies, locals, request } = event;
