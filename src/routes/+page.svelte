@@ -19,9 +19,9 @@
     Welcome to <strong>DRAP</strong>: the <strong>Draft Ranking Automated Processor</strong> for the
     <a href="https://up.edu.ph/" target="_blank">University of the Philippines</a>
     <a href="https://upd.edu.ph/" target="_blank">Diliman</a>
-    - <a href="https://dcs.upd.edu.ph/">Department of Computer Science</a>'s yearly draft of
-    research lab assignments. In a nutshell, this web application automates the mechanics of the
-    draft:
+    - <a href="https://dcs.upd.edu.ph/" target="_blank">Department of Computer Science</a>'s yearly
+    draft of research lab assignments. In a nutshell, this web application automates the mechanics
+    of the draft:
   </p>
   <ol>
     <li>
