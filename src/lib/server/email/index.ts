@@ -6,6 +6,7 @@ import assert, { strictEqual } from 'node:assert/strict';
 import { isFuture, sub } from 'date-fns';
 import { parse, pick } from 'valibot';
 import type { Job } from 'bullmq';
+import type { Notification } from '$lib/server/models/notification';
 import { createMimeMessage } from 'mimetext/node';
 import { fetchJwks } from './jwks';
 import { jwtVerify } from 'jose';
@@ -89,9 +90,72 @@ export class Emailer {
 }
 
 export function initializeProcessor(db: Database) {
+  const emailer = new Emailer(db, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET);
+
+  async function processDraftNotification(notifRequest: Notification) {
+    assert(notifRequest.target === 'Draft');
+    const meta = (() => {
+        switch (notifRequest.type) {
+          case 'RoundStart': {
+            const body = notifRequest.round === null 
+              ? {
+                  subject: `[DRAP] Lottery Round for Draft #${notifRequest.draftId} has begun!`,
+                  message: `The lottery round for Draft #${notifRequest.draftId} has begun. For lab heads, kindly coordinate with the draft administrators for the next steps.`
+                }
+              : {
+                  subject: `[DRAP] Round #${notifRequest.round} for Draft #${notifRequest.draftId} has begun!`,
+                  message: `Round #${notifRequest.round} for Draft #${notifRequest.draftId} has begun. For lab heads, kindly check the students module to see the list of students who have chosen your lab.`,
+                }
+            const facultyAndStaffEmails = db.getFacultyAndStaff().then(
+              (result) => result.map(({ email }) => email)
+            );
+            return { emails: facultyAndStaffEmails, ...body }
+          }
+          case 'RoundSubmit': 
+            return {
+              emails: db.getValidStaffEmails(),
+              subject: `[DRAP] Acknowledgement from ${notifRequest.labId.toUpperCase()} for Round #${notifRequest.round} of Draft #${notifRequest.draftId}`,
+              message: `The ${notifRequest.labName} has submitted their student preferences for Round #${notifRequest.round} of Draft #${notifRequest.draftId}.`,
+            };
+          case 'LotteryIntervention': {
+            const facultyAndStaffEmails = db.getFacultyAndStaff().then(
+              (result) => result.map(({ email }) => email)
+            );
+
+            return {
+              emails: facultyAndStaffEmails,
+              subject: `[DRAP] Lottery Intervention for ${notifRequest.labId.toUpperCase()} in Draft #${notifRequest.draftId}`,
+              message: `${notifRequest.givenName} ${notifRequest.familyName} <${notifRequest.email}> has been manually assigned to ${notifRequest.labName} during the lottery round of Draft #${notifRequest.draftId}.`,
+            };
+          }
+          case 'Concluded': {
+            const facultyAndStaffEmails = db.getFacultyAndStaff().then(
+              (result) => result.map(({ email }) => email)
+            );
+
+            return {
+                emails: facultyAndStaffEmails,
+                subject: `[DRAP] Draft #${notifRequest.draftId} Concluded`,
+                message: `Draft #${notifRequest.draftId} has just concluded. See the new roster of researchers using the lab module.`,
+            };
+          }
+          default: 
+            return null;
+        }
+      })();
+      assert(meta !== null);
+
+      const email = await emailer.send(await meta.emails, meta.subject, meta.message);
+
+      return email;
+    }
+
+  function processUserNotification(notifRequest: Notification) {
+    assert(notifRequest.target === 'User');
+  }
+
   return async function processor(job: Job<EmailSendRequest>) {
     const { to, subject, data } = job.data;
-    const emailer = new Emailer(db, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET);
     return await emailer.send(to, subject, data);
   }
 }
