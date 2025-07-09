@@ -186,6 +186,17 @@ export const actions = {
       // TODO: Reinstate notifications channel.
       // await db.postLotteryInterventionNotifications(draft, pairs);
       // await db.notifyDraftChannel();
+      for (const [ studentUserId, labId ] of pairs) {
+        const { name: labName } = await db.getLabById(labId);
+        const studentUser = await db.getUserById(studentUserId);
+        dispatch.dispatchLotteryInterventionNotif(
+          labId,
+          labName,
+          studentUser.givenName,
+          studentUser.familyName,
+          studentUser.email
+        );
+      }
     });
 
     db.logger.info({ pairCount: pairs.length }, 'draft intervened');
