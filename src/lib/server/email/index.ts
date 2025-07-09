@@ -165,5 +165,6 @@ export function initializeProcessor(db: Database) {
   return async function processor(job: Job<QueuedNotification>) {
     const { requestId } = job;
     
+    emailer.db
   }
 }

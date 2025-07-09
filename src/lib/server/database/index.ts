@@ -1014,7 +1014,7 @@ export class Database implements Loggable {
     return returnedId;
   }
 
-  @timed async retrieveNotification(id: string) {
+  @timed async getNotification(id: string) {
     const result = await this.#db
       .select({ data: schema.notification.data, deliveredAt: schema.notification.deliveredAt })
       .from(schema.notification)
