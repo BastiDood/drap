@@ -52,7 +52,7 @@ export class NotificationDispatcher implements Loggable {
 
     const requestId = await this.#db.insertNotification(parsedNotifRequest);
 
-    this.#logger.info('new notification request received');
+    this.#logger.info('new notification request received', { parsedNotifRequest });
 
     const job = await this.#queue.add(requestId, { requestId }, { jobId: requestId });
 
