@@ -130,6 +130,7 @@ export const actions = {
         // );
         // db.logger.info({ postDraftRoundStartedNotification });
         // await db.notifyDraftChannel();
+        dispatch.dispatchDraftRoundStartNotif();
 
         // Pause at the lottery rounds
         if (incrementDraftRound.currRound === null) {
