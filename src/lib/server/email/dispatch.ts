@@ -17,7 +17,7 @@ export const queueName = 'notifqueue';
 export class NotificationDispatcher implements Loggable {
   #queue: Queue;
   #queueEvents: QueueEvents;
-  #logger: Logger;
+  logger: Logger;
   #db: Database;
 
   constructor(logger: Logger, db: Database) {
@@ -28,22 +28,22 @@ export class NotificationDispatcher implements Loggable {
       },
     });
 
-    this.#logger = logger;
     this.#queueEvents = new QueueEvents(queueName);
     this.#db = db;
+    this.logger = logger;
 
     this.#queueEvents.on('completed', this.#onCompleted);
     this.#queueEvents.on('failed', this.#onFailed);
 
-    this.#logger.info('email queue setup complete');
+    this.logger.info('email queue setup complete');
   }
 
   #onCompleted(args: { jobId: string }) {
-    this.#logger.info('email job completed', args);
+    this.logger.info('email job completed', args);
   }
 
   #onFailed(args: { jobId: string }) {
-    this.#logger.error('email job failed', args);
+    this.logger.error('email job failed', args);
   }
 
   async #sendNotificationRequest(notifRequest: Notification) {
@@ -52,11 +52,11 @@ export class NotificationDispatcher implements Loggable {
 
     const requestId = await this.#db.insertNotification(parsedNotifRequest);
 
-    this.#logger.info('new notification request received', { parsedNotifRequest });
+    this.logger.info('new notification request received', { parsedNotifRequest });
 
     const job = await this.#queue.add(requestId, { requestId }, { jobId: requestId });
 
-    this.#logger.info({ job }, 'new job created');
+    this.logger.info({ job }, 'new job created');
 
     return job;
   }
@@ -64,7 +64,7 @@ export class NotificationDispatcher implements Loggable {
   async #constructDraftNotification(): Promise<BaseDraftNotif> {
     const currentDraft = await this.#db.getActiveDraft();
 
-    this.#logger.info('new draft notification constructed');
+    this.logger.info('new draft notification constructed');
 
     if (typeof currentDraft === 'undefined') return error(500, 'unexpected draft notif call');
 
@@ -118,9 +118,5 @@ export class NotificationDispatcher implements Loggable {
       labName,
       labId,
     });
-  }
-
-  get logger() {
-    return this.#logger;
   }
 }
