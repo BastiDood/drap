@@ -242,6 +242,7 @@ export const actions = {
         // TODO: Reinstate notifications channel.
         // await db.postLotteryInterventionNotifications(draft, pairs);
         const pairs = zip(emails, schedule);
+<<<<<<< HEAD
         if (pairs.length > 0) {
           db.logger.info({ pairCount: pairs.length }, 'inserting lottery choices');
           await db.insertLotteryChoices(draftId, user.id, pairs);
@@ -249,6 +250,20 @@ export const actions = {
           // This only happens if all draft rounds successfully exhausted the student pool.
           db.logger.warn('no students remaining in the lottery');
         }
+=======
+        if (pairs.length > 0) await db.insertLotteryChoices(draft, user.id, pairs);
+        for (const [ studentUserId, labId ] of pairs) {
+        const { name: labName } = await db.getLabById(labId);
+        const studentUser = await db.getUserById(studentUserId);
+        dispatch.dispatchLotteryInterventionNotif(
+          labId,
+          labName,
+          studentUser.givenName,
+          studentUser.familyName,
+          studentUser.email
+        );
+      }
+>>>>>>> 1bd3c33 (feat: dispatch notifications for concluded draft)
 
         const concludeDraft = await db.concludeDraft(draftId);
         db.logger.info({ concludeDraft }, 'draft concluded');
@@ -257,6 +272,7 @@ export const actions = {
         // await db.postDraftConcluded(draft);
         // const syncDraftResultsToUsers = await db.syncDraftResultsToUsersWithNotification(draft);
         // db.logger.info({ syncDraftResultsToUsers });
+        dispatch.dispatchDraftConcludedNotif();
 
         // TODO: Reinstate notifications channel.
         // await db.notifyDraftChannel();
