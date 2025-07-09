@@ -92,7 +92,7 @@ export class Emailer {
 export function initializeProcessor(db: Database) {
   const emailer = new Emailer(db, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET);
 
-  async function processDraftNotification(notifRequest: Notification) {
+  async function processDraftNotification(notifRequest: Notification, txn: Database) {
     assert(notifRequest.target === 'Draft');
     const meta = (() => {
         switch (notifRequest.type) {
@@ -106,19 +106,19 @@ export function initializeProcessor(db: Database) {
                   subject: `[DRAP] Round #${notifRequest.round} for Draft #${notifRequest.draftId} has begun!`,
                   message: `Round #${notifRequest.round} for Draft #${notifRequest.draftId} has begun. For lab heads, kindly check the students module to see the list of students who have chosen your lab.`,
                 }
-            const facultyAndStaffEmails = db.getFacultyAndStaff().then(
+            const facultyAndStaffEmails = txn.getFacultyAndStaff().then(
               (result) => result.map(({ email }) => email)
             );
             return { emails: facultyAndStaffEmails, ...body }
           }
           case 'RoundSubmit': 
             return {
-              emails: db.getValidStaffEmails(),
+              emails: txn.getValidStaffEmails(),
               subject: `[DRAP] Acknowledgement from ${notifRequest.labId.toUpperCase()} for Round #${notifRequest.round} of Draft #${notifRequest.draftId}`,
               message: `The ${notifRequest.labName} has submitted their student preferences for Round #${notifRequest.round} of Draft #${notifRequest.draftId}.`,
             };
           case 'LotteryIntervention': {
-            const facultyAndStaffEmails = db.getFacultyAndStaff().then(
+            const facultyAndStaffEmails = txn.getFacultyAndStaff().then(
               (result) => result.map(({ email }) => email)
             );
 
@@ -129,7 +129,7 @@ export function initializeProcessor(db: Database) {
             };
           }
           case 'Concluded': {
-            const facultyAndStaffEmails = db.getFacultyAndStaff().then(
+            const facultyAndStaffEmails = txn.getFacultyAndStaff().then(
               (result) => result.map(({ email }) => email)
             );
 
