@@ -95,14 +95,14 @@ export class NotificationDispatcher implements Loggable {
     return this.#sendNotificationRequest({ ...baseNotif, type: 'Concluded' });
   }
 
-  @timed async dispatchUserNotif(user: User, labName: string) {
-
+  @timed async dispatchUserNotif(user: User, labName: string, labId: string) {
     return await this.#sendNotificationRequest({
       target: 'User',
       email: user.email,
       givenName: user.givenName,
       familyName: user.familyName,
-      labName
+      labName,
+      labId
     })
   }
 
