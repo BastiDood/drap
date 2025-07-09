@@ -10,7 +10,6 @@ import { array, object, parse, string } from 'valibot';
 import { enumerate, izip } from 'itertools';
 import { Notification } from '$lib/server/models/notification';
 import { alias } from 'drizzle-orm/pg-core';
-import { IdToken } from '../models/oauth';
 
 const StringArray = array(string());
 const LabRemark = array(object({ lab: string(), remark: string() }));
