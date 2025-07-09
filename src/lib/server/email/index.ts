@@ -92,7 +92,7 @@ export class Emailer {
 export function initializeProcessor(db: Database) {
   const emailer = new Emailer(db, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET);
 
-  async function processDraftNotification(notifRequest: Notification, txn: Database) {
+  async function processDraftNotification(notifRequest: Notification, txn: Database, emailer: Emailer) {
     assert(notifRequest.target === 'Draft');
     const meta = (() => {
         switch (notifRequest.type) {
@@ -150,8 +150,16 @@ export function initializeProcessor(db: Database) {
       return email;
     }
 
-  function processUserNotification(notifRequest: Notification) {
+  function processUserNotification(notifRequest: Notification, emailer: Emailer) {
     assert(notifRequest.target === 'User');
+
+    const email = emailer.send(
+      [notifRequest.email],
+      `[DRAP] Assigned to ${notifRequest.labId.toUpperCase()}`,
+       `Hello, ${notifRequest.givenName} ${notifRequest.familyName}! Kindly note that you have been assigned to the ${notifRequest.labName}.`
+    );
+
+    return email;
   }
 
   return async function processor(job: Job<EmailSendRequest>) {

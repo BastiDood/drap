@@ -40,7 +40,8 @@ const BaseUserNotif = object({
     email: pipe(string(),email()),
     givenName: string(),
     familyName: string(),
-    labName: string()
+    labName: string(),
+    labId: string()
 })
 
 export type BaseUserNotif = InferOutput<typeof BaseUserNotif>;
