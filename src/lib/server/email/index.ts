@@ -1,12 +1,13 @@
 import type { Database, schema } from '$lib/server/database';
-import { EmailSendRequest, GmailMessageSendResult } from '$lib/server/models/email';
 import { GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET } from '$env/static/private';
 import { IdToken, TokenResponse } from '$lib/server/models/oauth';
+import { Notification, type QueuedNotification } from '$lib/server/models/notification';
 import assert, { strictEqual } from 'node:assert/strict';
 import { isFuture, sub } from 'date-fns';
 import { parse, pick } from 'valibot';
+import { GmailMessageSendResult } from '$lib/server/models/email';
 import type { Job } from 'bullmq';
-import type { Notification, QueuedNotification } from '$lib/server/models/notification';
+import type { Logger } from 'vite';
 import { createMimeMessage } from 'mimetext/node';
 import { fetchJwks } from './jwks';
 import { jwtVerify } from 'jose';
@@ -89,7 +90,7 @@ export class Emailer {
   }
 }
 
-export function initializeProcessor(db: Database) {
+export function initializeProcessor(db: Database, logger: Logger) {
   const emailer = new Emailer(db, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET);
 
   async function processDraftNotification(notifRequest: Notification, txn: Database, emailer: Emailer) {
@@ -163,8 +164,39 @@ export function initializeProcessor(db: Database) {
   }
 
   return async function processor(job: Job<QueuedNotification>) {
-    const { requestId } = job;
+    const { data: { requestId } } = job;
     
-    emailer.db
+    const { data, deliveredAt } = await emailer.db.getNotification(requestId);
+
+    if (deliveredAt !== null) {
+      logger.warn('attempted to process delivered notification');
+      return ;
+    }
+
+    const notifRequest = parse(Notification, data);
+
+    emailer.db.begin(async (txn) => {
+      const result = await (async () => {
+        switch (notifRequest.target) {
+          case 'Draft': {
+            return await processDraftNotification(notifRequest, txn, emailer);
+          }
+          case 'User': {
+            return await processUserNotification(notifRequest, emailer);
+          }
+          default: {
+            logger.error('unknown notification request target');
+            throw Error("unknown notification request target");
+          }
+        }
+      })();
+
+      if (result === null) {
+        logger.error('no designated sender configured');
+        throw Error('no designated sender configured');
+      }
+
+      await txn.markNotificationDelivered(requestId);
+    })
   }
 }
