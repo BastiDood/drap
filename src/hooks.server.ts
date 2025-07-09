@@ -6,6 +6,7 @@ import { pino } from 'pino';
 import { dev } from '$app/environment';
 
 import * as POSTGRES from '$lib/server/env/postgres';
+import { BULLMQ_HOST, BULLMQ_PORT } from '$lib/server/env/bullmq';
 import { NotificationDispatcher, queueName } from '$lib/server/email/dispatch';
 import { AssertionError } from 'assert';
 import { Database } from '$lib/server/database';
@@ -33,7 +34,16 @@ const notificationDispatcher = new NotificationDispatcher(
 
 // This is the global email worker
 // eslint-disable-next-line no-new
-new Worker(queueName, initializeProcessor(notificationDB, logger.child({ notifications: 'processor' })));
+new Worker(
+  queueName, 
+  initializeProcessor(notificationDB, logger.child({ notifications: 'processor' })),
+  {
+    connection: {
+      host: BULLMQ_HOST,
+      port: Number(BULLMQ_PORT)
+    }
+  }
+);
 
 export async function handle({ event, resolve }) {
   const { cookies, locals, request } = event;
