@@ -7,7 +7,7 @@ import { isFuture, sub } from 'date-fns';
 import { parse, pick } from 'valibot';
 import { GmailMessageSendResult } from '$lib/server/models/email';
 import type { Job } from 'bullmq';
-import type { Logger } from 'vite';
+import type { Logger } from 'pino';
 import { createMimeMessage } from 'mimetext/node';
 import { fetchJwks } from './jwks';
 import { jwtVerify } from 'jose';
