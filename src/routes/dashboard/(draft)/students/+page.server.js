@@ -107,6 +107,7 @@ export const actions = {
         //     incrementDraftRound.curr_round,
         // );
         // db.logger.info({ postDraftRoundStartedNotification });
+        dispatch.dispatchDraftRoundStartNotif();
 
         if (incrementDraftRound.currRound === null) {
           db.logger.info('lottery round reached');
