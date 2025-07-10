@@ -77,6 +77,9 @@ export const actions = {
 
     db.logger.info({ total, quota }, 'total students still within quota');
 
+    const deferredNotifications: (number | null)[] = [];
+    const { name } = await db.getLabById(lab);
+
     await db.begin(async db => {
       await db.insertFacultyChoice(draftId, lab, faculty, students);
       db.logger.info({ studentCount: students.length }, 'students inserted into faculty choice');
@@ -84,8 +87,6 @@ export const actions = {
       // TODO: Reinstate notifications channel.
       // const postDraftRoundSubmittedNotification = await db.postDraftRoundSubmittedNotification(draft, lab);
       // db.logger.info({ postDraftRoundSubmittedNotification });
-      const { name } = await db.getLabById(lab);
-      dispatch.dispatchRoundSubmittedNotif(lab, name);
 
       while (true) {
         const count = await db.getPendingLabCountInDraft(draftId);
@@ -107,7 +108,7 @@ export const actions = {
         //     incrementDraftRound.curr_round,
         // );
         // db.logger.info({ postDraftRoundStartedNotification });
-        dispatch.dispatchDraftRoundStartNotif();
+        deferredNotifications.push(incrementDraftRound.currRound);
 
         if (incrementDraftRound.currRound === null) {
           db.logger.info('lottery round reached');
@@ -122,6 +123,11 @@ export const actions = {
       // await db.notifyDraftChannel();
     });
 
+    // assume the first round referenced in the deferred notifications is the round for which the notification was sent 
+    dispatch.dispatchRoundSubmittedNotif(lab, name, deferredNotifications[0]);
+    
     db.logger.info('student rankings submitted');
+    for (const round of deferredNotifications) 
+      dispatch.dispatchDraftRoundStartNotif(round);
   },
 };
