@@ -191,18 +191,19 @@ export const actions = {
       // TODO: Reinstate notifications channel.
       // await db.postLotteryInterventionNotifications(draft, pairs);
       // await db.notifyDraftChannel();
-      for (const [studentUserId, labId] of pairs) {
-        const { name: labName } = await db.getLabById(labId);
-        const studentUser = await db.getUserById(studentUserId);
-        dispatch.dispatchLotteryInterventionNotif(
-          labId,
-          labName,
-          studentUser.givenName,
-          studentUser.familyName,
-          studentUser.email,
-        );
-      }
     });
+    
+    for (const [studentUserId, labId] of pairs) {
+      const { name: labName } = await db.getLabById(labId);
+      const studentUser = await db.getUserById(studentUserId);
+      dispatch.dispatchLotteryInterventionNotif(
+        labId,
+        labName,
+        studentUser.givenName,
+        studentUser.familyName,
+        studentUser.email,
+      );
+    }
 
     db.logger.info({ pairCount: pairs.length }, 'draft intervened');
   },
@@ -227,6 +228,8 @@ export const actions = {
 
     // TODO: Assert that we are indeed in the lottery phase.
 
+    let deferredNotifications: [string, string][] = [];
+
     try {
       await db.begin(async db => {
         const labs = await db.getLabRegistry();
@@ -247,21 +250,11 @@ export const actions = {
         // TODO: Reinstate notifications channel.
         // await db.postLotteryInterventionNotifications(draft, pairs);
         const pairs = zip(emails, schedule);
+        deferredNotifications = pairs;
 
         if (pairs.length > 0) {
           db.logger.info({ pairCount: pairs.length }, 'inserting lottery choices');
           await db.insertLotteryChoices(draftId, user.id, pairs);
-          for (const [studentUserId, labId] of pairs) {
-            const { name: labName } = await db.getLabById(labId);
-            const studentUser = await db.getUserById(studentUserId);
-            dispatch.dispatchLotteryInterventionNotif(
-              labId,
-              labName,
-              studentUser.givenName,
-              studentUser.familyName,
-              studentUser.email,
-            );
-          }
         } else {
           // This only happens if all draft rounds successfully exhausted the student pool.
           db.logger.warn('no students remaining in the lottery');
@@ -274,7 +267,6 @@ export const actions = {
         // await db.postDraftConcluded(draft);
         // const syncDraftResultsToUsers = await db.syncDraftResultsToUsersWithNotification(draft);
         // db.logger.info({ syncDraftResultsToUsers });
-        dispatch.dispatchDraftConcludedNotif();
 
         // TODO: Reinstate notifications channel.
         // await db.notifyDraftChannel();
@@ -284,6 +276,19 @@ export const actions = {
       if (err === ZIP_NOT_EQUAL) return fail(403);
       throw err;
     }
+
+    for (const [studentUserId, labId] of deferredNotifications) {
+      const { name: labName } = await db.getLabById(labId);
+      const studentUser = await db.getUserById(studentUserId);
+      dispatch.dispatchLotteryInterventionNotif(
+        labId,
+        labName,
+        studentUser.givenName,
+        studentUser.familyName,
+        studentUser.email,
+      );
+    }
+    dispatch.dispatchDraftConcludedNotif();
 
     redirect(303, `/history/${draftId}/`);
   },
