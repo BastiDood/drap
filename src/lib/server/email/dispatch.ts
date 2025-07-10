@@ -54,15 +54,19 @@ export class NotificationDispatcher implements Loggable {
 
     this.#logger.info('new notification request received', { parsedNotifRequest });
 
-    const job = await this.#queue.add(requestId, { requestId }, { 
-      jobId: requestId, 
-      removeOnComplete: true,
-      attempts: 3,
-      backoff: {
-        type: 'fixed',
-        delay: 3000
-      } 
-    });
+    const job = await this.#queue.add(
+      requestId,
+      { requestId },
+      {
+        jobId: requestId,
+        removeOnComplete: true,
+        attempts: 3,
+        backoff: {
+          type: 'fixed',
+          delay: 3000,
+        },
+      },
+    );
 
     this.#logger.info({ job }, 'new job created');
 
