@@ -64,7 +64,7 @@ export class Emailer {
   /** Must be called within a transaction context for correctness. */
   async send(to: EmailAddress[], subject: string, data: string) {
     const creds = await this.#getLatestCredentials();
-    if (typeof creds === 'undefined') return;
+    if (typeof creds === 'undefined') return null;
 
     const message = createMimeMessage();
     message.setSender({ name: `[DRAP] ${creds.givenName} ${creds.familyName}`, addr: creds.email });
