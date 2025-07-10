@@ -117,6 +117,8 @@ export const actions = {
       return fail(497);
     }
 
+    const deferredNotifications: (number | null)[] = [];
+
     await db.begin(async db => {
       while (true) {
         const incrementDraftRound = await db.incrementDraftRound(draftId);
@@ -130,7 +132,7 @@ export const actions = {
         // );
         // db.logger.info({ postDraftRoundStartedNotification });
         // await db.notifyDraftChannel();
-        dispatch.dispatchDraftRoundStartNotif();
+        deferredNotifications.push(incrementDraftRound.currRound);
 
         // Pause at the lottery rounds
         if (incrementDraftRound.currRound === null) {
@@ -148,6 +150,9 @@ export const actions = {
         }
       }
     });
+
+    for (const round of deferredNotifications) 
+      dispatch.dispatchDraftRoundStartNotif(round);
 
     db.logger.info('draft officially started');
   },
