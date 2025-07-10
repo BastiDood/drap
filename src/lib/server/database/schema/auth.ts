@@ -13,7 +13,7 @@ export const pending = auth.table('pending', {
     .notNull()
     .primaryKey()
     .default(sql`gen_ulid()`),
-  expiration: timestamp('expiration', { mode: 'date' })
+  expiration: timestamp('expiration', { mode: 'date', withTimezone: true })
     .notNull()
     .default(sql`now() + INTERVAL '15 minutes'`),
   nonce: bytea('nonce')
@@ -29,7 +29,7 @@ export const session = auth.table('session', {
     .notNull()
     .primaryKey()
     .default(sql`gen_ulid()`),
-  expiration: timestamp('expiration', { mode: 'date' }).notNull(),
+  expiration: timestamp('expiration', { mode: 'date', withTimezone: true }).notNull(),
   userId: ulid('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),

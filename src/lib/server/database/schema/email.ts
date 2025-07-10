@@ -13,7 +13,7 @@ export const candidateSender = email.table('candidate_sender', {
     .primaryKey(),
   accessToken: text('access_token').notNull(),
   refreshToken: text('refresh_token').notNull(),
-  expiration: timestamp('expiration', { mode: 'date' }).notNull(),
+  expiration: timestamp('expiration', { mode: 'date', withTimezone: true }).notNull(),
 });
 export type CandidateSender = typeof candidateSender.$inferSelect;
 export type NewCandidateSender = typeof candidateSender.$inferInsert;
