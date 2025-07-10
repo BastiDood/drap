@@ -5,7 +5,6 @@ import { pino } from 'pino';
 
 import { dev } from '$app/environment';
 
-import * as POSTGRES from '$lib/server/env/postgres';
 import { BULLMQ_HOST, BULLMQ_PORT } from '$lib/server/env/bullmq';
 import { NotificationDispatcher, queueName } from '$lib/server/email/dispatch';
 import { AssertionError } from 'assert';
@@ -24,7 +23,7 @@ if (dev) {
 const logger = pino(stream);
 
 // This is the database used by the notification system
-const notificationDB = Database.fromUrl(POSTGRES.URL, logger.child({ notifications: 'db' }));
+const notificationDB = Database.withDefault(logger.child({ notifications: 'db' }));
 
 // This is the global email queue, it should only be attached to /api/email requests
 const notificationDispatcher = new NotificationDispatcher(
@@ -56,7 +55,7 @@ export async function handle({ event, resolve }) {
 
   requestLogger.info('request initiated');
 
-  locals.db = Database.fromUrl(POSTGRES.URL, requestLogger);
+  locals.db = Database.withDefault(logger.child({ notifications: 'db' }));
   locals.dispatch = notificationDispatcher;
 
   const sid = cookies.get('sid');
