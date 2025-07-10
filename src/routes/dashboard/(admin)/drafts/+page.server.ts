@@ -186,7 +186,7 @@ export const actions = {
       // TODO: Reinstate notifications channel.
       // await db.postLotteryInterventionNotifications(draft, pairs);
       // await db.notifyDraftChannel();
-      for (const [ studentUserId, labId ] of pairs) {
+      for (const [studentUserId, labId] of pairs) {
         const { name: labName } = await db.getLabById(labId);
         const studentUser = await db.getUserById(studentUserId);
         dispatch.dispatchLotteryInterventionNotif(
@@ -194,7 +194,7 @@ export const actions = {
           labName,
           studentUser.givenName,
           studentUser.familyName,
-          studentUser.email
+          studentUser.email,
         );
       }
     });
@@ -246,7 +246,7 @@ export const actions = {
         if (pairs.length > 0) {
           db.logger.info({ pairCount: pairs.length }, 'inserting lottery choices');
           await db.insertLotteryChoices(draftId, user.id, pairs);
-          for (const [ studentUserId, labId ] of pairs) {
+          for (const [studentUserId, labId] of pairs) {
             const { name: labName } = await db.getLabById(labId);
             const studentUser = await db.getUserById(studentUserId);
             dispatch.dispatchLotteryInterventionNotif(
@@ -254,7 +254,7 @@ export const actions = {
               labName,
               studentUser.givenName,
               studentUser.familyName,
-              studentUser.email
+              studentUser.email,
             );
           }
         } else {

@@ -107,7 +107,7 @@ export class Database implements Loggable {
       .select()
       .from(schema.user)
       .where(eq(schema.user.id, id))
-      .then(assertSingle)
+      .then(assertSingle);
   }
 
   @timed async getUserFromValidSession(sid: string) {
@@ -201,11 +201,11 @@ export class Database implements Loggable {
     return await this.#db
       .select({
         id: schema.lab.id,
-        name: schema.lab.name
+        name: schema.lab.name,
       })
       .from(schema.lab)
       .where(eq(schema.lab.id, id))
-      .then(assertSingle)
+      .then(assertSingle);
   }
 
   @timed async isValidTotalLabQuota() {

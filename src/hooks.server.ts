@@ -35,14 +35,14 @@ const notificationDispatcher = new NotificationDispatcher(
 // This is the global email worker
 // eslint-disable-next-line no-new
 new Worker(
-  queueName, 
+  queueName,
   initializeProcessor(notificationDB, logger.child({ notifications: 'processor' })),
   {
     connection: {
       host: BULLMQ_HOST,
-      port: Number(BULLMQ_PORT)
-    }
-  }
+      port: Number(BULLMQ_PORT),
+    },
+  },
 );
 
 export async function handle({ event, resolve }) {
