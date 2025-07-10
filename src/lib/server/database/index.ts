@@ -4,6 +4,7 @@ import { and, count, countDistinct, desc, eq, gte, isNotNull, isNull, or, sql } 
 import type { Logger } from 'pino';
 import { drizzle } from 'drizzle-orm/node-postgres';
 
+import * as postgres from '$lib/server/env/postgres';
 import * as schema from './schema';
 import { type Loggable, timed } from './decorators';
 import { array, object, parse, string } from 'valibot';
@@ -17,6 +18,8 @@ const LabRemark = array(object({ lab: string(), remark: string() }));
 function init(url: string) {
   return drizzle(url, { schema });
 }
+
+const staticDrizzle = init(postgres.URL); 
 
 function assertOptional<T>([result, ...rest]: T[]) {
   strictEqual(rest.length, 0, 'too many results');
@@ -44,13 +47,14 @@ export class Database implements Loggable {
   #logger: Logger;
   #db: DrizzleDatabase | DrizzleTransaction;
 
-  private constructor(db: DrizzleDatabase | DrizzleTransaction, logger: Logger) {
+  private constructor(logger: Logger, db: DrizzleDatabase | DrizzleTransaction = staticDrizzle) {
     this.#logger = logger;
     this.#db = db;
   }
 
-  static fromUrl(url: string, logger: Logger) {
-    return new Database(init(url), logger);
+  /** Constructs a Database instance using the default static drizzle instance */
+  static withDefault(logger: Logger) {
+    return new Database(logger);
   }
 
   get logger() {
@@ -59,7 +63,7 @@ export class Database implements Loggable {
 
   /** Begins a transaction. */
   begin<T>(fn: (db: Database) => Promise<T>) {
-    return this.#db.transaction(tx => fn(new Database(tx, this.#logger)));
+    return this.#db.transaction(tx => fn(new Database(this.#logger, tx)));
   }
 
   @timed async generatePendingSession(hasExtendedScope: boolean) {
