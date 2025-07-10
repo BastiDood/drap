@@ -61,24 +61,26 @@ export class NotificationDispatcher implements Loggable {
     return job;
   }
 
-  async #constructDraftNotification(): Promise<BaseDraftNotif> {
+  async #constructDraftNotification(draftRound?: number | null): Promise<BaseDraftNotif> {
     const currentDraft = await this.#db.getActiveDraft();
-
+    
     this.#logger.info('new draft notification constructed');
-
+    
     if (typeof currentDraft === 'undefined') return error(500, 'unexpected draft notif call');
 
-    return { target: 'Draft', draftId: Number(currentDraft.id), round: currentDraft.currRound };
+    const currentRound = typeof draftRound === 'undefined' ? currentDraft.currRound : draftRound;
+
+    return { target: 'Draft', draftId: Number(currentDraft.id), round: currentRound };
   }
 
-  @timed async dispatchDraftRoundStartNotif() {
-    const baseNotif = await this.#constructDraftNotification();
+  @timed async dispatchDraftRoundStartNotif(draftRound?: number | null) {
+    const baseNotif = await this.#constructDraftNotification(draftRound);
 
     return this.#sendNotificationRequest({ ...baseNotif, type: 'RoundStart' });
   }
 
-  @timed async dispatchRoundSubmittedNotif(labId: string, labName: string) {
-    const baseNotif = await this.#constructDraftNotification();
+  @timed async dispatchRoundSubmittedNotif(labId: string, labName: string, draftRound?: number | null) {
+    const baseNotif = await this.#constructDraftNotification(draftRound);
 
     return this.#sendNotificationRequest({ ...baseNotif, type: 'RoundSubmit', labName, labId });
   }
