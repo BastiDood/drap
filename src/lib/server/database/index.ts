@@ -1046,4 +1046,22 @@ export class Database implements Loggable {
 
     return result;
   }
+
+  @timed async syncResultsToUsers(draftId: number) {
+    return await this.#db
+      .update(schema.user)
+      .set({ labId: schema.facultyChoiceUser.labId })
+      .from(schema.facultyChoiceUser)
+      .where(and(
+        eq(
+          schema.facultyChoiceUser.draftId,
+          BigInt(draftId)
+        ),
+        eq(
+          schema.user.id,
+          schema.facultyChoiceUser.studentUserId
+        )
+      ))
+      .returning({ email: schema.user.email, labId: schema.user.labId });
+  }
 }
