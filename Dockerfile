@@ -1,4 +1,4 @@
-FROM node:22.17.0-alpine3.22 AS build
+FROM node:24.4.0-alpine3.22 AS build
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -13,7 +13,7 @@ RUN pnpm install --offline
 
 RUN pnpm build && pnpm prune --prod --ignore-scripts
 
-FROM gcr.io/distroless/nodejs22-debian12:nonroot-amd64 AS deploy
+FROM gcr.io/distroless/nodejs24-debian12:nonroot-amd64 AS deploy
 
 WORKDIR /app
 COPY --from=build /app/node_modules node_modules/
