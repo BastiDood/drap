@@ -152,8 +152,7 @@ export const actions = {
       }
     });
 
-    for (const round of deferredNotifications) 
-      dispatch.dispatchDraftRoundStartNotif(round);
+    for (const round of deferredNotifications) dispatch.dispatchDraftRoundStartNotif(round);
 
     db.logger.info('draft officially started');
   },
@@ -193,7 +192,7 @@ export const actions = {
       // await db.postLotteryInterventionNotifications(draft, pairs);
       // await db.notifyDraftChannel();
     });
-    
+
     for (const [studentUserId, labId] of pairs) {
       const { name: labName } = await db.getLabById(labId);
       const studentUser = await db.getUserById(studentUserId);
@@ -230,7 +229,7 @@ export const actions = {
     // TODO: Assert that we are indeed in the lottery phase.
 
     let deferredNotifications: [string, string][] = [];
-    let draftResults: { user: User, labId: string }[] = [];
+    let draftResults: { user: User; labId: string }[] = [];
 
     try {
       await db.begin(async db => {
@@ -292,7 +291,7 @@ export const actions = {
       );
     }
 
-    for (const {user, labId} of draftResults) {
+    for (const { user, labId } of draftResults) {
       const { name } = await db.getLabById(labId);
       dispatch.dispatchUserNotif(user, name, labId);
     }

@@ -19,7 +19,7 @@ function init(url: string) {
   return drizzle(url, { schema });
 }
 
-const staticDrizzle = init(postgres.URL); 
+const staticDrizzle = init(postgres.URL);
 
 function assertOptional<T>([result, ...rest]: T[]) {
   strictEqual(rest.length, 0, 'too many results');
@@ -1052,16 +1052,12 @@ export class Database implements Loggable {
       .update(schema.user)
       .set({ labId: schema.facultyChoiceUser.labId })
       .from(schema.facultyChoiceUser)
-      .where(and(
-        eq(
-          schema.facultyChoiceUser.draftId,
-          draftId
+      .where(
+        and(
+          eq(schema.facultyChoiceUser.draftId, draftId),
+          eq(schema.user.id, schema.facultyChoiceUser.studentUserId),
         ),
-        eq(
-          schema.user.id,
-          schema.facultyChoiceUser.studentUserId
-        )
-      ))
+      )
       .returning({ user: schema.user, labId: schema.facultyChoiceUser.labId });
   }
 }

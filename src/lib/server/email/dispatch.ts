@@ -63,9 +63,9 @@ export class NotificationDispatcher implements Loggable {
 
   async #constructDraftNotification(draftRound?: number | null): Promise<BaseDraftNotif> {
     const currentDraft = await this.#db.getActiveDraft();
-    
+
     this.#logger.info('new draft notification constructed');
-    
+
     if (typeof currentDraft === 'undefined') return error(500, 'unexpected draft notif call');
 
     const currentRound = typeof draftRound === 'undefined' ? currentDraft.currRound : draftRound;
@@ -79,7 +79,11 @@ export class NotificationDispatcher implements Loggable {
     return this.#sendNotificationRequest({ ...baseNotif, type: 'RoundStart' });
   }
 
-  @timed async dispatchRoundSubmittedNotif(labId: string, labName: string, draftRound?: number | null) {
+  @timed async dispatchRoundSubmittedNotif(
+    labId: string,
+    labName: string,
+    draftRound?: number | null,
+  ) {
     const baseNotif = await this.#constructDraftNotification(draftRound);
 
     return this.#sendNotificationRequest({ ...baseNotif, type: 'RoundSubmit', labName, labId });
