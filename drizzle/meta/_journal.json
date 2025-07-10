@@ -47,6 +47,7 @@
     {
       "idx": 6,
       "version": "7",
+<<<<<<< HEAD
       "when": 1752132691196,
       "tag": "0006_use-timestamp-with-timezone",
       "breakpoints": true
@@ -56,6 +57,10 @@
       "version": "7",
       "when": 1752132714164,
       "tag": "0007_reinstate-active-lab-view",
+=======
+      "when": 1752118093300,
+      "tag": "0006_add-notifications-table",
+>>>>>>> 070fbf0 (chore: generate migrations)
       "breakpoints": true
     }
   ]
