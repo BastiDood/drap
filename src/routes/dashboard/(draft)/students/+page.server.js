@@ -37,7 +37,7 @@ export async function load({ locals: { db, session }, parent }) {
 }
 
 export const actions = {
-  async rankings({ locals: { db, session }, request }) {
+  async rankings({ locals: { db, session, dispatch }, request }) {
     if (typeof session?.user === 'undefined') {
       db.logger.error('attempt to submit rankings without session');
       error(401);
