@@ -1,6 +1,7 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { repeat, roundrobin, zip } from 'itertools';
 import { validateEmail, validateString } from '$lib/forms';
+import type { User } from '$lib/server/database/schema';
 import assert from 'node:assert/strict';
 import groupBy from 'just-group-by';
 
@@ -229,6 +230,7 @@ export const actions = {
     // TODO: Assert that we are indeed in the lottery phase.
 
     let deferredNotifications: [string, string][] = [];
+    let draftResults: { user: User, labId: string }[] = [];
 
     try {
       await db.begin(async db => {
@@ -266,6 +268,7 @@ export const actions = {
         // TODO: Reinstate notifications channel.
         // await db.postDraftConcluded(draft);
         // const syncDraftResultsToUsers = await db.syncDraftResultsToUsersWithNotification(draft);
+        draftResults = await db.syncResultsToUsers(draftId);
         // db.logger.info({ syncDraftResultsToUsers });
 
         // TODO: Reinstate notifications channel.
@@ -287,6 +290,11 @@ export const actions = {
         studentUser.familyName,
         studentUser.email,
       );
+    }
+
+    for (const {user, labId} of draftResults) {
+      const { name } = await db.getLabById(labId);
+      dispatch.dispatchUserNotif(user, name, labId);
     }
     dispatch.dispatchDraftConcludedNotif();
 
