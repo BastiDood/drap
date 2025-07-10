@@ -32,8 +32,8 @@ export class NotificationDispatcher implements Loggable {
     this.#db = db;
     this.logger = logger;
 
-    this.#queueEvents.on('completed', this.#onCompleted);
-    this.#queueEvents.on('failed', this.#onFailed);
+    this.#queueEvents.on('completed', this.#onCompleted.bind(this));
+    this.#queueEvents.on('failed', this.#onFailed.bind(this));
 
     this.logger.info('email queue setup complete');
   }
