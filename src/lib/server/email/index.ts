@@ -57,7 +57,7 @@ export class Emailer {
     });
 
     const token = parse(pick(IdToken, ['exp']), payload);
-    await this.#db.upsertCandidateSender(creds.email, token.exp, creds.accessToken);
+    await this.#db.upsertCandidateSender(creds.id, token.exp, creds.accessToken);
     return creds;
   }
 
