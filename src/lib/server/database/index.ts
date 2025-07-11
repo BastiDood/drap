@@ -1,6 +1,6 @@
 import assert, { fail, strictEqual } from 'node:assert/strict';
 
-import { and, count, countDistinct, desc, eq, gte, isNotNull, isNull, or, sql } from 'drizzle-orm';
+import { and, count, countDistinct, desc, eq, getTableColumns, gte, isNotNull, isNull, or, sql } from 'drizzle-orm';
 import type { Logger } from 'pino';
 import { drizzle } from 'drizzle-orm/node-postgres';
 
@@ -106,11 +106,13 @@ export class Database implements Loggable {
     strictEqual(rowCount, 1, 'only one session must be inserted');
   }
 
-  @timed async getUserById(id: string) {
+  @timed async getUserById(userId: string) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { id, ...rest } = getTableColumns(schema.user);
     return await this.#db
-      .select()
+      .select(rest)
       .from(schema.user)
-      .where(eq(schema.user.id, id))
+      .where(eq(schema.user.id, userId))
       .then(assertSingle);
   }
 
