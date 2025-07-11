@@ -22,19 +22,19 @@ if (dev) {
 // This is only a base logger instance. We need to attach a request ID for each request.
 const logger = pino(stream);
 
-// This is the database used by the notification system
-const notificationDB = Database.withDefault(logger.child({ notifications: 'db' }));
-
 // This is the global email queue, it should only be attached to /api/email requests
 const notificationDispatcher = new NotificationDispatcher(
   logger.child({ notifications: 'dispatch' }),
-  notificationDB,
+  Database.withDefault(logger.child({ notifications: 'db' })),
 );
 
 // This is the global email worker 
 const _ = new Worker(
   queueName,
-  initializeProcessor(notificationDB, logger.child({ notifications: 'processor' })),
+  initializeProcessor(
+    Database.withDefault(logger.child({ notifications: 'db' })), 
+    logger.child({ notifications: 'processor' })
+  ),
   {
     connection: {
       host: BULLMQ_HOST,
