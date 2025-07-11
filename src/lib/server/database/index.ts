@@ -1046,6 +1046,7 @@ export class Database implements Loggable {
     return result;
   }
 
+  //** 'Synchronizes' user objects with draft results by assigning student-users' lab fields to their respective labs (as reflected by the faculty choices) for a given draft */
   @timed async syncResultsToUsers(draftId: bigint) {
     return await this.#db
       .update(schema.user)
