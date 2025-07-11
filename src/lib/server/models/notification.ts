@@ -1,5 +1,6 @@
 import {
   type InferOutput,
+  bigint,
   email,
   literal,
   nullable,
@@ -12,7 +13,7 @@ import {
 
 const BaseDraftNotif = object({
   target: literal('Draft'),
-  draftId: number(),
+  draftId: bigint(),
   round: nullable(number()),
 });
 

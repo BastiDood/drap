@@ -81,7 +81,7 @@ export class NotificationDispatcher implements Loggable {
 
     const currentRound = typeof draftRound === 'undefined' ? currentDraft.currRound : draftRound;
 
-    return { target: 'Draft', draftId: Number(currentDraft.id), round: currentRound };
+    return { target: 'Draft', draftId: currentDraft.id, round: currentRound };
   }
 
   @timed async dispatchDraftRoundStartNotif(draftRound?: number | null) {
