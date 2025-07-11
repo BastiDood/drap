@@ -1,7 +1,7 @@
 import type { Database, schema } from '$lib/server/database';
+import { DraftNotification, Notification, UserNotification, type QueuedNotification } from '$lib/server/models/notification';
 import { GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET } from '$env/static/private';
 import { IdToken, TokenResponse } from '$lib/server/models/oauth';
-import { DraftNotification, Notification, UserNotification, type QueuedNotification } from '$lib/server/models/notification';
 import assert, { strictEqual } from 'node:assert/strict';
 import { isFuture, sub } from 'date-fns';
 import { parse, pick } from 'valibot';
@@ -175,7 +175,7 @@ export function initializeProcessor(db: Database, logger: Logger) {
     const { data, deliveredAt } = notification;
 
     if (deliveredAt !== null) {
-      logger.warn('attempted to process delivered notification');
+      logger.warn({ deliveredAt }, 'attempted to process delivered notification');
       return;
     }
 
