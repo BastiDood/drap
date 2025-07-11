@@ -4,7 +4,7 @@ import { and, count, countDistinct, desc, eq, gte, isNotNull, isNull, or, sql } 
 import type { Logger } from 'pino';
 import { drizzle } from 'drizzle-orm/node-postgres';
 
-import * as postgres from '$lib/server/env/postgres';
+import * as POSTGRES from '$lib/server/env/postgres';
 import * as schema from './schema';
 import { type Loggable, timed } from './decorators';
 import { array, object, parse, string } from 'valibot';
@@ -19,7 +19,7 @@ function init(url: string) {
   return drizzle(url, { schema });
 }
 
-const staticDrizzle = init(postgres.URL);
+const staticDrizzle = init(POSTGRES.URL);
 
 function assertOptional<T>([result, ...rest]: T[]) {
   strictEqual(rest.length, 0, 'too many results');
