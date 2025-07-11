@@ -151,21 +151,17 @@ export function initializeProcessor(db: Database, logger: Logger) {
     })();
     assert(meta !== null);
 
-    const email = await emailer.send(await meta.emails, meta.subject, meta.message);
-
-    return email;
+    return await emailer.send(await meta.emails, meta.subject, meta.message);
   }
 
-  function processUserNotification(notifRequest: Notification, emailer: Emailer) {
+  async function processUserNotification(notifRequest: Notification, emailer: Emailer) {
     assert(notifRequest.target === 'User');
 
-    const email = emailer.send(
+    return await emailer.send(
       [notifRequest.email],
       `[DRAP] Assigned to ${notifRequest.labId.toUpperCase()}`,
       `Hello, ${notifRequest.givenName} ${notifRequest.familyName}! Kindly note that you have been assigned to the ${notifRequest.labName}.`,
     );
-
-    return email;
   }
 
   return async function processor(job: Job<QueuedNotification>) {
