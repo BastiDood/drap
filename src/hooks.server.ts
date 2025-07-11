@@ -22,7 +22,7 @@ if (dev) {
 // This is only a base logger instance. We need to attach a request ID for each request.
 const logger = pino(stream);
 
-// This is the global email queue, it should only be attached to /api/email requests
+// This is the global email queue manager
 const notificationDispatcher = new NotificationDispatcher(
   logger.child({ notifications: 'dispatch' }),
   Database.withDefault(logger.child({ notifications: 'db' })),
