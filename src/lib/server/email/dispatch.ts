@@ -50,7 +50,10 @@ export class NotificationDispatcher implements Loggable {
     // one last sanity check to gatekeep the queue
     const parsedNotifRequest = parse(Notification, notifRequest);
 
-    const requestId = await this.#db.insertNotification(parsedNotifRequest);
+    const request = await this.#db.insertNotification(parsedNotifRequest);
+
+    if (typeof request === 'undefined') return;
+    const { id: requestId } = request;
 
     this.#logger.info('new notification request received', { parsedNotifRequest });
 

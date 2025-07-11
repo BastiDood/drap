@@ -1017,14 +1017,14 @@ export class Database implements Loggable {
   }
 
   @timed async insertNotification(data: Notification) {
-    const { id } = await this.#db
+    const result = await this.#db
       .insert(schema.notification)
       .values({ data })
       .returning({ id: schema.notification.id })
       .onConflictDoNothing()
-      .then(assertSingle);
+      .then(assertOptional);
 
-    return id;
+    return result;
   }
 
   @timed async markNotificationDelivered(id: string) {
