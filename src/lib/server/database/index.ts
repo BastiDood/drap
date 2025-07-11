@@ -203,14 +203,13 @@ export class Database implements Loggable {
       .orderBy(({ name }) => name);
   }
 
-  @timed async getLabById(id: string) {
+  @timed async getLabById(labId: string) {
     return await this.#db
       .select({
-        id: schema.lab.id,
         name: schema.lab.name,
       })
       .from(schema.lab)
-      .where(eq(schema.lab.id, id))
+      .where(eq(schema.lab.id, labId))
       .then(assertSingle);
   }
 
