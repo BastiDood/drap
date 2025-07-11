@@ -28,7 +28,7 @@ services:
     env_file:
       - .env
   redis:
-    image: redis:latest
+    image: redis:8.0.3-alpine
     profiles:
       - dev
       - prod
