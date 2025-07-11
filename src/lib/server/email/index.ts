@@ -1,7 +1,7 @@
 import type { Database, schema } from '$lib/server/database';
 import { GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET } from '$env/static/private';
 import { IdToken, TokenResponse } from '$lib/server/models/oauth';
-import { Notification, type QueuedNotification } from '$lib/server/models/notification';
+import { DraftNotification, Notification, UserNotification, type QueuedNotification } from '$lib/server/models/notification';
 import assert, { strictEqual } from 'node:assert/strict';
 import { isFuture, sub } from 'date-fns';
 import { parse, pick } from 'valibot';
@@ -94,11 +94,10 @@ export function initializeProcessor(db: Database, logger: Logger) {
   const emailer = new Emailer(db, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET);
 
   async function processDraftNotification(
-    notifRequest: Notification,
+    notifRequest: DraftNotification,
     txn: Database,
     emailer: Emailer,
   ) {
-    assert(notifRequest.target === 'Draft');
     const meta = (() => {
       switch (notifRequest.type) {
         case 'RoundStart': {
@@ -154,9 +153,7 @@ export function initializeProcessor(db: Database, logger: Logger) {
     return await emailer.send(await meta.emails, meta.subject, meta.message);
   }
 
-  async function processUserNotification(notifRequest: Notification, emailer: Emailer) {
-    assert(notifRequest.target === 'User');
-
+  async function processUserNotification(notifRequest: UserNotification, emailer: Emailer) {
     return await emailer.send(
       [notifRequest.email],
       `[DRAP] Assigned to ${notifRequest.labId.toUpperCase()}`,
