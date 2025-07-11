@@ -24,7 +24,7 @@ export class NotificationDispatcher implements Loggable {
     this.#queue = new Queue<QueuedNotification>(queueName, {
       connection: {
         host: BULLMQ_HOST,
-        port: parseInt(BULLMQ_PORT ?? '', 10),
+        port: BULLMQ_PORT,
       },
     });
 
