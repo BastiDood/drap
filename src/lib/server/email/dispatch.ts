@@ -32,18 +32,14 @@ export class NotificationDispatcher implements Loggable {
     this.#db = db;
     this.#logger = logger;
 
-    this.#queueEvents.on('completed', this.#onCompleted.bind(this));
-    this.#queueEvents.on('failed', this.#onFailed.bind(this));
+    this.#queueEvents.on('completed', ({ jobId }) => {
+      this.#logger.info('email job completed', jobId);
+    });
+    this.#queueEvents.on('failed', ({ jobId }) => {
+      this.#logger.error('email job failed', jobId);
+    });
 
     this.#logger.info('email queue setup complete');
-  }
-
-  #onCompleted(args: { jobId: string }) {
-    this.#logger.info('email job completed', args);
-  }
-
-  #onFailed(args: { jobId: string }) {
-    this.#logger.error('email job failed', args);
   }
 
   async #sendNotificationRequest(notifRequest: Notification) {
