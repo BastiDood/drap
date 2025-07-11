@@ -1041,7 +1041,7 @@ export class Database implements Loggable {
       .select({ data: schema.notification.data, deliveredAt: schema.notification.deliveredAt })
       .from(schema.notification)
       .where(eq(schema.notification.id, id))
-      .then(assertSingle);
+      .then(assertOptional);
 
     return result;
   }

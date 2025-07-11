@@ -173,7 +173,13 @@ export function initializeProcessor(db: Database, logger: Logger) {
       data: { requestId },
     } = job;
 
-    const { data, deliveredAt } = await emailer.db.getNotification(requestId);
+    const notification = await emailer.db.getNotification(requestId);
+
+    if (typeof notification === 'undefined') {
+      logger.warn('attempted to process nonexistent notification');
+      return;
+    }
+    const { data, deliveredAt } = notification;
 
     if (deliveredAt !== null) {
       logger.warn('attempted to process delivered notification');
