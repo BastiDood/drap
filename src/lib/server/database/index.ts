@@ -1028,14 +1028,12 @@ export class Database implements Loggable {
   }
 
   @timed async markNotificationDelivered(id: string) {
-    const { returnedId } = await this.#db
+    await this.#db
       .update(schema.notification)
       .set({ deliveredAt: new Date() })
       .where(eq(schema.notification.id, id))
       .returning({ returnedId: schema.notification.id })
       .then(assertSingle);
-
-    return returnedId;
   }
 
   @timed async getNotification(id: string) {
