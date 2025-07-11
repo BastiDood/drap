@@ -31,9 +31,8 @@ const notificationDispatcher = new NotificationDispatcher(
   notificationDB,
 );
 
-// This is the global email worker
-// eslint-disable-next-line no-new
-new Worker(
+// This is the global email worker 
+const _ = new Worker(
   queueName,
   initializeProcessor(notificationDB, logger.child({ notifications: 'processor' })),
   {
