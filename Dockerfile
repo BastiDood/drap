@@ -7,7 +7,7 @@ RUN corepack enable pnpm
 WORKDIR /app
 
 # Only fetch the dependencies into the virtual store for better Docker caching.
-COPY pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml pnpm-lock.yaml ./
 RUN pnpm fetch
 
 # Then copy the project files and build the `node_modules/` (with dev dependencies).

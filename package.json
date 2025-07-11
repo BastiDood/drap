@@ -11,7 +11,7 @@
     "prepare": "svelte-kit sync",
     "fmt": "prettier --experimental-cli --check .",
     "fmt:fix": "prettier --experimental-cli --write .",
-    "lint": "pnpm run --parallel /^lint:/",
+    "lint": "pnpm run --workspace-root --parallel /^lint:/",
     "lint:svelte": "svelte-check --tsconfig ./tsconfig.json",
     "lint:eslint": "eslint --cache",
     "db:generate": "drizzle-kit generate",
@@ -61,12 +61,5 @@
     "tailwindcss": "^4.1.11",
     "typescript-eslint": "^8.36.0",
     "vite": "^7.0.4"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@tailwindcss/oxide",
-      "core-js-pure",
-      "esbuild"
-    ]
   }
 }
