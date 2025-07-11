@@ -25,14 +25,14 @@ const logger = pino(stream);
 // This is the global email queue manager
 const notificationDispatcher = new NotificationDispatcher(
   logger.child({ notifications: 'dispatch' }),
-  Database.withDefault(logger.child({ notifications: 'db' })),
+  Database.withLogger(logger.child({ notifications: 'db' })),
 );
 
 // This is the global email worker 
 const _ = new Worker(
   queueName,
   initializeProcessor(
-    Database.withDefault(logger.child({ notifications: 'db' })), 
+    Database.withLogger(logger.child({ notifications: 'db' })), 
     logger.child({ notifications: 'processor' })
   ),
   {
@@ -54,7 +54,7 @@ export async function handle({ event, resolve }) {
 
   requestLogger.info('request initiated');
 
-  locals.db = Database.withDefault(logger.child({ notifications: 'db' }));
+  locals.db = Database.withLogger(logger.child({ notifications: 'db' }));
   locals.dispatch = notificationDispatcher;
 
   const sid = cookies.get('sid');

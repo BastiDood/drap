@@ -53,7 +53,7 @@ export class Database implements Loggable {
   }
 
   /** Constructs a Database instance using the default static drizzle instance */
-  static withDefault(logger: Logger) {
+  static withLogger(logger: Logger) {
     return new Database(logger);
   }
 
