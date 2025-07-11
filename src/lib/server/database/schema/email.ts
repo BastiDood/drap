@@ -1,4 +1,5 @@
 import { jsonb, pgSchema, text, timestamp } from 'drizzle-orm/pg-core';
+import type { Notification } from '$lib/server/models/notification';
 import { sql } from 'drizzle-orm';
 import { ulid } from './custom/ulid';
 import { user } from './app';
@@ -33,7 +34,7 @@ export const notification = email.table('notification', {
     .default(sql`gen_ulid()`),
   createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
   deliveredAt: timestamp('delivered_at', { mode: 'date' }),
-  data: jsonb('metadata').notNull(),
+  data: jsonb('metadata').$type<Notification>().notNull(),
 });
 export type NotificationRequest = typeof notification.$inferSelect;
 export type NewNotificationRequest = typeof notification.$inferInsert;
