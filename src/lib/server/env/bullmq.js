@@ -11,4 +11,4 @@ if (building) {
 }
 
 export const BULLMQ_HOST = env.REDIS_HOST;
-export const BULLMQ_PORT = env.REDIS_PORT;
+export const BULLMQ_PORT = Number.parseInt(env.REDIS_PORT, 10);

@@ -39,7 +39,7 @@ new Worker(
   {
     connection: {
       host: BULLMQ_HOST,
-      port: Number(BULLMQ_PORT),
+      port: BULLMQ_PORT,
     },
   },
 );
