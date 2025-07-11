@@ -21,11 +21,11 @@ export const app = pgSchema('drap');
 export const lab = app.table(
   'lab',
   {
-    createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+    createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
     id: text('lab_id').primaryKey().notNull(),
     name: text('lab_name').unique().notNull(),
     quota: smallint('quota').notNull().default(0),
-    deletedAt: timestamp('deleted_at', { mode: 'date' }), // when NULL, lab is not yet deleted
+    deletedAt: timestamp('deleted_at', { mode: 'date', withTimezone: true }), // when NULL, lab is not yet deleted
   },
   ({ quota }) => [check('lab_quota_non_negative_check', sql`${quota} >= 0`)],
 );
@@ -52,7 +52,7 @@ export const user = app.table(
       .primaryKey()
       .notNull()
       .default(sql`gen_ulid()`),
-    createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+    createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
     studentNumber: bigint('student_number', { mode: 'bigint' }).unique(),
     isAdmin: boolean('is_admin').notNull().default(false),
     googleUserId: text('google_user_id').unique(),
@@ -94,7 +94,7 @@ export type NewDraft = typeof draft.$inferInsert;
 export const studentRank = app.table(
   'student_rank',
   {
-    createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+    createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
     draftId: bigint('draft_id', { mode: 'bigint' })
       .notNull()
       .references(() => draft.id, { onUpdate: 'cascade' }),
@@ -130,7 +130,7 @@ export type NewStudentRankLab = typeof studentRankLab.$inferInsert;
 export const facultyChoice = app.table(
   'faculty_choice',
   {
-    createdAt: timestamp('created_at', { mode: 'date' }).notNull().defaultNow(),
+    createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
     draftId: bigint('draft_id', { mode: 'bigint' })
       .notNull()
       .references(() => draft.id, { onUpdate: 'cascade' }),
