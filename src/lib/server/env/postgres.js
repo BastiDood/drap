@@ -9,4 +9,4 @@ if (building) {
   assert(typeof env.POSTGRES_URL !== 'undefined');
 }
 
-export const URL = env.POSTGRES_URL;
+export const URL = env.POSTGRES_URL ?? '';
