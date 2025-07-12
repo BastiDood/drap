@@ -90,6 +90,13 @@ export class Emailer {
   }
 }
 
+class NotificationProcessingError extends Error {
+  constructor (message: string) {
+    super(message);
+    this.name = "NotificationProcessingError";
+  }
+}
+
 export function initializeProcessor(db: Database, logger: Logger) {
   const emailer = new Emailer(db, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET);
 
@@ -192,14 +199,14 @@ export function initializeProcessor(db: Database, logger: Logger) {
           }
           default: {
             logger.error('unknown notification request target');
-            throw Error('unknown notification request target');
+            throw new NotificationProcessingError('unknown notification request target');
           }
         }
       })();
 
       if (result === null) {
         logger.error('no designated sender configured');
-        throw Error('no designated sender configured');
+        throw new NotificationProcessingError('no designated sender configured');
       }
 
       await txn.markNotificationDelivered(requestId);
