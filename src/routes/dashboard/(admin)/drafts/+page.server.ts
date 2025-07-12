@@ -145,7 +145,8 @@ export const actions = {
       }
     });
 
-    for (const round of deferredNotifications) dispatch.dispatchDraftRoundStartNotification(round);
+    for (const round of deferredNotifications)
+      await dispatch.dispatchDraftRoundStartNotification(round);
 
     db.logger.info('draft officially started');
   },
@@ -179,14 +180,11 @@ export const actions = {
 
     db.logger.info({ pairs }, 'intervening draft');
 
-    await db.begin(async db => {
-      await db.insertLotteryChoices(draftId, user.id, pairs);
-    });
-
+    await db.insertLotteryChoices(draftId, user.id, pairs);
     for (const [studentUserId, labId] of pairs) {
       const { name: labName } = await db.getLabById(labId);
       const studentUser = await db.getUserById(studentUserId);
-      dispatch.dispatchLotteryInterventionNotification(
+      await dispatch.dispatchLotteryInterventionNotification(
         labId,
         labName,
         studentUser.givenName,
@@ -265,7 +263,7 @@ export const actions = {
         db.getLabById(labId),
         db.getUserById(studentUserId),
       ]);
-      dispatch.dispatchLotteryInterventionNotification(
+      await dispatch.dispatchLotteryInterventionNotification(
         labId,
         labName,
         studentUser.givenName,
@@ -276,9 +274,10 @@ export const actions = {
 
     for (const { user, labId } of draftResults) {
       const { name } = await db.getLabById(labId);
-      dispatch.dispatchUserNotification(user, name, labId);
+      await dispatch.dispatchUserNotification(user, name, labId);
     }
-    dispatch.dispatchDraftConcludedNotification();
+
+    await dispatch.dispatchDraftConcludedNotification();
 
     redirect(303, `/history/${draftId}/`);
   },

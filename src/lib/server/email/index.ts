@@ -193,12 +193,12 @@ export function initializeProcessor(db: Database, logger: Logger) {
 
     const notifRequest = parse(Notification, data);
 
-    emailer.db.begin(async txn => {
+    emailer.db.begin(async db => {
       // eslint-disable-next-line @typescript-eslint/init-declarations
       let result: Awaited<ReturnType<typeof processDraftNotification>>;
       switch (notifRequest.target) {
         case 'Draft': {
-          result = await processDraftNotification(notifRequest, txn, emailer);
+          result = await processDraftNotification(notifRequest, db, emailer);
           break;
         }
         case 'User': {
@@ -216,7 +216,7 @@ export function initializeProcessor(db: Database, logger: Logger) {
         throw new NotificationProcessingError('no designated sender configured');
       }
 
-      await txn.markNotificationDelivered(requestId);
+      await db.markNotificationDelivered(requestId);
     });
   };
 }

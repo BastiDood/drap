@@ -111,8 +111,7 @@ export class NotificationDispatcher implements Loggable {
     email: string,
   ) {
     const baseNotif = await this.#constructDraftNotification();
-
-    return this.#sendNotificationRequest({
+    return await this.#sendNotificationRequest({
       ...baseNotif,
       type: 'LotteryIntervention',
       labId,
@@ -125,8 +124,7 @@ export class NotificationDispatcher implements Loggable {
 
   @timed async dispatchDraftConcludedNotification() {
     const baseNotif = await this.#constructDraftNotification();
-
-    return this.#sendNotificationRequest({ ...baseNotif, type: 'Concluded' });
+    return await this.#sendNotificationRequest({ ...baseNotif, type: 'Concluded' });
   }
 
   @timed async dispatchUserNotification(user: User, labName: string, labId: string) {
