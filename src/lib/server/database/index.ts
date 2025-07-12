@@ -31,7 +31,7 @@ function init(url: string) {
   return drizzle(url, { schema });
 }
 
-const staticDrizzle = init(POSTGRES.URL);
+const database = init(POSTGRES.URL);
 
 function assertOptional<T>([result, ...rest]: T[]) {
   strictEqual(rest.length, 0, 'too many results');
@@ -59,7 +59,7 @@ export class Database implements Loggable {
   #logger: Logger;
   #db: DrizzleDatabase | DrizzleTransaction;
 
-  private constructor(logger: Logger, db: DrizzleDatabase | DrizzleTransaction = staticDrizzle) {
+  private constructor(logger: Logger, db: DrizzleDatabase | DrizzleTransaction = database) {
     this.#logger = logger;
     this.#db = db;
   }
