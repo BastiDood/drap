@@ -1,4 +1,4 @@
-import { type InferOutput, array, object, string } from 'valibot';
+import { type InferOutput, array, email, object, pipe, string } from 'valibot';
 
 export const GmailMessageSendResult = object({
   id: string(),
@@ -9,7 +9,7 @@ export const GmailMessageSendResult = object({
 export type GmailMessageSendResult = InferOutput<typeof GmailMessageSendResult>;
 
 export const EmailSendRequest = object({
-  to: array(string()),
+  to: array(pipe(string(), email())),
   subject: string(),
   data: string(),
 });
