@@ -119,10 +119,9 @@ export class Database implements Loggable {
   }
 
   @timed async getUserById(userId: string) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { id, ...rest } = getTableColumns(schema.user);
+    const { id: _, ...columns } = getTableColumns(schema.user);
     return await this.#db
-      .select(rest)
+      .select(columns)
       .from(schema.user)
       .where(eq(schema.user.id, userId))
       .then(assertSingle);
