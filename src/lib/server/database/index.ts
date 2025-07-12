@@ -777,20 +777,20 @@ export class Database implements Loggable {
     const query =
       typeof refreshToken === 'undefined'
         ? this.#db
-          .update(schema.candidateSender)
-          .set({ expiration, accessToken })
-          .where(eq(schema.candidateSender.userId, userId))
+            .update(schema.candidateSender)
+            .set({ expiration, accessToken })
+            .where(eq(schema.candidateSender.userId, userId))
         : this.#db
-          .insert(schema.candidateSender)
-          .values({ userId, expiration, accessToken, refreshToken })
-          .onConflictDoUpdate({
-            target: schema.candidateSender.userId,
-            set: {
-              expiration: sql`excluded.${sql.raw(schema.candidateSender.expiration.name)}`,
-              accessToken: sql`excluded.${sql.raw(schema.candidateSender.accessToken.name)}`,
-              refreshToken: sql`excluded.${sql.raw(schema.candidateSender.refreshToken.name)}`,
-            },
-          });
+            .insert(schema.candidateSender)
+            .values({ userId, expiration, accessToken, refreshToken })
+            .onConflictDoUpdate({
+              target: schema.candidateSender.userId,
+              set: {
+                expiration: sql`excluded.${sql.raw(schema.candidateSender.expiration.name)}`,
+                accessToken: sql`excluded.${sql.raw(schema.candidateSender.accessToken.name)}`,
+                refreshToken: sql`excluded.${sql.raw(schema.candidateSender.refreshToken.name)}`,
+              },
+            });
     const { rowCount } = await query;
     switch (rowCount) {
       case 1:
