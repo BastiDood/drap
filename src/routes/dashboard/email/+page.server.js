@@ -86,10 +86,8 @@ export const actions = {
     const userId = validateString(data.get('user-id'));
     db.logger.info({ senderUserId: userId }, 'promoting sender');
 
-    await db.begin(async db => {
-      const upsertDesignatedSender = await db.upsertDesignatedSender(userId);
-      db.logger.info({ upsertDesignatedSender }, 'sender promoted as designated sender');
-    });
+    const upsertDesignatedSender = await db.upsertDesignatedSender(userId);
+    db.logger.info({ upsertDesignatedSender }, 'sender promoted as designated sender');
   },
   async remove({ locals: { db, session }, request }) {
     if (typeof session?.user === 'undefined') {
