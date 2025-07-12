@@ -37,7 +37,7 @@ export async function load({ locals: { db, session }, parent }) {
 }
 
 export const actions = {
-  async rankings({ locals: { db, session }, request }) {
+  async rankings({ locals: { db, session, dispatch }, request }) {
     if (typeof session?.user === 'undefined') {
       db.logger.error('attempt to submit rankings without session');
       error(401);
@@ -77,13 +77,12 @@ export const actions = {
 
     db.logger.info({ total, quota }, 'total students still within quota');
 
+    const deferredNotifications: (number | null)[] = [];
+    const { name } = await db.getLabById(lab);
+
     await db.begin(async db => {
       await db.insertFacultyChoice(draftId, lab, faculty, students);
       db.logger.info({ studentCount: students.length }, 'students inserted into faculty choice');
-
-      // TODO: Reinstate notifications channel.
-      // const postDraftRoundSubmittedNotification = await db.postDraftRoundSubmittedNotification(draft, lab);
-      // db.logger.info({ postDraftRoundSubmittedNotification });
 
       while (true) {
         const count = await db.getPendingLabCountInDraft(draftId);
@@ -99,12 +98,7 @@ export const actions = {
         );
         db.logger.info(incrementDraftRound, 'draft round incremented');
 
-        // TODO: Reinstate notifications channel.
-        // const postDraftRoundStartedNotification = await db.postDraftRoundStartedNotification(
-        //     draft,
-        //     incrementDraftRound.curr_round,
-        // );
-        // db.logger.info({ postDraftRoundStartedNotification });
+        deferredNotifications.push(incrementDraftRound.currRound);
 
         if (incrementDraftRound.currRound === null) {
           db.logger.info('lottery round reached');
@@ -114,11 +108,13 @@ export const actions = {
         await db.autoAcknowledgeLabsWithoutPreferences(draftId);
         db.logger.info('labs without preferences auto-acknowledged');
       }
-
-      // TODO: Do notification as final step to ensure consistency
-      // await db.notifyDraftChannel();
     });
 
+    // assume the first round referenced in the deferred notifications is the round for which the notification was sent
+    await dispatch.dispatchRoundSubmittedNotification(lab, name, deferredNotifications[0]);
+
     db.logger.info('student rankings submitted');
+    for (const round of deferredNotifications)
+      await dispatch.dispatchDraftRoundStartNotification(round);
   },
 };

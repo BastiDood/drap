@@ -1,7 +1,7 @@
-import { pgSchema, text, timestamp } from 'drizzle-orm/pg-core';
-
+import { jsonb, pgSchema, text, timestamp } from 'drizzle-orm/pg-core';
+import type { Notification } from '$lib/server/models/notification';
+import { sql } from 'drizzle-orm';
 import { ulid } from './custom/ulid';
-
 import { user } from './app';
 
 export const email = pgSchema('email');
@@ -27,3 +27,14 @@ export const designatedSender = email.table('designated_sender', {
 });
 export type DesignatedSender = typeof designatedSender.$inferSelect;
 export type NewDesignatedSender = typeof designatedSender.$inferInsert;
+
+export const notification = email.table('notification', {
+  id: ulid('id')
+    .primaryKey()
+    .default(sql`gen_ulid()`),
+  createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+  deliveredAt: timestamp('delivered_at', { mode: 'date', withTimezone: true }),
+  data: jsonb('metadata').$type<Notification>().notNull(),
+});
+export type NotificationRequest = typeof notification.$inferSelect;
+export type NewNotificationRequest = typeof notification.$inferInsert;

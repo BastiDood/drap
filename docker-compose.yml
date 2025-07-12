@@ -27,5 +27,15 @@ services:
       retries: 10
     env_file:
       - .env
+  redis:
+    image: redis:8.0.3-alpine
+    profiles:
+      - dev
+      - prod
+    volumes:
+      - redis:/data
+    ports:
+      - 6379:6379
 volumes:
   postgres:
+  redis:

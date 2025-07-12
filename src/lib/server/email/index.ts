@@ -1,14 +1,23 @@
+import * as GOOGLE from '$lib/server/env/google';
 import type { Database, schema } from '$lib/server/database';
+import {
+  DraftNotification,
+  Notification,
+  type QueuedNotification,
+  UserNotification,
+} from '$lib/server/models/notification';
 import { IdToken, TokenResponse } from '$lib/server/models/oauth';
 import assert, { strictEqual } from 'node:assert/strict';
 import { isFuture, sub } from 'date-fns';
 import { parse, pick } from 'valibot';
 import { GmailMessageSendResult } from '$lib/server/models/email';
+import type { Job } from 'bullmq';
+import type { Logger } from 'pino';
 import { createMimeMessage } from 'mimetext/node';
 import { fetchJwks } from './jwks';
 import { jwtVerify } from 'jose';
 
-export type Email = schema.User['email'];
+export type EmailAddress = schema.User['email'];
 
 export class Emailer {
   #db: Database;
@@ -53,14 +62,14 @@ export class Emailer {
     });
 
     const token = parse(pick(IdToken, ['exp']), payload);
-    await this.#db.upsertCandidateSender(creds.email, token.exp, creds.accessToken);
+    await this.#db.upsertCandidateSender(creds.id, token.exp, creds.accessToken);
     return creds;
   }
 
   /** Must be called within a transaction context for correctness. */
-  async send(to: Email[], subject: string, data: string) {
+  async send(to: EmailAddress[], subject: string, data: string) {
     const creds = await this.#getLatestCredentials();
-    if (typeof creds === 'undefined') return;
+    if (typeof creds === 'undefined') return null;
 
     const message = createMimeMessage();
     message.setSender({ name: `[DRAP] ${creds.givenName} ${creds.familyName}`, addr: creds.email });
@@ -84,4 +93,130 @@ export class Emailer {
     const json = await response.json();
     return parse(GmailMessageSendResult, json);
   }
+}
+
+class NotificationProcessingError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'NotificationProcessingError';
+  }
+}
+
+export function initializeProcessor(db: Database, logger: Logger) {
+  const emailer = new Emailer(db, GOOGLE.OAUTH_CLIENT_ID, GOOGLE.OAUTH_CLIENT_SECRET);
+
+  async function processDraftNotification(
+    notifRequest: DraftNotification,
+    txn: Database,
+    emailer: Emailer,
+  ) {
+    const meta = (() => {
+      switch (notifRequest.type) {
+        case 'RoundStart': {
+          const body =
+            notifRequest.round === null
+              ? {
+                  subject: `[DRAP] Lottery Round for Draft #${notifRequest.draftId} has begun!`,
+                  message: `The lottery round for Draft #${notifRequest.draftId} has begun. For lab heads, kindly coordinate with the draft administrators for the next steps.`,
+                }
+              : {
+                  subject: `[DRAP] Round #${notifRequest.round} for Draft #${notifRequest.draftId} has begun!`,
+                  message: `Round #${notifRequest.round} for Draft #${notifRequest.draftId} has begun. For lab heads, kindly check the students module to see the list of students who have chosen your lab.`,
+                };
+          const facultyAndStaffEmails = txn
+            .getFacultyAndStaff()
+            .then(result => result.map(({ email }) => email));
+          return { emails: facultyAndStaffEmails, ...body };
+        }
+        case 'RoundSubmit':
+          return {
+            emails: txn.getValidStaffEmails(),
+            subject: `[DRAP] Acknowledgement from ${notifRequest.labId.toUpperCase()} for Round #${notifRequest.round} of Draft #${notifRequest.draftId}`,
+            message: `The ${notifRequest.labName} has submitted their student preferences for Round #${notifRequest.round} of Draft #${notifRequest.draftId}.`,
+          };
+        case 'LotteryIntervention': {
+          const facultyAndStaffEmails = txn
+            .getFacultyAndStaff()
+            .then(result => result.map(({ email }) => email));
+
+          return {
+            emails: facultyAndStaffEmails,
+            subject: `[DRAP] Lottery Intervention for ${notifRequest.labId.toUpperCase()} in Draft #${notifRequest.draftId}`,
+            message: `${notifRequest.givenName} ${notifRequest.familyName} <${notifRequest.email}> has been manually assigned to ${notifRequest.labName} during the lottery round of Draft #${notifRequest.draftId}.`,
+          };
+        }
+        case 'Concluded': {
+          const facultyAndStaffEmails = txn
+            .getFacultyAndStaff()
+            .then(result => result.map(({ email }) => email));
+
+          return {
+            emails: facultyAndStaffEmails,
+            subject: `[DRAP] Draft #${notifRequest.draftId} Concluded`,
+            message: `Draft #${notifRequest.draftId} has just concluded. See the new roster of researchers using the lab module.`,
+          };
+        }
+        default:
+          return null;
+      }
+    })();
+    assert(meta !== null);
+
+    return await emailer.send(await meta.emails, meta.subject, meta.message);
+  }
+
+  async function processUserNotification(notifRequest: UserNotification, emailer: Emailer) {
+    return await emailer.send(
+      [notifRequest.email],
+      `[DRAP] Assigned to ${notifRequest.labId.toUpperCase()}`,
+      `Hello, ${notifRequest.givenName} ${notifRequest.familyName}! Kindly note that you have been assigned to the ${notifRequest.labName}.`,
+    );
+  }
+
+  return async function processor(job: Job<QueuedNotification>) {
+    const {
+      data: { requestId },
+    } = job;
+
+    const notification = await emailer.db.getNotification(requestId);
+
+    if (typeof notification === 'undefined') {
+      logger.warn('attempted to process nonexistent notification');
+      return;
+    }
+    const { data, deliveredAt } = notification;
+
+    if (deliveredAt !== null) {
+      logger.warn({ deliveredAt }, 'attempted to process delivered notification');
+      return;
+    }
+
+    const notifRequest = parse(Notification, data);
+
+    emailer.db.begin(async db => {
+      // eslint-disable-next-line @typescript-eslint/init-declarations
+      let result: Awaited<ReturnType<typeof processDraftNotification>>;
+      switch (notifRequest.target) {
+        case 'Draft': {
+          result = await processDraftNotification(notifRequest, db, emailer);
+          break;
+        }
+        case 'User': {
+          result = await processUserNotification(notifRequest, emailer);
+          break;
+        }
+        default: {
+          logger.error('unknown notification request target');
+          throw new NotificationProcessingError('unknown notification request target');
+        }
+      }
+
+      if (result === null) {
+        logger.error('no designated sender configured');
+        throw new NotificationProcessingError('no designated sender configured');
+      }
+
+      await db.markNotificationDelivered(requestId);
+    });
+  };
 }

@@ -11,6 +11,6 @@ if (building) {
   assert(typeof env.GOOGLE_OAUTH_REDIRECT_URI !== 'undefined');
 }
 
-export const OAUTH_CLIENT_ID = env.GOOGLE_OAUTH_CLIENT_ID;
-export const OAUTH_CLIENT_SECRET = env.GOOGLE_OAUTH_CLIENT_SECRET;
-export const OAUTH_REDIRECT_URI = env.GOOGLE_OAUTH_REDIRECT_URI;
+export const OAUTH_CLIENT_ID = env.GOOGLE_OAUTH_CLIENT_ID ?? '';
+export const OAUTH_CLIENT_SECRET = env.GOOGLE_OAUTH_CLIENT_SECRET ?? '';
+export const OAUTH_REDIRECT_URI = env.GOOGLE_OAUTH_REDIRECT_URI ?? '';

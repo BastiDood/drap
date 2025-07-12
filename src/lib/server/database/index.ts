@@ -1,13 +1,27 @@
 import assert, { fail, strictEqual } from 'node:assert/strict';
 
-import { and, count, countDistinct, desc, eq, gte, isNotNull, isNull, or, sql } from 'drizzle-orm';
+import {
+  and,
+  count,
+  countDistinct,
+  desc,
+  eq,
+  getTableColumns,
+  gte,
+  isNotNull,
+  isNull,
+  or,
+  sql,
+} from 'drizzle-orm';
 import type { Logger } from 'pino';
 import { drizzle } from 'drizzle-orm/node-postgres';
 
+import * as POSTGRES from '$lib/server/env/postgres';
 import * as schema from './schema';
 import { type Loggable, timed } from './decorators';
 import { array, object, parse, string } from 'valibot';
 import { enumerate, izip } from 'itertools';
+import { Notification } from '$lib/server/models/notification';
 import { alias } from 'drizzle-orm/pg-core';
 
 const StringArray = array(string());
@@ -16,6 +30,8 @@ const LabRemark = array(object({ lab: string(), remark: string() }));
 function init(url: string) {
   return drizzle(url, { schema });
 }
+
+const database = init(POSTGRES.URL);
 
 function assertOptional<T>([result, ...rest]: T[]) {
   strictEqual(rest.length, 0, 'too many results');
@@ -43,13 +59,14 @@ export class Database implements Loggable {
   #logger: Logger;
   #db: DrizzleDatabase | DrizzleTransaction;
 
-  private constructor(db: DrizzleDatabase | DrizzleTransaction, logger: Logger) {
+  private constructor(logger: Logger, db: DrizzleDatabase | DrizzleTransaction = database) {
     this.#logger = logger;
     this.#db = db;
   }
 
-  static fromUrl(url: string, logger: Logger) {
-    return new Database(init(url), logger);
+  /** Constructs a Database instance using the default static drizzle instance */
+  static withLogger(logger: Logger) {
+    return new Database(logger);
   }
 
   get logger() {
@@ -58,7 +75,7 @@ export class Database implements Loggable {
 
   /** Begins a transaction. */
   begin<T>(fn: (db: Database) => Promise<T>) {
-    return this.#db.transaction(tx => fn(new Database(tx, this.#logger)));
+    return this.#db.transaction(tx => fn(new Database(this.#logger, tx)));
   }
 
   @timed async generatePendingSession(hasExtendedScope: boolean) {
@@ -99,6 +116,15 @@ export class Database implements Loggable {
   @timed async insertValidSession(id: string, userId: string, expiration: Date) {
     const { rowCount } = await this.#db.insert(schema.session).values({ id, userId, expiration });
     strictEqual(rowCount, 1, 'only one session must be inserted');
+  }
+
+  @timed async getUserById(userId: string) {
+    const { id: _, ...columns } = getTableColumns(schema.user);
+    return await this.#db
+      .select(columns)
+      .from(schema.user)
+      .where(eq(schema.user.id, userId))
+      .then(assertSingle);
   }
 
   @timed async getUserFromValidSession(sid: string) {
@@ -186,6 +212,16 @@ export class Database implements Loggable {
       })
       .from(targetSchema)
       .orderBy(({ name }) => name);
+  }
+
+  @timed async getLabById(labId: string) {
+    return await this.#db
+      .select({
+        name: schema.lab.name,
+      })
+      .from(schema.lab)
+      .where(eq(schema.lab.id, labId))
+      .then(assertSingle);
   }
 
   @timed async isValidTotalLabQuota() {
@@ -989,5 +1025,53 @@ export class Database implements Loggable {
       default:
         fail(`inviteNewFacultyOrStaff => unexpected insertion count ${rowCount}`);
     }
+  }
+
+  @timed async insertNotification(data: Notification) {
+    const result = await this.#db
+      .insert(schema.notification)
+      .values({ data })
+      .returning({ id: schema.notification.id })
+      .onConflictDoNothing()
+      .then(assertOptional);
+
+    return result;
+  }
+
+  @timed async markNotificationDelivered(id: string) {
+    await this.#db
+      .update(schema.notification)
+      .set({ deliveredAt: new Date() })
+      .where(eq(schema.notification.id, id))
+      .returning({ returnedId: schema.notification.id })
+      .then(assertSingle);
+  }
+
+  @timed async getNotification(id: string) {
+    const result = await this.#db
+      .select({ data: schema.notification.data, deliveredAt: schema.notification.deliveredAt })
+      .from(schema.notification)
+      .where(eq(schema.notification.id, id))
+      .then(assertOptional);
+
+    return result;
+  }
+
+  /**
+   * Synchronizes user objects with draft results by assigning student-users' lab fields to their
+   * respective labs (as reflected by the faculty choices) for a given draft.
+   */
+  @timed async syncResultsToUsers(draftId: bigint) {
+    return await this.#db
+      .update(schema.user)
+      .set({ labId: schema.facultyChoiceUser.labId })
+      .from(schema.facultyChoiceUser)
+      .where(
+        and(
+          eq(schema.facultyChoiceUser.draftId, draftId),
+          eq(schema.user.id, schema.facultyChoiceUser.studentUserId),
+        ),
+      )
+      .returning({ user: schema.user, labId: schema.facultyChoiceUser.labId });
   }
 }
