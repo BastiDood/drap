@@ -5,7 +5,7 @@ import { pino } from 'pino';
 
 import { dev } from '$app/environment';
 
-import { BULLMQ_HOST, BULLMQ_PORT } from '$lib/server/env/bullmq';
+import { HOST, PORT } from '$lib/server/env/redis';
 import { NotificationDispatcher, queueName } from '$lib/server/email/dispatch';
 import { AssertionError } from 'assert';
 import { Database } from '$lib/server/database';
@@ -37,8 +37,8 @@ const _ = new Worker(
   ),
   {
     connection: {
-      host: BULLMQ_HOST,
-      port: BULLMQ_PORT,
+      host: HOST,
+      port: PORT,
     },
   },
 );

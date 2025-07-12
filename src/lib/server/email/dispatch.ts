@@ -1,9 +1,9 @@
-import { BULLMQ_HOST, BULLMQ_PORT } from '$lib/server/env/bullmq';
 import {
   type BaseDraftNotif,
   Notification,
   QueuedNotification,
 } from '$lib/server/models/notification';
+import { HOST, PORT } from '$lib/server/env/redis';
 import { type Loggable, timed } from '$lib/server/database/decorators';
 import { Queue, QueueEvents } from 'bullmq';
 import type { Database } from '$lib/server/database';
@@ -23,8 +23,8 @@ export class NotificationDispatcher implements Loggable {
   constructor(logger: Logger, db: Database) {
     this.#queue = new Queue<QueuedNotification>(queueName, {
       connection: {
-        host: BULLMQ_HOST,
-        port: BULLMQ_PORT,
+        host: HOST,
+        port: PORT,
       },
     });
 

@@ -10,5 +10,5 @@ if (building) {
   assert(typeof env.REDIS_PORT !== 'undefined');
 }
 
-export const BULLMQ_HOST = env.REDIS_HOST;
-export const BULLMQ_PORT = Number.parseInt(env.REDIS_PORT, 10);
+export const HOST = env.REDIS_HOST;
+export const PORT = Number.parseInt(env.REDIS_PORT, 10);
