@@ -89,9 +89,6 @@ export const actions = {
     await db.begin(async db => {
       const upsertDesignatedSender = await db.upsertDesignatedSender(userId);
       db.logger.info({ upsertDesignatedSender }, 'sender promoted as designated sender');
-      // TODO: Reinstate notifications channel.
-      // await db.notifyDraftChannel();
-      // await db.notifyUserChannel();
     });
   },
   async remove({ locals: { db, session }, request }) {

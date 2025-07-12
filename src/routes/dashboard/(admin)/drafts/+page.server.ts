@@ -126,13 +126,6 @@ export const actions = {
         assert(typeof incrementDraftRound !== 'undefined', 'cannot start a non-existent draft');
         db.logger.info(incrementDraftRound, 'draft round incremented');
 
-        // TODO: Reinstate notifications channel.
-        // const postDraftRoundStartedNotification = await db.postDraftRoundStartedNotification(
-        //     draft,
-        //     incrementDraftRound.currRound,
-        // );
-        // db.logger.info({ postDraftRoundStartedNotification });
-        // await db.notifyDraftChannel();
         deferredNotifications.push(incrementDraftRound.currRound);
 
         // Pause at the lottery rounds
@@ -188,9 +181,6 @@ export const actions = {
 
     await db.begin(async db => {
       await db.insertLotteryChoices(draftId, user.id, pairs);
-      // TODO: Reinstate notifications channel.
-      // await db.postLotteryInterventionNotifications(draft, pairs);
-      // await db.notifyDraftChannel();
     });
 
     for (const [studentUserId, labId] of pairs) {
@@ -247,9 +237,7 @@ export const actions = {
           );
           throw ZIP_NOT_EQUAL;
         }
-
-        // TODO: Reinstate notifications channel.
-        // await db.postLotteryInterventionNotifications(draft, pairs);
+        
         const pairs = zip(emails, schedule);
         deferredNotifications = pairs;
 
@@ -264,15 +252,8 @@ export const actions = {
         const concludeDraft = await db.concludeDraft(draftId);
         db.logger.info({ concludeDraft }, 'draft concluded');
 
-        // TODO: Reinstate notifications channel.
-        // await db.postDraftConcluded(draft);
-        // const syncDraftResultsToUsers = await db.syncDraftResultsToUsersWithNotification(draft);
         draftResults = await db.syncResultsToUsers(draftId);
-        // db.logger.info({ syncDraftResultsToUsers });
-
-        // TODO: Reinstate notifications channel.
-        // await db.notifyDraftChannel();
-        // await db.notifyUserChannel();
+        db.logger.info({ draftResults }, 'draft results synced');
       });
     } catch (err) {
       if (err === ZIP_NOT_EQUAL) return fail(403);

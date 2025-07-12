@@ -84,10 +84,6 @@ export const actions = {
       await db.insertFacultyChoice(draftId, lab, faculty, students);
       db.logger.info({ studentCount: students.length }, 'students inserted into faculty choice');
 
-      // TODO: Reinstate notifications channel.
-      // const postDraftRoundSubmittedNotification = await db.postDraftRoundSubmittedNotification(draft, lab);
-      // db.logger.info({ postDraftRoundSubmittedNotification });
-
       while (true) {
         const count = await db.getPendingLabCountInDraft(draftId);
         if (count > 0) {
@@ -102,12 +98,6 @@ export const actions = {
         );
         db.logger.info(incrementDraftRound, 'draft round incremented');
 
-        // TODO: Reinstate notifications channel.
-        // const postDraftRoundStartedNotification = await db.postDraftRoundStartedNotification(
-        //     draft,
-        //     incrementDraftRound.curr_round,
-        // );
-        // db.logger.info({ postDraftRoundStartedNotification });
         deferredNotifications.push(incrementDraftRound.currRound);
 
         if (incrementDraftRound.currRound === null) {
@@ -118,9 +108,6 @@ export const actions = {
         await db.autoAcknowledgeLabsWithoutPreferences(draftId);
         db.logger.info('labs without preferences auto-acknowledged');
       }
-
-      // TODO: Do notification as final step to ensure consistency
-      // await db.notifyDraftChannel();
     });
 
     // assume the first round referenced in the deferred notifications is the round for which the notification was sent 
