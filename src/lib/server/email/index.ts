@@ -116,13 +116,13 @@ export function initializeProcessor(db: Database, logger: Logger) {
           const body =
             notifRequest.round === null
               ? {
-                  subject: `[DRAP] Lottery Round for Draft #${notifRequest.draftId} has begun!`,
-                  message: `The lottery round for Draft #${notifRequest.draftId} has begun. For lab heads, kindly coordinate with the draft administrators for the next steps.`,
-                }
+                subject: `[DRAP] Lottery Round for Draft #${notifRequest.draftId} has begun!`,
+                message: `The lottery round for Draft #${notifRequest.draftId} has begun. For lab heads, kindly coordinate with the draft administrators for the next steps.`,
+              }
               : {
-                  subject: `[DRAP] Round #${notifRequest.round} for Draft #${notifRequest.draftId} has begun!`,
-                  message: `Round #${notifRequest.round} for Draft #${notifRequest.draftId} has begun. For lab heads, kindly check the students module to see the list of students who have chosen your lab.`,
-                };
+                subject: `[DRAP] Round #${notifRequest.round} for Draft #${notifRequest.draftId} has begun!`,
+                message: `Round #${notifRequest.round} for Draft #${notifRequest.draftId} has begun. For lab heads, kindly check the students module to see the list of students who have chosen your lab.`,
+              };
           const facultyAndStaffEmails = txn
             .getFacultyAndStaff()
             .then(result => result.map(({ email }) => email));
@@ -194,7 +194,8 @@ export function initializeProcessor(db: Database, logger: Logger) {
     const notifRequest = parse(Notification, data);
 
     emailer.db.begin(async txn => {
-      let result: Awaited<ReturnType<typeof processDraftNotification>> = null;
+      // eslint-disable-next-line @typescript-eslint/init-declarations
+      let result: Awaited<ReturnType<typeof processDraftNotification>>;
       switch (notifRequest.target) {
         case 'Draft': {
           result = await processDraftNotification(notifRequest, txn, emailer);

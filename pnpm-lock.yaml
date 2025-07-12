@@ -25,7 +25,7 @@ importers:
         version: 1.6.2(svelte@5.35.6)
       '@sveltejs/kit':
         specifier: ^2.22.5
-        version: 2.22.4(@sveltejs/vite-plugin-svelte@5.1.0(svelte@5.35.5)(vite@6.3.5(@types/node@22.16.2)(jiti@2.4.2)(lightningcss@1.30.1)))(svelte@5.35.5)(vite@6.3.5(@types/node@22.16.2)(jiti@2.4.2)(lightningcss@1.30.1))
+        version: 2.22.5(@sveltejs/vite-plugin-svelte@6.0.0(svelte@5.35.6)(vite@7.0.4(@types/node@24.0.13)(jiti@2.4.2)(lightningcss@1.30.1)))(svelte@5.35.6)(vite@7.0.4(@types/node@24.0.13)(jiti@2.4.2)(lightningcss@1.30.1))
       bullmq:
         specifier: ^5.56.3
         version: 5.56.3
@@ -2206,20 +2206,8 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   undici-types@7.8.0:
     resolution: {integrity: sha512-9UJ2xGDvQ43tYyVMpuHlsgApydB8ZKfVYTsLDhXkFL/6gfkp+U8xTGdh8pMJv1SpZna0zxG1DwsKZsreLbXBxw==}
-=======
-  ulid@3.0.1:
-    resolution: {integrity: sha512-dPJyqPzx8preQhqq24bBG1YNkvigm87K8kVEHCD+ruZg24t6IFEFv00xMWfxcC4djmFtiTLdFuADn4+DOz6R7Q==}
-    hasBin: true
-
-=======
->>>>>>> 9d95a47 (fix: remove unused dependency ulid)
-  undici-types@6.21.0:
-    resolution: {integrity: sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==}
->>>>>>> 6e5657a (feat: add ulid as dependency)
 
   uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
@@ -4232,16 +4220,7 @@ snapshots:
 
   typescript@5.8.3: {}
 
-<<<<<<< HEAD
-<<<<<<< HEAD
   undici-types@7.8.0: {}
-=======
-  ulid@3.0.1: {}
-
-=======
->>>>>>> 9d95a47 (fix: remove unused dependency ulid)
-  undici-types@6.21.0: {}
->>>>>>> 6e5657a (feat: add ulid as dependency)
 
   uri-js@4.4.1:
     dependencies:
