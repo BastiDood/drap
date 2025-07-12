@@ -1,5 +1,5 @@
 import type { Database, schema } from '$lib/server/database';
-import { DraftNotification, Notification, UserNotification, type QueuedNotification } from '$lib/server/models/notification';
+import { DraftNotification, Notification, type QueuedNotification, UserNotification } from '$lib/server/models/notification';
 import { GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET } from '$env/static/private';
 import { IdToken, TokenResponse } from '$lib/server/models/oauth';
 import assert, { strictEqual } from 'node:assert/strict';
@@ -189,20 +189,21 @@ export function initializeProcessor(db: Database, logger: Logger) {
     const notifRequest = parse(Notification, data);
 
     emailer.db.begin(async txn => {
-      const result = await (async () => {
-        switch (notifRequest.target) {
-          case 'Draft': {
-            return await processDraftNotification(notifRequest, txn, emailer);
-          }
-          case 'User': {
-            return await processUserNotification(notifRequest, emailer);
-          }
-          default: {
-            logger.error('unknown notification request target');
-            throw new NotificationProcessingError('unknown notification request target');
-          }
+      let result: Awaited<ReturnType<typeof processDraftNotification>> = null;
+      switch (notifRequest.target) {
+        case 'Draft': {
+          result = await processDraftNotification(notifRequest, txn, emailer);
+          break;
         }
-      })();
+        case 'User': {
+          result = await processUserNotification(notifRequest, emailer);
+          break;
+        }
+        default: {
+          logger.error('unknown notification request target');
+          throw new NotificationProcessingError('unknown notification request target');
+        }
+      }
 
       if (result === null) {
         logger.error('no designated sender configured');
