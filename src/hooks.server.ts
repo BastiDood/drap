@@ -22,18 +22,12 @@ if (dev) {
 // This is only a base logger instance. We need to attach a request ID for each request.
 const logger = pino(stream);
 
-// This is the global email queue manager
-const notificationDispatcher = new NotificationDispatcher(
-  logger.child({ notifications: 'dispatch' }),
-  Database.withLogger(logger.child({ notifications: 'db' })),
-);
-
-// This is the global email worker
+// This is the global email worker. Value is intentionally unused.
 const _ = new Worker(
   queueName,
   initializeProcessor(
-    Database.withLogger(logger.child({ notifications: 'db' })),
-    logger.child({ notifications: 'processor' }),
+    Database.withLogger(logger.child({ notifications: 'worker-db' })),
+    logger.child({ notifications: 'worker' }),
   ),
   {
     connection: {
@@ -54,8 +48,11 @@ export async function handle({ event, resolve }) {
 
   requestLogger.info('request initiated');
 
-  locals.db = Database.withLogger(logger.child({ notifications: 'db' }));
-  locals.dispatch = notificationDispatcher;
+  locals.db = Database.withLogger(logger.child({ notifications: 'app-db' }));
+  locals.dispatch = new NotificationDispatcher(
+    logger.child({ notifications: 'dispatch' }),
+    locals.db,
+  );
 
   const sid = cookies.get('sid');
   if (typeof sid !== 'undefined') {
