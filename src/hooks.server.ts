@@ -5,6 +5,7 @@ import { pino } from 'pino';
 
 import { dev } from '$app/environment';
 
+import { JOB_CONCURRENCY } from '$lib/server/env';
 import { HOST, PORT } from '$lib/server/env/redis';
 import { NotificationDispatcher, queueName } from '$lib/server/email/dispatch';
 import { AssertionError } from 'assert';
@@ -30,6 +31,7 @@ const _ = new Worker(
     logger.child({ notifications: 'worker' }),
   ),
   {
+    concurrency: JOB_CONCURRENCY,
     connection: {
       host: HOST,
       port: PORT,
