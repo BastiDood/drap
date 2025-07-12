@@ -261,8 +261,7 @@ export const actions = {
     }
 
     for (const [studentUserId, labId] of deferredNotifications) {
-      const { name: labName } = await db.getLabById(labId);
-      const studentUser = await db.getUserById(studentUserId);
+      const [{ name: labName }, studentUser] = await Promise.all([db.getLabById(labId), db.getUserById(studentUserId)]);
       dispatch.dispatchLotteryInterventionNotif(
         labId,
         labName,
