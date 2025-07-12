@@ -1,3 +1,4 @@
+import * as GOOGLE from '$lib/server/env/google';
 import type { Database, schema } from '$lib/server/database';
 import {
   DraftNotification,
@@ -5,7 +6,6 @@ import {
   type QueuedNotification,
   UserNotification,
 } from '$lib/server/models/notification';
-import { GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET } from '$env/static/private';
 import { IdToken, TokenResponse } from '$lib/server/models/oauth';
 import assert, { strictEqual } from 'node:assert/strict';
 import { isFuture, sub } from 'date-fns';
@@ -103,7 +103,7 @@ class NotificationProcessingError extends Error {
 }
 
 export function initializeProcessor(db: Database, logger: Logger) {
-  const emailer = new Emailer(db, GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET);
+  const emailer = new Emailer(db, GOOGLE.OAUTH_CLIENT_ID, GOOGLE.OAUTH_CLIENT_SECRET);
 
   async function processDraftNotification(
     notifRequest: DraftNotification,
