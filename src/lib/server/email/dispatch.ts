@@ -84,23 +84,26 @@ export class NotificationDispatcher implements Loggable {
     return { target: 'Draft', draftId: currentDraft.id, round: currentRound };
   }
 
-  @timed async dispatchDraftRoundStartNotif(draftRound?: number | null) {
+  @timed async dispatchDraftRoundStartNotification(draftRound?: number | null) {
     const baseNotif = await this.#constructDraftNotification(draftRound);
-
-    return this.#sendNotificationRequest({ ...baseNotif, type: 'RoundStart' });
+    return await this.#sendNotificationRequest({ ...baseNotif, type: 'RoundStart' });
   }
 
-  @timed async dispatchRoundSubmittedNotif(
+  @timed async dispatchRoundSubmittedNotification(
     labId: string,
     labName: string,
     draftRound?: number | null,
   ) {
     const baseNotif = await this.#constructDraftNotification(draftRound);
-
-    return this.#sendNotificationRequest({ ...baseNotif, type: 'RoundSubmit', labName, labId });
+    return await this.#sendNotificationRequest({
+      ...baseNotif,
+      type: 'RoundSubmit',
+      labName,
+      labId,
+    });
   }
 
-  @timed async dispatchLotteryInterventionNotif(
+  @timed async dispatchLotteryInterventionNotification(
     labId: string,
     labName: string,
     givenName: string,
@@ -120,13 +123,13 @@ export class NotificationDispatcher implements Loggable {
     });
   }
 
-  @timed async dispatchDraftConcludedNotif() {
+  @timed async dispatchDraftConcludedNotification() {
     const baseNotif = await this.#constructDraftNotification();
 
     return this.#sendNotificationRequest({ ...baseNotif, type: 'Concluded' });
   }
 
-  @timed async dispatchUserNotif(user: User, labName: string, labId: string) {
+  @timed async dispatchUserNotification(user: User, labName: string, labId: string) {
     return await this.#sendNotificationRequest({
       target: 'User',
       email: user.email,

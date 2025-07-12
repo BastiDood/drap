@@ -145,7 +145,7 @@ export const actions = {
       }
     });
 
-    for (const round of deferredNotifications) dispatch.dispatchDraftRoundStartNotif(round);
+    for (const round of deferredNotifications) dispatch.dispatchDraftRoundStartNotification(round);
 
     db.logger.info('draft officially started');
   },
@@ -186,7 +186,7 @@ export const actions = {
     for (const [studentUserId, labId] of pairs) {
       const { name: labName } = await db.getLabById(labId);
       const studentUser = await db.getUserById(studentUserId);
-      dispatch.dispatchLotteryInterventionNotif(
+      dispatch.dispatchLotteryInterventionNotification(
         labId,
         labName,
         studentUser.givenName,
@@ -265,7 +265,7 @@ export const actions = {
         db.getLabById(labId),
         db.getUserById(studentUserId),
       ]);
-      dispatch.dispatchLotteryInterventionNotif(
+      dispatch.dispatchLotteryInterventionNotification(
         labId,
         labName,
         studentUser.givenName,
@@ -276,9 +276,9 @@ export const actions = {
 
     for (const { user, labId } of draftResults) {
       const { name } = await db.getLabById(labId);
-      dispatch.dispatchUserNotif(user, name, labId);
+      dispatch.dispatchUserNotification(user, name, labId);
     }
-    dispatch.dispatchDraftConcludedNotif();
+    dispatch.dispatchDraftConcludedNotification();
 
     redirect(303, `/history/${draftId}/`);
   },

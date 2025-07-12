@@ -5,9 +5,9 @@ import { pino } from 'pino';
 
 import { dev } from '$app/environment';
 
+import { NotificationDispatcher, queueName } from '$lib/server/email/dispatch';
 import { JOB_CONCURRENCY } from '$lib/server/env';
 import { HOST, PORT } from '$lib/server/env/redis';
-import { NotificationDispatcher, queueName } from '$lib/server/email/dispatch';
 import { AssertionError } from 'assert';
 import { Database } from '$lib/server/database';
 import { initializeProcessor } from '$lib/server/email';

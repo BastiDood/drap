@@ -111,9 +111,9 @@ export const actions = {
     });
 
     // assume the first round referenced in the deferred notifications is the round for which the notification was sent
-    dispatch.dispatchRoundSubmittedNotif(lab, name, deferredNotifications[0]);
+    dispatch.dispatchRoundSubmittedNotification(lab, name, deferredNotifications[0]);
 
     db.logger.info('student rankings submitted');
-    for (const round of deferredNotifications) dispatch.dispatchDraftRoundStartNotif(round);
+    for (const round of deferredNotifications) dispatch.dispatchDraftRoundStartNotification(round);
   },
 };
