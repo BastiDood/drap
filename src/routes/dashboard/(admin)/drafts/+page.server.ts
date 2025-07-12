@@ -237,7 +237,7 @@ export const actions = {
           );
           throw ZIP_NOT_EQUAL;
         }
-        
+
         const pairs = zip(emails, schedule);
         deferredNotifications = pairs;
 
@@ -261,7 +261,10 @@ export const actions = {
     }
 
     for (const [studentUserId, labId] of deferredNotifications) {
-      const [{ name: labName }, studentUser] = await Promise.all([db.getLabById(labId), db.getUserById(studentUserId)]);
+      const [{ name: labName }, studentUser] = await Promise.all([
+        db.getLabById(labId),
+        db.getUserById(studentUserId),
+      ]);
       dispatch.dispatchLotteryInterventionNotif(
         labId,
         labName,

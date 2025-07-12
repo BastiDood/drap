@@ -58,10 +58,10 @@ const BaseUserNotif = object({
 export type BaseUserNotif = InferOutput<typeof BaseUserNotif>;
 
 export const DraftNotification = variant('type', [
-    DraftRoundStartedNotif,
-    DraftRoundSubmittedNotif,
-    LotteryInterventionNotif,
-    DraftConcludedNotif,
+  DraftRoundStartedNotif,
+  DraftRoundSubmittedNotif,
+  LotteryInterventionNotif,
+  DraftConcludedNotif,
 ]);
 
 export type DraftNotification = InferOutput<typeof DraftNotification>;
@@ -70,10 +70,7 @@ export const UserNotification = BaseUserNotif;
 
 export type UserNotification = InferOutput<typeof UserNotification>;
 
-export const Notification = variant('target', [
-  DraftNotification,
-  UserNotification
-]);
+export const Notification = variant('target', [DraftNotification, UserNotification]);
 
 export type Notification = InferOutput<typeof Notification>;
 

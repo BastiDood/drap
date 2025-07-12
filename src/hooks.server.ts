@@ -28,12 +28,12 @@ const notificationDispatcher = new NotificationDispatcher(
   Database.withLogger(logger.child({ notifications: 'db' })),
 );
 
-// This is the global email worker 
+// This is the global email worker
 const _ = new Worker(
   queueName,
   initializeProcessor(
-    Database.withLogger(logger.child({ notifications: 'db' })), 
-    logger.child({ notifications: 'processor' })
+    Database.withLogger(logger.child({ notifications: 'db' })),
+    logger.child({ notifications: 'processor' }),
   ),
   {
     connection: {

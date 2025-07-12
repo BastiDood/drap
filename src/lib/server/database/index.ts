@@ -1,6 +1,18 @@
 import assert, { fail, strictEqual } from 'node:assert/strict';
 
-import { and, count, countDistinct, desc, eq, getTableColumns, gte, isNotNull, isNull, or, sql } from 'drizzle-orm';
+import {
+  and,
+  count,
+  countDistinct,
+  desc,
+  eq,
+  getTableColumns,
+  gte,
+  isNotNull,
+  isNull,
+  or,
+  sql,
+} from 'drizzle-orm';
 import type { Logger } from 'pino';
 import { drizzle } from 'drizzle-orm/node-postgres';
 

@@ -1,5 +1,10 @@
 import type { Database, schema } from '$lib/server/database';
-import { DraftNotification, Notification, type QueuedNotification, UserNotification } from '$lib/server/models/notification';
+import {
+  DraftNotification,
+  Notification,
+  type QueuedNotification,
+  UserNotification,
+} from '$lib/server/models/notification';
 import { GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET } from '$env/static/private';
 import { IdToken, TokenResponse } from '$lib/server/models/oauth';
 import assert, { strictEqual } from 'node:assert/strict';
@@ -91,9 +96,9 @@ export class Emailer {
 }
 
 class NotificationProcessingError extends Error {
-  constructor (message: string) {
+  constructor(message: string) {
     super(message);
-    this.name = "NotificationProcessingError";
+    this.name = 'NotificationProcessingError';
   }
 }
 
