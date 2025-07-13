@@ -9,7 +9,6 @@ import { Queue, QueueEvents } from 'bullmq';
 import type { Database } from '$lib/server/database';
 import type { Logger } from 'pino';
 import type { User } from '$lib/server/database/schema';
-import { error } from '@sveltejs/kit';
 import { parse } from 'valibot';
 
 export const queueName = 'notifqueue';
@@ -72,29 +71,26 @@ export class NotificationDispatcher implements Loggable {
     return job;
   }
 
-  async #constructDraftNotification(draftRound?: number | null): Promise<BaseDraftNotif> {
-    const currentDraft = await this.#db.getActiveDraft();
-
+  #constructDraftNotification(draftId: bigint, draftRound: number | null): BaseDraftNotif {
     this.#logger.info('new draft notification constructed');
 
-    if (typeof currentDraft === 'undefined') return error(500, 'unexpected draft notif call');
+    const currentRound = draftRound;
 
-    const currentRound = typeof draftRound === 'undefined' ? currentDraft.currRound : draftRound;
-
-    return { target: 'Draft', draftId: currentDraft.id, round: currentRound };
+    return { target: 'Draft', draftId, round: currentRound };
   }
 
-  @timed async dispatchDraftRoundStartNotification(draftRound?: number | null) {
-    const baseNotif = await this.#constructDraftNotification(draftRound);
+  @timed async dispatchDraftRoundStartNotification(draftId: bigint, draftRound: number | null) {
+    const baseNotif = this.#constructDraftNotification(draftId, draftRound);
     return await this.#sendNotificationRequest({ ...baseNotif, type: 'RoundStart' });
   }
 
   @timed async dispatchRoundSubmittedNotification(
     labId: string,
     labName: string,
-    draftRound?: number | null,
+    draftId: bigint,
+    draftRound: number | null,
   ) {
-    const baseNotif = await this.#constructDraftNotification(draftRound);
+    const baseNotif = this.#constructDraftNotification(draftId, draftRound);
     return await this.#sendNotificationRequest({
       ...baseNotif,
       type: 'RoundSubmit',
@@ -109,8 +105,9 @@ export class NotificationDispatcher implements Loggable {
     givenName: string,
     familyName: string,
     email: string,
+    draftId: bigint,
   ) {
-    const baseNotif = await this.#constructDraftNotification();
+    const baseNotif = this.#constructDraftNotification(draftId, null);
     return await this.#sendNotificationRequest({
       ...baseNotif,
       type: 'LotteryIntervention',
@@ -122,8 +119,8 @@ export class NotificationDispatcher implements Loggable {
     });
   }
 
-  @timed async dispatchDraftConcludedNotification() {
-    const baseNotif = await this.#constructDraftNotification();
+  @timed async dispatchDraftConcludedNotification(draftId: bigint) {
+    const baseNotif = await this.#constructDraftNotification(draftId, null);
     return await this.#sendNotificationRequest({ ...baseNotif, type: 'Concluded' });
   }
 
