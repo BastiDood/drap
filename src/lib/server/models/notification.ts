@@ -1,0 +1,82 @@
+import {
+  type InferOutput,
+  bigint,
+  email,
+  literal,
+  nullable,
+  number,
+  object,
+  pipe,
+  string,
+  uuid,
+  variant,
+} from 'valibot';
+
+const BaseDraftNotif = object({
+  target: literal('Draft'),
+  draftId: bigint(),
+  round: nullable(number()),
+});
+
+export type BaseDraftNotif = InferOutput<typeof BaseDraftNotif>;
+
+const DraftRoundStartedNotif = object({
+  ...BaseDraftNotif.entries,
+  type: literal('RoundStart'),
+});
+
+const DraftRoundSubmittedNotif = object({
+  ...BaseDraftNotif.entries,
+  type: literal('RoundSubmit'),
+  labId: string(),
+  labName: string(),
+});
+
+const LotteryInterventionNotif = object({
+  ...BaseDraftNotif.entries,
+  type: literal('LotteryIntervention'),
+  labId: string(),
+  labName: string(),
+  givenName: string(),
+  familyName: string(),
+  email: pipe(string(), email()),
+});
+
+const DraftConcludedNotif = object({
+  ...BaseDraftNotif.entries,
+  type: literal('Concluded'),
+});
+
+const BaseUserNotif = object({
+  target: literal('User'),
+  email: pipe(string(), email()),
+  givenName: string(),
+  familyName: string(),
+  labName: string(),
+  labId: string(),
+});
+
+export type BaseUserNotif = InferOutput<typeof BaseUserNotif>;
+
+export const DraftNotification = variant('type', [
+  DraftRoundStartedNotif,
+  DraftRoundSubmittedNotif,
+  LotteryInterventionNotif,
+  DraftConcludedNotif,
+]);
+
+export type DraftNotification = InferOutput<typeof DraftNotification>;
+
+export const UserNotification = BaseUserNotif;
+
+export type UserNotification = InferOutput<typeof UserNotification>;
+
+export const Notification = variant('target', [DraftNotification, UserNotification]);
+
+export type Notification = InferOutput<typeof Notification>;
+
+export const QueuedNotification = object({
+  requestId: pipe(string(), uuid()),
+});
+
+export type QueuedNotification = InferOutput<typeof QueuedNotification>;

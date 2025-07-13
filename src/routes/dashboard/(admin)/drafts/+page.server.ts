@@ -1,6 +1,7 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 import { repeat, roundrobin, zip } from 'itertools';
 import { validateEmail, validateString } from '$lib/forms';
+import type { User } from '$lib/server/database/schema';
 import assert from 'node:assert/strict';
 import groupBy from 'just-group-by';
 
@@ -83,7 +84,7 @@ export const actions = {
     const initDraft = await db.initDraft(rounds);
     db.logger.info(initDraft, 'draft initialized');
   },
-  async start({ locals: { db, session }, request }) {
+  async start({ locals: { db, session, dispatch }, request }) {
     if (typeof session?.user === 'undefined') {
       db.logger.error('attempt to start draft without session');
       error(401);
@@ -117,19 +118,15 @@ export const actions = {
       return fail(497);
     }
 
+    const deferredNotifications: (number | null)[] = [];
+
     await db.begin(async db => {
       while (true) {
         const incrementDraftRound = await db.incrementDraftRound(draftId);
         assert(typeof incrementDraftRound !== 'undefined', 'cannot start a non-existent draft');
         db.logger.info(incrementDraftRound, 'draft round incremented');
 
-        // TODO: Reinstate notifications channel.
-        // const postDraftRoundStartedNotification = await db.postDraftRoundStartedNotification(
-        //     draft,
-        //     incrementDraftRound.currRound,
-        // );
-        // db.logger.info({ postDraftRoundStartedNotification });
-        // await db.notifyDraftChannel();
+        deferredNotifications.push(incrementDraftRound.currRound);
 
         // Pause at the lottery rounds
         if (incrementDraftRound.currRound === null) {
@@ -148,9 +145,12 @@ export const actions = {
       }
     });
 
+    for (const round of deferredNotifications)
+      await dispatch.dispatchDraftRoundStartNotification(draftId, round);
+
     db.logger.info('draft officially started');
   },
-  async intervene({ locals: { db, session }, request }) {
+  async intervene({ locals: { db, session, dispatch }, request }) {
     if (typeof session?.user === 'undefined') {
       db.logger.error('attempt to intervene draft without session');
       error(401);
@@ -180,16 +180,23 @@ export const actions = {
 
     db.logger.info({ pairs }, 'intervening draft');
 
-    await db.begin(async db => {
-      await db.insertLotteryChoices(draftId, user.id, pairs);
-      // TODO: Reinstate notifications channel.
-      // await db.postLotteryInterventionNotifications(draft, pairs);
-      // await db.notifyDraftChannel();
-    });
+    await db.insertLotteryChoices(draftId, user.id, pairs);
+    for (const [studentUserId, labId] of pairs) {
+      const { name: labName } = await db.getLabById(labId);
+      const studentUser = await db.getUserById(studentUserId);
+      await dispatch.dispatchLotteryInterventionNotification(
+        labId,
+        labName,
+        studentUser.givenName,
+        studentUser.familyName,
+        studentUser.email,
+        draftId,
+      );
+    }
 
     db.logger.info({ pairCount: pairs.length }, 'draft intervened');
   },
-  async conclude({ locals: { db, session }, request }) {
+  async conclude({ locals: { db, session, dispatch }, request }) {
     if (typeof session?.user === 'undefined') {
       db.logger.error('attempt to conclude draft without session');
       error(401);
@@ -210,6 +217,9 @@ export const actions = {
 
     // TODO: Assert that we are indeed in the lottery phase.
 
+    let deferredNotifications: [string, string][] = [];
+    let draftResults: { user: User; labId: string }[] = [];
+
     try {
       await db.begin(async db => {
         const labs = await db.getLabRegistry();
@@ -227,9 +237,9 @@ export const actions = {
           throw ZIP_NOT_EQUAL;
         }
 
-        // TODO: Reinstate notifications channel.
-        // await db.postLotteryInterventionNotifications(draft, pairs);
         const pairs = zip(emails, schedule);
+        deferredNotifications = pairs;
+
         if (pairs.length > 0) {
           db.logger.info({ pairCount: pairs.length }, 'inserting lottery choices');
           await db.insertLotteryChoices(draftId, user.id, pairs);
@@ -241,19 +251,35 @@ export const actions = {
         const concludeDraft = await db.concludeDraft(draftId);
         db.logger.info({ concludeDraft }, 'draft concluded');
 
-        // TODO: Reinstate notifications channel.
-        // await db.postDraftConcluded(draft);
-        // const syncDraftResultsToUsers = await db.syncDraftResultsToUsersWithNotification(draft);
-        // db.logger.info({ syncDraftResultsToUsers });
-
-        // TODO: Reinstate notifications channel.
-        // await db.notifyDraftChannel();
-        // await db.notifyUserChannel();
+        draftResults = await db.syncResultsToUsers(draftId);
+        db.logger.info({ draftResults }, 'draft results synced');
       });
     } catch (err) {
       if (err === ZIP_NOT_EQUAL) return fail(403);
       throw err;
     }
+
+    for (const [studentUserId, labId] of deferredNotifications) {
+      const [{ name: labName }, studentUser] = await Promise.all([
+        db.getLabById(labId),
+        db.getUserById(studentUserId),
+      ]);
+      await dispatch.dispatchLotteryInterventionNotification(
+        labId,
+        labName,
+        studentUser.givenName,
+        studentUser.familyName,
+        studentUser.email,
+        draftId,
+      );
+    }
+
+    for (const { user, labId } of draftResults) {
+      const { name } = await db.getLabById(labId);
+      await dispatch.dispatchUserNotification(user, name, labId);
+    }
+
+    await dispatch.dispatchDraftConcludedNotification(draftId);
 
     redirect(303, `/history/${draftId}/`);
   },

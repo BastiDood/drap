@@ -57,6 +57,13 @@
       "when": 1752132714164,
       "tag": "0007_reinstate-active-lab-view",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1752326729076,
+      "tag": "0008_add-email-notification",
+      "breakpoints": true
     }
   ]
 }

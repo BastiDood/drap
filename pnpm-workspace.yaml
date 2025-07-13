@@ -2,3 +2,4 @@ onlyBuiltDependencies:
   - '@tailwindcss/oxide'
   - core-js-pure
   - esbuild
+  - msgpackr-extract
