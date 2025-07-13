@@ -1,5 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 import assert from 'node:assert/strict';
+import { strict } from 'node:assert';
 import { validateString } from '$lib/forms';
 
 export async function load({ locals: { db, session }, parent }) {
@@ -110,11 +111,14 @@ export const actions = {
       }
     });
 
+    // assert that deferredNotifications (the array of all round numbers to be notified for) has at least one entry
+    strict(typeof deferredNotifications[0] !== 'undefined');
+
     // assume the first round referenced in the deferred notifications is the round for which the notification was sent
-    await dispatch.dispatchRoundSubmittedNotification(lab, name, deferredNotifications[0]);
+    await dispatch.dispatchRoundSubmittedNotification(lab, name, draftId, deferredNotifications[0]);
 
     db.logger.info('student rankings submitted');
     for (const round of deferredNotifications)
-      await dispatch.dispatchDraftRoundStartNotification(round);
+      await dispatch.dispatchDraftRoundStartNotification(draftId, round);
   },
 };

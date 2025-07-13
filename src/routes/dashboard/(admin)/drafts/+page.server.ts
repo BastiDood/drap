@@ -146,7 +146,7 @@ export const actions = {
     });
 
     for (const round of deferredNotifications)
-      await dispatch.dispatchDraftRoundStartNotification(round);
+      await dispatch.dispatchDraftRoundStartNotification(draftId, round);
 
     db.logger.info('draft officially started');
   },
@@ -190,6 +190,7 @@ export const actions = {
         studentUser.givenName,
         studentUser.familyName,
         studentUser.email,
+        draftId
       );
     }
 
@@ -269,6 +270,7 @@ export const actions = {
         studentUser.givenName,
         studentUser.familyName,
         studentUser.email,
+        draftId
       );
     }
 
@@ -277,7 +279,7 @@ export const actions = {
       await dispatch.dispatchUserNotification(user, name, labId);
     }
 
-    await dispatch.dispatchDraftConcludedNotification();
+    await dispatch.dispatchDraftConcludedNotification(draftId);
 
     redirect(303, `/history/${draftId}/`);
   },
