@@ -8,6 +8,7 @@ import {
   object,
   pipe,
   string,
+  uuid,
   variant,
 } from 'valibot';
 
@@ -75,7 +76,7 @@ export const Notification = variant('target', [DraftNotification, UserNotificati
 export type Notification = InferOutput<typeof Notification>;
 
 export const QueuedNotification = object({
-  requestId: string(),
+  requestId: pipe(string(), uuid()),
 });
 
 export type QueuedNotification = InferOutput<typeof QueuedNotification>;
