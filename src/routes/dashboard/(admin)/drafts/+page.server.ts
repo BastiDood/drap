@@ -190,7 +190,7 @@ export const actions = {
         studentUser.givenName,
         studentUser.familyName,
         studentUser.email,
-        draftId
+        draftId,
       );
     }
 
@@ -270,7 +270,7 @@ export const actions = {
         studentUser.givenName,
         studentUser.familyName,
         studentUser.email,
-        draftId
+        draftId,
       );
     }
 
