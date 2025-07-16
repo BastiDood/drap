@@ -7,10 +7,25 @@
   import InitForm from './InitForm.svelte';
   import InterveneForm from './InterveneForm.svelte';
   import StartForm from './StartForm.svelte';
+  import { Icon } from '@steeze-ui/svelte-icon';
+  import { ArrowUpTray } from '@steeze-ui/heroicons';
 
   const { data } = $props();
   const { draft, labs, records, available, selected } = $derived(data);
 </script>
+
+{#if draft !== null}
+  <div class="flex flex-row gap-2">
+    <button class="not-prose preset-filled-primary-500 btn">
+      <span><Icon src={ArrowUpTray} class="h-8" /></span>
+      <span>Export student ranks</span>
+    </button>
+    <button class="not-prose preset-filled-primary-500 btn">
+      <span><Icon src={ArrowUpTray} class="h-8" /></span>
+      <span>Export ongoing draft results</span>
+    </button>
+  </div>
+{/if}
 
 {#if draft === null}
   <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
