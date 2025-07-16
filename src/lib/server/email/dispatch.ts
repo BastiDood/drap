@@ -89,7 +89,7 @@ export class NotificationDispatcher implements Loggable {
             delay: 3000,
           },
         },
-      }
+      };
     });
 
     const insertedJobs = await this.#queue.addBulk(jobs);
@@ -112,11 +112,15 @@ export class NotificationDispatcher implements Loggable {
     return await this.#sendNotificationRequest({ ...baseNotif, type: 'RoundStart' });
   }
 
-  @timed async bulkDispatchDraftRoundStartNotification(args: { draftId: bigint, draftRound: number | null }[]) {
-    return await this.#sendBulkNotificationRequest(args.map(({ draftId, draftRound }) => {
-      const baseNotif = this.#constructDraftNotification(draftId, draftRound);
-      return { ...baseNotif, type: 'RoundStart' };
-    }));
+  @timed async bulkDispatchDraftRoundStartNotification(
+    args: { draftId: bigint; draftRound: number | null }[],
+  ) {
+    return await this.#sendBulkNotificationRequest(
+      args.map(({ draftId, draftRound }) => {
+        const baseNotif = this.#constructDraftNotification(draftId, draftRound);
+        return { ...baseNotif, type: 'RoundStart' };
+      }),
+    );
   }
 
   @timed async dispatchRoundSubmittedNotification(
@@ -134,22 +138,26 @@ export class NotificationDispatcher implements Loggable {
     });
   }
 
-@timed async bulkDispatchRoundSubmittedNotification(args: {
-  labId: string,
-  labName: string,
-  draftId: bigint,
-  draftRound: number | null
-}[]) {
-  return await this.#sendBulkNotificationRequest(args.map(({ labId, labName, draftId, draftRound }) => {
-    const baseNotif = this.#constructDraftNotification(draftId, draftRound);
-    return {
-      ...baseNotif,
-      type: 'RoundSubmit',
-      labName, 
-      labId
-    }
-  }))
-}
+  @timed async bulkDispatchRoundSubmittedNotification(
+    args: {
+      labId: string;
+      labName: string;
+      draftId: bigint;
+      draftRound: number | null;
+    }[],
+  ) {
+    return await this.#sendBulkNotificationRequest(
+      args.map(({ labId, labName, draftId, draftRound }) => {
+        const baseNotif = this.#constructDraftNotification(draftId, draftRound);
+        return {
+          ...baseNotif,
+          type: 'RoundSubmit',
+          labName,
+          labId,
+        };
+      }),
+    );
+  }
 
   @timed async dispatchLotteryInterventionNotification(
     labId: string,
@@ -171,26 +179,30 @@ export class NotificationDispatcher implements Loggable {
     });
   }
 
-  @timed async bulkDispatchLotteryInterventionNotification(args: {
-    labId: string,
-    labName: string,
-    givenName: string,
-    familyName: string,
-    email: string,
-    draftId: bigint,
-  }[]) {
-    return await this.#sendBulkNotificationRequest(args.map(({ labId, labName, givenName, familyName, email, draftId }) => {
-      const baseNotif = this.#constructDraftNotification(draftId, null);
-      return {
-        ...baseNotif,
-        type: 'LotteryIntervention',
-        labId,
-        labName,
-        givenName,
-        familyName,
-        email,
-      }
-    }));
+  @timed async bulkDispatchLotteryInterventionNotification(
+    args: {
+      labId: string;
+      labName: string;
+      givenName: string;
+      familyName: string;
+      email: string;
+      draftId: bigint;
+    }[],
+  ) {
+    return await this.#sendBulkNotificationRequest(
+      args.map(({ labId, labName, givenName, familyName, email, draftId }) => {
+        const baseNotif = this.#constructDraftNotification(draftId, null);
+        return {
+          ...baseNotif,
+          type: 'LotteryIntervention',
+          labId,
+          labName,
+          givenName,
+          familyName,
+          email,
+        };
+      }),
+    );
   }
 
   @timed async dispatchDraftConcludedNotification(draftId: bigint) {
@@ -209,17 +221,21 @@ export class NotificationDispatcher implements Loggable {
     });
   }
 
-  @timed async bulkDispatchUserNotification(args: { user: User, labName: string, labId: string }[]) {
-    return await this.#sendBulkNotificationRequest(args.map(({ user, labName, labId }) => {
-      return {
-        target: 'User',
-        email: user.email,
-        givenName: user.givenName,
-        familyName: user.familyName,
-        labName,
-        labId,
-      }
-    }))
+  @timed async bulkDispatchUserNotification(
+    args: { user: User; labName: string; labId: string }[],
+  ) {
+    return await this.#sendBulkNotificationRequest(
+      args.map(({ user, labName, labId }) => {
+        return {
+          target: 'User',
+          email: user.email,
+          givenName: user.givenName,
+          familyName: user.familyName,
+          labName,
+          labId,
+        };
+      }),
+    );
   }
 
   get logger() {

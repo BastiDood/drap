@@ -1043,8 +1043,8 @@ export class Database implements Loggable {
       .insert(schema.notification)
       .values(data.map(d => ({ data: d })))
       .returning({ id: schema.notification.id })
-      .onConflictDoNothing()
-    
+      .onConflictDoNothing();
+
     return result;
   }
 
