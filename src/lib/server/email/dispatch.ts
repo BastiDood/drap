@@ -71,6 +71,34 @@ export class NotificationDispatcher implements Loggable {
     return job;
   }
 
+  async #sendBulkNotificationRequest(notifRequests: Notification[]) {
+    const requests = await this.#db.insertNotificationsBulk(notifRequests);
+
+    this.#logger.info('new notification requests bulk received', { requests });
+
+    const jobs = requests.map(({ id }) => {
+      return {
+        name: id,
+        data: { requestsId: id },
+        opts: {
+          jobId: id,
+          removeOnComplete: true,
+          attempts: 3,
+          backoff: {
+            type: 'fixed',
+            delay: 3000,
+          },
+        },
+      }
+    });
+
+    const insertedJobs = await this.#queue.addBulk(jobs);
+
+    this.#logger.info('new jobs created', { insertedJobs });
+
+    return insertedJobs;
+  }
+
   #constructDraftNotification(draftId: bigint, draftRound: number | null): BaseDraftNotif {
     this.#logger.info('new draft notification constructed');
 
