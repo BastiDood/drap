@@ -112,6 +112,13 @@ export class NotificationDispatcher implements Loggable {
     return await this.#sendNotificationRequest({ ...baseNotif, type: 'RoundStart' });
   }
 
+  @timed async bulkDispatchDraftRoundStartNotification(args: { draftId: bigint, draftRound: number | null }[]) {
+    return await this.#sendBulkNotificationRequest(args.map(({ draftId, draftRound }) => {
+      const baseNotif = this.#constructDraftNotification(draftId, draftRound);
+      return { ...baseNotif, type: 'RoundStart' };
+    }));
+  }
+
   @timed async dispatchRoundSubmittedNotification(
     labId: string,
     labName: string,
