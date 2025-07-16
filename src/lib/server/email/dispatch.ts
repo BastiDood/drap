@@ -10,6 +10,7 @@ import type { Database } from '$lib/server/database';
 import type { Logger } from 'pino';
 import type { User } from '$lib/server/database/schema';
 import { parse } from 'valibot';
+import { User } from '@steeze-ui/heroicons';
 
 export const queueName = 'notifqueue';
 
@@ -207,6 +208,19 @@ export class NotificationDispatcher implements Loggable {
       labName,
       labId,
     });
+  }
+
+  @timed async bulkDispatchUserNotification(args: { user: User, labName: string, labId: string }[]) {
+    return await this.#sendBulkNotificationRequest(args.map(({ user, labName, labId }) => {
+      return {
+        target: 'User',
+        email: user.email,
+        givenName: user.givenName,
+        familyName: user.familyName,
+        labName,
+        labId,
+      }
+    }))
   }
 
   get logger() {
