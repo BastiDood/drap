@@ -10,7 +10,6 @@ import type { Database } from '$lib/server/database';
 import type { Logger } from 'pino';
 import type { User } from '$lib/server/database/schema';
 import { parse } from 'valibot';
-import { User } from '@steeze-ui/heroicons';
 
 export const queueName = 'notifqueue';
 
