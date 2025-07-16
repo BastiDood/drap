@@ -1038,6 +1038,16 @@ export class Database implements Loggable {
     return result;
   }
 
+  @timed async insertNotificationsBulk(data: Notification[]) {
+    const result = await this.#db
+      .insert(schema.notification)
+      .values(data.map(d => ({ data: d })))
+      .returning({ id: schema.notification.id })
+      .onConflictDoNothing()
+    
+    return result;
+  }
+
   @timed async markNotificationDelivered(id: string) {
     await this.#db
       .update(schema.notification)
