@@ -264,20 +264,21 @@ export const actions = {
       throw err;
     }
 
-    for (const [studentUserId, labId] of deferredNotifications) {
-      const [{ name: labName }, studentUser] = await Promise.all([
-        db.getLabById(labId),
-        db.getUserById(studentUserId),
-      ]);
-      await dispatch.dispatchLotteryInterventionNotification(
+    const jobs = await Promise.all(deferredNotifications.map(async ([studentUserId, labId]) => {
+      const { name: labName } = await db.getLabById(labId);
+      const studentUser = await db.getUserById(studentUserId);
+
+      return {
         labId,
         labName,
-        studentUser.givenName,
-        studentUser.familyName,
-        studentUser.email,
-        draftId,
-      );
-    }
+        givenName: studentUser.givenName,
+        familyName: studentUser.familyName,
+        email: studentUser.email,
+        draftId
+      };
+    }))
+
+    await dispatch.bulkDispatchLotteryInterventionNotification(jobs)
 
     for (const { user, labId } of draftResults) {
       const { name } = await db.getLabById(labId);
