@@ -19,7 +19,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import * as POSTGRES from '$lib/server/env/postgres';
 import * as schema from './schema';
 import { type Loggable, timed } from './decorators';
-import { array, record, number, object, parse, string } from 'valibot';
+import { array, object, parse, record, string } from 'valibot';
 import { enumerate, izip } from 'itertools';
 import { Notification } from '$lib/server/models/notification';
 import { alias } from 'drizzle-orm/pg-core';
