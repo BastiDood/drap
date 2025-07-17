@@ -182,18 +182,22 @@ export const actions = {
     db.logger.info({ pairs }, 'intervening draft');
 
     await db.insertLotteryChoices(draftId, user.id, pairs);
-    for (const [studentUserId, labId] of pairs) {
+
+    const jobs = await Promise.all(pairs.map(async ([studentUserId, labId]) => {
       const { name: labName } = await db.getLabById(labId);
       const studentUser = await db.getUserById(studentUserId);
-      await dispatch.dispatchLotteryInterventionNotification(
+
+      return {
         labId,
         labName,
-        studentUser.givenName,
-        studentUser.familyName,
-        studentUser.email,
-        draftId,
-      );
-    }
+        givenName: studentUser.givenName,
+        familyName: studentUser.familyName,
+        email: studentUser.email,
+        draftId
+      };
+    }))
+
+    await dispatch.bulkDispatchLotteryInterventionNotification(jobs)
 
     db.logger.info({ pairCount: pairs.length }, 'draft intervened');
   },
