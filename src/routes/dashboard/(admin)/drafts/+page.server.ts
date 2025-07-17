@@ -277,10 +277,12 @@ export const actions = {
 
     await dispatch.bulkDispatchLotteryInterventionNotification(jobs)
 
-    for (const { user, labId } of draftResults) {
+    const userJobs = await Promise.all(draftResults.map(async ({ user, labId }) => {
       const { name } = await db.getLabById(labId);
-      await dispatch.dispatchUserNotification(user, name, labId);
-    }
+      return {user, labName: name, labId};
+    }))
+
+    await dispatch.bulkDispatchUserNotification(userJobs);
 
     await dispatch.dispatchDraftConcludedNotification(draftId);
 
