@@ -145,8 +145,9 @@ export const actions = {
       }
     });
 
-    for (const round of deferredNotifications)
-      await dispatch.dispatchDraftRoundStartNotification(draftId, round);
+    await dispatch.bulkDispatchDraftRoundStartNotification(deferredNotifications.map(round => {
+      return {draftId, draftRound: round};
+    }));
 
     db.logger.info('draft officially started');
   },
