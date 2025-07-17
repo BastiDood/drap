@@ -19,13 +19,14 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import * as POSTGRES from '$lib/server/env/postgres';
 import * as schema from './schema';
 import { type Loggable, timed } from './decorators';
-import { array, object, parse, string } from 'valibot';
+import { array, record, number, object, parse, string } from 'valibot';
 import { enumerate, izip } from 'itertools';
 import { Notification } from '$lib/server/models/notification';
 import { alias } from 'drizzle-orm/pg-core';
 
 const StringArray = array(string());
 const LabRemark = array(object({ lab: string(), remark: string() }));
+const LabRank = array(record(string(), string()));
 
 function init(url: string) {
   return drizzle(url, { schema });
@@ -1000,6 +1001,71 @@ export class Database implements Loggable {
       .innerJoin(studentUser, eq(schema.facultyChoiceUser.studentUserId, studentUser.id))
       .where(eq(schema.facultyChoice.draftId, draftId))
       .orderBy(schema.facultyChoice.round);
+  }
+
+  @timed async getStudentRanksExport(draftId: bigint) {
+    const studentRanks = await this.#db
+      .select({
+        studentNumber: schema.user.studentNumber,
+        givenName: schema.user.givenName,
+        familyName: schema.user.familyName,
+        email: schema.user.email,
+        createdAt: schema.studentRank.createdAt,
+        labRanks:
+          sql`jsonb_agg(jsonb_build_object('Rank ' || ${schema.studentRankLab.index}, ${schema.activeLabView.name}) ORDER BY ${schema.studentRankLab.index})`.mapWith(
+            vals => parse(LabRank, vals),
+          ),
+      })
+      .from(schema.studentRank)
+      .innerJoin(schema.user, eq(schema.studentRank.userId, schema.user.id))
+      .innerJoin(
+        schema.studentRankLab,
+        and(
+          eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
+          eq(schema.studentRank.userId, schema.studentRankLab.userId),
+        ),
+      )
+      .innerJoin(schema.activeLabView, eq(schema.studentRankLab.labId, schema.activeLabView.id))
+      .where(eq(schema.studentRank.draftId, draftId))
+      .groupBy(schema.user.id, schema.studentRank.createdAt)
+      .orderBy(schema.user.familyName);
+
+    return studentRanks.map(({ labRanks, ...rest }) => ({
+      ...rest,
+      ...Object.fromEntries(labRanks.flatMap(Object.entries)),
+    }));
+  }
+
+  @timed async getDraftResultsExport(draftId: bigint) {
+    const facultyUser = alias(schema.user, 'faculty_user');
+    const studentUser = alias(schema.user, 'student_user');
+
+    return await this.#db
+      .select({
+        studentNumber: studentUser.studentNumber,
+        studentGivenName: studentUser.givenName,
+        studentFamilyName: studentUser.familyName,
+        studentEmail: studentUser.email,
+        facultyGivenName: facultyUser.givenName,
+        facultyFamilyName: facultyUser.familyName,
+        facultyEmail: facultyUser.email,
+        lab: schema.activeLabView.name,
+        createdAt: schema.facultyChoice.createdAt,
+      })
+      .from(schema.facultyChoice)
+      .innerJoin(facultyUser, eq(schema.facultyChoice.userId, facultyUser.id))
+      .leftJoin(
+        schema.facultyChoiceUser,
+        and(
+          eq(schema.facultyChoice.draftId, schema.facultyChoiceUser.draftId),
+          eq(schema.facultyChoice.round, schema.facultyChoiceUser.round),
+          eq(schema.facultyChoice.labId, schema.facultyChoiceUser.labId),
+        ),
+      )
+      .innerJoin(studentUser, eq(schema.facultyChoiceUser.studentUserId, studentUser.id))
+      .innerJoin(schema.activeLabView, eq(schema.facultyChoice.labId, schema.activeLabView.id))
+      .where(eq(schema.facultyChoice.draftId, draftId))
+      .orderBy(studentUser.familyName);
   }
 
   @timed async getDraftEvents(draftId: bigint) {
