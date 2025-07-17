@@ -3,24 +3,47 @@
   import Student from '$lib/users/Student.svelte';
   import WarningAlert from '$lib/alerts/Warning.svelte';
 
+  import { ArrowUpTray } from '@steeze-ui/heroicons';
   import ConcludeForm from './ConcludeForm.svelte';
+  import { Icon } from '@steeze-ui/svelte-icon';
   import InitForm from './InitForm.svelte';
   import InterveneForm from './InterveneForm.svelte';
   import StartForm from './StartForm.svelte';
-  import { Icon } from '@steeze-ui/svelte-icon';
-  import { ArrowUpTray } from '@steeze-ui/heroicons';
+  import { unparse } from 'papaparse';
 
   const { data } = $props();
-  const { draft, labs, records, available, selected } = $derived(data);
+  const { draft, labs, records, available, selected, studentRanksExport, draftResultsExport } =
+    $derived(data);
+
+  function exportAsCsv<T extends unknown[]>(jsonData: T, fileLabel: string) {
+    const csv = unparse(jsonData);
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+
+    try {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${fileLabel}_${Date.now()}.csv`;
+      a.click();
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
 </script>
 
 {#if draft !== null}
   <div class="flex flex-row gap-2">
-    <button class="not-prose preset-filled-primary-500 btn">
+    <button
+      onclick={() => exportAsCsv(studentRanksExport, 'student-rank')}
+      class="not-prose preset-filled-primary-500 btn"
+    >
       <span><Icon src={ArrowUpTray} class="h-8" /></span>
       <span>Export student ranks</span>
     </button>
-    <button class="not-prose preset-filled-primary-500 btn">
+    <button
+      onclick={() => exportAsCsv(draftResultsExport, 'draft-results')}
+      class="not-prose preset-filled-primary-500 btn"
+    >
       <span><Icon src={ArrowUpTray} class="h-8" /></span>
       <span>Export ongoing draft results</span>
     </button>
