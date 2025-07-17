@@ -184,9 +184,7 @@ export const actions = {
     await db.insertLotteryChoices(draftId, user.id, pairs);
 
     const jobs = await Promise.all(pairs.map(async ([studentUserId, labId]) => {
-      const { name: labName } = await db.getLabById(labId);
-      const studentUser = await db.getUserById(studentUserId);
-
+      const [{ name: labName }, studentUser] = await Promise.all([db.getLabById(labId), db.getUserById(studentUserId)]);
       return {
         labId,
         labName,
@@ -265,8 +263,7 @@ export const actions = {
     }
 
     const jobs = await Promise.all(deferredNotifications.map(async ([studentUserId, labId]) => {
-      const { name: labName } = await db.getLabById(labId);
-      const studentUser = await db.getUserById(studentUserId);
+      const [{ name: labName }, studentUser] = await Promise.all([db.getLabById(labId), db.getUserById(studentUserId)]);
 
       return {
         labId,
