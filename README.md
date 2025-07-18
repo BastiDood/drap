@@ -39,12 +39,14 @@ See more initialization variables [here][docker-postgres]. In most cases, howeve
 
 At runtime, the server requires the following environment variables to be present.
 
-| **Variable**                 | **Description**                                                  |
-| ---------------------------- | ---------------------------------------------------------------- |
-| `POSTGRES_URL`               | The connection string to the PostgreSQL instance.                |
-| `GOOGLE_OAUTH_CLIENT_ID`     | OAuth 2.0 credentials retrieved from the [Google Cloud Console]. |
-| `GOOGLE_OAUTH_CLIENT_SECRET` | OAuth 2.0 credentials retrieved from the [Google Cloud Console]. |
-| `GOOGLE_OAUTH_REDIRECT_URI`  | OAuth 2.0 credentials retrieved from the [Google Cloud Console]. |
+| **Variable**                 | **Description**                                                            |
+| ---------------------------- | -------------------------------------------------------------------------- |
+| `GOOGLE_OAUTH_CLIENT_ID`     | OAuth 2.0 credentials retrieved from the [Google Cloud Console].           |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | OAuth 2.0 credentials retrieved from the [Google Cloud Console].           |
+| `GOOGLE_OAUTH_REDIRECT_URI`  | OAuth 2.0 credentials retrieved from the [Google Cloud Console].           |
+| `POSTGRES_URL`               | The connection string to the PostgreSQL instance.                          |
+| `REDIS_HOST`                 | The hostname of the Redis instance to which BullMQ will persist its queue. |
+| `REDIS_PORT`                 | The port of the Redis instance to which BullMQ will persist its queue.     |
 
 [Google Cloud Console]: https://console.cloud.google.com/
 
