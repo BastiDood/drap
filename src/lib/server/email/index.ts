@@ -115,7 +115,6 @@ async function processDraftNotification(
   let subject: string;
   // eslint-disable-next-line @typescript-eslint/init-declarations
   let message: string;
-
   switch (notification.type) {
     case 'RoundStart': {
       const facultyAndStaff = await db.getFacultyAndStaff();
@@ -160,7 +159,6 @@ async function processDraftNotification(
     default:
       return null;
   }
-
   return await emailer.send(emails, subject, message);
 }
 
