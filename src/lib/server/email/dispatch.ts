@@ -5,9 +5,9 @@ import {
   QueuedNotification,
   UserNotification,
 } from '$lib/server/models/notification';
+import { type BulkJobOptions, Queue, QueueEvents } from 'bullmq';
 import { HOST, PORT } from '$lib/server/env/redis';
 import { type Loggable, timed } from '$lib/server/database/decorators';
-import { Queue, QueueEvents } from 'bullmq';
 import type { Database } from '$lib/server/database';
 import type { Logger } from 'pino';
 import type { User } from '$lib/server/database/schema';
@@ -91,7 +91,7 @@ export class NotificationDispatcher implements Loggable {
             delay: 3000,
           },
         },
-      };
+      } satisfies { name: string, data: { requestsId: string }, opts: BulkJobOptions };
     });
 
     const insertedJobs = await this.#queue.addBulk(jobs);
