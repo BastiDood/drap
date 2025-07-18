@@ -1,7 +1,9 @@
 import {
   type BaseDraftNotif,
+  DraftNotification,
   Notification,
   QueuedNotification,
+  UserNotification,
 } from '$lib/server/models/notification';
 import { HOST, PORT } from '$lib/server/env/redis';
 import { type Loggable, timed } from '$lib/server/database/decorators';
@@ -118,7 +120,7 @@ export class NotificationDispatcher implements Loggable {
     return await this.#sendBulkNotificationRequest(
       args.map(({ draftId, draftRound }) => {
         const baseNotif = this.#constructDraftNotification(draftId, draftRound);
-        return { ...baseNotif, type: 'RoundStart' };
+        return { ...baseNotif, type: 'RoundStart' } satisfies DraftNotification;
       }),
     );
   }
@@ -135,7 +137,7 @@ export class NotificationDispatcher implements Loggable {
       type: 'RoundSubmit',
       labName,
       labId,
-    });
+    } satisfies DraftNotification);
   }
 
   @timed async bulkDispatchRoundSubmittedNotification(
@@ -154,7 +156,7 @@ export class NotificationDispatcher implements Loggable {
           type: 'RoundSubmit',
           labName,
           labId,
-        };
+        } satisfies DraftNotification;
       }),
     );
   }
@@ -176,7 +178,7 @@ export class NotificationDispatcher implements Loggable {
       givenName,
       familyName,
       email,
-    });
+    } satisfies DraftNotification);
   }
 
   @timed async bulkDispatchLotteryInterventionNotification(
@@ -200,7 +202,7 @@ export class NotificationDispatcher implements Loggable {
           givenName,
           familyName,
           email,
-        };
+        } satisfies DraftNotification;
       }),
     );
   }
@@ -218,7 +220,7 @@ export class NotificationDispatcher implements Loggable {
       familyName: user.familyName,
       labName,
       labId,
-    });
+    } satisfies UserNotification);
   }
 
   @timed async bulkDispatchUserNotification(
@@ -233,7 +235,7 @@ export class NotificationDispatcher implements Loggable {
           familyName: user.familyName,
           labName,
           labId,
-        };
+        } satisfies UserNotification;
       }),
     );
   }
