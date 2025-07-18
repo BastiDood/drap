@@ -2,7 +2,7 @@ import type {
   DispatchLotteryInterventionArgs,
   DispatchRoundStartArgs,
   DispatchUserNotificationArgs,
-} from '$lib/server/email/dispatch.js';
+} from '$lib/server/email/dispatch';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { repeat, roundrobin, zip } from 'itertools';
 import { validateEmail, validateString } from '$lib/forms';
@@ -151,9 +151,9 @@ export const actions = {
     });
 
     await dispatch.bulkDispatchDraftRoundStartNotification(
-      deferredNotifications.map(round => {
-        return { draftId, draftRound: round } satisfies DispatchRoundStartArgs;
-      }),
+      deferredNotifications.map(
+        round => ({ draftId, draftRound: round }) satisfies DispatchRoundStartArgs,
+      ),
     );
 
     db.logger.info('draft officially started');
@@ -280,7 +280,6 @@ export const actions = {
           db.getLabById(labId),
           db.getUserById(studentUserId),
         ]);
-
         return {
           labId,
           labName,
@@ -302,7 +301,6 @@ export const actions = {
     );
 
     await dispatch.bulkDispatchUserNotification(userJobs);
-
     await dispatch.dispatchDraftConcludedNotification(draftId);
 
     redirect(303, `/history/${draftId}/`);

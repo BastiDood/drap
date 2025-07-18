@@ -75,7 +75,6 @@ export class NotificationDispatcher implements Loggable {
 
   async #sendBulkNotificationRequest(notifRequests: Notification[]) {
     const requests = await this.#db.insertNotificationsBulk(notifRequests);
-
     this.#logger.info('new notification requests bulk received', { requests });
 
     const jobs = requests.map(({ id }) => {
@@ -90,17 +89,12 @@ export class NotificationDispatcher implements Loggable {
             type: 'fixed',
             delay: 3000,
           },
-        },
-      } satisfies { name: string; data: { requestsId: string }; opts: BulkJobOptions };
+        } satisfies BulkJobOptions,
+      };
     });
 
     const insertedJobs = await this.#queue.addBulk(jobs);
-
-    this.#logger.info(
-      'new jobs created',
-      requests.map(({ id }) => id),
-    );
-
+    this.#logger.info({ insertedJobs: insertedJobs.length }, 'new jobs created');
     return insertedJobs;
   }
 
@@ -114,7 +108,10 @@ export class NotificationDispatcher implements Loggable {
 
   @timed async dispatchDraftRoundStartNotification(draftId: bigint, draftRound: number | null) {
     const baseNotif = this.#constructDraftNotification(draftId, draftRound);
-    return await this.#sendNotificationRequest({ ...baseNotif, type: 'RoundStart' });
+    return await this.#sendNotificationRequest({
+      ...baseNotif,
+      type: 'RoundStart',
+    } satisfies DraftNotification);
   }
 
   @timed async bulkDispatchDraftRoundStartNotification(

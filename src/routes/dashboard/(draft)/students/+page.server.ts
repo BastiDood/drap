@@ -1,5 +1,5 @@
 import { error, redirect } from '@sveltejs/kit';
-import type { DispatchRoundStartArgs } from '$lib/server/email/dispatch.js';
+import type { DispatchRoundStartArgs } from '$lib/server/email/dispatch';
 import assert from 'node:assert/strict';
 import { strict } from 'node:assert';
 import { validateString } from '$lib/forms';
