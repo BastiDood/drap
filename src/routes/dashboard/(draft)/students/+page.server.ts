@@ -1,4 +1,5 @@
 import { error, redirect } from '@sveltejs/kit';
+import type { DispatchRoundStartArgs } from '$lib/server/email/dispatch';
 import assert from 'node:assert/strict';
 import { strict } from 'node:assert';
 import { validateString } from '$lib/forms';
@@ -118,7 +119,11 @@ export const actions = {
     await dispatch.dispatchRoundSubmittedNotification(lab, name, draftId, deferredNotifications[0]);
 
     db.logger.info('student rankings submitted');
-    for (const round of deferredNotifications)
-      await dispatch.dispatchDraftRoundStartNotification(draftId, round);
+
+    await dispatch.bulkDispatchDraftRoundStartNotification(
+      deferredNotifications.map(round => {
+        return { draftId, draftRound: round } satisfies DispatchRoundStartArgs;
+      }),
+    );
   },
 };

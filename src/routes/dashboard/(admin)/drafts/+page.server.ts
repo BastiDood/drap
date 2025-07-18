@@ -1,3 +1,8 @@
+import type {
+  DispatchLotteryInterventionArgs,
+  DispatchRoundStartArgs,
+  DispatchUserNotificationArgs,
+} from '$lib/server/email/dispatch';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { repeat, roundrobin, zip } from 'itertools';
 import { validateEmail, validateString } from '$lib/forms';
@@ -145,8 +150,11 @@ export const actions = {
       }
     });
 
-    for (const round of deferredNotifications)
-      await dispatch.dispatchDraftRoundStartNotification(draftId, round);
+    await dispatch.bulkDispatchDraftRoundStartNotification(
+      deferredNotifications.map(
+        round => ({ draftId, draftRound: round }) satisfies DispatchRoundStartArgs,
+      ),
+    );
 
     db.logger.info('draft officially started');
   },
@@ -181,18 +189,25 @@ export const actions = {
     db.logger.info({ pairs }, 'intervening draft');
 
     await db.insertLotteryChoices(draftId, user.id, pairs);
-    for (const [studentUserId, labId] of pairs) {
-      const { name: labName } = await db.getLabById(labId);
-      const studentUser = await db.getUserById(studentUserId);
-      await dispatch.dispatchLotteryInterventionNotification(
-        labId,
-        labName,
-        studentUser.givenName,
-        studentUser.familyName,
-        studentUser.email,
-        draftId,
-      );
-    }
+
+    const jobs = await Promise.all(
+      pairs.map(async ([studentUserId, labId]) => {
+        const [{ name: labName }, studentUser] = await Promise.all([
+          db.getLabById(labId),
+          db.getUserById(studentUserId),
+        ]);
+        return {
+          labId,
+          labName,
+          givenName: studentUser.givenName,
+          familyName: studentUser.familyName,
+          email: studentUser.email,
+          draftId,
+        } satisfies DispatchLotteryInterventionArgs;
+      }),
+    );
+
+    await dispatch.bulkDispatchLotteryInterventionNotification(jobs);
 
     db.logger.info({ pairCount: pairs.length }, 'draft intervened');
   },
@@ -259,26 +274,33 @@ export const actions = {
       throw err;
     }
 
-    for (const [studentUserId, labId] of deferredNotifications) {
-      const [{ name: labName }, studentUser] = await Promise.all([
-        db.getLabById(labId),
-        db.getUserById(studentUserId),
-      ]);
-      await dispatch.dispatchLotteryInterventionNotification(
-        labId,
-        labName,
-        studentUser.givenName,
-        studentUser.familyName,
-        studentUser.email,
-        draftId,
-      );
-    }
+    const jobs = await Promise.all(
+      deferredNotifications.map(async ([studentUserId, labId]) => {
+        const [{ name: labName }, studentUser] = await Promise.all([
+          db.getLabById(labId),
+          db.getUserById(studentUserId),
+        ]);
+        return {
+          labId,
+          labName,
+          givenName: studentUser.givenName,
+          familyName: studentUser.familyName,
+          email: studentUser.email,
+          draftId,
+        } satisfies DispatchLotteryInterventionArgs;
+      }),
+    );
 
-    for (const { user, labId } of draftResults) {
-      const { name } = await db.getLabById(labId);
-      await dispatch.dispatchUserNotification(user, name, labId);
-    }
+    await dispatch.bulkDispatchLotteryInterventionNotification(jobs);
 
+    const userJobs = await Promise.all(
+      draftResults.map(async ({ user, labId }) => {
+        const { name } = await db.getLabById(labId);
+        return { user, labName: name, labId } satisfies DispatchUserNotificationArgs;
+      }),
+    );
+
+    await dispatch.bulkDispatchUserNotification(userJobs);
     await dispatch.dispatchDraftConcludedNotification(draftId);
 
     redirect(303, `/history/${draftId}/`);

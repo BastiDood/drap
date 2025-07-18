@@ -1,11 +1,13 @@
 import {
   type BaseDraftNotif,
+  DraftNotification,
   Notification,
   QueuedNotification,
+  UserNotification,
 } from '$lib/server/models/notification';
+import { type BulkJobOptions, Queue, QueueEvents } from 'bullmq';
 import { HOST, PORT } from '$lib/server/env/redis';
 import { type Loggable, timed } from '$lib/server/database/decorators';
-import { Queue, QueueEvents } from 'bullmq';
 import type { Database } from '$lib/server/database';
 import type { Logger } from 'pino';
 import type { User } from '$lib/server/database/schema';
@@ -71,6 +73,31 @@ export class NotificationDispatcher implements Loggable {
     return job;
   }
 
+  async #sendBulkNotificationRequest(notifRequests: Notification[]) {
+    const requests = await this.#db.insertNotificationsBulk(notifRequests);
+    this.#logger.info('new notification requests bulk received', { requests });
+
+    const jobs = requests.map(({ id }) => {
+      return {
+        name: id,
+        data: { requestsId: id },
+        opts: {
+          jobId: id,
+          removeOnComplete: true,
+          attempts: 3,
+          backoff: {
+            type: 'fixed',
+            delay: 3000,
+          },
+        } satisfies BulkJobOptions,
+      };
+    });
+
+    const insertedJobs = await this.#queue.addBulk(jobs);
+    this.#logger.info({ insertedJobs: insertedJobs.length }, 'new jobs created');
+    return insertedJobs;
+  }
+
   #constructDraftNotification(draftId: bigint, draftRound: number | null): BaseDraftNotif {
     this.#logger.info('new draft notification constructed');
 
@@ -81,7 +108,21 @@ export class NotificationDispatcher implements Loggable {
 
   @timed async dispatchDraftRoundStartNotification(draftId: bigint, draftRound: number | null) {
     const baseNotif = this.#constructDraftNotification(draftId, draftRound);
-    return await this.#sendNotificationRequest({ ...baseNotif, type: 'RoundStart' });
+    return await this.#sendNotificationRequest({
+      ...baseNotif,
+      type: 'RoundStart',
+    } satisfies DraftNotification);
+  }
+
+  @timed async bulkDispatchDraftRoundStartNotification(
+    args: { draftId: bigint; draftRound: number | null }[],
+  ) {
+    return await this.#sendBulkNotificationRequest(
+      args.map(({ draftId, draftRound }) => {
+        const baseNotif = this.#constructDraftNotification(draftId, draftRound);
+        return { ...baseNotif, type: 'RoundStart' } satisfies DraftNotification;
+      }),
+    );
   }
 
   @timed async dispatchRoundSubmittedNotification(
@@ -96,7 +137,28 @@ export class NotificationDispatcher implements Loggable {
       type: 'RoundSubmit',
       labName,
       labId,
-    });
+    } satisfies DraftNotification);
+  }
+
+  @timed async bulkDispatchRoundSubmittedNotification(
+    args: {
+      labId: string;
+      labName: string;
+      draftId: bigint;
+      draftRound: number | null;
+    }[],
+  ) {
+    return await this.#sendBulkNotificationRequest(
+      args.map(({ labId, labName, draftId, draftRound }) => {
+        const baseNotif = this.#constructDraftNotification(draftId, draftRound);
+        return {
+          ...baseNotif,
+          type: 'RoundSubmit',
+          labName,
+          labId,
+        } satisfies DraftNotification;
+      }),
+    );
   }
 
   @timed async dispatchLotteryInterventionNotification(
@@ -116,7 +178,33 @@ export class NotificationDispatcher implements Loggable {
       givenName,
       familyName,
       email,
-    });
+    } satisfies DraftNotification);
+  }
+
+  @timed async bulkDispatchLotteryInterventionNotification(
+    args: {
+      labId: string;
+      labName: string;
+      givenName: string;
+      familyName: string;
+      email: string;
+      draftId: bigint;
+    }[],
+  ) {
+    return await this.#sendBulkNotificationRequest(
+      args.map(({ labId, labName, givenName, familyName, email, draftId }) => {
+        const baseNotif = this.#constructDraftNotification(draftId, null);
+        return {
+          ...baseNotif,
+          type: 'LotteryIntervention',
+          labId,
+          labName,
+          givenName,
+          familyName,
+          email,
+        } satisfies DraftNotification;
+      }),
+    );
   }
 
   @timed async dispatchDraftConcludedNotification(draftId: bigint) {
@@ -132,10 +220,58 @@ export class NotificationDispatcher implements Loggable {
       familyName: user.familyName,
       labName,
       labId,
-    });
+    } satisfies UserNotification);
+  }
+
+  @timed async bulkDispatchUserNotification(
+    args: { user: User; labName: string; labId: string }[],
+  ) {
+    return await this.#sendBulkNotificationRequest(
+      args.map(({ user, labName, labId }) => {
+        return {
+          target: 'User',
+          email: user.email,
+          givenName: user.givenName,
+          familyName: user.familyName,
+          labName,
+          labId,
+        } satisfies UserNotification;
+      }),
+    );
   }
 
   get logger() {
     return this.#logger;
   }
+}
+
+export interface DispatchRoundStartArgs {
+  draftId: bigint;
+  draftRound: number | null;
+}
+
+export interface DispatchRoundSubmittedArgs {
+  labId: string;
+  labName: string;
+  draftId: bigint;
+  draftRound: number | null;
+}
+
+export interface DispatchLotteryInterventionArgs {
+  labId: string;
+  labName: string;
+  givenName: string;
+  familyName: string;
+  email: string;
+  draftId: bigint;
+}
+
+export interface DispatchDraftConcludedArgs {
+  draftId: string;
+}
+
+export interface DispatchUserNotificationArgs {
+  user: User;
+  labName: string;
+  labId: string;
 }
