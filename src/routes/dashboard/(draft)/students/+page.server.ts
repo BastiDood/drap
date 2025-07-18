@@ -1,4 +1,5 @@
 import { error, redirect } from '@sveltejs/kit';
+import type { NotificationDispatcher } from '$lib/server/email/dispatch.js';
 import assert from 'node:assert/strict';
 import { strict } from 'node:assert';
 import { validateString } from '$lib/forms';
@@ -121,6 +122,6 @@ export const actions = {
 
     await dispatch.bulkDispatchDraftRoundStartNotification(deferredNotifications.map(round => {
       return { draftId, draftRound: round };
-    }))
+    }) satisfies Parameters<NotificationDispatcher["bulkDispatchDraftRoundStartNotification"]>[0])
   },
 };
