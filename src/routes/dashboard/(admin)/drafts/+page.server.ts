@@ -1,12 +1,8 @@
-import type {
-  DispatchLotteryInterventionArgs,
-  DispatchRoundStartArgs,
-  DispatchUserNotificationArgs,
-} from '$lib/server/email/dispatch';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { repeat, roundrobin, zip } from 'itertools';
 import { validateEmail, validateString } from '$lib/forms';
-import type { User } from '$lib/server/database/schema';
+import type { Notification } from '$lib/server/models/notification';
+import { NotificationDispatcher } from '$lib/server/email/dispatch';
 import assert from 'node:assert/strict';
 import groupBy from 'just-group-by';
 
@@ -123,15 +119,19 @@ export const actions = {
       return fail(497);
     }
 
-    const deferredNotifications: (number | null)[] = [];
-
+    const notifications: Notification[] = [];
     await db.begin(async db => {
       while (true) {
         const incrementDraftRound = await db.incrementDraftRound(draftId);
         assert(typeof incrementDraftRound !== 'undefined', 'cannot start a non-existent draft');
         db.logger.info(incrementDraftRound, 'draft round incremented');
 
-        deferredNotifications.push(incrementDraftRound.currRound);
+        notifications.push(
+          NotificationDispatcher.createDraftRoundStartedNotification(
+            draftId,
+            incrementDraftRound.currRound,
+          ),
+        );
 
         // Pause at the lottery rounds
         if (incrementDraftRound.currRound === null) {
@@ -150,12 +150,7 @@ export const actions = {
       }
     });
 
-    await dispatch.bulkDispatchDraftRoundStartNotification(
-      deferredNotifications.map(
-        round => ({ draftId, draftRound: round }) satisfies DispatchRoundStartArgs,
-      ),
-    );
-
+    await dispatch.bulkDispatchNotification(...notifications);
     db.logger.info('draft officially started');
   },
   async intervene({ locals: { db, session, dispatch }, request }) {
@@ -187,29 +182,20 @@ export const actions = {
     }
 
     db.logger.info({ pairs }, 'intervening draft');
+    const draft = await db.insertLotteryChoices(draftId, user.id, pairs);
+    if (typeof draft === 'undefined') error(404);
 
-    await db.insertLotteryChoices(draftId, user.id, pairs);
-
-    const jobs = await Promise.all(
-      pairs.map(async ([studentUserId, labId]) => {
-        const [{ name: labName }, studentUser] = await Promise.all([
-          db.getLabById(labId),
-          db.getUserById(studentUserId),
-        ]);
-        return {
-          labId,
-          labName,
-          givenName: studentUser.givenName,
-          familyName: studentUser.familyName,
-          email: studentUser.email,
+    await dispatch.bulkDispatchNotification(
+      ...pairs.map(([studentUserId, labId]) =>
+        NotificationDispatcher.createDraftLotteryInterventionNotification(
           draftId,
-        } satisfies DispatchLotteryInterventionArgs;
-      }),
+          labId,
+          studentUserId,
+        ),
+      ),
     );
 
-    await dispatch.bulkDispatchLotteryInterventionNotification(jobs);
-
-    db.logger.info({ pairCount: pairs.length }, 'draft intervened');
+    db.logger.info('draft intervened');
   },
   async conclude({ locals: { db, session, dispatch }, request }) {
     if (typeof session?.user === 'undefined') {
@@ -232,11 +218,10 @@ export const actions = {
 
     // TODO: Assert that we are indeed in the lottery phase.
 
-    let deferredNotifications: [string, string][] = [];
-    let draftResults: { user: User; labId: string }[] = [];
-
     try {
-      await db.begin(async db => {
+      const notifications = await db.begin(async db => {
+        const notifications: Notification[] = [];
+
         const labs = await db.getLabRegistry();
         const schedule = Array.from(roundrobin(...labs.map(({ id, quota }) => repeat(id, quota))));
         db.logger.info({ schedule }, 'round-robin schedule generated');
@@ -253,11 +238,22 @@ export const actions = {
         }
 
         const pairs = zip(emails, schedule);
-        deferredNotifications = pairs;
 
         if (pairs.length > 0) {
-          db.logger.info({ pairCount: pairs.length }, 'inserting lottery choices');
-          await db.insertLotteryChoices(draftId, user.id, pairs);
+          db.logger.info({ pairs: pairs.length }, 'inserting lottery choices');
+
+          const draft = await db.insertLotteryChoices(draftId, user.id, pairs);
+          if (typeof draft === 'undefined') error(404);
+
+          notifications.push(
+            ...pairs.map(([studentUserId, labId]) =>
+              NotificationDispatcher.createDraftLotteryInterventionNotification(
+                draftId,
+                labId,
+                studentUserId,
+              ),
+            ),
+          );
         } else {
           // This only happens if all draft rounds successfully exhausted the student pool.
           db.logger.warn('no students remaining in the lottery');
@@ -265,43 +261,23 @@ export const actions = {
 
         const concludeDraft = await db.concludeDraft(draftId);
         db.logger.info({ concludeDraft }, 'draft concluded');
+        notifications.push(NotificationDispatcher.createDraftConcludedNotification(draftId));
 
-        draftResults = await db.syncResultsToUsers(draftId);
-        db.logger.info({ draftResults }, 'draft results synced');
+        const results = await db.syncResultsToUsers(draftId);
+        db.logger.info({ results }, 'draft results synced');
+        notifications.push(
+          ...results.map(({ userId, labId }) =>
+            NotificationDispatcher.createUserNotification(userId, labId),
+          ),
+        );
+
+        return notifications;
       });
+      await dispatch.bulkDispatchNotification(...notifications);
     } catch (err) {
       if (err === ZIP_NOT_EQUAL) return fail(403);
       throw err;
     }
-
-    const jobs = await Promise.all(
-      deferredNotifications.map(async ([studentUserId, labId]) => {
-        const [{ name: labName }, studentUser] = await Promise.all([
-          db.getLabById(labId),
-          db.getUserById(studentUserId),
-        ]);
-        return {
-          labId,
-          labName,
-          givenName: studentUser.givenName,
-          familyName: studentUser.familyName,
-          email: studentUser.email,
-          draftId,
-        } satisfies DispatchLotteryInterventionArgs;
-      }),
-    );
-
-    await dispatch.bulkDispatchLotteryInterventionNotification(jobs);
-
-    const userJobs = await Promise.all(
-      draftResults.map(async ({ user, labId }) => {
-        const { name } = await db.getLabById(labId);
-        return { user, labName: name, labId } satisfies DispatchUserNotificationArgs;
-      }),
-    );
-
-    await dispatch.bulkDispatchUserNotification(userJobs);
-    await dispatch.dispatchDraftConcludedNotification(draftId);
 
     redirect(303, `/history/${draftId}/`);
   },

@@ -851,6 +851,7 @@ export class Database implements Loggable {
    * the two return values for this function.
    *
    * @deprecated This is due for a refactor.
+   * @returns The current draft based on the `draftId` provided.
    */
   @timed async insertFacultyChoice(
     draftId: bigint,
@@ -894,6 +895,8 @@ export class Database implements Loggable {
       studentUserIds.length,
       'insertFacultyChoiceUser::facultyChoiceUser => unexpected insertion count',
     );
+
+    return draft;
   }
 
   /** Typically invoked from within a transaction. */
@@ -1036,10 +1039,10 @@ export class Database implements Loggable {
       .then(assertOptional);
   }
 
-  @timed async insertNotificationsBulk(data: Notification[]) {
-    return await this.#db
+  @timed bulkInsertNotifications(data: Notification[]) {
+    return this.#db
       .insert(schema.notification)
-      .values(data.map(d => ({ data: d })))
+      .values(data.map(data => ({ data })))
       .returning({ id: schema.notification.id })
       .onConflictDoNothing();
   }
@@ -1054,13 +1057,12 @@ export class Database implements Loggable {
   }
 
   @timed async getNotification(id: string) {
-    const result = await this.#db
+    return await this.#db
       .select({ data: schema.notification.data, deliveredAt: schema.notification.deliveredAt })
       .from(schema.notification)
       .where(eq(schema.notification.id, id))
+      .for('update')
       .then(assertOptional);
-
-    return result;
   }
 
   /**
@@ -1078,6 +1080,6 @@ export class Database implements Loggable {
           eq(schema.user.id, schema.facultyChoiceUser.studentUserId),
         ),
       )
-      .returning({ user: schema.user, labId: schema.facultyChoiceUser.labId });
+      .returning({ userId: schema.user.id, labId: schema.facultyChoiceUser.labId });
   }
 }

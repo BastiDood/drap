@@ -1,7 +1,7 @@
 import { error, redirect } from '@sveltejs/kit';
-import type { DispatchRoundStartArgs } from '$lib/server/email/dispatch';
+import type { Notification } from '$lib/server/models/notification';
+import { NotificationDispatcher } from '$lib/server/email/dispatch';
 import assert from 'node:assert/strict';
-import { strict } from 'node:assert';
 import { validateString } from '$lib/forms';
 
 export async function load({ locals: { db, session }, parent }) {
@@ -79,12 +79,15 @@ export const actions = {
 
     db.logger.info({ total, quota }, 'total students still within quota');
 
-    const deferredNotifications: (number | null)[] = [];
-    const { name } = await db.getLabById(lab);
+    const notifications = await db.begin(async db => {
+      const notifications: Notification[] = [];
 
-    await db.begin(async db => {
-      await db.insertFacultyChoice(draftId, lab, faculty, students);
-      db.logger.info({ studentCount: students.length }, 'students inserted into faculty choice');
+      const draft = await db.insertFacultyChoice(draftId, lab, faculty, students);
+      if (typeof draft === 'undefined') error(404);
+
+      notifications.push(
+        NotificationDispatcher.createDraftRoundSubmittedNotification(draftId, draft.currRound, lab),
+      );
 
       while (true) {
         const count = await db.getPendingLabCountInDraft(draftId);
@@ -100,7 +103,12 @@ export const actions = {
         );
         db.logger.info(incrementDraftRound, 'draft round incremented');
 
-        deferredNotifications.push(incrementDraftRound.currRound);
+        notifications.push(
+          NotificationDispatcher.createDraftRoundStartedNotification(
+            draftId,
+            incrementDraftRound.currRound,
+          ),
+        );
 
         if (incrementDraftRound.currRound === null) {
           db.logger.info('lottery round reached');
@@ -110,20 +118,11 @@ export const actions = {
         await db.autoAcknowledgeLabsWithoutPreferences(draftId);
         db.logger.info('labs without preferences auto-acknowledged');
       }
+
+      return notifications;
     });
 
-    // assert that deferredNotifications (the array of all round numbers to be notified for) has at least one entry
-    strict(typeof deferredNotifications[0] !== 'undefined');
-
-    // assume the first round referenced in the deferred notifications is the round for which the notification was sent
-    await dispatch.dispatchRoundSubmittedNotification(lab, name, draftId, deferredNotifications[0]);
-
+    await dispatch.bulkDispatchNotification(...notifications);
     db.logger.info('student rankings submitted');
-
-    await dispatch.bulkDispatchDraftRoundStartNotification(
-      deferredNotifications.map(round => {
-        return { draftId, draftRound: round } satisfies DispatchRoundStartArgs;
-      }),
-    );
   },
 };
