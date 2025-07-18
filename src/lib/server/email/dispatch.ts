@@ -91,12 +91,15 @@ export class NotificationDispatcher implements Loggable {
             delay: 3000,
           },
         },
-      } satisfies { name: string, data: { requestsId: string }, opts: BulkJobOptions };
+      } satisfies { name: string; data: { requestsId: string }; opts: BulkJobOptions };
     });
 
     const insertedJobs = await this.#queue.addBulk(jobs);
 
-    this.#logger.info('new jobs created', requests.map(({id}) => id));
+    this.#logger.info(
+      'new jobs created',
+      requests.map(({ id }) => id),
+    );
 
     return insertedJobs;
   }
@@ -246,32 +249,32 @@ export class NotificationDispatcher implements Loggable {
 }
 
 export interface DispatchRoundStartArgs {
-  draftId: bigint
-  draftRound: number | null
+  draftId: bigint;
+  draftRound: number | null;
 }
 
 export interface DispatchRoundSubmittedArgs {
-  labId: string
-  labName: string
-  draftId: bigint
-  draftRound: number | null
+  labId: string;
+  labName: string;
+  draftId: bigint;
+  draftRound: number | null;
 }
 
 export interface DispatchLotteryInterventionArgs {
-  labId: string
-  labName: string
-  givenName: string
-  familyName: string
-  email: string
-  draftId: bigint
+  labId: string;
+  labName: string;
+  givenName: string;
+  familyName: string;
+  email: string;
+  draftId: bigint;
 }
 
 export interface DispatchDraftConcludedArgs {
-  draftId: string
+  draftId: string;
 }
 
 export interface DispatchUserNotificationArgs {
-  user: User
-  labName: string
-  labId: string
+  user: User;
+  labName: string;
+  labId: string;
 }

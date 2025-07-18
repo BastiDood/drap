@@ -1,4 +1,8 @@
-import type { DispatchLotteryInterventionArgs, DispatchRoundStartArgs, DispatchUserNotificationArgs } from '$lib/server/email/dispatch.js';
+import type {
+  DispatchLotteryInterventionArgs,
+  DispatchRoundStartArgs,
+  DispatchUserNotificationArgs,
+} from '$lib/server/email/dispatch.js';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { repeat, roundrobin, zip } from 'itertools';
 import { validateEmail, validateString } from '$lib/forms';
@@ -186,7 +190,7 @@ export const actions = {
 
     await db.insertLotteryChoices(draftId, user.id, pairs);
 
-    const jobs = (await Promise.all(
+    const jobs = await Promise.all(
       pairs.map(async ([studentUserId, labId]) => {
         const [{ name: labName }, studentUser] = await Promise.all([
           db.getLabById(labId),
@@ -201,7 +205,7 @@ export const actions = {
           draftId,
         } satisfies DispatchLotteryInterventionArgs;
       }),
-    ));
+    );
 
     await dispatch.bulkDispatchLotteryInterventionNotification(jobs);
 
@@ -270,7 +274,7 @@ export const actions = {
       throw err;
     }
 
-    const jobs = (await Promise.all(
+    const jobs = await Promise.all(
       deferredNotifications.map(async ([studentUserId, labId]) => {
         const [{ name: labName }, studentUser] = await Promise.all([
           db.getLabById(labId),
@@ -286,16 +290,16 @@ export const actions = {
           draftId,
         } satisfies DispatchLotteryInterventionArgs;
       }),
-    ));
+    );
 
     await dispatch.bulkDispatchLotteryInterventionNotification(jobs);
 
-    const userJobs = (await Promise.all(
+    const userJobs = await Promise.all(
       draftResults.map(async ({ user, labId }) => {
         const { name } = await db.getLabById(labId);
         return { user, labName: name, labId } satisfies DispatchUserNotificationArgs;
       }),
-    ));
+    );
 
     await dispatch.bulkDispatchUserNotification(userJobs);
 
