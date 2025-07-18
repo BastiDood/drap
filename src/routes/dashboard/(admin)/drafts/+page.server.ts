@@ -146,9 +146,11 @@ export const actions = {
       }
     });
 
-    await dispatch.bulkDispatchDraftRoundStartNotification(deferredNotifications.map(round => {
-      return {draftId, draftRound: round};
-    }) satisfies Parameters<NotificationDispatcher["bulkDispatchDraftRoundStartNotification"]>[0]);
+    await dispatch.bulkDispatchDraftRoundStartNotification(
+      deferredNotifications.map(round => {
+        return { draftId, draftRound: round };
+      }) satisfies Parameters<NotificationDispatcher['bulkDispatchDraftRoundStartNotification']>[0],
+    );
 
     db.logger.info('draft officially started');
   },
@@ -184,19 +186,26 @@ export const actions = {
 
     await db.insertLotteryChoices(draftId, user.id, pairs);
 
-    const jobs = await Promise.all(pairs.map(async ([studentUserId, labId]) => {
-      const [{ name: labName }, studentUser] = await Promise.all([db.getLabById(labId), db.getUserById(studentUserId)]);
-      return {
-        labId,
-        labName,
-        givenName: studentUser.givenName,
-        familyName: studentUser.familyName,
-        email: studentUser.email,
-        draftId
-      };
-    })) satisfies Parameters<NotificationDispatcher["bulkDispatchLotteryInterventionNotification"]>[0];
+    const jobs = (await Promise.all(
+      pairs.map(async ([studentUserId, labId]) => {
+        const [{ name: labName }, studentUser] = await Promise.all([
+          db.getLabById(labId),
+          db.getUserById(studentUserId),
+        ]);
+        return {
+          labId,
+          labName,
+          givenName: studentUser.givenName,
+          familyName: studentUser.familyName,
+          email: studentUser.email,
+          draftId,
+        };
+      }),
+    )) satisfies Parameters<
+      NotificationDispatcher['bulkDispatchLotteryInterventionNotification']
+    >[0];
 
-    await dispatch.bulkDispatchLotteryInterventionNotification(jobs)
+    await dispatch.bulkDispatchLotteryInterventionNotification(jobs);
 
     db.logger.info({ pairCount: pairs.length }, 'draft intervened');
   },
@@ -263,25 +272,34 @@ export const actions = {
       throw err;
     }
 
-    const jobs = await Promise.all(deferredNotifications.map(async ([studentUserId, labId]) => {
-      const [{ name: labName }, studentUser] = await Promise.all([db.getLabById(labId), db.getUserById(studentUserId)]);
+    const jobs = (await Promise.all(
+      deferredNotifications.map(async ([studentUserId, labId]) => {
+        const [{ name: labName }, studentUser] = await Promise.all([
+          db.getLabById(labId),
+          db.getUserById(studentUserId),
+        ]);
 
-      return {
-        labId,
-        labName,
-        givenName: studentUser.givenName,
-        familyName: studentUser.familyName,
-        email: studentUser.email,
-        draftId
-      };
-    })) satisfies Parameters<NotificationDispatcher["bulkDispatchLotteryInterventionNotification"]>[0];
+        return {
+          labId,
+          labName,
+          givenName: studentUser.givenName,
+          familyName: studentUser.familyName,
+          email: studentUser.email,
+          draftId,
+        };
+      }),
+    )) satisfies Parameters<
+      NotificationDispatcher['bulkDispatchLotteryInterventionNotification']
+    >[0];
 
-    await dispatch.bulkDispatchLotteryInterventionNotification(jobs)
+    await dispatch.bulkDispatchLotteryInterventionNotification(jobs);
 
-    const userJobs = await Promise.all(draftResults.map(async ({ user, labId }) => {
-      const { name } = await db.getLabById(labId);
-      return {user, labName: name, labId};
-    })) satisfies Parameters<NotificationDispatcher["bulkDispatchUserNotification"]>[0];
+    const userJobs = (await Promise.all(
+      draftResults.map(async ({ user, labId }) => {
+        const { name } = await db.getLabById(labId);
+        return { user, labName: name, labId };
+      }),
+    )) satisfies Parameters<NotificationDispatcher['bulkDispatchUserNotification']>[0];
 
     await dispatch.bulkDispatchUserNotification(userJobs);
 

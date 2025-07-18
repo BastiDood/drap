@@ -120,8 +120,10 @@ export const actions = {
 
     db.logger.info('student rankings submitted');
 
-    await dispatch.bulkDispatchDraftRoundStartNotification(deferredNotifications.map(round => {
-      return { draftId, draftRound: round };
-    }) satisfies Parameters<NotificationDispatcher["bulkDispatchDraftRoundStartNotification"]>[0])
+    await dispatch.bulkDispatchDraftRoundStartNotification(
+      deferredNotifications.map(round => {
+        return { draftId, draftRound: round };
+      }) satisfies Parameters<NotificationDispatcher['bulkDispatchDraftRoundStartNotification']>[0],
+    );
   },
 };
