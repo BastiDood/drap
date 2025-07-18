@@ -94,7 +94,7 @@ export class NotificationDispatcher implements Loggable {
 
     const insertedJobs = await this.#queue.addBulk(jobs);
 
-    this.#logger.info('new jobs created', { insertedJobs });
+    this.#logger.info('new jobs created', { requests });
 
     return insertedJobs;
   }
