@@ -15,7 +15,7 @@
   const { draft, labs, records, available, selected, studentRanksExport, draftResultsExport } =
     $derived(data);
 
-  function exportAsCsv<T extends unknown[]>(jsonData: T, fileLabel: string) {
+  function exportAsCsv(jsonData: Record<string, unknown>[], fileLabel: string) {
     const csv = unparse(jsonData);
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -34,7 +34,7 @@
 {#if draft !== null}
   <div class="flex flex-row gap-2">
     <button
-      onclick={() => exportAsCsv(studentRanksExport, 'student-rank')}
+      onclick={() => exportAsCsv(studentRanksExport, 'student-ranks')}
       class="not-prose preset-filled-primary-500 btn"
     >
       <span><Icon src={ArrowUpTray} class="h-8" /></span>
