@@ -1,7 +1,7 @@
+import type { DispatchLotteryInterventionArgs, DispatchRoundStartArgs, DispatchUserNotificationArgs } from '$lib/server/email/dispatch.js';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { repeat, roundrobin, zip } from 'itertools';
 import { validateEmail, validateString } from '$lib/forms';
-import type { NotificationDispatcher } from '$lib/server/email/dispatch.js';
 import type { User } from '$lib/server/database/schema';
 import assert from 'node:assert/strict';
 import groupBy from 'just-group-by';
@@ -148,8 +148,8 @@ export const actions = {
 
     await dispatch.bulkDispatchDraftRoundStartNotification(
       deferredNotifications.map(round => {
-        return { draftId, draftRound: round };
-      }) satisfies Parameters<NotificationDispatcher['bulkDispatchDraftRoundStartNotification']>[0],
+        return { draftId, draftRound: round } satisfies DispatchRoundStartArgs;
+      }),
     );
 
     db.logger.info('draft officially started');
@@ -199,11 +199,9 @@ export const actions = {
           familyName: studentUser.familyName,
           email: studentUser.email,
           draftId,
-        };
+        } satisfies DispatchLotteryInterventionArgs;
       }),
-    )) satisfies Parameters<
-      NotificationDispatcher['bulkDispatchLotteryInterventionNotification']
-    >[0];
+    ));
 
     await dispatch.bulkDispatchLotteryInterventionNotification(jobs);
 
@@ -286,20 +284,18 @@ export const actions = {
           familyName: studentUser.familyName,
           email: studentUser.email,
           draftId,
-        };
+        } satisfies DispatchLotteryInterventionArgs;
       }),
-    )) satisfies Parameters<
-      NotificationDispatcher['bulkDispatchLotteryInterventionNotification']
-    >[0];
+    ));
 
     await dispatch.bulkDispatchLotteryInterventionNotification(jobs);
 
     const userJobs = (await Promise.all(
       draftResults.map(async ({ user, labId }) => {
         const { name } = await db.getLabById(labId);
-        return { user, labName: name, labId };
+        return { user, labName: name, labId } satisfies DispatchUserNotificationArgs;
       }),
-    )) satisfies Parameters<NotificationDispatcher['bulkDispatchUserNotification']>[0];
+    ));
 
     await dispatch.bulkDispatchUserNotification(userJobs);
 
