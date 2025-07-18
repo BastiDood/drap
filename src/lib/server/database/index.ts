@@ -1039,7 +1039,7 @@ export class Database implements Loggable {
       .then(assertOptional);
   }
 
-  @timed bulkInsertNotifications(data: Notification[]) {
+  @timed bulkInsertNotifications(...data: Notification[]) {
     return this.#db
       .insert(schema.notification)
       .values(data.map(data => ({ data })))
