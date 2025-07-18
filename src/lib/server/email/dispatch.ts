@@ -244,3 +244,34 @@ export class NotificationDispatcher implements Loggable {
     return this.#logger;
   }
 }
+
+export interface DispatchRoundStartArgs {
+  draftId: bigint
+  draftRound: number | null
+}
+
+export interface DispatchRoundSubmittedArgs {
+  labId: string
+  labName: string
+  draftId: bigint
+  draftRound: number | null
+}
+
+export interface DispatchLotteryInterventionArgs {
+  labId: string
+  labName: string
+  givenName: string
+  familyName: string
+  email: string
+  draftId: bigint
+}
+
+export interface DispatchDraftConcludedArgs {
+  draftId: string
+}
+
+export interface DispatchUserNotificationArgs {
+  user: User
+  labName: string
+  labId: string
+}
