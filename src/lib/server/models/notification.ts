@@ -5,7 +5,9 @@ import {
   nullable,
   number,
   object,
+  pipe,
   string,
+  ulid,
   variant,
 } from 'valibot';
 
@@ -33,7 +35,7 @@ const DraftLotteryInterventionNotification = object({
   ...BaseDraftNotification.entries,
   type: literal('LotteryIntervention'),
   labId: string(),
-  userId: string(),
+  userId: pipe(string(), ulid()),
 });
 export type DraftLotteryInterventionNotification = InferOutput<
   typeof DraftLotteryInterventionNotification
@@ -47,7 +49,7 @@ export type DraftConcludedNotification = InferOutput<typeof DraftConcludedNotifi
 
 const BaseUserNotification = object({
   target: literal('User'),
-  userId: string(),
+  userId: pipe(string(), ulid()),
   labId: string(),
 });
 export type BaseUserNotification = InferOutput<typeof BaseUserNotification>;
