@@ -49,9 +49,13 @@ export async function GET({ locals: { db, session }, cookies, setHeaders, url: {
   });
 
   if (hasExtendedScope) {
+    // https://github.com/googleapis/google-api-python-client/issues/213
+    // prompt=consent + access_type=offline is necessary to generate refresh tokens!
+    params.set('prompt', 'consent');
     params.set('access_type', 'offline');
     params.set('scope', SENDER_SCOPE_STRING);
   } else {
+    params.set('prompt', 'select_account');
     params.set('access_type', 'online');
     params.set('scope', OAUTH_SCOPE_STRING);
   }
