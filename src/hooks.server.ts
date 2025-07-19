@@ -32,10 +32,7 @@ const _ = new Worker(
   ),
   {
     concurrency: JOB_CONCURRENCY,
-    connection: {
-      host: REDIS.HOST,
-      port: REDIS.PORT,
-    },
+    connection: { url: REDIS.URL },
   },
 );
 

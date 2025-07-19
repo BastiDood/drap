@@ -6,9 +6,7 @@ import { env } from '$env/dynamic/private';
 if (building) {
   // It doesn't make sense to assert environment variables at build-time.
 } else {
-  assert(typeof env.REDIS_HOST !== 'undefined');
-  assert(typeof env.REDIS_PORT !== 'undefined');
+  assert(typeof env.REDIS_URL !== 'undefined');
 }
 
-export const HOST = env.REDIS_HOST ?? '';
-export const PORT = env.REDIS_PORT ? Number.parseInt(env.REDIS_PORT, 10) : Number.NaN;
+export const URL = env.REDIS_URL ?? '';
