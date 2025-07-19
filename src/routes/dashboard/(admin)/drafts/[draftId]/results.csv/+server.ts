@@ -11,7 +11,7 @@ export async function GET({ params: { draftId }, locals: { db, session } }) {
   if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
     db.logger.error(
       { isAdmin: user.isAdmin, googleUserId: user.googleUserId, labId: user.labId },
-      'insufficient permissions to export student ranks',
+      'insufficient permissions to export draft results',
     );
     error(403);
   }
@@ -22,6 +22,7 @@ export async function GET({ params: { draftId }, locals: { db, session } }) {
     error(404);
   }
 
+  db.logger.info('exporting draft results');
   const draftResults = await db.getDraftResultsExport(BigInt(draftId));
 
   return new Response(Papa.unparse(draftResults), {
