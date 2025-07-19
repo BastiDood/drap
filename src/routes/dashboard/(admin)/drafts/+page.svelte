@@ -9,44 +9,29 @@
   import InitForm from './InitForm.svelte';
   import InterveneForm from './InterveneForm.svelte';
   import StartForm from './StartForm.svelte';
-  import { unparse } from 'papaparse';
 
   const { data } = $props();
-  const { draft, labs, records, available, selected, studentRanksExport, draftResultsExport } =
-    $derived(data);
-
-  function exportAsCsv(jsonData: Record<string, unknown>[], fileLabel: string) {
-    const csv = unparse(jsonData);
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-
-    try {
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${fileLabel}_${Date.now()}.csv`;
-      a.click();
-    } finally {
-      URL.revokeObjectURL(url);
-    }
-  }
+  const { draft, labs, records, available, selected } = $derived(data);
 </script>
 
 {#if draft !== null}
   <div class="flex flex-row gap-2">
-    <button
-      onclick={() => exportAsCsv(studentRanksExport, 'student-ranks')}
+    <a
+      href="/dashboard/drafts/{draft.id}/students.csv"
       class="not-prose preset-filled-primary-500 btn"
+      download
     >
       <span><Icon src={ArrowUpTray} class="h-8" /></span>
       <span>Export student ranks</span>
-    </button>
-    <button
-      onclick={() => exportAsCsv(draftResultsExport, 'draft-results')}
+    </a>
+    <a
+      href="/dashboard/drafts/{draft.id}/results.csv"
       class="not-prose preset-filled-primary-500 btn"
+      download
     >
       <span><Icon src={ArrowUpTray} class="h-8" /></span>
       <span>Export ongoing draft results</span>
-    </button>
+    </a>
   </div>
 {/if}
 

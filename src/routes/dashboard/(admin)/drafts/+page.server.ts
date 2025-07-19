@@ -32,11 +32,9 @@ export async function load({ locals: { db, session }, parent }) {
 
   db.logger.info(draft, 'active draft found');
 
-  const [students, records, studentRanksExport, draftResultsExport] = await Promise.all([
+  const [students, records] = await Promise.all([
     db.getStudentsInDraftTaggedByLab(draft.id),
     db.getFacultyChoiceRecords(draft.id),
-    db.getStudentRanksExport(draft.id),
-    db.getDraftResultsExport(draft.id),
   ]);
 
   const { available = [], selected = [] } = groupBy(students, ({ labId }) =>
@@ -52,7 +50,7 @@ export async function load({ locals: { db, session }, parent }) {
     'draft records fetched',
   );
 
-  return { draft, labs, available, selected, records, studentRanksExport, draftResultsExport };
+  return { draft, labs, available, selected, records };
 }
 
 function* mapRowTuples(data: FormData) {
