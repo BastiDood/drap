@@ -26,7 +26,6 @@ import { alias } from 'drizzle-orm/pg-core';
 
 const StringArray = array(string());
 const LabRemark = array(object({ lab: string(), remark: string() }));
-const LabRank = array(record(string(), string()));
 
 function init(url: string) {
   return drizzle(url, { schema });
@@ -1004,7 +1003,7 @@ export class Database implements Loggable {
   }
 
   @timed async getStudentRanksExport(draftId: bigint) {
-    const studentRanks = await this.#db
+    return await this.#db
       .select({
         createdAt: schema.studentRank.createdAt,
         email: schema.user.email,
@@ -1012,8 +1011,8 @@ export class Database implements Loggable {
         givenName: schema.user.givenName,
         familyName: schema.user.familyName,
         labRanks:
-          sql`jsonb_agg(jsonb_build_object('Rank ' || ${schema.studentRankLab.index}, ${schema.activeLabView.name}) ORDER BY ${schema.studentRankLab.index})`.mapWith(
-            vals => parse(LabRank, vals),
+          sql`array_agg(${schema.activeLabView.name} ORDER BY ${schema.studentRankLab.index})`.mapWith(
+            vals => parse(StringArray, vals),
           ),
       })
       .from(schema.studentRank)
@@ -1029,11 +1028,6 @@ export class Database implements Loggable {
       .where(eq(schema.studentRank.draftId, draftId))
       .groupBy(schema.user.id, schema.studentRank.createdAt)
       .orderBy(schema.user.familyName);
-
-    return studentRanks.map(({ labRanks, ...rest }) => ({
-      ...rest,
-      ...Object.fromEntries(labRanks.flatMap(Object.entries)),
-    }));
   }
 
   @timed async getDraftResultsExport(draftId: bigint) {
