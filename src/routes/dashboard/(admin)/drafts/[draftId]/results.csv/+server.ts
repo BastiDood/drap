@@ -28,6 +28,7 @@ export async function GET({ params: { draftId }, locals: { db, session } }) {
   return new Response(Papa.unparse(draftResults), {
     headers: {
       'Content-Type': 'text/csv',
+      'Content-Disposition': 'attachment',
     },
   });
 }
