@@ -36,7 +36,7 @@
       screen.
     </p>
     <form method="get" action="/oauth/login/">
-      <input type="hidden" name="extended" />
+      <input type="hidden" name="extended" value="1" />
       <button type="submit" {disabled} class="not-prose preset-filled-primary-500 btn w-full">
         <span><Icon src={ShieldExclamation} class="h-8" /></span>
         <span>Volunteer as a Candidate Sender</span>
