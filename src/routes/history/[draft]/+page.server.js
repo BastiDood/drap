@@ -1,14 +1,5 @@
 import { error } from '@sveltejs/kit';
-
-/** @param {string} text */
-function validateBigInt(text) {
-  try {
-    return BigInt(text);
-  } catch (err) {
-    if (err instanceof SyntaxError) return null;
-    throw err;
-  }
-}
+import { validateBigInt } from '$lib/validators';
 
 export async function load({ locals: { db }, params: { draft: id } }) {
   const did = validateBigInt(id);
