@@ -11,9 +11,12 @@ import type {
 import { type BulkJobOptions, Queue, QueueEvents } from 'bullmq';
 import { type Loggable, timed } from '$lib/server/database/decorators';
 import type { Database } from '$lib/server/database';
+import IORedis from 'ioredis';
 import type { Logger } from 'pino';
 
 export const queueName = 'notifqueue';
+
+export const connection = new IORedis(REDIS.URL);
 
 export class NotificationDispatcher implements Loggable {
   #queue: Queue<null>;
@@ -23,11 +26,7 @@ export class NotificationDispatcher implements Loggable {
 
   constructor(logger: Logger, db: Database) {
     this.#queue = new Queue(queueName, {
-      connection: {
-        lazyConnect: true,
-        host: REDIS.HOST,
-        port: REDIS.PORT,
-      },
+      connection
     });
 
     this.#queueEvents = new QueueEvents(queueName);

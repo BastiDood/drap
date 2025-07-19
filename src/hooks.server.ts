@@ -5,8 +5,7 @@ import { pino } from 'pino';
 
 import { dev } from '$app/environment';
 
-import * as REDIS from '$lib/server/env/redis';
-import { NotificationDispatcher, queueName } from '$lib/server/email/dispatch';
+import { NotificationDispatcher, connection, queueName } from '$lib/server/email/dispatch';
 import { AssertionError } from 'assert';
 import { Database } from '$lib/server/database';
 import { JOB_CONCURRENCY } from '$lib/server/env';
@@ -32,10 +31,7 @@ const _ = new Worker(
   ),
   {
     concurrency: JOB_CONCURRENCY,
-    connection: {
-      host: REDIS.HOST,
-      port: REDIS.PORT,
-    },
+    connection
   },
 );
 
