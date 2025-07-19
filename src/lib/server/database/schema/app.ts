@@ -27,7 +27,10 @@ export const lab = app.table(
     quota: smallint('quota').notNull().default(0),
     deletedAt: timestamp('deleted_at', { mode: 'date', withTimezone: true }), // when NULL, lab is not yet deleted
   },
-  ({ quota }) => [check('lab_quota_non_negative_check', sql`${quota} >= 0`)],
+  ({ id, quota }) => [
+    check('lab_quota_non_negative_check', sql`${quota} >= 0`),
+    check('lab_id_no_commas_check', sql`POSITION(',' IN ${id}) = 0`)
+  ],
 );
 export type Lab = typeof lab.$inferSelect;
 export type NewLab = typeof lab.$inferInsert;

@@ -1,0 +1,1 @@
+ALTER TABLE "drap"."lab" ADD CONSTRAINT "lab_id_no_commas_check" CHECK (POSITION(',' IN "drap"."lab"."lab_id") = 0);
