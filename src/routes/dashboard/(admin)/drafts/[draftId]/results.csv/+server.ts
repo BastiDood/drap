@@ -1,7 +1,15 @@
 import { error, redirect } from '@sveltejs/kit';
 import Papa from 'papaparse';
+import { validateBigInt } from '$lib/validators.js';
 
 export async function GET({ params: { draftId }, locals: { db, session } }) {
+  const did = validateBigInt(draftId);
+
+  if (did === null) {
+    db.logger.error('invalid draft id');
+    error(404, 'Invalid draft ID.');
+  }
+
   if (typeof session?.user === 'undefined') {
     db.logger.error('attempt to export draft results without session');
     redirect(307, '/oauth/login/');
@@ -16,14 +24,14 @@ export async function GET({ params: { draftId }, locals: { db, session } }) {
     error(403);
   }
 
-  const drafts = await db.getDrafts();
-  if (!drafts.some(draft => draft.id === BigInt(draftId))) {
+  const draft = await db.getDraftById(did);
+  if (typeof draft === 'undefined') {
     db.logger.error('cannot find the target draft');
     error(404);
   }
 
   db.logger.info('exporting draft results');
-  const draftResults = await db.getDraftResultsExport(BigInt(draftId));
+  const draftResults = await db.getDraftResultsExport(did);
 
   return new Response(Papa.unparse(draftResults), {
     headers: {
