@@ -1011,7 +1011,7 @@ export class Database implements Loggable {
         givenName: schema.user.givenName,
         familyName: schema.user.familyName,
         labRanks:
-          sql`array_agg(${schema.activeLabView.name} ORDER BY ${schema.studentRankLab.index})`.mapWith(
+          sql`array_agg(${schema.activeLabView.id} ORDER BY ${schema.studentRankLab.index})`.mapWith(
             vals => parse(StringArray, vals),
           ),
       })
@@ -1044,7 +1044,7 @@ export class Database implements Loggable {
         facultyEmail: facultyUser.email,
         facultyGivenName: facultyUser.givenName,
         facultyFamilyName: facultyUser.familyName,
-        lab: schema.activeLabView.name,
+        lab: schema.activeLabView.id,
       })
       .from(schema.facultyChoice)
       .innerJoin(facultyUser, eq(schema.facultyChoice.userId, facultyUser.id))
