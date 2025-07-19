@@ -29,7 +29,7 @@ export const lab = app.table(
   },
   ({ id, quota }) => [
     check('lab_quota_non_negative_check', sql`${quota} >= 0`),
-    check('lab_id_no_commas_check', sql`POSITION(',' IN ${id}) = 0`)
+    check('lab_id_no_commas_check', sql`POSITION(',' IN ${id}) = 0`),
   ],
 );
 export type Lab = typeof lab.$inferSelect;
