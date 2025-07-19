@@ -16,7 +16,10 @@ import type { Logger } from 'pino';
 
 export const queueName = 'notifqueue';
 
-export const connection = new IORedis(REDIS.URL);
+export const connection = new IORedis(REDIS.URL, {
+  maxRetriesPerRequest: null,
+  lazyConnect: true,
+});
 
 export class NotificationDispatcher implements Loggable {
   #queue: Queue<null>;
