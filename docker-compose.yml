@@ -9,7 +9,7 @@ services:
     env_file:
       - .env
     healthcheck:
-      test: ["CMD-SHELL", "wget -q0- http://localhost:3000/"]
+      test: ['CMD-SHELL', 'wget -q0- http://localhost:3000/']
       interval: 10s
       timeout: 30s
       retries: 5
@@ -43,7 +43,7 @@ services:
     ports:
       - 6379:6379
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
       timeout: 30s
       retries: 5
