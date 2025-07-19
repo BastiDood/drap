@@ -22,7 +22,7 @@
       download
     >
       <span><Icon src={ArrowUpTray} class="h-8" /></span>
-      <span>Export student ranks</span>
+      <span>Export Student Ranks</span>
     </a>
     <a
       href="/dashboard/drafts/{draft.id}/results.csv"
@@ -30,7 +30,7 @@
       download
     >
       <span><Icon src={ArrowUpTray} class="h-8" /></span>
-      <span>Export ongoing draft results</span>
+      <span>Export Ongoing Draft Results</span>
     </a>
   </div>
 {/if}
