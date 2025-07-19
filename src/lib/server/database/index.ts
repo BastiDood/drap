@@ -1002,6 +1002,66 @@ export class Database implements Loggable {
       .orderBy(schema.facultyChoice.round);
   }
 
+  @timed async getStudentRanksExport(draftId: bigint) {
+    return await this.#db
+      .select({
+        createdAt: schema.studentRank.createdAt,
+        email: schema.user.email,
+        studentNumber: schema.user.studentNumber,
+        givenName: schema.user.givenName,
+        familyName: schema.user.familyName,
+        labRanks:
+          sql`array_agg(${schema.activeLabView.id} ORDER BY ${schema.studentRankLab.index})`.mapWith(
+            vals => parse(StringArray, vals),
+          ),
+      })
+      .from(schema.studentRank)
+      .innerJoin(schema.user, eq(schema.studentRank.userId, schema.user.id))
+      .innerJoin(
+        schema.studentRankLab,
+        and(
+          eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
+          eq(schema.studentRank.userId, schema.studentRankLab.userId),
+        ),
+      )
+      .innerJoin(schema.activeLabView, eq(schema.studentRankLab.labId, schema.activeLabView.id))
+      .where(eq(schema.studentRank.draftId, draftId))
+      .groupBy(schema.user.id, schema.studentRank.createdAt)
+      .orderBy(schema.user.familyName);
+  }
+
+  @timed async getDraftResultsExport(draftId: bigint) {
+    const facultyUser = alias(schema.user, 'faculty_user');
+    const studentUser = alias(schema.user, 'student_user');
+
+    return await this.#db
+      .select({
+        createdAt: schema.facultyChoice.createdAt,
+        studentEmail: studentUser.email,
+        studentNumber: studentUser.studentNumber,
+        studentGivenName: studentUser.givenName,
+        studentFamilyName: studentUser.familyName,
+        facultyEmail: facultyUser.email,
+        facultyGivenName: facultyUser.givenName,
+        facultyFamilyName: facultyUser.familyName,
+        lab: schema.activeLabView.id,
+      })
+      .from(schema.facultyChoice)
+      .innerJoin(facultyUser, eq(schema.facultyChoice.userId, facultyUser.id))
+      .leftJoin(
+        schema.facultyChoiceUser,
+        and(
+          eq(schema.facultyChoice.draftId, schema.facultyChoiceUser.draftId),
+          eq(schema.facultyChoice.round, schema.facultyChoiceUser.round),
+          eq(schema.facultyChoice.labId, schema.facultyChoiceUser.labId),
+        ),
+      )
+      .innerJoin(studentUser, eq(schema.facultyChoiceUser.studentUserId, studentUser.id))
+      .innerJoin(schema.activeLabView, eq(schema.facultyChoice.labId, schema.activeLabView.id))
+      .where(eq(schema.facultyChoice.draftId, draftId))
+      .orderBy(studentUser.familyName);
+  }
+
   @timed async getDraftEvents(draftId: bigint) {
     return await this.#db
       .select({

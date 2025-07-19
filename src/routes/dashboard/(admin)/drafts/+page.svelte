@@ -3,7 +3,9 @@
   import Student from '$lib/users/Student.svelte';
   import WarningAlert from '$lib/alerts/Warning.svelte';
 
+  import { ArrowUpTray } from '@steeze-ui/heroicons';
   import ConcludeForm from './ConcludeForm.svelte';
+  import { Icon } from '@steeze-ui/svelte-icon';
   import InitForm from './InitForm.svelte';
   import InterveneForm from './InterveneForm.svelte';
   import StartForm from './StartForm.svelte';
@@ -11,6 +13,27 @@
   const { data } = $props();
   const { draft, labs, records, available, selected } = $derived(data);
 </script>
+
+{#if draft !== null}
+  <div class="flex flex-row gap-2">
+    <a
+      href="/dashboard/drafts/{draft.id}/students.csv"
+      class="not-prose preset-filled-primary-500 btn"
+      download
+    >
+      <span><Icon src={ArrowUpTray} class="h-8" /></span>
+      <span>Export Student Ranks</span>
+    </a>
+    <a
+      href="/dashboard/drafts/{draft.id}/results.csv"
+      class="not-prose preset-filled-primary-500 btn"
+      download
+    >
+      <span><Icon src={ArrowUpTray} class="h-8" /></span>
+      <span>Export Ongoing Draft Results</span>
+    </a>
+  </div>
+{/if}
 
 {#if draft === null}
   <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
