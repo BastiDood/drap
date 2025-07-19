@@ -10,10 +10,10 @@ services:
       - .env
     healthcheck:
       test: ["CMD-SHELL", "wget -q0- http://localhost:3000/"]
-      interval: 1m30s
+      interval: 10s
       timeout: 30s
       retries: 5
-      start_period: 30s
+      start_period: 10s
   db:
     build: ./docker/postgres
     profiles:
@@ -42,6 +42,12 @@ services:
       - redis:/data
     ports:
       - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+      start_period: 10s
 volumes:
   postgres:
   redis:
