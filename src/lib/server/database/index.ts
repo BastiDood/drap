@@ -1006,11 +1006,11 @@ export class Database implements Loggable {
   @timed async getStudentRanksExport(draftId: bigint) {
     const studentRanks = await this.#db
       .select({
+        createdAt: schema.studentRank.createdAt,
+        email: schema.user.email,
         studentNumber: schema.user.studentNumber,
         givenName: schema.user.givenName,
         familyName: schema.user.familyName,
-        email: schema.user.email,
-        createdAt: schema.studentRank.createdAt,
         labRanks:
           sql`jsonb_agg(jsonb_build_object('Rank ' || ${schema.studentRankLab.index}, ${schema.activeLabView.name}) ORDER BY ${schema.studentRankLab.index})`.mapWith(
             vals => parse(LabRank, vals),
@@ -1042,15 +1042,15 @@ export class Database implements Loggable {
 
     return await this.#db
       .select({
+        createdAt: schema.facultyChoice.createdAt,
+        studentEmail: studentUser.email,
         studentNumber: studentUser.studentNumber,
         studentGivenName: studentUser.givenName,
         studentFamilyName: studentUser.familyName,
-        studentEmail: studentUser.email,
+        facultyEmail: facultyUser.email,
         facultyGivenName: facultyUser.givenName,
         facultyFamilyName: facultyUser.familyName,
-        facultyEmail: facultyUser.email,
         lab: schema.activeLabView.name,
-        createdAt: schema.facultyChoice.createdAt,
       })
       .from(schema.facultyChoice)
       .innerJoin(facultyUser, eq(schema.facultyChoice.userId, facultyUser.id))
