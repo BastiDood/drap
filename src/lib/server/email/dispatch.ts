@@ -24,6 +24,7 @@ export class NotificationDispatcher implements Loggable {
   constructor(logger: Logger, db: Database) {
     this.#queue = new Queue(queueName, {
       connection: {
+        lazyConnect: true,
         host: REDIS.HOST,
         port: REDIS.PORT,
       },
