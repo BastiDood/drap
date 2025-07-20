@@ -937,7 +937,7 @@ export class Database implements Loggable {
         set: { userId: sql`excluded.${sql.raw(schema.facultyChoice.userId.name)}` },
       });
 
-    if (assignmentUserIdToLabPairs.length > 0) {
+    if (assignmentUserIdToLabPairs.length > 0)
       await this.#db.insert(schema.facultyChoiceUser).values(
         assignmentUserIdToLabPairs.map(
           ([studentUserId, labId]) =>
@@ -950,7 +950,6 @@ export class Database implements Loggable {
             }) satisfies schema.NewFacultyChoiceUser,
         ),
       );
-    }
 
     return draft;
   }
