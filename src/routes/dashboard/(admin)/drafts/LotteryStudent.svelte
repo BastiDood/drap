@@ -5,7 +5,7 @@
   type Lab = Pick<schema.Lab, 'id' | 'name'>;
   type User = Pick<
     schema.User,
-    'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
+    'id' | 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
   >;
 
   interface Props {
@@ -14,7 +14,7 @@
   }
 
   const { labs, user }: Props = $props();
-  const { email, givenName, familyName, avatarUrl, studentNumber } = $derived(user);
+  const { id, email, givenName, familyName, avatarUrl, studentNumber } = $derived(user);
 </script>
 
 <span>
@@ -26,7 +26,7 @@
     <span class="text-xs opacity-50">{studentNumber}</span>
   {/if}
   <span class="text-xs opacity-50">{email}</span>
-  <select name={email} class="select w-full text-xs">
+  <select name={id} class="select w-full text-xs">
     <option value="" selected>[Undrafted]</option>
     {#each labs as { id, name } (id)}
       <option value={id}>{name}</option>

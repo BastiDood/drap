@@ -226,18 +226,18 @@ export const actions = {
         const schedule = Array.from(roundrobin(...labs.map(({ id, quota }) => repeat(id, quota))));
         db.logger.info({ schedule }, 'round-robin schedule generated');
 
-        const emails = await db.randomizeRemainingStudents(draftId);
-        db.logger.info({ emails }, 'randomized student queue generated');
+        const studentUserIds = await db.randomizeRemainingStudents(draftId);
+        db.logger.info({ studentUserIds }, 'randomized student queue generated');
 
-        if (emails.length !== schedule.length) {
+        if (studentUserIds.length !== schedule.length) {
           db.logger.error(
-            { scheduleCount: schedule.length, emailCount: emails.length },
+            { scheduleCount: schedule.length, emailCount: studentUserIds.length },
             'schedule and quota mismatched',
           );
           throw ZIP_NOT_EQUAL;
         }
 
-        const pairs = zip(emails, schedule);
+        const pairs = zip(studentUserIds, schedule);
 
         if (pairs.length > 0) {
           db.logger.info({ pairs: pairs.length }, 'inserting lottery choices');

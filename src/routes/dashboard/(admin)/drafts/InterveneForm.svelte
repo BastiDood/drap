@@ -45,7 +45,7 @@
   }}
 >
   <ul class="list">
-    {#each students as { id, ...user } (id)}
+    {#each students as user (user.id)}
       <li><LotteryStudent {labs} {user} /></li>
     {/each}
   </ul>

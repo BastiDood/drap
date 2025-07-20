@@ -937,20 +937,20 @@ export class Database implements Loggable {
         set: { userId: sql`excluded.${sql.raw(schema.facultyChoice.userId.name)}` },
       });
 
-    if (assignmentUserIdToLabPairs.length === 0) return;
-
-    await this.#db.insert(schema.facultyChoiceUser).values(
-      assignmentUserIdToLabPairs.map(
-        ([studentUserId, labId]) =>
-          ({
-            facultyUserId: adminUserId,
-            studentUserId,
-            draftId,
-            round: draft.currRound,
-            labId,
-          }) satisfies schema.NewFacultyChoiceUser,
-      ),
-    );
+    if (assignmentUserIdToLabPairs.length > 0) {
+      await this.#db.insert(schema.facultyChoiceUser).values(
+        assignmentUserIdToLabPairs.map(
+          ([studentUserId, labId]) =>
+            ({
+              facultyUserId: adminUserId,
+              studentUserId,
+              draftId,
+              round: draft.currRound,
+              labId,
+            }) satisfies schema.NewFacultyChoiceUser,
+        ),
+      );
+    }
   }
 
   @timed async getPendingLabCountInDraft(draftId: bigint) {
