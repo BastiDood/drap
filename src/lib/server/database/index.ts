@@ -951,6 +951,8 @@ export class Database implements Loggable {
         ),
       );
     }
+
+    return draft;
   }
 
   @timed async getPendingLabCountInDraft(draftId: bigint) {
