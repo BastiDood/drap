@@ -1,4 +1,3 @@
-import * as REDIS from '$lib/server/env/redis';
 import type {
   BaseDraftNotification,
   DraftConcludedNotification,
@@ -12,33 +11,23 @@ import { type BulkJobOptions, Queue, QueueEvents } from 'bullmq';
 import { type Loggable, timed } from '$lib/server/database/decorators';
 import type { Database } from '$lib/server/database';
 import type { Logger } from 'pino';
+import { connection } from '$lib/server/queue';
 
-export const queueName = 'notifqueue';
+export const QUEUE_NAME = 'NOTIFICATION_QUEUE';
 
 export class NotificationDispatcher implements Loggable {
-  #queue: Queue<null>;
-  #queueEvents: QueueEvents;
-  #logger: Logger;
   #db: Database;
+  #logger: Logger;
+  #queue: Queue<null>;
+  #events: QueueEvents;
 
   constructor(logger: Logger, db: Database) {
-    this.#queue = new Queue(queueName, {
-      connection: {
-        lazyConnect: true,
-        url: REDIS.URL,
-      },
-    });
-
-    this.#queueEvents = new QueueEvents(queueName);
-    this.#db = db;
     this.#logger = logger;
-
-    this.#queueEvents.on('completed', ({ jobId }) =>
-      this.#logger.info('email job completed', jobId),
-    );
-    this.#queueEvents.on('failed', ({ jobId }) => this.#logger.error('email job failed', jobId));
-
-    this.#logger.info('email queue setup complete');
+    this.#db = db;
+    this.#queue = new Queue(QUEUE_NAME, { connection });
+    this.#events = new QueueEvents(QUEUE_NAME, { connection });
+    this.#events.on('completed', ({ jobId }) => this.#logger.info({ jobId }, 'job completed'));
+    this.#events.on('failed', ({ jobId }) => this.#logger.error({ jobId }, 'job failed'));
   }
 
   @timed async bulkDispatchNotification(...notifications: Notification[]) {

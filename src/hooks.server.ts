@@ -5,11 +5,11 @@ import { pino } from 'pino';
 
 import { dev } from '$app/environment';
 
-import * as REDIS from '$lib/server/env/redis';
-import { NotificationDispatcher, queueName } from '$lib/server/email/dispatch';
+import { NotificationDispatcher, QUEUE_NAME } from '$lib/server/email/dispatch';
 import { AssertionError } from 'assert';
 import { Database } from '$lib/server/database';
 import { JOB_CONCURRENCY } from '$lib/server/env';
+import { connection } from '$lib/server/queue';
 import { initializeProcessor } from '$lib/server/email';
 
 // eslint-disable-next-line @typescript-eslint/init-declarations
@@ -25,15 +25,12 @@ const logger = pino(stream);
 
 // This is the global email worker. Value is intentionally unused.
 const _ = new Worker(
-  queueName,
+  QUEUE_NAME,
   initializeProcessor(
     Database.withLogger(logger.child({ notifications: 'worker-db' })),
     logger.child({ notifications: 'worker' }),
   ),
-  {
-    concurrency: JOB_CONCURRENCY,
-    connection: { url: REDIS.URL },
-  },
+  { concurrency: JOB_CONCURRENCY, connection },
 );
 
 export async function handle({ event, resolve }) {
