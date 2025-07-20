@@ -874,27 +874,27 @@ export class Database implements Loggable {
       'insertFacultyChoice::facultyChoice => unexpected insertion count',
     );
 
-    if (studentUserIds.length === 0) return;
-
-    const { rowCount: facultyChoiceUserRowCount } = await this.#db
-      .insert(schema.facultyChoiceUser)
-      .values(
-        studentUserIds.map(
-          studentUserId =>
-            ({
-              draftId,
-              round: draft.currRound,
-              labId,
-              facultyUserId,
-              studentUserId,
-            }) satisfies schema.NewFacultyChoiceUser,
-        ),
+    if (studentUserIds.length > 0) {
+      const { rowCount: facultyChoiceUserRowCount } = await this.#db
+        .insert(schema.facultyChoiceUser)
+        .values(
+          studentUserIds.map(
+            studentUserId =>
+              ({
+                draftId,
+                round: draft.currRound,
+                labId,
+                facultyUserId,
+                studentUserId,
+              }) satisfies schema.NewFacultyChoiceUser,
+          ),
+        );
+      strictEqual(
+        facultyChoiceUserRowCount,
+        studentUserIds.length,
+        'insertFacultyChoiceUser::facultyChoiceUser => unexpected insertion count',
       );
-    strictEqual(
-      facultyChoiceUserRowCount,
-      studentUserIds.length,
-      'insertFacultyChoiceUser::facultyChoiceUser => unexpected insertion count',
-    );
+    }
 
     return draft;
   }
