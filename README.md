@@ -41,6 +41,7 @@ At runtime, the server requires the following environment variables to be presen
 
 | **Variable**                 | **Description**                                                                      |
 | ---------------------------- | ------------------------------------------------------------------------------------ |
+| `DRIZZLE_DEBUG`              | Enables verbose logs from Drizzle queries.                                           |
 | `GOOGLE_OAUTH_CLIENT_ID`     | OAuth 2.0 credentials retrieved from the [Google Cloud Console].                     |
 | `GOOGLE_OAUTH_CLIENT_SECRET` | OAuth 2.0 credentials retrieved from the [Google Cloud Console].                     |
 | `GOOGLE_OAUTH_REDIRECT_URI`  | OAuth 2.0 credentials retrieved from the [Google Cloud Console].                     |

@@ -16,6 +16,7 @@ import {
 import type { Logger } from 'pino';
 import { drizzle } from 'drizzle-orm/node-postgres';
 
+import * as DRIZZLE from '$lib/server/env/drizzle';
 import * as POSTGRES from '$lib/server/env/postgres';
 import * as schema from './schema';
 import { type Loggable, timed } from './decorators';
@@ -28,7 +29,7 @@ const StringArray = array(string());
 const LabRemark = array(object({ lab: string(), remark: string() }));
 
 function init(url: string) {
-  return drizzle(url, { schema });
+  return drizzle(url, { schema, logger: DRIZZLE.DEBUG });
 }
 
 const database = init(POSTGRES.URL);
