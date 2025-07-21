@@ -62,13 +62,16 @@ importers:
       svelte:
         specifier: ^5.36.12
         version: 5.36.12
+      tailwind-csstree:
+        specifier: ^0.1.1
+        version: 0.1.1
       valibot:
         specifier: ^1.1.0
         version: 1.1.0(typescript@5.8.3)
     devDependencies:
       '@eslint/css':
-        specifier: ^0.9.0
-        version: 0.9.0
+        specifier: ^0.10.0
+        version: 0.10.0
       '@eslint/js':
         specifier: ^9.31.0
         version: 9.31.0
@@ -482,8 +485,8 @@ packages:
     resolution: {integrity: sha512-5DIsBME23tUQD5zHD+T38lC2DG4jB8x8JRa+yDncLne2TIZA0VuCpcSazOX1EC+sM/q8w24qeevXfmfsIxAeqA==}
     engines: {node: ^10 || ^12.20.0 || ^14.13.0 || >=15.0.0}
 
-  '@eslint/css@0.9.0':
-    resolution: {integrity: sha512-fq8hYnjipdzVDSU/bXqv7qlvdjDA27Nq7DhQXzlPElLlVon3lnKovIM/6HaUrq1bz7EPgRobr+vOhpeM6z0X4w==}
+  '@eslint/css@0.10.0':
+    resolution: {integrity: sha512-pHoYRWS08oeU0qVez1pZCcbqHzoJnM5VMtrxH2nWDJ0ukq9DkwWV1BTY+PWK+eWBbndN9W0O9WjJTyAHsDoPOg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/eslintrc@3.3.1':
@@ -2167,6 +2170,10 @@ packages:
     resolution: {integrity: sha512-c3mWT+b0yBLl3gPGSHiy4pdSQCsPNTjLC0tVoOhrGJ6PPfCzD/RQpAmAfJtQZ304CAae2ph+L3C4aqds3R3seQ==}
     engines: {node: '>=18'}
 
+  tailwind-csstree@0.1.1:
+    resolution: {integrity: sha512-Tv5IXRHtlb7LanNXjmGg0vu84Iu+/sKDqTLJBO0kP/rggfjJDKnS/HV+e0qn8yIrRByhGg+908rSOxT/7o1diw==}
+    engines: {node: '>=18.18'}
+
   tailwindcss@4.1.11:
     resolution: {integrity: sha512-2E9TBm6MDD/xKYe+dvJZAmg3yxIEDNRc0jwlNyDg/4Fil2QcSLjFKGVff0lAf1jjeaArlG/M75Ey/EYr/OJtBA==}
 
@@ -2517,7 +2524,7 @@ snapshots:
       mdn-data: 2.21.0
       source-map-js: 1.2.1
 
-  '@eslint/css@0.9.0':
+  '@eslint/css@0.10.0':
     dependencies:
       '@eslint/core': 0.14.0
       '@eslint/css-tree': 3.6.1
@@ -4188,6 +4195,8 @@ snapshots:
       locate-character: 3.0.0
       magic-string: 0.30.17
       zimmerframe: 1.1.2
+
+  tailwind-csstree@0.1.1: {}
 
   tailwindcss@4.1.11: {}
 

@@ -13,7 +13,7 @@
     "fmt:fix": "prettier --experimental-cli --write .",
     "lint": "pnpm run --workspace-root --parallel /^lint:/",
     "lint:svelte": "svelte-check --tsconfig ./tsconfig.json",
-    "lint:eslint": "eslint --cache",
+    "lint:eslint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"
@@ -37,10 +37,11 @@
     "pg": "^8.16.3",
     "pino": "^9.7.0",
     "svelte": "^5.36.12",
+    "tailwind-csstree": "^0.1.1",
     "valibot": "^1.1.0"
   },
   "devDependencies": {
-    "@eslint/css": "^0.9.0",
+    "@eslint/css": "^0.10.0",
     "@eslint/js": "^9.31.0",
     "@html-eslint/eslint-plugin": "^0.43.0",
     "@html-eslint/parser": "^0.43.0",
