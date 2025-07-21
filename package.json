@@ -25,7 +25,7 @@
     "@steeze-ui/simple-icons": "^1.10.1",
     "@steeze-ui/svelte-icon": "~1.6.2",
     "@sveltejs/kit": "^2.25.1",
-    "bullmq": "^5.56.4",
+    "bullmq": "^5.56.5",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.44.3",
     "ioredis": "^5.6.1",
@@ -36,7 +36,7 @@
     "papaparse": "^5.5.3",
     "pg": "^8.16.3",
     "pino": "^9.7.0",
-    "svelte": "^5.36.8",
+    "svelte": "^5.36.12",
     "valibot": "^1.1.0"
   },
   "devDependencies": {
