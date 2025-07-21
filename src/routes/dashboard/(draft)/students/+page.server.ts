@@ -83,7 +83,10 @@ export const actions = {
       const notifications: Notification[] = [];
 
       const draft = await db.insertFacultyChoice(draftId, lab, faculty, students);
-      if (typeof draft === 'undefined') error(404);
+      if (typeof draft === 'undefined') {
+        db.logger.error('draft must exist prior to faculty choice submission');
+        error(404);
+      }
 
       notifications.push(
         NotificationDispatcher.createDraftRoundSubmittedNotification(draftId, draft.currRound, lab),

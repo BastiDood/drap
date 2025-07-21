@@ -183,7 +183,10 @@ export const actions = {
 
     db.logger.info({ pairs }, 'intervening draft');
     const draft = await db.insertLotteryChoices(draftId, user.id, pairs);
-    if (typeof draft === 'undefined') error(404);
+    if (typeof draft === 'undefined') {
+      db.logger.error('draft must exist prior to lottery in intervention');
+      error(404);
+    }
 
     await dispatch.bulkDispatchNotification(
       ...pairs.map(([studentUserId, labId]) =>
@@ -243,7 +246,10 @@ export const actions = {
           db.logger.info({ pairs: pairs.length }, 'inserting lottery choices');
 
           const draft = await db.insertLotteryChoices(draftId, user.id, pairs);
-          if (typeof draft === 'undefined') error(404);
+          if (typeof draft === 'undefined') {
+            db.logger.error('draft must exist prior to draft conclusion');
+            error(404);
+          }
 
           notifications.push(
             ...pairs.map(([studentUserId, labId]) =>

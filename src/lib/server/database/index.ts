@@ -1,4 +1,4 @@
-import assert, { fail, strictEqual } from 'node:assert/strict';
+import { fail, strictEqual } from 'node:assert/strict';
 
 import {
   and,
@@ -21,6 +21,7 @@ import * as POSTGRES from '$lib/server/env/postgres';
 import * as schema from './schema';
 import { type Loggable, timed } from './decorators';
 import { array, object, parse, string } from 'valibot';
+import { assertOptional, assertSingle } from '$lib/server/assert';
 import { enumerate, izip } from 'itertools';
 import { Notification } from '$lib/server/models/notification';
 import { alias } from 'drizzle-orm/pg-core';
@@ -33,17 +34,6 @@ function init(url: string) {
 }
 
 const database = init(POSTGRES.URL);
-
-function assertOptional<T>([result, ...rest]: T[]) {
-  strictEqual(rest.length, 0, 'too many results');
-  return result;
-}
-
-function assertSingle<T>(results: T[]) {
-  const result = assertOptional(results);
-  assert(typeof result !== 'undefined', 'missing result');
-  return result;
-}
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function coerceDate(value: any) {
@@ -778,20 +768,20 @@ export class Database implements Loggable {
     const query =
       typeof refreshToken === 'undefined'
         ? this.#db
-            .update(schema.candidateSender)
-            .set({ expiration, accessToken })
-            .where(eq(schema.candidateSender.userId, userId))
+          .update(schema.candidateSender)
+          .set({ expiration, accessToken })
+          .where(eq(schema.candidateSender.userId, userId))
         : this.#db
-            .insert(schema.candidateSender)
-            .values({ userId, expiration, accessToken, refreshToken })
-            .onConflictDoUpdate({
-              target: schema.candidateSender.userId,
-              set: {
-                expiration: sql`excluded.${sql.raw(schema.candidateSender.expiration.name)}`,
-                accessToken: sql`excluded.${sql.raw(schema.candidateSender.accessToken.name)}`,
-                refreshToken: sql`excluded.${sql.raw(schema.candidateSender.refreshToken.name)}`,
-              },
-            });
+          .insert(schema.candidateSender)
+          .values({ userId, expiration, accessToken, refreshToken })
+          .onConflictDoUpdate({
+            target: schema.candidateSender.userId,
+            set: {
+              expiration: sql`excluded.${sql.raw(schema.candidateSender.expiration.name)}`,
+              accessToken: sql`excluded.${sql.raw(schema.candidateSender.accessToken.name)}`,
+              refreshToken: sql`excluded.${sql.raw(schema.candidateSender.refreshToken.name)}`,
+            },
+          });
     const { rowCount } = await query;
     switch (rowCount) {
       case 1:
