@@ -56,7 +56,11 @@ export class NotificationDispatcher implements Loggable {
   }
 
   static #createDraftNotification(draftId: bigint, draftRound: number | null) {
-    return { target: 'Draft', draftId, round: draftRound } satisfies BaseDraftNotification;
+    return {
+      target: 'Draft',
+      draftId: Number(draftId),
+      round: draftRound,
+    } satisfies BaseDraftNotification;
   }
 
   static createDraftRoundStartedNotification(draftId: bigint, draftRound: number | null) {

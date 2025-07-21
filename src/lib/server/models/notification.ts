@@ -1,6 +1,5 @@
 import {
   type InferOutput,
-  bigint,
   literal,
   nullable,
   number,
@@ -13,7 +12,7 @@ import {
 
 const BaseDraftNotification = object({
   target: literal('Draft'),
-  draftId: bigint(),
+  draftId: number(),
   round: nullable(number()),
 });
 export type BaseDraftNotification = InferOutput<typeof BaseDraftNotification>;
