@@ -64,7 +64,9 @@
           <div class="flex items-center gap-3 p-2">
             <Avatar src={avatarUrl} name="{givenName} {familyName}" />
             <div class="flex flex-col">
-              <strong class="text-start"><span class="uppercase">{familyName}</span>, {givenName}</strong>
+              <strong class="text-start"
+                ><span class="uppercase">{familyName}</span>, {givenName}</strong
+              >
               {#if studentNumber !== null}
                 <span class="text-start text-sm opacity-50">{studentNumber}</span>
               {/if}
