@@ -70,7 +70,7 @@ export class Emailer {
     message.setSender({ name: `[DRAP] ${creds.givenName} ${creds.familyName}`, addr: creds.email });
     message.setRecipient(to);
     message.setSubject(subject);
-    message.addMessage({ contentType: 'text/plain', data });
+    message.addMessage({ contentType: 'text/plain', encoding: 'base64', data });
 
     const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
       method: 'POST',
