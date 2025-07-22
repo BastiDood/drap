@@ -450,7 +450,8 @@ export class Database implements Loggable {
           eq(schema.studentRankLab.index, schema.draft.currRound),
           eq(schema.studentRankLab.labId, labId),
         ),
-      );
+      )
+      .orderBy(schema.user.familyName);
 
     const researchers = await this.#db
       .select({

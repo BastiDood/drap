@@ -64,7 +64,9 @@
           <div class="flex items-center gap-3 p-2">
             <Avatar src={avatarUrl} name="{givenName} {familyName}" />
             <div class="flex flex-col">
-              <strong><span class="uppercase">{familyName}</span>, {givenName}</strong>
+              <strong class="text-start"
+                ><span class="uppercase">{familyName}</span>, {givenName}</strong
+              >
               {#if studentNumber !== null}
                 <span class="text-start text-sm opacity-50">{studentNumber}</span>
               {/if}
@@ -74,9 +76,8 @@
           {#if remark.length > 0}
             <div class="flex flex-col gap-2">
               <span class="text-start"><strong>Remarks</strong></span>
-              <p class="max-h-24 overflow-y-scroll text-start text-sm opacity-50">
-                {remark}
-              </p>
+              <pre
+                class="text-start font-sans text-sm whitespace-pre-wrap opacity-90">{remark}</pre>
             </div>
           {/if}
         </button>
