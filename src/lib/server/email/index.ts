@@ -62,7 +62,7 @@ export class Emailer {
   }
 
   /** Must be called within a transaction context for correctness. */
-  async send(to: EmailAddress[], subject: string, data: string) {
+  async send(to: EmailAddress[], subject: string, body: string) {
     const creds = await this.#getLatestCredentials();
     if (typeof creds === 'undefined') return null;
 
@@ -70,7 +70,11 @@ export class Emailer {
     message.setSender({ name: `[DRAP] ${creds.givenName} ${creds.familyName}`, addr: creds.email });
     message.setRecipient(to);
     message.setSubject(subject);
-    message.addMessage({ contentType: 'text/plain', encoding: 'base64', data });
+    message.addMessage({
+      contentType: 'text/plain',
+      encoding: 'base64',
+      data: Buffer.from(body, 'utf-8').toString('base64'),
+    });
 
     const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
       method: 'POST',
