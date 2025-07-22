@@ -75,7 +75,7 @@
             <div class="flex flex-col gap-2">
               <span class="text-start"><strong>Remarks</strong></span>
               <pre
-                class="text-start font-sans text-sm whitespace-pre-wrap opacity-50">{remark}</pre>
+                class="text-start font-sans text-sm whitespace-pre-wrap opacity-90">{remark}</pre>
             </div>
           {/if}
         </button>
