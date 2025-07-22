@@ -46,11 +46,14 @@
 >
   <ul class="list">
     {#each students as user (user.id)}
-      <li><LotteryStudent {labs} {user} /></li>
+      <li class="flex gap-2"><LotteryStudent {labs} {user} /></li>
     {/each}
   </ul>
   <input type="hidden" name="draft" value={draft} />
-  <button type="submit" class="!preset-tonal-warning btn btn-lg w-full">
+  <button
+    type="submit"
+    class="!preset-tonal-warning preset-outlined-warning-300-700 btn btn-lg w-full border-1 shadow-lg"
+  >
     <Icon src={ShieldExclamation} class="size-8" />
     <span>Apply Interventions</span>
   </button>
