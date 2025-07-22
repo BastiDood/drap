@@ -14,6 +14,8 @@ export const candidateSender = email.table('candidate_sender', {
   accessToken: text('access_token').notNull(),
   refreshToken: text('refresh_token').notNull(),
   expiration: timestamp('expiration', { mode: 'date', withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).defaultNow(),
+  updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true }),
 });
 export type CandidateSender = typeof candidateSender.$inferSelect;
 export type NewCandidateSender = typeof candidateSender.$inferInsert;
@@ -24,6 +26,7 @@ export const designatedSender = email.table('designated_sender', {
     .notNull()
     .references(() => candidateSender.userId, { onUpdate: 'cascade', onDelete: 'cascade' })
     .primaryKey(),
+  createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).defaultNow(),
 });
 export type DesignatedSender = typeof designatedSender.$inferSelect;
 export type NewDesignatedSender = typeof designatedSender.$inferInsert;

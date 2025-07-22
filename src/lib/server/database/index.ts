@@ -770,7 +770,7 @@ export class Database implements Loggable {
       typeof refreshToken === 'undefined'
         ? this.#db
             .update(schema.candidateSender)
-            .set({ expiration, accessToken })
+            .set({ expiration, accessToken, updatedAt: sql`now()` })
             .where(eq(schema.candidateSender.userId, userId))
         : this.#db
             .insert(schema.candidateSender)
@@ -778,6 +778,7 @@ export class Database implements Loggable {
             .onConflictDoUpdate({
               target: schema.candidateSender.userId,
               set: {
+                updatedAt: sql`now()`,
                 expiration: sql`excluded.${sql.raw(schema.candidateSender.expiration.name)}`,
                 accessToken: sql`excluded.${sql.raw(schema.candidateSender.accessToken.name)}`,
                 refreshToken: sql`excluded.${sql.raw(schema.candidateSender.refreshToken.name)}`,
