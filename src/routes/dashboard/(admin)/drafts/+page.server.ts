@@ -1,8 +1,13 @@
+import {
+  type Notification,
+  createDraftConcludedNotification,
+  createDraftLotteryInterventionNotification,
+  createDraftRoundStartedNotification,
+  createUserNotification,
+} from '$lib/server/models/notification';
 import { error, fail, redirect } from '@sveltejs/kit';
 import { repeat, roundrobin, zip } from 'itertools';
 import { validateEmail, validateString } from '$lib/forms';
-import type { Notification } from '$lib/server/models/notification';
-import { NotificationDispatcher } from '$lib/server/email/dispatch';
 import assert from 'node:assert/strict';
 import groupBy from 'just-group-by';
 
@@ -127,10 +132,7 @@ export const actions = {
         db.logger.info(incrementDraftRound, 'draft round incremented');
 
         notifications.push(
-          NotificationDispatcher.createDraftRoundStartedNotification(
-            draftId,
-            incrementDraftRound.currRound,
-          ),
+          createDraftRoundStartedNotification(draftId, incrementDraftRound.currRound),
         );
 
         // Pause at the lottery rounds
@@ -190,11 +192,7 @@ export const actions = {
 
     await dispatch.bulkDispatchNotification(
       ...pairs.map(([studentUserId, labId]) =>
-        NotificationDispatcher.createDraftLotteryInterventionNotification(
-          draftId,
-          labId,
-          studentUserId,
-        ),
+        createDraftLotteryInterventionNotification(draftId, labId, studentUserId),
       ),
     );
 
@@ -253,11 +251,7 @@ export const actions = {
 
           notifications.push(
             ...pairs.map(([studentUserId, labId]) =>
-              NotificationDispatcher.createDraftLotteryInterventionNotification(
-                draftId,
-                labId,
-                studentUserId,
-              ),
+              createDraftLotteryInterventionNotification(draftId, labId, studentUserId),
             ),
           );
         } else {
@@ -267,14 +261,12 @@ export const actions = {
 
         const concludeDraft = await db.concludeDraft(draftId);
         db.logger.info({ concludeDraft }, 'draft concluded');
-        notifications.push(NotificationDispatcher.createDraftConcludedNotification(draftId));
+        notifications.push(createDraftConcludedNotification(draftId));
 
         const results = await db.syncResultsToUsers(draftId);
         db.logger.info({ results }, 'draft results synced');
         notifications.push(
-          ...results.map(({ userId, labId }) =>
-            NotificationDispatcher.createUserNotification(userId, labId),
-          ),
+          ...results.map(({ userId, labId }) => createUserNotification(userId, labId)),
         );
 
         return notifications;
