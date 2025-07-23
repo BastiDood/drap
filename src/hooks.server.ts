@@ -21,9 +21,10 @@ const _ = new Worker(
 );
 
 export async function handle({ event, resolve }) {
-  const { cookies, locals, request } = event;
+  const { cookies, locals, request, getClientAddress } = event;
 
   const requestLogger = logger.child({
+    clientAddress: getClientAddress(),
     requestId: crypto.randomUUID(),
     method: request.method,
     url: request.url,
