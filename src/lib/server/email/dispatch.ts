@@ -1,3 +1,8 @@
+import { type BulkJobOptions, Queue, QueueEvents } from 'bullmq';
+import type { Logger } from 'pino';
+
+import { building } from '$app/environment';
+
 import type {
   BaseDraftNotification,
   DraftConcludedNotification,
@@ -7,10 +12,8 @@ import type {
   Notification,
   UserNotification,
 } from '$lib/server/models/notification';
-import { type BulkJobOptions, Queue, QueueEvents } from 'bullmq';
 import { type Loggable, timed } from '$lib/server/database/decorators';
 import type { Database } from '$lib/server/database';
-import type { Logger } from 'pino';
 import { connection } from '$lib/server/queue';
 import { logger } from '$lib/server/logger';
 
@@ -19,8 +22,13 @@ export const QUEUE_NAME = 'notifications';
 // Redis connection must be reused to prevent saturating the server.
 const QUEUE = new Queue<null>(QUEUE_NAME, { connection });
 const EVENTS = new QueueEvents(QUEUE_NAME, { connection });
-EVENTS.on('completed', ({ jobId }) => logger.info({ jobId }, 'job completed'));
-EVENTS.on('failed', ({ jobId }) => logger.error({ jobId }, 'job failed'));
+
+if (building) {
+  // Prevent listening to events during the build step to avoid connecting to Redis.
+} else {
+  EVENTS.on('completed', ({ jobId }) => logger.info({ jobId }, 'job completed'));
+  EVENTS.on('failed', ({ jobId }) => logger.error({ jobId }, 'job failed'));
+}
 
 export class NotificationDispatcher implements Loggable {
   #db: Database;
