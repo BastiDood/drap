@@ -14,7 +14,7 @@ import type { Logger } from 'pino';
 import { connection } from '$lib/server/queue';
 import { logger } from '$lib/server/logger';
 
-export const QUEUE_NAME = 'app:notifications';
+export const QUEUE_NAME = 'notifications';
 
 // Redis connection must be reused to prevent saturating the server.
 const QUEUE = new Queue<null>(QUEUE_NAME, { connection });
