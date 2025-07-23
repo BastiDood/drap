@@ -12,22 +12,25 @@ import { type Loggable, timed } from '$lib/server/database/decorators';
 import type { Database } from '$lib/server/database';
 import type { Logger } from 'pino';
 import { connection } from '$lib/server/queue';
+import { logger } from '$lib/server/logger';
 
-export const QUEUE_NAME = 'NOTIFICATION_QUEUE';
+export const QUEUE_NAME = 'app:notifications';
+
+// Redis connection must be reused to prevent saturating the server.
+const QUEUE = new Queue<null>(QUEUE_NAME, { connection });
+const EVENTS = new QueueEvents(QUEUE_NAME, { connection });
+EVENTS.on('completed', ({ jobId }) => logger.info({ jobId }, 'job completed'));
+EVENTS.on('failed', ({ jobId }) => logger.error({ jobId }, 'job failed'));
 
 export class NotificationDispatcher implements Loggable {
   #db: Database;
   #logger: Logger;
   #queue: Queue<null>;
-  #events: QueueEvents;
 
-  constructor(logger: Logger, db: Database) {
+  constructor(logger: Logger, db: Database, queue = QUEUE) {
     this.#logger = logger;
     this.#db = db;
-    this.#queue = new Queue(QUEUE_NAME, { connection });
-    this.#events = new QueueEvents(QUEUE_NAME, { connection });
-    this.#events.on('completed', ({ jobId }) => this.#logger.info({ jobId }, 'job completed'));
-    this.#events.on('failed', ({ jobId }) => this.#logger.error({ jobId }, 'job failed'));
+    this.#queue = queue;
   }
 
   @timed async bulkDispatchNotification(...notifications: Notification[]) {

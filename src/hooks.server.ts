@@ -1,9 +1,5 @@
 import { getDotPath, isValiError } from 'valibot';
-import type { PrettyStream } from 'pino-pretty';
 import { Worker } from 'bullmq';
-import { pino } from 'pino';
-
-import { dev } from '$app/environment';
 
 import { NotificationDispatcher, QUEUE_NAME } from '$lib/server/email/dispatch';
 import { AssertionError } from 'assert';
@@ -11,17 +7,7 @@ import { Database } from '$lib/server/database';
 import { JOB_CONCURRENCY } from '$lib/server/env';
 import { connection } from '$lib/server/queue';
 import { initializeProcessor } from '$lib/server/email';
-
-// eslint-disable-next-line @typescript-eslint/init-declarations
-let stream: PrettyStream | undefined;
-if (dev) {
-  // Dynamic import is needed to remove from production builds.
-  const { PinoPretty: pretty } = await import('pino-pretty');
-  stream = pretty();
-}
-
-// This is only a base logger instance. We need to attach a request ID for each request.
-const logger = pino(stream);
+import { logger } from '$lib/server/logger';
 
 // This is the global email worker. Value is intentionally unused.
 const _ = new Worker(
