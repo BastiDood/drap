@@ -17,11 +17,24 @@ const BaseDraftNotification = object({
 });
 export type BaseDraftNotification = InferOutput<typeof BaseDraftNotification>;
 
+function createDraftNotification(draftId: bigint, draftRound: number | null) {
+  return {
+    target: 'Draft',
+    draftId: Number(draftId),
+    round: draftRound,
+  } satisfies BaseDraftNotification;
+}
+
 const DraftRoundStartedNotification = object({
   ...BaseDraftNotification.entries,
   type: literal('RoundStart'),
 });
 export type DraftRoundStartedNotification = InferOutput<typeof DraftRoundStartedNotification>;
+
+export function createDraftRoundStartedNotification(draftId: bigint, draftRound: number | null) {
+  const base = createDraftNotification(draftId, draftRound);
+  return { ...base, type: 'RoundStart' } satisfies DraftRoundStartedNotification;
+}
 
 const DraftRoundSubmittedNotification = object({
   ...BaseDraftNotification.entries,
@@ -29,6 +42,19 @@ const DraftRoundSubmittedNotification = object({
   labId: string(),
 });
 export type DraftRoundSubmittedNotification = InferOutput<typeof DraftRoundSubmittedNotification>;
+
+export function createDraftRoundSubmittedNotification(
+  draftId: bigint,
+  draftRound: number | null,
+  labId: string,
+) {
+  const base = createDraftNotification(draftId, draftRound);
+  return {
+    ...base,
+    type: 'RoundSubmit',
+    labId,
+  } satisfies DraftRoundSubmittedNotification;
+}
 
 const DraftLotteryInterventionNotification = object({
   ...BaseDraftNotification.entries,
@@ -40,11 +66,30 @@ export type DraftLotteryInterventionNotification = InferOutput<
   typeof DraftLotteryInterventionNotification
 >;
 
+export function createDraftLotteryInterventionNotification(
+  draftId: bigint,
+  labId: string,
+  userId: string,
+) {
+  const base = createDraftNotification(draftId, null);
+  return {
+    ...base,
+    type: 'LotteryIntervention',
+    labId,
+    userId,
+  } satisfies DraftLotteryInterventionNotification;
+}
+
 const DraftConcludedNotification = object({
   ...BaseDraftNotification.entries,
   type: literal('Concluded'),
 });
 export type DraftConcludedNotification = InferOutput<typeof DraftConcludedNotification>;
+
+export function createDraftConcludedNotification(draftId: bigint) {
+  const base = createDraftNotification(draftId, null);
+  return { ...base, type: 'Concluded' } satisfies DraftConcludedNotification;
+}
 
 const BaseUserNotification = object({
   target: literal('User'),
@@ -52,6 +97,10 @@ const BaseUserNotification = object({
   labId: string(),
 });
 export type BaseUserNotification = InferOutput<typeof BaseUserNotification>;
+
+export function createUserNotification(userId: string, labId: string) {
+  return { target: 'User', userId, labId } satisfies UserNotification;
+}
 
 export const DraftNotification = variant('type', [
   DraftRoundStartedNotification,

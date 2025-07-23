@@ -1,6 +1,9 @@
+import {
+  type Notification,
+  createDraftRoundStartedNotification,
+  createDraftRoundSubmittedNotification,
+} from '$lib/server/models/notification';
 import { error, redirect } from '@sveltejs/kit';
-import type { Notification } from '$lib/server/models/notification';
-import { NotificationDispatcher } from '$lib/server/email/dispatch';
 import assert from 'node:assert/strict';
 import { validateString } from '$lib/forms';
 
@@ -88,9 +91,7 @@ export const actions = {
         error(404);
       }
 
-      notifications.push(
-        NotificationDispatcher.createDraftRoundSubmittedNotification(draftId, draft.currRound, lab),
-      );
+      notifications.push(createDraftRoundSubmittedNotification(draftId, draft.currRound, lab));
 
       while (true) {
         const count = await db.getPendingLabCountInDraft(draftId);
@@ -107,10 +108,7 @@ export const actions = {
         db.logger.info(incrementDraftRound, 'draft round incremented');
 
         notifications.push(
-          NotificationDispatcher.createDraftRoundStartedNotification(
-            draftId,
-            incrementDraftRound.currRound,
-          ),
+          createDraftRoundStartedNotification(draftId, incrementDraftRound.currRound),
         );
 
         if (incrementDraftRound.currRound === null) {
