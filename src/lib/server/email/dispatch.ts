@@ -21,11 +21,11 @@ export const QUEUE_NAME = 'notifications';
 
 // Redis connection must be reused to prevent saturating the server.
 const QUEUE = new Queue<null>(QUEUE_NAME, { connection });
-const EVENTS = new QueueEvents(QUEUE_NAME, { connection });
 
 if (building) {
   // Prevent listening to events during the build step to avoid connecting to Redis.
 } else {
+  const EVENTS = new QueueEvents(QUEUE_NAME, { connection });
   EVENTS.on('completed', ({ jobId }) => logger.info({ jobId }, 'job completed'));
   EVENTS.on('failed', ({ jobId }) => logger.error({ jobId }, 'job failed'));
 }
