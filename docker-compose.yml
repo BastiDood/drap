@@ -38,6 +38,7 @@ services:
     profiles:
       - dev
       - prod
+    restart: always
     volumes:
       - redis:/data
     ports:
