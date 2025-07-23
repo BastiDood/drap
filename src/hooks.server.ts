@@ -24,7 +24,10 @@ export async function handle({ event, resolve }) {
   const { cookies, locals, request, getClientAddress } = event;
 
   const requestLogger = logger.child({
+    // The service may be behind a proxy, so don't trust the client address.
     clientAddress: getClientAddress(),
+    realIp: request.headers.get('X-Real-IP'), // Nginx
+    forwardedFor: request.headers.get('X-Forwarded-For'),
     requestId: crypto.randomUUID(),
     method: request.method,
     url: request.url,
