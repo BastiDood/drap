@@ -1,8 +1,9 @@
+import { AssertionError } from 'node:assert';
+
 import { getDotPath, isValiError } from 'valibot';
 import { Worker } from 'bullmq';
 
 import { NotificationDispatcher, QUEUE_NAME } from '$lib/server/email/dispatch';
-import { AssertionError } from 'assert';
 import { Database } from '$lib/server/database';
 import { JOB_CONCURRENCY } from '$lib/server/env';
 import { connection } from '$lib/server/queue';
