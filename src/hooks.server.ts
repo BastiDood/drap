@@ -3,22 +3,28 @@ import { AssertionError } from 'node:assert';
 import { getDotPath, isValiError } from 'valibot';
 import { Worker } from 'bullmq';
 
+import { building } from '$app/environment';
+
 import { NotificationDispatcher, QUEUE_NAME } from '$lib/server/email/dispatch';
 import { Database } from '$lib/server/database';
 import { JOB_CONCURRENCY } from '$lib/server/env';
-import { connection } from '$lib/server/queue';
 import { initializeProcessor } from '$lib/server/email';
 import { logger } from '$lib/server/logger';
 
-// This is the global email worker. Value is intentionally unused.
-const _ = new Worker(
-  QUEUE_NAME,
-  initializeProcessor(
-    Database.withLogger(logger.child({ notifications: 'worker-db' })),
-    logger.child({ notifications: 'worker' }),
-  ),
-  { concurrency: JOB_CONCURRENCY, connection },
-);
+if (building) {
+  // Worker should not run during the build step.
+} else {
+  // This is the global email worker. Value is intentionally unused.
+  const { URL } = await import('$lib/server/env/redis');
+  const _ = new Worker(
+    QUEUE_NAME,
+    initializeProcessor(
+      Database.withLogger(logger.child({ notifications: 'worker-db' })),
+      logger.child({ notifications: 'worker' }),
+    ),
+    { concurrency: JOB_CONCURRENCY, connection: { url: URL } },
+  );
+}
 
 export async function handle({ event, resolve }) {
   const { cookies, locals, request, getClientAddress } = event;
