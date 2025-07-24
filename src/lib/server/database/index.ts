@@ -994,7 +994,7 @@ export class Database implements Loggable {
       )
       .innerJoin(studentUser, eq(schema.facultyChoiceUser.studentUserId, studentUser.id))
       .where(eq(schema.facultyChoice.draftId, draftId))
-      .orderBy(schema.facultyChoice.round);
+      .orderBy(desc(schema.facultyChoice.createdAt));
   }
 
   @timed async getStudentRanksExport(draftId: bigint) {
