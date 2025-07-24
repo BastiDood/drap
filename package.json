@@ -24,7 +24,7 @@
     "@steeze-ui/heroicons": "^2.4.2",
     "@steeze-ui/simple-icons": "^1.10.1",
     "@steeze-ui/svelte-icon": "~1.6.2",
-    "@sveltejs/kit": "^2.25.1",
+    "@sveltejs/kit": "^2.25.2",
     "bullmq": "^5.56.5",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.44.3",
@@ -36,7 +36,7 @@
     "papaparse": "^5.5.3",
     "pg": "^8.16.3",
     "pino": "^9.7.0",
-    "svelte": "^5.36.13",
+    "svelte": "^5.36.14",
     "tailwind-csstree": "^0.1.1",
     "valibot": "^1.1.0"
   },
