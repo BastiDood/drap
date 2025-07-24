@@ -2,6 +2,7 @@ import { fail, strictEqual } from 'node:assert/strict';
 
 import {
   and,
+  asc,
   count,
   countDistinct,
   desc,
@@ -1066,7 +1067,7 @@ export class Database implements Loggable {
       })
       .from(schema.facultyChoice)
       .where(eq(schema.facultyChoice.draftId, draftId))
-      .orderBy(desc(schema.facultyChoice.createdAt));
+      .orderBy(({ createdAt, round, labId }) => [desc(createdAt), desc(round), asc(labId)]);
   }
 
   @timed async inviteNewFacultyOrStaff(email: string, labId: string | null) {
