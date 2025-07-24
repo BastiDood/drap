@@ -5,8 +5,8 @@
 
   interface ChoiceRecord
     extends Pick<schema.FacultyChoice, 'draftId' | 'round' | 'labId' | 'createdAt' | 'userId'> {
-    userEmail: schema.User['email'];
-    studentEmail: schema.User['email'];
+    userEmail: schema.User['email'] | null;
+    studentEmail: schema.User['email'] | null;
   }
 
   interface Props {
