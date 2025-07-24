@@ -983,7 +983,7 @@ export class Database implements Loggable {
         studentEmail: studentUser.email,
       })
       .from(schema.facultyChoice)
-      .innerJoin(facultyUser, eq(schema.facultyChoice.userId, facultyUser.id))
+      .leftJoin(facultyUser, eq(schema.facultyChoice.userId, facultyUser.id))
       .leftJoin(
         schema.facultyChoiceUser,
         and(
@@ -992,7 +992,7 @@ export class Database implements Loggable {
           eq(schema.facultyChoice.labId, schema.facultyChoiceUser.labId),
         ),
       )
-      .innerJoin(studentUser, eq(schema.facultyChoiceUser.studentUserId, studentUser.id))
+      .leftJoin(studentUser, eq(schema.facultyChoiceUser.studentUserId, studentUser.id))
       .where(eq(schema.facultyChoice.draftId, draftId))
       .orderBy(desc(schema.facultyChoice.createdAt));
   }
