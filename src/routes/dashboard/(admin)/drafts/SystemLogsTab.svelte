@@ -64,7 +64,7 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
     <header class="card-header">
       <span class="h4">{fromUnixTime(unix).toLocaleString()}</span>
     </header>
-    {#each labs as [labId, round]}
+    {#each labs as [labId, round] ([labId, round])}
       {@const labChoices = choices.filter(
         ({ labId: choiceLab, round: choiceRound }) => choiceLab === labId && round === choiceRound,
       )}
