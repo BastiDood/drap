@@ -5,7 +5,6 @@ import { building } from '$app/environment';
 
 import * as APP from '$lib/server/env';
 import * as REDIS from '$lib/server/env/redis';
-import { Database } from '$lib/server/database';
 import { initializeProcessor } from '$lib/server/email';
 import { logger } from '$lib/server/logger';
 
@@ -42,10 +41,9 @@ if (building) {
 
   // NOTE: This will only register if this module is imported (even transitively).
   const child = logger.child({ notifications: 'worker' });
-  const worker = new Worker(
-    QUEUE_NAME,
-    initializeProcessor(Database.withLogger(logger.child({ notifications: 'worker-db' })), child),
-    { concurrency: APP.JOB_CONCURRENCY, connection },
-  );
+  const worker = new Worker(QUEUE_NAME, initializeProcessor(child), {
+    concurrency: APP.JOB_CONCURRENCY,
+    connection,
+  });
   child.info({ workerId: worker.id }, 'worker initialized');
 }

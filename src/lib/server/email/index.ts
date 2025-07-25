@@ -1,19 +1,32 @@
-import * as GOOGLE from '$lib/server/env/google';
-import type { Database, schema } from '$lib/server/database';
-import type { DraftNotification, UserNotification } from '$lib/server/models/notification';
-import { IdToken, TokenResponse } from '$lib/server/models/oauth';
-import assert, { fail, strictEqual } from 'node:assert/strict';
+import { fail } from 'node:assert/strict';
+
 import { isFuture, sub } from 'date-fns';
 import { parse, pick } from 'valibot';
-import { GmailMessageSendResult } from '$lib/server/models/email';
 import type { Job } from 'bullmq';
 import type { Logger } from 'pino';
 import { createMimeMessage } from 'mimetext/node';
-import { fetchJwks } from './jwks';
 import { jwtVerify } from 'jose';
-import { logError } from '../logger';
+
+import * as GOOGLE from '$lib/server/env/google';
+import { Database, type schema } from '$lib/server/database';
+import type { DraftNotification, UserNotification } from '$lib/server/models/notification';
+import { IdToken, TokenResponse } from '$lib/server/models/oauth';
+import { GmailMessageSendResult } from '$lib/server/models/email';
+import { logError } from '$lib/server/logger';
+
+import { fetchJwks } from './jwks';
 
 export type EmailAddress = schema.User['email'];
+
+export class UpstreamGmailError extends Error {
+  constructor(
+    public status: number,
+    public body: string,
+  ) {
+    super(`upstream gmail api returned status ${status}: ${body}`);
+    this.name = 'UpstreamGmailError';
+  }
+}
 
 export class Emailer {
   #db: Database;
@@ -32,9 +45,23 @@ export class Emailer {
 
   /** Must be called within a transaction context for correctness. */
   async #getLatestCredentials() {
+    this.#db.logger.info('fetching latest credentials');
     const creds = await this.#db.getDesignatedSenderCredentials();
-    if (typeof creds === 'undefined') return;
-    if (isFuture(sub(creds.expiration, { minutes: 10 }))) return creds;
+
+    if (typeof creds === 'undefined') {
+      this.#db.logger.warn('no credentials found');
+      return;
+    }
+
+    if (isFuture(sub(creds.expiration, { minutes: 10 }))) {
+      this.#db.logger.info('using existing credentials');
+      return creds;
+    }
+
+    this.#db.logger.info(
+      { designatedSenderId: creds.id, expiration: creds.expiration },
+      'refreshing credentials',
+    );
 
     // Refresh the access token if necessary
     const res = await fetch('https://oauth2.googleapis.com/token', {
@@ -48,15 +75,18 @@ export class Emailer {
       }),
     });
 
+    this.#db.logger.info('reading token response');
     const json = await res.json();
     const { id_token, access_token } = parse(TokenResponse, json);
     creds.accessToken = access_token; // overwritten credentials
 
+    this.#db.logger.info('verifying id token');
     const { payload } = await jwtVerify(id_token, fetchJwks, {
       issuer: 'https://accounts.google.com',
       audience: this.#clientId,
     });
 
+    this.#db.logger.info('upserting candidate sender with new verified token');
     const token = parse(pick(IdToken, ['exp']), payload);
     await this.#db.upsertCandidateSender(creds.id, token.exp, creds.accessToken);
     return creds;
@@ -64,8 +94,13 @@ export class Emailer {
 
   /** Must be called within a transaction context for correctness. */
   async send(to: EmailAddress[], subject: string, body: string) {
+    this.#db.logger.info('sending email');
+
     const creds = await this.#getLatestCredentials();
-    if (typeof creds === 'undefined') return null;
+    if (typeof creds === 'undefined') {
+      this.#db.logger.warn('no credentials found for sending email');
+      return null;
+    }
 
     const message = createMimeMessage();
     message.setSender({ name: `[DRAP] ${creds.givenName} ${creds.familyName}`, addr: creds.email });
@@ -77,6 +112,7 @@ export class Emailer {
       data: Buffer.from(body, 'utf-8').toString('base64'),
     });
 
+    this.#db.logger.info('sending email request to gmail api');
     const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
       method: 'POST',
       headers: {
@@ -87,9 +123,14 @@ export class Emailer {
     });
 
     // TODO: Handle rate limits.
-    assert(response.ok);
-    strictEqual(response.status, 200);
+    if (response.status !== 200) {
+      this.#db.logger.error({ status: response.status }, 'unexpected status code from gmail api');
+      const body = await response.text();
+      this.#db.logger.error({ body }, 'gmail api error message');
+      throw new UpstreamGmailError(response.status, body);
+    }
 
+    this.#db.logger.info('receiving successful response from gmail api');
     const json = await response.json();
     return parse(GmailMessageSendResult, json);
   }
@@ -183,12 +224,14 @@ async function processUserNotification(
   );
 }
 
-export function initializeProcessor(db: Database, logger: Logger) {
-  const emailer = new Emailer(db, GOOGLE.OAUTH_CLIENT_ID, GOOGLE.OAUTH_CLIENT_SECRET);
+export function initializeProcessor(parent: Logger) {
   return async function processor({ id }: Pick<Job<unknown>, 'id'>) {
+    const logger = parent.child({ notificationId: id });
     try {
-      logger.info({ notificationId: id }, 'processing notification');
+      const db = Database.withLogger(logger);
+      const emailer = new Emailer(db, GOOGLE.OAUTH_CLIENT_ID, GOOGLE.OAUTH_CLIENT_SECRET);
 
+      logger.info('processing notification');
       if (typeof id === 'undefined') {
         logger.warn('attempted to process notification with no id');
         return;
