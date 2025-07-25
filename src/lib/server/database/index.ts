@@ -1128,10 +1128,11 @@ export class Database implements Loggable {
       .then(assertOptional);
   }
 
-  @timed async getNotifications() {
+  @timed async getNotificationsByDraftId(draftId: bigint) {
     return await this.#db
       .select()
       .from(schema.notification)
+      .where(eq(schema.notification.draftId, draftId));
   }
 
   /**
