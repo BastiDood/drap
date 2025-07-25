@@ -58,7 +58,7 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
       const [labId, round] = key.split('|');
       assert(typeof round !== 'undefined');
       assert(typeof labId !== 'undefined');
-      return [labId, round === 'null' ? null : parseInt(round, 10)];
+      return [labId, round.length === 0 ? null : Number.parseInt(round, 10)];
     },
   )}
   <div class="card my-2 space-y-4 p-2">
