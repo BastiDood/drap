@@ -28,7 +28,7 @@
         ] as const,
       // this last filter is necessary to remove cases where an automation log does not coincide with a selection log
       // i.e. the start of the draft
-    ).filter(([_, events]) => events.length > 0)
+    ).filter(([_, events]) => events.length > 0),
   );
 </script>
 
@@ -56,7 +56,7 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
     key => {
       const [labId, round] = key.split('|');
       assert(typeof round !== 'undefined');
-      assert(typeof labId !== 'undefined')
+      assert(typeof labId !== 'undefined');
       return [labId, round === 'null' ? null : parseInt(round, 10)];
     },
   )}
