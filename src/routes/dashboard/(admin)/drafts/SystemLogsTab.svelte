@@ -2,7 +2,7 @@
   import { fromUnixTime, getUnixTime } from 'date-fns';
   import { groupby } from 'itertools';
   import type { schema } from '$lib/server/database';
-  
+
   interface ChoiceRecord
     extends Pick<schema.FacultyChoice, 'draftId' | 'round' | 'labId' | 'createdAt' | 'userId'> {
     userEmail: schema.User['email'] | null;
@@ -20,17 +20,17 @@
   function constructEvents(records: ChoiceRecord[], showAutomated: boolean) {
     return Array.from(
       groupby(records, ({ createdAt }) => getUnixTime(createdAt)),
-      ([timestamp, events]) => [timestamp, Array.from(events.filter(
-        ({ userEmail }) => userEmail !== null || showAutomated
-      ))] as const,
+      ([timestamp, events]) =>
+        [
+          timestamp,
+          Array.from(events.filter(({ userEmail }) => userEmail !== null || showAutomated)),
+        ] as const,
       // this last filter is necessary to remove cases where an automation log does not coincide with a selection log
       // i.e. the start of the draft
-    ).filter(([ _, events ]) => events.length > 0);
+    ).filter(([_, events]) => events.length > 0);
   }
 
-  const events = $derived(
-    constructEvents(records, showAutomated)
-  );
+  const events = $derived(constructEvents(records, showAutomated));
 </script>
 
 <!--
@@ -54,18 +54,20 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
 {#each events as [unix, choices], index (index)}
   {@const labs = Array.from(
     choices.reduce((set, { labId, round }) => set.add(`${labId}|${round}`), new Set<string>()),
-    (key) => {
+    key => {
       const [labId, round] = key.split('|');
       // rather weird logic on this, i'll admit
-      return [labId, round === null ? null : parseInt(round ?? "0", 10)];
-    }
+      return [labId, round === null ? null : parseInt(round ?? '0', 10)];
+    },
   )}
   <div class="card my-2 space-y-4 p-2">
     <header class="card-header">
       <span class="h4">{fromUnixTime(unix).toLocaleString()}</span>
     </header>
     {#each labs as [labId, round]}
-      {@const labChoices = choices.filter(({ labId: choiceLab, round: choiceRound }) => choiceLab === labId && round === choiceRound)}
+      {@const labChoices = choices.filter(
+        ({ labId: choiceLab, round: choiceRound }) => choiceLab === labId && round === choiceRound,
+      )}
       {@const [choice] = labChoices}
       {#if typeof choice !== 'undefined'}
         <div class="card bg-surface-500 space-y-1 p-4">
