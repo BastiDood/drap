@@ -1,8 +1,8 @@
 import { bigint, jsonb, pgSchema, text, timestamp } from 'drizzle-orm/pg-core';
+import { draft, user } from './app';
 import type { Notification } from '$lib/server/models/notification';
 import { sql } from 'drizzle-orm';
 import { ulid } from './custom/ulid';
-import { draft, user } from './app';
 
 export const email = pgSchema('email');
 
