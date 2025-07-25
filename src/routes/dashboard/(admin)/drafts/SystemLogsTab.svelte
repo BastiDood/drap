@@ -17,11 +17,19 @@
 
   let showAutomated = $state(false);
 
-  const events = $derived(
-    Array.from(
+  function constructEvents(records: ChoiceRecord[], showAutomated: boolean) {
+    return Array.from(
       groupby(records, ({ createdAt }) => getUnixTime(createdAt)),
-      ([timestamp, events]) => [timestamp, Array.from(events)] as const,
-    ).filter(([_, [event]]) => event?.userEmail !== null || showAutomated),
+      ([timestamp, events]) => [timestamp, Array.from(events.filter(
+        ({ userEmail }) => userEmail !== null || showAutomated
+      ))] as const,
+      // this last filter is necessary to remove cases where an automation log does not coincide with a selection log
+      // i.e. the start of the draft
+    ).filter(([ _, events ]) => events.length > 0);
+  }
+
+  const events = $derived(
+    constructEvents(records, showAutomated)
   );
 </script>
 
@@ -57,7 +65,6 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
       <span class="h4">{fromUnixTime(unix).toLocaleString()}</span>
     </header>
     {#each labs as [labId, round]}
-      {@debug labs}
       {@const labChoices = choices.filter(({ labId: choiceLab, round: choiceRound }) => choiceLab === labId && round === choiceRound)}
       {@const [choice] = labChoices}
       {#if typeof choice !== 'undefined'}
