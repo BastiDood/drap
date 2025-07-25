@@ -4,6 +4,7 @@
     ArrowRightEndOnRectangle,
     ArrowRightStartOnRectangle,
     Beaker,
+    BellAlert,
     ClipboardDocumentList,
     Clock,
     Envelope,
@@ -108,6 +109,17 @@
             classes="flex-col transition-colors duration-150"
           >
             <Icon src={Envelope} class="size-8" />
+          </Navigation.Tile>
+          <Navigation.Tile
+            href="/dashboard/notification/"
+            label="Notifs"
+            selected={pathname === '/dashboard/notification/'}
+            padding="px-4 py-2"
+            rounded="rounded-none"
+            hover="hover:preset-tonal-primary"
+            classes="flex-col transition-colors duration-150"
+          >
+            <Icon src={BellAlert} class="size-8" />
           </Navigation.Tile>
         {:else if user.studentNumber !== null}
           <Navigation.Tile
