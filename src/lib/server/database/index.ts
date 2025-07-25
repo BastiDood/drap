@@ -1128,6 +1128,12 @@ export class Database implements Loggable {
       .then(assertOptional);
   }
 
+  @timed async getNotifications() {
+    return await this.#db
+      .select()
+      .from(schema.notification)
+  }
+
   /**
    * Synchronizes user objects with draft results by assigning student-users' lab fields to their
    * respective labs (as reflected by the faculty choices) for a given draft.
