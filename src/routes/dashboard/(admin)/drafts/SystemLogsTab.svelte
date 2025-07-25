@@ -1,7 +1,7 @@
 <script lang="ts">
   import { fromUnixTime, getUnixTime } from 'date-fns';
   import { groupby } from 'itertools';
-  
+
   import { assert } from '$lib/assert';
   import type { schema } from '$lib/server/database';
 
