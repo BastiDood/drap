@@ -266,7 +266,7 @@ export const actions = {
         const results = await db.syncResultsToUsers(draftId);
         db.logger.info({ results }, 'draft results synced');
         notifications.push(
-          ...results.map(({ userId, labId }) => createUserNotification(userId, labId)),
+          ...results.map(({ userId, labId }) => createUserNotification(draftId, userId, labId)),
         );
 
         return notifications;
