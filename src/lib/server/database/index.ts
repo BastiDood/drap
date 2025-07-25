@@ -896,7 +896,7 @@ export class Database implements Loggable {
   /** Typically invoked from within a transaction. */
   @timed async insertLotteryChoices(
     draftId: bigint,
-    adminUserId: string,
+    adminUserId: string | null,
     assignmentUserIdToLabPairs: (readonly [string, string])[],
   ) {
     const draft = await this.#db.query.draft.findFirst({

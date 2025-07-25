@@ -243,7 +243,7 @@ export const actions = {
         if (pairs.length > 0) {
           db.logger.info({ pairs: pairs.length }, 'inserting lottery choices');
 
-          const draft = await db.insertLotteryChoices(draftId, user.id, pairs);
+          const draft = await db.insertLotteryChoices(draftId, null, pairs);
           if (typeof draft === 'undefined') {
             db.logger.error('draft must exist prior to draft conclusion');
             error(404);

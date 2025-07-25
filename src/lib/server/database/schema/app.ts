@@ -155,9 +155,8 @@ export type NewFacultyChoice = typeof facultyChoice.$inferInsert;
 export const facultyChoiceUser = app.table(
   'faculty_choice_user',
   {
-    facultyUserId: ulid('faculty_user_id')
-      .notNull()
-      .references(() => user.id, { onUpdate: 'cascade' }),
+    // Possibly `null` to model the fact that faculty choices can be automated by the lottery.
+    facultyUserId: ulid('faculty_user_id').references(() => user.id, { onUpdate: 'cascade' }),
     studentUserId: ulid('student_user_id')
       .notNull()
       .references(() => user.id, { onUpdate: 'cascade' }),
