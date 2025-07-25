@@ -94,8 +94,7 @@ export class Emailer {
 
   /** Must be called within a transaction context for correctness. */
   async send(to: EmailAddress[], subject: string, body: string) {
-    this.#db.logger.info('sending email');
-
+    this.#db.logger.info('fetching latest credentials');
     const creds = await this.#getLatestCredentials();
     if (typeof creds === 'undefined') {
       this.#db.logger.warn('no credentials found for sending email');
@@ -228,16 +227,13 @@ export function initializeProcessor(parent: Logger) {
   return async function processor({ id }: Pick<Job<unknown>, 'id'>) {
     const logger = parent.child({ notificationId: id });
     try {
-      const db = Database.withLogger(logger);
-      const emailer = new Emailer(db, GOOGLE.OAUTH_CLIENT_ID, GOOGLE.OAUTH_CLIENT_SECRET);
-
       logger.info('processing notification');
       if (typeof id === 'undefined') {
         logger.warn('attempted to process notification with no id');
         return;
       }
 
-      await emailer.db.begin(async db => {
+      await Database.withLogger(logger).begin(async db => {
         const notification = await db.getNotification(id);
         if (typeof notification === 'undefined') {
           logger.warn('attempted to process nonexistent notification');
@@ -251,6 +247,7 @@ export function initializeProcessor(parent: Logger) {
         }
 
         logger.info(data, 'processing notification');
+        const emailer = new Emailer(db, GOOGLE.OAUTH_CLIENT_ID, GOOGLE.OAUTH_CLIENT_SECRET);
 
         // eslint-disable-next-line @typescript-eslint/init-declarations
         let result: GmailMessageSendResult | null;
