@@ -2,6 +2,7 @@
   import { fromUnixTime, getUnixTime } from 'date-fns';
   import { groupby } from 'itertools';
   import type { schema } from '$lib/server/database';
+  import { strict } from 'assert';
 
   interface ChoiceRecord
     extends Pick<schema.FacultyChoice, 'draftId' | 'round' | 'labId' | 'createdAt' | 'userId'> {
@@ -44,13 +45,22 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
   </label>
 </div>
 {#each events as [unix, choices], index (index)}
-  {@const labs = [...new Set(choices.map(({ labId }) => labId))]}
+  {@const labs = Array.from(
+    choices.reduce((set, { labId, round }) => set.add(`${labId}|${round}`), new Set<string>()),
+    (key) => {
+      const [labId, round] = key.split('|');
+      strict(typeof round !== 'undefined')
+      // is there such thing as a reverse null coalesce?
+      return [labId, round === null ? null : parseInt(round, 10)];
+    }
+  )}
   <div class="card my-2 space-y-4 p-2">
     <header class="card-header">
       <span class="h4">{fromUnixTime(unix).toLocaleString()}</span>
     </header>
-    {#each labs as labId (labId)}
-      {@const labChoices = choices.filter(({ labId: choiceLab }) => choiceLab === labId)}
+    {#each labs as [labId, round]}
+      {@debug labs}
+      {@const labChoices = choices.filter(({ labId: choiceLab, round: choiceRound }) => choiceLab === labId && round === choiceRound)}
       {@const [choice] = labChoices}
       {#if typeof choice !== 'undefined'}
         <div class="card bg-surface-500 space-y-1 p-4">
