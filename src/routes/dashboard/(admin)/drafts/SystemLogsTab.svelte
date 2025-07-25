@@ -2,6 +2,7 @@
   import { fromUnixTime, getUnixTime } from 'date-fns';
   import { groupby } from 'itertools';
   import type { schema } from '$lib/server/database';
+  import { assert } from '$lib/assert';
 
   interface ChoiceRecord
     extends Pick<schema.FacultyChoice, 'draftId' | 'round' | 'labId' | 'createdAt' | 'userId'> {
@@ -54,8 +55,8 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
     choices.reduce((set, { labId, round }) => set.add(`${labId}|${round}`), new Set<string>()),
     key => {
       const [labId, round] = key.split('|');
-      // rather weird logic on this, i'll admit
-      return [labId, round === null ? null : parseInt(round ?? '0', 10)];
+      assert(typeof round !== 'undefined');
+      return [labId, round === 'null' ? null : parseInt(round, 10)];
     },
   )}
   <div class="card my-2 space-y-4 p-2">
