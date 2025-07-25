@@ -1,6 +1,8 @@
 <script lang="ts">
   import { fromUnixTime, getUnixTime } from 'date-fns';
   import { groupby } from 'itertools';
+
+  import { assert } from '$lib/assert';
   import type { schema } from '$lib/server/database';
 
   interface ChoiceRecord
@@ -20,8 +22,14 @@
   const events = $derived(
     Array.from(
       groupby(records, ({ createdAt }) => getUnixTime(createdAt)),
-      ([timestamp, events]) => [timestamp, Array.from(events)] as const,
-    ).filter(([_, [event]]) => event?.userEmail !== null || showAutomated),
+      ([timestamp, events]) =>
+        [
+          timestamp,
+          Array.from(events.filter(({ userEmail }) => userEmail !== null || showAutomated)),
+        ] as const,
+      // this last filter is necessary to remove cases where an automation log does not coincide with a selection log
+      // i.e. the start of the draft
+    ).filter(([_, events]) => events.length > 0),
   );
 </script>
 
@@ -44,13 +52,23 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
   </label>
 </div>
 {#each events as [unix, choices], index (index)}
-  {@const labs = [...new Set(choices.map(({ labId }) => labId))]}
+  {@const labs = Array.from(
+    choices.reduce((set, { labId, round }) => set.add(`${labId}|${round}`), new Set<string>()),
+    key => {
+      const [labId, round] = key.split('|');
+      assert(typeof round !== 'undefined');
+      assert(typeof labId !== 'undefined');
+      return [labId, round.length === 0 ? null : Number.parseInt(round, 10)];
+    },
+  )}
   <div class="card my-2 space-y-4 p-2">
     <header class="card-header">
       <span class="h4">{fromUnixTime(unix).toLocaleString()}</span>
     </header>
-    {#each labs as labId (labId)}
-      {@const labChoices = choices.filter(({ labId: choiceLab }) => choiceLab === labId)}
+    {#each labs as [labId, round] ([labId, round])}
+      {@const labChoices = choices.filter(
+        ({ labId: choiceLab, round: choiceRound }) => choiceLab === labId && round === choiceRound,
+      )}
       {@const [choice] = labChoices}
       {#if typeof choice !== 'undefined'}
         <div class="card bg-surface-500 space-y-1 p-4">
