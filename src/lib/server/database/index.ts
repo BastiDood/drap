@@ -896,7 +896,7 @@ export class Database implements Loggable {
   /** Typically invoked from within a transaction. */
   @timed async insertLotteryChoices(
     draftId: bigint,
-    adminUserId: string | null,
+    adminUserId: string,
     assignmentUserIdToLabPairs: (readonly [string, string])[],
   ) {
     const draft = await this.#db.query.draft.findFirst({
@@ -917,6 +917,7 @@ export class Database implements Loggable {
               draftId,
               round: draft.currRound,
               labId: id,
+              // Non-null to assert that the lottery was initiated by the admin.
               userId: adminUserId,
             }) satisfies schema.NewFacultyChoice,
         ),
@@ -935,7 +936,8 @@ export class Database implements Loggable {
         assignmentUserIdToLabPairs.map(
           ([studentUserId, labId]) =>
             ({
-              facultyUserId: adminUserId,
+              // This *must* be `null` to assert that this was chosen by the lottery.
+              facultyUserId: null,
               studentUserId,
               draftId,
               round: draft.currRound,
