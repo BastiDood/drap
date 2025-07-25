@@ -17,8 +17,8 @@
 
   let showAutomated = $state(false);
 
-  function constructEvents(records: ChoiceRecord[], showAutomated: boolean) {
-    return Array.from(
+  const events = $derived(
+    Array.from(
       groupby(records, ({ createdAt }) => getUnixTime(createdAt)),
       ([timestamp, events]) =>
         [
@@ -27,10 +27,8 @@
         ] as const,
       // this last filter is necessary to remove cases where an automation log does not coincide with a selection log
       // i.e. the start of the draft
-    ).filter(([_, events]) => events.length > 0);
-  }
-
-  const events = $derived(constructEvents(records, showAutomated));
+    ).filter(([_, events]) => events.length > 0)
+  );
 </script>
 
 <!--
