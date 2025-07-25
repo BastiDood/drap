@@ -1096,7 +1096,7 @@ export class Database implements Loggable {
   @timed async insertNotification(data: Notification) {
     return await this.#db
       .insert(schema.notification)
-      .values({ data })
+      .values({ data, draftId: BigInt(data.draftId) })
       .returning({ id: schema.notification.id })
       .onConflictDoNothing()
       .then(assertOptional);
@@ -1105,7 +1105,7 @@ export class Database implements Loggable {
   @timed bulkInsertNotifications(...data: Notification[]) {
     return this.#db
       .insert(schema.notification)
-      .values(data.map(data => ({ data })))
+      .values(data.map(data => ({ data, draftId: BigInt(data.draftId) })))
       .returning({ id: schema.notification.id })
       .onConflictDoNothing();
   }

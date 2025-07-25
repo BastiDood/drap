@@ -92,14 +92,15 @@ export function createDraftConcludedNotification(draftId: bigint) {
 }
 
 const BaseUserNotification = object({
+  draftId: number(),
   target: literal('User'),
   userId: pipe(string(), ulid()),
   labId: string(),
 });
 export type BaseUserNotification = InferOutput<typeof BaseUserNotification>;
 
-export function createUserNotification(userId: string, labId: string) {
-  return { target: 'User', userId, labId } satisfies UserNotification;
+export function createUserNotification(draftId: bigint, userId: string, labId: string) {
+  return { draftId: Number(draftId), target: 'User', userId, labId } satisfies UserNotification;
 }
 
 export const DraftNotification = variant('type', [
