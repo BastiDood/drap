@@ -1,10 +1,6 @@
-import { AssertionError } from 'node:assert';
-
-import { getDotPath, isValiError } from 'valibot';
-
+import { logError, logger } from '$lib/server/logger';
 import { Database } from '$lib/server/database';
 import { NotificationDispatcher } from '$lib/server/queue';
-import { logger } from '$lib/server/logger';
 
 export async function handle({ event, resolve }) {
   const { cookies, locals, request, getClientAddress } = event;
@@ -48,16 +44,5 @@ export async function handle({ event, resolve }) {
 }
 
 export function handleError({ error, event }) {
-  if (isValiError(error)) {
-    const valibotErrorPaths = error.issues
-      .map(issue => getDotPath(issue))
-      .filter(path => path !== null);
-    event.locals.db.logger.fatal({ valibotErrorPaths }, error.message);
-  } else if (error instanceof AssertionError) {
-    event.locals.db.logger.fatal({ nodeAssertionError: error }, error.message);
-  } else if (error instanceof Error) {
-    event.locals.db.logger.fatal({ error }, error.message);
-  } else {
-    event.locals.db.logger.fatal({ unknownError: error });
-  }
+  logError(event.locals.db.logger, error);
 }

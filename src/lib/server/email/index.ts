@@ -11,6 +11,7 @@ import type { Logger } from 'pino';
 import { createMimeMessage } from 'mimetext/node';
 import { fetchJwks } from './jwks';
 import { jwtVerify } from 'jose';
+import { logError } from '../logger';
 
 export type EmailAddress = schema.User['email'];
 
@@ -185,43 +186,55 @@ async function processUserNotification(
 export function initializeProcessor(db: Database, logger: Logger) {
   const emailer = new Emailer(db, GOOGLE.OAUTH_CLIENT_ID, GOOGLE.OAUTH_CLIENT_SECRET);
   return async function processor({ id }: Pick<Job<unknown>, 'id'>) {
-    if (typeof id === 'undefined') {
-      logger.warn('attempted to process notification with no id');
-      return;
+    try {
+      logger.info({ notificationId: id }, 'processing notification');
+
+      if (typeof id === 'undefined') {
+        logger.warn('attempted to process notification with no id');
+        return;
+      }
+
+      await emailer.db.begin(async db => {
+        const notification = await db.getNotification(id);
+        if (typeof notification === 'undefined') {
+          logger.warn('attempted to process nonexistent notification');
+          throw new UnknownNotificationError();
+        }
+
+        const { data, deliveredAt } = notification;
+        if (deliveredAt !== null) {
+          logger.warn({ deliveredAt }, 'attempted to process delivered notification');
+          return; // ACK to remove from the queue...
+        }
+
+        logger.info(data, 'processing notification');
+
+        // eslint-disable-next-line @typescript-eslint/init-declarations
+        let result: GmailMessageSendResult | null;
+        switch (data.target) {
+          case 'Draft':
+            result = await processDraftNotification(db, emailer, data);
+            break;
+          case 'User':
+            result = await processUserNotification(db, emailer, data);
+            break;
+          default:
+            fail('unreachable');
+        }
+
+        if (result === null) {
+          logger.error('no designated sender configured');
+          throw new MissingDesignatedSender();
+        }
+
+        logger.info(result, 'email sent');
+        await db.markNotificationDelivered(id);
+      });
+
+      logger.info('notification processed');
+    } catch (error) {
+      logError(logger, error);
+      throw error;
     }
-
-    await emailer.db.begin(async db => {
-      const notification = await db.getNotification(id);
-      if (typeof notification === 'undefined') {
-        logger.warn('attempted to process nonexistent notification');
-        throw new UnknownNotificationError();
-      }
-
-      const { data, deliveredAt } = notification;
-      if (deliveredAt !== null) {
-        logger.warn({ deliveredAt }, 'attempted to process delivered notification');
-        return; // ACK to remove from the queue...
-      }
-
-      // eslint-disable-next-line @typescript-eslint/init-declarations
-      let result: GmailMessageSendResult | null;
-      switch (data.target) {
-        case 'Draft':
-          result = await processDraftNotification(db, emailer, data);
-          break;
-        case 'User':
-          result = await processUserNotification(db, emailer, data);
-          break;
-        default:
-          fail('unreachable');
-      }
-
-      if (result === null) {
-        logger.error('no designated sender configured');
-        throw new MissingDesignatedSender();
-      }
-
-      await db.markNotificationDelivered(id);
-    });
   };
 }

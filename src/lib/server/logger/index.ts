@@ -1,5 +1,8 @@
+import { AssertionError } from 'node:assert';
+
+import { type Logger, pino } from 'pino';
+import { getDotPath, isValiError } from 'valibot';
 import type { PrettyStream } from 'pino-pretty';
-import { pino } from 'pino';
 
 import { dev } from '$app/environment';
 
@@ -13,3 +16,18 @@ if (dev) {
 
 // This is only a base logger instance. We need to attach a request ID for each request.
 export const logger = pino(stream);
+
+export function logError(logger: Logger, error: unknown) {
+  if (isValiError(error)) {
+    const valibotErrorPaths = error.issues
+      .map(issue => getDotPath(issue))
+      .filter(path => path !== null);
+    logger.fatal({ valibotErrorPaths }, error.message);
+  } else if (error instanceof AssertionError) {
+    logger.fatal({ nodeAssertionError: error }, error.message);
+  } else if (error instanceof Error) {
+    logger.fatal({ error }, error.message);
+  } else {
+    logger.fatal({ unknownError: error });
+  }
+}
