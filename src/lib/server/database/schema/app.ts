@@ -184,9 +184,9 @@ export const facultyChoiceUser = app.table(
 export type FacultyChoiceUser = typeof facultyChoiceUser.$inferSelect;
 export type NewFacultyChoiceUser = typeof facultyChoiceUser.$inferInsert;
 
-export const labMemberView = app.view('lab_member_view').as(
-  qb => {
-    return qb.select({
+export const labMemberView = app.view('lab_member_view').as(qb => {
+  return qb
+    .select({
       userId: facultyChoiceUser.studentUserId,
       draftId: facultyChoiceUser.draftId,
       draftLab: facultyChoiceUser.labId.getSQL().as('draft_lab'),
@@ -196,6 +196,7 @@ export const labMemberView = app.view('lab_member_view').as(
       familyName: user.familyName,
       avatarUrl: user.avatarUrl,
       studentNumber: user.studentNumber,
-    }).from(user).rightJoin(facultyChoiceUser, eq(user.id, facultyChoiceUser.studentUserId))
-  }
-);
+    })
+    .from(user)
+    .rightJoin(facultyChoiceUser, eq(user.id, facultyChoiceUser.studentUserId));
+});

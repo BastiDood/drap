@@ -301,9 +301,11 @@ export class Database implements Loggable {
       orderBy: ({ familyName }) => familyName,
     });
 
-    const members = await this.#db.select().from(schema.labMemberView)
+    const members = await this.#db
+      .select()
+      .from(schema.labMemberView)
       .where(eq(schema.labMemberView.draftLab, labId))
-      .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName))
+      .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName));
 
     return { lab: labInfo?.name, heads, members };
   }

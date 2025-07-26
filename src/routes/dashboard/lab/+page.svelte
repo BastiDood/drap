@@ -6,21 +6,25 @@
   const { data } = $props();
   const { lab, heads, members } = $derived(data);
 
-  const membersByDraft = $derived(Array.from(
-    groupby(members, ({ draftId }) => Number(draftId)),
-    ([ draftId, members ]) => {
-      let memberUsers = [...members].map(({ email, givenName, familyName, studentNumber, avatarUrl }) => {
-        return {
-          email: email ?? '',
-          givenName: givenName ?? 'Unknown User',
-          familyName: familyName ?? '???',
-          studentNumber: studentNumber ?? '',
-          avatarUrl: avatarUrl ?? '',
-        }
-      });
-      return { draftId, memberUsers };
-    }
-  ))
+  const membersByDraft = $derived(
+    Array.from(
+      groupby(members, ({ draftId }) => Number(draftId)),
+      ([draftId, members]) => {
+        let memberUsers = [...members].map(
+          ({ email, givenName, familyName, studentNumber, avatarUrl }) => {
+            return {
+              email: email ?? '',
+              givenName: givenName ?? 'Unknown User',
+              familyName: familyName ?? '???',
+              studentNumber: studentNumber ?? '',
+              avatarUrl: avatarUrl ?? '',
+            };
+          },
+        );
+        return { draftId, memberUsers };
+      },
+    ),
+  );
 </script>
 
 <h2 class="h2">{lab}</h2>
@@ -40,7 +44,7 @@
   <nav class="list-nav space-y-2">
     <h3 class="h3">Members</h3>
     <ul class="space-y-1">
-      {#each membersByDraft as {draftId, memberUsers}}
+      {#each membersByDraft as { draftId, memberUsers }}
         <Accordion multiple collapsible>
           <Accordion.Item value="draft-{draftId}">
             {#snippet control()}
