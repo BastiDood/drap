@@ -26,5 +26,5 @@ export async function load({ locals: { db, session } }) {
 
   const drafts = await db.getDrafts();
 
-  return {...info, drafts};
+  return { ...info, drafts };
 }
