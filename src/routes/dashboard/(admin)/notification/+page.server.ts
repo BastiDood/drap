@@ -1,4 +1,4 @@
-import { redirect } from "@sveltejs/kit";
+import { redirect } from '@sveltejs/kit';
 
 export async function load({ locals: { db, session }, parent }) {
   if (typeof session?.user === 'undefined') {
