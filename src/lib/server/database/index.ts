@@ -301,13 +301,32 @@ export class Database implements Loggable {
       orderBy: ({ familyName }) => familyName,
     });
 
+    const faculty = await this.#db
+      .select({
+        email: schema.user.email,
+        givenName: schema.user.givenName,
+        familyName: schema.user.familyName,
+        avatarUrl: schema.user.avatarUrl,
+        studentNumber: schema.user.studentNumber,
+      })
+      .from(schema.user)
+      .leftJoin(
+        schema.facultyChoiceUser,
+        eq(schema.user.id, schema.facultyChoiceUser.studentUserId)
+      )
+      .where(and(
+        eq(schema.user.labId, labId),
+        eq(schema.user.isAdmin, false),
+        isNull(schema.facultyChoiceUser.studentUserId)
+      ));
+
     const members = await this.#db
       .select()
       .from(schema.labMemberView)
       .where(eq(schema.labMemberView.draftLab, labId))
       .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName));
 
-    return { lab: labInfo?.name, heads, members };
+    return { lab: labInfo?.name, heads, members, faculty };
   }
 
   @timed async getDrafts() {
