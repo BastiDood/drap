@@ -14,13 +14,13 @@ export async function load({ locals: { db, session }, parent }) {
 
   const notifications = await db.getNotificationsByDraftId(draft.id);
   const notificationRecords = await Promise.all(
-    notifications.map(async (notification) => {
+    notifications.map(async notification => {
       const { data } = notification;
       // retrieve the user data for notifications that involve it
       if ('userId' in data && typeof data.userId !== 'undefined')
         return { ...notification, user: await db.getUserById(data.userId) };
       return { ...notification, user: null };
-    })
+    }),
   );
 
   return { notificationRecords };
