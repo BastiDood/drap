@@ -15,6 +15,7 @@ import { eq, isNull, sql } from 'drizzle-orm';
 
 import { tstzrange } from './custom/tstzrange';
 import { ulid } from './custom/ulid';
+import { alias } from 'drizzle-orm/pg-core';
 
 export const app = pgSchema('drap');
 
@@ -191,8 +192,8 @@ export const labMemberView = app.view('lab_member_view').as(
   qb => {
     return qb.select({
       draftId: facultyChoiceUser.draftId,
-      draftLab: facultyChoiceUser.labId,
-      userLab: studentView.labId,
+      draftLab: facultyChoiceUser.labId.getSQL().as('draft_lab'),
+      userLab: studentView.labId.getSQL().as('user_lab'),
       email: studentView.email,
       givenName: studentView.givenName,
       familyName: studentView.familyName,
