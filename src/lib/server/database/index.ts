@@ -312,13 +312,15 @@ export class Database implements Loggable {
       .from(schema.user)
       .leftJoin(
         schema.facultyChoiceUser,
-        eq(schema.user.id, schema.facultyChoiceUser.studentUserId)
+        eq(schema.user.id, schema.facultyChoiceUser.studentUserId),
       )
-      .where(and(
-        eq(schema.user.labId, labId),
-        eq(schema.user.isAdmin, false),
-        isNull(schema.facultyChoiceUser.studentUserId)
-      ));
+      .where(
+        and(
+          eq(schema.user.labId, labId),
+          eq(schema.user.isAdmin, false),
+          isNull(schema.facultyChoiceUser.studentUserId),
+        ),
+      );
 
     const members = await this.#db
       .select()

@@ -47,12 +47,12 @@
       <ul class="space-y-1">
         {#each faculty as user (user.email)}
           <li
-          class="preset-filled-surface-100-900 hover:preset-filled-surface-200-800 rounded-md p-2 transition-colors duration-150"
-        >
-          <Member {user} />
-        </li>
+            class="preset-filled-surface-100-900 hover:preset-filled-surface-200-800 rounded-md p-2 transition-colors duration-150"
+          >
+            <Member {user} />
+          </li>
         {/each}
-      </ul>  
+      </ul>
     {/if}
   </nav>
   <nav class="list-nav space-y-2">
