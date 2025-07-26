@@ -1,5 +1,5 @@
 {
-  "id": "b049262e-0ed0-4066-857c-2cbe26fdcd81",
+  "id": "654c92fd-9ec2-48ad-a56c-89ab71065f7c",
   "prevId": "383a5acc-510c-4412-b9b4-d20391dfe004",
   "version": "7",
   "dialect": "postgresql",
@@ -931,18 +931,18 @@
     },
     "drap.lab_member_view": {
       "columns": {
+        "student_user_id": {
+          "name": "student_user_id",
+          "type": "ulid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "draft_id": {
           "name": "draft_id",
           "type": "bigint",
           "primaryKey": false,
           "notNull": true
         },
-        "lab_id": {
-          "name": "lab_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
         "email": {
           "name": "email",
           "type": "text",
@@ -977,83 +977,8 @@
           "notNull": false
         }
       },
-      "definition": "select \"drap\".\"faculty_choice_user\".\"draft_id\", \"drap\".\"faculty_choice_user\".\"lab_id\", \"student_view\".\"lab_id\", \"student_view\".\"email\", \"student_view\".\"given_name\", \"student_view\".\"family_name\", \"student_view\".\"avatar\", \"student_view\".\"student_number\" from \"drap\".\"student_view\" right join \"drap\".\"faculty_choice_user\" on \"student_view\".\"id\" = \"drap\".\"faculty_choice_user\".\"student_user_id\"",
+      "definition": "select \"drap\".\"faculty_choice_user\".\"student_user_id\", \"drap\".\"faculty_choice_user\".\"draft_id\", \"drap\".\"faculty_choice_user\".\"lab_id\" as \"draft_lab\", \"drap\".\"user\".\"lab_id\" as \"user_lab\", \"drap\".\"user\".\"email\", \"drap\".\"user\".\"given_name\", \"drap\".\"user\".\"family_name\", \"drap\".\"user\".\"avatar\", \"drap\".\"user\".\"student_number\" from \"drap\".\"user\" right join \"drap\".\"faculty_choice_user\" on \"drap\".\"user\".\"id\" = \"drap\".\"faculty_choice_user\".\"student_user_id\"",
       "name": "lab_member_view",
-      "schema": "drap",
-      "isExisting": false,
-      "materialized": false
-    },
-    "drap.student_view": {
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "ulid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_ulid()"
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "student_number": {
-          "name": "student_number",
-          "type": "bigint",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "is_admin": {
-          "name": "is_admin",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true,
-          "default": false
-        },
-        "google_user_id": {
-          "name": "google_user_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "lab_id": {
-          "name": "lab_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "email": {
-          "name": "email",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "given_name": {
-          "name": "given_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "family_name": {
-          "name": "family_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "avatar": {
-          "name": "avatar",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        }
-      },
-      "definition": "select \"id\", \"created_at\", \"student_number\", \"is_admin\", \"google_user_id\", \"lab_id\", \"email\", \"given_name\", \"family_name\", \"avatar\" from \"drap\".\"user\" where \"drap\".\"user\".\"is_admin\" = false",
-      "name": "student_view",
       "schema": "drap",
       "isExisting": false,
       "materialized": false
