@@ -34,8 +34,19 @@
   function determineSubject() {
     if (data.target === 'User') {
       assert(user !== null);
-      return `Assignment of ${user.familyName}`
-    } 
+      return `Assignment of ${user.familyName} to ${data.labId.toLocaleUpperCase()}`
+    } else {
+      switch (data.type) {
+        case 'RoundStart':
+          return `Round ${data.round} Start`;
+        case 'RoundSubmit':
+          return `Round ${data.round} Submission by ${data.labId}`;
+        case 'LotteryIntervention':
+          return `Lottery Intervention of ${user?.email} into ${data.labId}`;
+        case 'Concluded':
+          return `Conclusion of Draft ${data.draftId}`;
+      }
+    }
   }
 
   const trigger = $derived.by(determineTrigger);
