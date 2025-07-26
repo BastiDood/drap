@@ -13,7 +13,7 @@
     id: string;
   }
 
-  const { data, user, id }: Props = $props();
+  const { data, user, id, deliveredAt, createdAt }: Props = $props();
 
   function determineTrigger() {
 
@@ -65,9 +65,20 @@
     {/if}
     Notification
   </h5>
-  <div class="flex flex-col">
-    <p><strong>Trigger</strong>: {trigger}</p>
-    <p><strong>To</strong>: {to}</p>
-    <p><strong>Subject</strong>: {subject}</p>
+  <small>ID: {id}</small>
+  <div class="grid grid-cols-2">
+    <div>
+      <p><strong>Trigger</strong>: {trigger}</p>
+      <p><strong>To</strong>: {to}</p>
+      <p><strong>Subject</strong>: {subject}</p>
+    </div>
+    <div>
+      <p><strong>Created At</strong>: {createdAt}</p>
+      {#if deliveredAt === null}
+        <p><strong class="text-warning-600">Undelivered notification</strong></p>
+      {:else}
+        <p><strong>Delivered At</strong>: {deliveredAt}</p>
+      {/if}
+    </div>
   </div>
 </div>
