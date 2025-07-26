@@ -67,14 +67,14 @@
                 <div class="flex flex-col">
                   <span class="h4">Draft {draftId}</span>
                   <small>
-                    {#if draft.activePeriodEnd !== null}
-                      <time datetime={draft.activePeriodStart.toISOString()}>{start}</time>
-                      to
-                      <time datetime={draft.activePeriodEnd.toISOString()}>{end}</time>
-                    {:else}
+                    {#if draft.activePeriodEnd === null}
                       Ongoing since <time datetime={draft.activePeriodStart.toISOString()}
                         >{start}</time
                       >
+                    {:else}
+                      <time datetime={draft.activePeriodStart.toISOString()}>{start}</time>
+                      to
+                      <time datetime={draft.activePeriodEnd.toISOString()}>{end}</time>
                     {/if}
                   </small>
                 </div>
