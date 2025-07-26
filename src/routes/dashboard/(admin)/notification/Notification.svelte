@@ -21,7 +21,21 @@
   const creation = $derived(format(createdAt, "PPPpp"));
 
   function determineTrigger() {
-
+    if (data.target === 'User') {
+      assert(user !== null);
+      return "Syncing draft results"
+    } else {
+      switch (data.type) {
+        case 'RoundStart':
+          return `Start of draft round ${data.round}`;
+        case 'RoundSubmit':
+          return `Submission by ${data.labId.toLocaleUpperCase()}`;
+        case 'LotteryIntervention':
+          return "Lottery Round";
+        case 'Concluded':
+          return "Draft Conclusion";
+      }
+    }
   }
 
   function determineRecipient() {
