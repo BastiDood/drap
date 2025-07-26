@@ -12,6 +12,6 @@ export async function load({ locals: { db, session }, parent }) {
     return { notifications: [] };
   }
 
-  const notifications = await db.getNotificationsByDraftId(draft.id);
-  return { notifications };
+  const notificationRecords = await db.getNotificationsByDraftId(draft.id);
+  return { notificationRecords };
 }

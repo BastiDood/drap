@@ -7,3 +7,12 @@
 
   const { notification }: Props = $props();
 </script>
+
+<h4>
+{#if notification.target === "Draft"}
+    Draft
+{:else}
+    Student
+{/if}
+    Notification
+</h4>
