@@ -1,11 +1,10 @@
 <script lang="ts">
-  import type { Notification as NotificationType } from "$lib/server/models/notification";
   import Notification from "./Notification.svelte";
 
   const { data } = $props();
 
   const { notificationRecords } = $derived(data);
-  const notifications: NotificationType[] = $derived(notificationRecords?.map(({ data }) => data) ?? []);
+  const notifications = $derived(notificationRecords?.map(({ id, data, user }) => ({ id, data, user })) ?? []);
 </script>
 
 <div class="grid md:grid-cols-2">
@@ -15,8 +14,8 @@
   </div>
   <div>
     <h4 class="h4">Notifications Log</h4>
-    {#each notifications as notification}
-      <Notification {notification} />
+    {#each notifications as {id, data, user} (id)}
+      <Notification data={data} {user} {id} />
     {/each}
   </div>
 </div>
