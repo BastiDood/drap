@@ -2,6 +2,7 @@
   import { assert } from '$lib/assert';
   import { type User } from '$lib/server/database/schema';
   import type { Notification } from '$lib/server/models/notification';
+  import { format } from 'date-fns';
 
   export type TargetUser = Pick<User, 'email' | 'avatarUrl' | 'givenName' | 'familyName'>;
 
@@ -14,6 +15,8 @@
   }
 
   const { data, user, id, deliveredAt, createdAt }: Props = $props();
+  const delivery = $derived(deliveredAt === null ? null : format(deliveredAt, "PPPpp"));
+  const creation = $derived(format(createdAt, "PPPpp"));
 
   function determineTrigger() {
 
@@ -73,11 +76,11 @@
       <p><strong>Subject</strong>: {subject}</p>
     </div>
     <div>
-      <p><strong>Created At</strong>: {createdAt}</p>
+      <p><strong>Created At</strong>: <time datetime={createdAt.toLocaleDateString()}>{creation}</time></p>
       {#if deliveredAt === null}
         <p><strong class="text-warning-600">Undelivered notification</strong></p>
       {:else}
-        <p><strong>Delivered At</strong>: {deliveredAt}</p>
+        <p><strong>Delivered At</strong>: <time datetime={deliveredAt.toLocaleDateString()}>{delivery}</time></p>
       {/if}
     </div>
   </div>
