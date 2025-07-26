@@ -11,7 +11,7 @@ import {
   unique,
   varchar,
 } from 'drizzle-orm/pg-core';
-import { isNull, sql } from 'drizzle-orm';
+import { eq, isNull, sql } from 'drizzle-orm';
 
 import { tstzrange } from './custom/tstzrange';
 import { ulid } from './custom/ulid';
@@ -75,6 +75,25 @@ export const user = app.table(
 );
 export type User = typeof user.$inferSelect;
 export type NewUser = typeof user.$inferInsert;
+
+export const studentView = app.view('student_view').as(
+  qb => qb.select().from(user).where(eq(user.isAdmin, false))
+)
+
+export const labMemberView = app.view('lab_member_view').as(
+  qb => {
+    return qb.select({
+      draftId: facultyChoice.draftId,
+      draftLab: facultyChoiceUser.labId,
+      userLab: user.labId,
+      email: user.email,
+      givenName: user.givenName,
+      familyName: user.familyName,
+      avatarUrl: user.avatarUrl,
+      studentNumber: user.studentNumber,
+    }).from(studentView).rightJoin(facultyChoiceUser, eq(user.id, facultyChoiceUser.studentUserId))
+  }
+);
 
 export const draft = app.table(
   'draft',
