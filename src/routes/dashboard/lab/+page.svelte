@@ -3,9 +3,11 @@
   import { groupby } from 'itertools';
 
   import Member from './Member.svelte';
-
+  
   const { data } = $props();
-  const { lab, heads, members } = $derived(data);
+  const { lab, heads, members, drafts } = $derived(data);
+
+  const latestDraftId = $derived(drafts[0]?.id ?? 1n);
 
   const membersByDraft = $derived(
     Array.from(
@@ -26,6 +28,9 @@
       },
     ),
   );
+
+  const value = $derived([`draft-${latestDraftId}`])
+
 </script>
 
 <h2 class="h2">{lab}</h2>
@@ -45,24 +50,24 @@
   <nav class="list-nav space-y-2">
     <h3 class="h3">Members</h3>
     <ul class="space-y-1">
-      {#each membersByDraft as { draftId, memberUsers } (draftId)}
-        <Accordion multiple collapsible>
-          <Accordion.Item value="draft-{draftId}">
-            {#snippet control()}
-              <span class="h4">Draft {draftId}</span>
-            {/snippet}
-            {#snippet panel()}
-              {#each memberUsers as user (user.email)}
-                <li
-                  class="preset-filled-surface-100-900 hover:preset-filled-surface-200-800 rounded-md p-2 transition-colors duration-150"
-                >
-                  <Member {user} />
-                </li>
-              {/each}
-            {/snippet}
-          </Accordion.Item>
-        </Accordion>
-      {/each}
+      <Accordion {value} multiple collapsible>
+        {#each membersByDraft as { draftId, memberUsers } (draftId)}
+          <li
+            class="preset-filled-surface-100-900 hover:preset-filled-surface-200-800 rounded-md p-2 transition-colors duration-150"
+          >
+            <Accordion.Item value="draft-{draftId}">
+              {#snippet control()}
+                <span class="h4">Draft {draftId}</span>
+              {/snippet}
+              {#snippet panel()}
+                {#each memberUsers as user (user.email)}
+                    <Member {user} />
+                {/each}
+              {/snippet}
+            </Accordion.Item>
+          </li>
+        {/each}
+      </Accordion>
     </ul>
   </nav>
 </div>

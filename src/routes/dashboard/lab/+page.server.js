@@ -23,5 +23,8 @@ export async function load({ locals: { db, session } }) {
     { labName: info.lab, headCount: info.heads.length, memberCount: info.members.length },
     'lab info fetched',
   );
-  return info;
+
+  const drafts = await db.getDrafts();
+
+  return {...info, drafts};
 }
