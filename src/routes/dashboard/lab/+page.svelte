@@ -49,25 +49,27 @@
   </nav>
   <nav class="list-nav space-y-2">
     <h3 class="h3">Members</h3>
-    <ul class="space-y-1">
+    <div class="space-y-1">
       <Accordion {value} multiple collapsible>
         {#each membersByDraft as { draftId, memberUsers } (draftId)}
-          <li
-            class="preset-filled-surface-100-900 hover:preset-filled-surface-200-800 rounded-md p-2 transition-colors duration-150"
-          >
-            <Accordion.Item value="draft-{draftId}">
-              {#snippet control()}
-                <span class="h4">Draft {draftId}</span>
-              {/snippet}
-              {#snippet panel()}
-                {#each memberUsers as user (user.email)}
-                    <Member {user} />
-                {/each}
+        <Accordion.Item value="draft-{draftId}">
+          {#snippet control()}
+          <span class="h4">Draft {draftId}</span>
+          {/snippet}
+          {#snippet panel()}
+          <ul class="space-y-1">
+            {#each memberUsers as user (user.email)}
+              <li
+                class="preset-filled-surface-100-900 hover:preset-filled-surface-200-800 rounded-md p-2 transition-colors duration-150"
+              >
+                      <Member {user} />
+              </li>
+                  {/each}
+          </ul>
               {/snippet}
             </Accordion.Item>
-          </li>
         {/each}
       </Accordion>
-    </ul>
+    </div>
   </nav>
 </div>
