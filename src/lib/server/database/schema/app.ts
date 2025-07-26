@@ -190,14 +190,14 @@ export type NewFacultyChoiceUser = typeof facultyChoiceUser.$inferInsert;
 export const labMemberView = app.view('lab_member_view').as(
   qb => {
     return qb.select({
-      draftId: facultyChoice.draftId,
+      draftId: facultyChoiceUser.draftId,
       draftLab: facultyChoiceUser.labId,
-      userLab: user.labId,
-      email: user.email,
-      givenName: user.givenName,
-      familyName: user.familyName,
-      avatarUrl: user.avatarUrl,
-      studentNumber: user.studentNumber,
-    }).from(studentView).rightJoin(facultyChoiceUser, eq(user.id, facultyChoiceUser.studentUserId))
+      userLab: studentView.labId,
+      email: studentView.email,
+      givenName: studentView.givenName,
+      familyName: studentView.familyName,
+      avatarUrl: studentView.avatarUrl,
+      studentNumber: studentView.studentNumber,
+    }).from(studentView).rightJoin(facultyChoiceUser, eq(studentView.id, facultyChoiceUser.studentUserId))
   }
 );
