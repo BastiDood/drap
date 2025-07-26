@@ -15,8 +15,8 @@
         const memberUsers = [...members].map(
             ({ email, givenName, familyName, studentNumber, avatarUrl }) => ({
               email: email ?? '',
-              givenName: givenName ?? 'Unknown User',
-              familyName: familyName ?? '???',
+              givenName: givenName ?? '',
+              familyName: familyName ?? '',
               studentNumber: studentNumber ?? '',
               avatarUrl: avatarUrl ?? '',
             }),
