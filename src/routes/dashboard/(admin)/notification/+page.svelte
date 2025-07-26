@@ -4,9 +4,6 @@
   const { data } = $props();
 
   const { notificationRecords } = $derived(data);
-  const notifications = $derived(
-    notificationRecords?.map(({ id, data, user }) => ({ id, data, user })) ?? [],
-  );
 </script>
 
 <div class="grid md:grid-cols-2">
@@ -16,8 +13,14 @@
   </div>
   <div>
     <h4 class="h4">Notifications Log</h4>
-    {#each notifications as { id, data, user } (id)}
-      <Notification {data} {user} {id} />
-    {/each}
+    {#if typeof notificationRecords === 'undefined'}
+      <em>--- No notifications found ---</em>
+    {:else}
+      <div class="space-y-2">
+        {#each notificationRecords as { id, data, user, deliveredAt, createdAt } (id)}
+          <Notification {data} {user} {id} {deliveredAt} {createdAt} />
+        {/each}
+      </div>
+    {/if}
   </div>
 </div>

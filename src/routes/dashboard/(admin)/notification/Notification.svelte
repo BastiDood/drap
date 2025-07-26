@@ -6,7 +6,9 @@
   export type TargetUser = Pick<User, 'email' | 'avatarUrl' | 'givenName' | 'familyName'>;
 
   interface Props {
+    createdAt: Date;
     data: Notification;
+    deliveredAt: Date | null;
     user: TargetUser | null;
     id: string;
   }
