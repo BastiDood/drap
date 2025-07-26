@@ -13,15 +13,13 @@
       groupby(members, ({ draftId }) => Number(draftId)),
       ([draftId, members]) => {
         const memberUsers = [...members].map(
-          ({ email, givenName, familyName, studentNumber, avatarUrl }) => {
-            return {
+            ({ email, givenName, familyName, studentNumber, avatarUrl }) => ({
               email: email ?? '',
               givenName: givenName ?? 'Unknown User',
               familyName: familyName ?? '???',
               studentNumber: studentNumber ?? '',
               avatarUrl: avatarUrl ?? '',
-            };
-          },
+            }),
         );
         return { draftId, memberUsers };
       },
