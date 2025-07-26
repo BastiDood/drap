@@ -2,6 +2,8 @@
   import { assert } from '$lib/assert';
   import { type User } from '$lib/server/database/schema';
   import type { Notification } from '$lib/server/models/notification';
+  import { ArrowPathRoundedSquare } from '@steeze-ui/heroicons';
+  import { Icon } from '@steeze-ui/svelte-icon';
   import { format } from 'date-fns';
 
   export type TargetUser = Pick<User, 'email' | 'avatarUrl' | 'givenName' | 'familyName'>;
@@ -59,16 +61,25 @@
   const subject = $derived.by(determineSubject);
 </script>
 
-<div>
-  <h5 class="h5">
-    {#if data.target === 'Draft'}
-      Draft
-    {:else}
-      Student
+<form class="p-2" method="POST" action="/dashboard/notification/?/redispatch">
+  <div class="flex justify-between">
+    <h5 class="h5">
+      {#if data.target === 'Draft'}
+        Draft
+      {:else}
+        Student
+      {/if}
+      Notification
+    </h5>
+    {#if deliveredAt === null}
+      <button type="submit" class="preset-filled-warning-500 btn">
+        <span><Icon src={ArrowPathRoundedSquare} class="h-6" /></span>
+        <span>Retry Dispatch</span>
+      </button>
     {/if}
-    Notification
-  </h5>
+  </div>
   <small>ID: {id}</small>
+  <input type="hidden" name="id" value={id} />
   <div class="grid grid-cols-2">
     <div>
       <p><strong>Trigger</strong>: {trigger}</p>
@@ -84,4 +95,4 @@
       {/if}
     </div>
   </div>
-</div>
+</form>
