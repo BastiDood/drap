@@ -47,9 +47,9 @@
         case 'RoundStart':
           return `Round ${data.round} Start`;
         case 'RoundSubmit':
-          return `Round ${data.round} Submission by ${data.labId}`;
+          return `Round ${data.round} Submission by ${data.labId.toLocaleUpperCase()}`;
         case 'LotteryIntervention':
-          return `Lottery Intervention of ${user?.email} into ${data.labId}`;
+          return `Lottery Intervention of ${user?.email} into ${data.labId.toLocaleUpperCase()}`;
         case 'Concluded':
           return `Conclusion of Draft ${data.draftId}`;
       }
