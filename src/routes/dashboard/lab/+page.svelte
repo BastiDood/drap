@@ -11,8 +11,8 @@
       let memberUsers = [...members].map(({ email, givenName, familyName, studentNumber, avatarUrl }) => {
         return {
           email: email ?? '',
-          givenName: givenName ?? '',
-          familyName: familyName ?? '',
+          givenName: givenName ?? 'Unknown User',
+          familyName: familyName ?? '???',
           studentNumber: studentNumber ?? '',
           avatarUrl: avatarUrl ?? '',
         }
