@@ -16,11 +16,15 @@
     {#if typeof notificationRecords === 'undefined'}
       <em>--- No notifications found ---</em>
     {:else}
-      <div class="space-y-2">
+      <ul class="space-y-2">
         {#each notificationRecords as { id, data, user, deliveredAt, createdAt } (id)}
-          <Notification {data} {user} {id} {deliveredAt} {createdAt} />
+          <li
+            class="{deliveredAt === null ? "preset-filled-warning-100-900" : "preset-filled-surface-100-900"} hover:{deliveredAt === null ? "preset-filled-warning-200-800" : "preset-filled-surface-200-800"} rounded-md p-2 transition-colors duration-150"
+          >
+            <Notification {data} {user} {id} {deliveredAt} {createdAt} />
+          </li>
         {/each}
-      </div>
+      </ul>
     {/if}
   </div>
 </div>
