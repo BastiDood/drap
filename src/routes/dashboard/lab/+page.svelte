@@ -6,7 +6,7 @@
   import { format } from 'date-fns/format';
 
   const { data } = $props();
-  const { lab, heads, members, drafts } = $derived(data);
+  const { lab, heads, members, faculty, drafts } = $derived(data);
 
   const membersByDraft = $derived(
     Array.from(
@@ -42,6 +42,18 @@
         </li>
       {/each}
     </ul>
+    {#if faculty.length > 0}
+      <h3 class="h3">Faculty</h3>
+      <ul class="space-y-1">
+        {#each faculty as user (user.email)}
+          <li
+          class="preset-filled-surface-100-900 hover:preset-filled-surface-200-800 rounded-md p-2 transition-colors duration-150"
+        >
+          <Member {user} />
+        </li>
+        {/each}
+      </ul>  
+    {/if}
   </nav>
   <nav class="list-nav space-y-2">
     <h3 class="h3">Members</h3>
