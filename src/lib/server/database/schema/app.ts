@@ -15,7 +15,6 @@ import { eq, isNull, sql } from 'drizzle-orm';
 
 import { tstzrange } from './custom/tstzrange';
 import { ulid } from './custom/ulid';
-import { alias } from 'drizzle-orm/pg-core';
 
 export const app = pgSchema('drap');
 

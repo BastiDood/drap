@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { groupby } from 'itertools';
-  import Member from './Member.svelte';
   import { Accordion } from '@skeletonlabs/skeleton-svelte';
+  import { groupby } from 'itertools';
+
+  import Member from './Member.svelte';
 
   const { data } = $props();
   const { lab, heads, members } = $derived(data);
@@ -10,7 +11,7 @@
     Array.from(
       groupby(members, ({ draftId }) => Number(draftId)),
       ([draftId, members]) => {
-        let memberUsers = [...members].map(
+        const memberUsers = [...members].map(
           ({ email, givenName, familyName, studentNumber, avatarUrl }) => {
             return {
               email: email ?? '',
@@ -44,7 +45,7 @@
   <nav class="list-nav space-y-2">
     <h3 class="h3">Members</h3>
     <ul class="space-y-1">
-      {#each membersByDraft as { draftId, memberUsers }}
+      {#each membersByDraft as { draftId, memberUsers } (draftId)}
         <Accordion multiple collapsible>
           <Accordion.Item value="draft-{draftId}">
             {#snippet control()}
