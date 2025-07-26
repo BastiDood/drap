@@ -11,7 +11,7 @@ import {
   unique,
   varchar,
 } from 'drizzle-orm/pg-core';
-import { isNull, sql } from 'drizzle-orm';
+import { eq, isNull, sql } from 'drizzle-orm';
 
 import { tstzrange } from './custom/tstzrange';
 import { ulid } from './custom/ulid';
@@ -182,3 +182,20 @@ export const facultyChoiceUser = app.table(
 );
 export type FacultyChoiceUser = typeof facultyChoiceUser.$inferSelect;
 export type NewFacultyChoiceUser = typeof facultyChoiceUser.$inferInsert;
+
+export const labMemberView = app.view('lab_member_view').as(qb =>
+  qb
+    .select({
+      userId: facultyChoiceUser.studentUserId,
+      draftId: facultyChoiceUser.draftId,
+      draftLab: facultyChoiceUser.labId.getSQL().as('draft_lab'),
+      userLab: user.labId.getSQL().as('user_lab'),
+      email: user.email,
+      givenName: user.givenName,
+      familyName: user.familyName,
+      avatarUrl: user.avatarUrl,
+      studentNumber: user.studentNumber,
+    })
+    .from(user)
+    .rightJoin(facultyChoiceUser, eq(user.id, facultyChoiceUser.studentUserId)),
+);

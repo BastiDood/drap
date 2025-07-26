@@ -99,6 +99,13 @@
       "when": 1753466942383,
       "tag": "0013_nullable-faculty-during-lottery",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1753506632255,
+      "tag": "0014_add-lab-member-view",
+      "breakpoints": true
     }
   ]
 }

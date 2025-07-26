@@ -301,23 +301,34 @@ export class Database implements Loggable {
       orderBy: ({ familyName }) => familyName,
     });
 
-    const members = await this.#db.query.user.findMany({
-      columns: {
-        email: true,
-        givenName: true,
-        familyName: true,
-        avatarUrl: true,
-        studentNumber: true,
-      },
-      where: and(
-        isNotNull(schema.user.id),
-        eq(schema.user.labId, labId),
-        eq(schema.user.isAdmin, false),
-      ),
-      orderBy: ({ familyName }) => familyName,
-    });
+    const faculty = await this.#db
+      .select({
+        email: schema.user.email,
+        givenName: schema.user.givenName,
+        familyName: schema.user.familyName,
+        avatarUrl: schema.user.avatarUrl,
+        studentNumber: schema.user.studentNumber,
+      })
+      .from(schema.user)
+      .leftJoin(
+        schema.facultyChoiceUser,
+        eq(schema.user.id, schema.facultyChoiceUser.studentUserId),
+      )
+      .where(
+        and(
+          eq(schema.user.labId, labId),
+          eq(schema.user.isAdmin, false),
+          isNull(schema.facultyChoiceUser.studentUserId),
+        ),
+      );
 
-    return { lab: labInfo?.name, heads, members };
+    const members = await this.#db
+      .select()
+      .from(schema.labMemberView)
+      .where(eq(schema.labMemberView.draftLab, labId))
+      .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName));
+
+    return { lab: labInfo?.name, heads, members, faculty };
   }
 
   @timed async getDrafts() {
