@@ -1034,33 +1034,24 @@ export class Database implements Loggable {
   @timed async getDraftResultsExport(draftId: bigint) {
     const facultyUser = alias(schema.user, 'faculty_user');
     const studentUser = alias(schema.user, 'student_user');
-
     return await this.#db
       .select({
-        createdAt: schema.facultyChoice.createdAt,
         studentEmail: studentUser.email,
         studentNumber: studentUser.studentNumber,
-        studentGivenName: studentUser.givenName,
         studentFamilyName: studentUser.familyName,
+        studentGivenName: studentUser.givenName,
         facultyEmail: facultyUser.email,
-        facultyGivenName: facultyUser.givenName,
         facultyFamilyName: facultyUser.familyName,
-        lab: schema.activeLabView.id,
+        facultyGivenName: facultyUser.givenName,
+        round: schema.facultyChoiceUser.round,
+        lab: schema.lab.id,
       })
-      .from(schema.facultyChoice)
-      .innerJoin(facultyUser, eq(schema.facultyChoice.userId, facultyUser.id))
-      .leftJoin(
-        schema.facultyChoiceUser,
-        and(
-          eq(schema.facultyChoice.draftId, schema.facultyChoiceUser.draftId),
-          eq(schema.facultyChoice.round, schema.facultyChoiceUser.round),
-          eq(schema.facultyChoice.labId, schema.facultyChoiceUser.labId),
-        ),
-      )
+      .from(schema.facultyChoiceUser)
+      .innerJoin(schema.lab, eq(schema.facultyChoiceUser.labId, schema.lab.id))
+      .leftJoin(facultyUser, eq(schema.facultyChoiceUser.facultyUserId, facultyUser.id))
       .innerJoin(studentUser, eq(schema.facultyChoiceUser.studentUserId, studentUser.id))
-      .innerJoin(schema.activeLabView, eq(schema.facultyChoice.labId, schema.activeLabView.id))
-      .where(eq(schema.facultyChoice.draftId, draftId))
-      .orderBy(studentUser.familyName);
+      .where(eq(schema.facultyChoiceUser.draftId, draftId))
+      .orderBy(asc(schema.facultyChoiceUser.round), asc(schema.lab.id), asc(studentUser.email));
   }
 
   @timed async getDraftEvents(draftId: bigint) {

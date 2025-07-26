@@ -1,6 +1,7 @@
-import { error, redirect } from '@sveltejs/kit';
 import Papa from 'papaparse';
-import { validateBigInt } from '$lib/validators.js';
+import { error, redirect } from '@sveltejs/kit';
+
+import { validateBigInt } from '$lib/validators';
 
 export async function GET({ params: { draftId }, locals: { db, session } }) {
   const did = validateBigInt(draftId);
@@ -31,9 +32,8 @@ export async function GET({ params: { draftId }, locals: { db, session } }) {
   }
 
   db.logger.info('exporting draft results');
-  const draftResults = await db.getDraftResultsExport(did);
-
-  return new Response(Papa.unparse(draftResults), {
+  const results = await db.getDraftResultsExport(did);
+  return new Response(Papa.unparse(results), {
     headers: {
       'Content-Type': 'text/csv',
       'Content-Disposition': 'attachment',
