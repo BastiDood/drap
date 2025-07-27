@@ -17,7 +17,7 @@
     failReason: string | null;
   }
 
-  const { data, user, id, deliveredAt, createdAt }: Props = $props();
+  const { data, user, id, deliveredAt, createdAt, failReason }: Props = $props();
   const delivery = $derived(deliveredAt === null ? null : format(deliveredAt, "PPPpp"));
   const creation = $derived(format(createdAt, "PPPpp"));
 
@@ -105,6 +105,7 @@
       <p><strong>Created At</strong>: <time datetime={createdAt.toLocaleDateString()}>{creation}</time></p>
       {#if deliveredAt === null}
         <p><strong class="text-warning-600">Undelivered notification</strong></p>
+        <p class="text-warning-600"><strong>Reason: </strong> {failReason ?? "Unknown - null failReason"}</p>
       {:else}
         <p><strong>Delivered At</strong>: <time datetime={deliveredAt.toLocaleDateString()}>{delivery}</time></p>
       {/if}
