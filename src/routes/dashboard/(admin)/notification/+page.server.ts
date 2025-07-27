@@ -1,5 +1,6 @@
+import { error, redirect } from '@sveltejs/kit';
 import { getQueue } from '$lib/server/queue/redis.js';
-import { redirect } from '@sveltejs/kit';
+import { validateString } from '$lib/forms.js';
 
 export async function load({ locals: { db, session }, parent }) {
   if (typeof session?.user === 'undefined') {
@@ -34,4 +35,46 @@ export async function load({ locals: { db, session }, parent }) {
   );
 
   return { notificationRecords };
+}
+
+export const actions = {
+  async redispatch({ locals: { db, session, dispatch }, request }) {
+    if (typeof session?.user === 'undefined') {
+      db.logger.error('attempt to redispatch notification without session');
+      error(401);
+    }
+
+    const { user } = session;
+
+    if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
+      db.logger.error(
+        { isAdmin: user.isAdmin, googleUserId: user.googleUserId, labId: user.labId },
+        'insufficient permissions to request redispatch',
+      );
+      error(403);
+    }
+
+    const data = await request.formData();
+    const id = validateString(data.get('id'));
+
+    const notificationRecord = await db.getNotification(id);
+
+    if (typeof notificationRecord === 'undefined') {
+      db.logger.error(
+        { id },
+        'notification not found'
+      );
+      error(404);
+    }
+
+    if (notificationRecord.deliveredAt !== null) {
+      db.logger.error(
+        { id, notification: notificationRecord },
+        'attempting redispatach of dispatched notification'
+      );
+      error(400);
+    }
+
+    await dispatch.redispatchNotification(id);
+  }
 }
