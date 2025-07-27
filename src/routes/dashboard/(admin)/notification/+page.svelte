@@ -27,11 +27,11 @@
       <em>--- No notifications found ---</em>
     {:else}
       <ul class="space-y-1">
-        {#each filteredNotificationRecords as { id, data, user, deliveredAt, createdAt } (id)}
+        {#each filteredNotificationRecords as notificationRecord (notificationRecord.id)}
           <li
-            class="{deliveredAt === null ? "preset-filled-warning-100-900" : "preset-filled-surface-100-900"} hover:{deliveredAt === null ? "preset-filled-warning-200-800" : "preset-filled-surface-200-800"} rounded-md p-2 transition-colors duration-150"
+            class="{notificationRecord.deliveredAt === null ? "preset-filled-warning-100-900" : "preset-filled-surface-100-900"} hover:{notificationRecord.deliveredAt === null ? "preset-filled-warning-200-800" : "preset-filled-surface-200-800"} rounded-md p-2 transition-colors duration-150"
           >
-            <Notification {data} {user} {id} {deliveredAt} {createdAt} />
+            <Notification {...notificationRecord} />
           </li>
         {/each}
       </ul>

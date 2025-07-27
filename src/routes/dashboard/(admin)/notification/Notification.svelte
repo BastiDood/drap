@@ -14,6 +14,7 @@
     deliveredAt: Date | null;
     user: TargetUser | null;
     id: string;
+    failReason: string | null;
   }
 
   const { data, user, id, deliveredAt, createdAt }: Props = $props();

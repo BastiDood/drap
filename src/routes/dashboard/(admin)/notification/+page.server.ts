@@ -18,18 +18,18 @@ export async function load({ locals: { db, session }, parent }) {
     notifications.map(async notification => {
       const { id, data, deliveredAt } = notification;
       
-      // check the job's status
-      let isFailed = false;
+      // check the job's status, assume existence of job.failReason implies job.isFailed
+      let failReason = null;
       if (deliveredAt === null) {
         const job = await getQueue().getJob(id);
         // assume that any job in the db but without queue records has failed
-        isFailed = (typeof job === 'undefined' || await job.isFailed())
+        failReason = await job?.failedReason ?? "Unknown - job is no longer in queue";
       }
 
       // retrieve the user data for notifications that involve it
       if ('userId' in data && typeof data.userId !== 'undefined')
-        return { ...notification, user: await db.getUserById(data.userId), isFailed };
-      return { ...notification, user: null, isFailed };
+        return { ...notification, user: await db.getUserById(data.userId), failReason };
+      return { ...notification, user: null, failReason };
     }),
   );
 
