@@ -13,16 +13,12 @@
       groupby(members, ({ draftId }) => Number(draftId)),
       ([draftId, members]) => ({
         draftId,
-        memberUsers: Array.from(
-          members,
-          ({ email, givenName, familyName, studentNumber, avatarUrl }) => ({
-            email: email ?? '',
-            givenName: givenName ?? '',
-            familyName: familyName ?? '',
-            studentNumber: studentNumber ?? '',
-            avatarUrl: avatarUrl ?? '',
-          }),
-        ),
+        memberUsers: Array.from(members, ({ email, givenName, familyName, avatarUrl }) => ({
+          email: email ?? '',
+          givenName: givenName ?? '',
+          familyName: familyName ?? '',
+          avatarUrl: avatarUrl ?? '',
+        })),
       }),
     ),
   );

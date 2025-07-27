@@ -292,7 +292,6 @@ export class Database implements Loggable {
         givenName: true,
         familyName: true,
         avatarUrl: true,
-        studentNumber: true,
       },
       where: and(
         isNotNull(schema.user.id),
@@ -308,7 +307,6 @@ export class Database implements Loggable {
         givenName: schema.user.givenName,
         familyName: schema.user.familyName,
         avatarUrl: schema.user.avatarUrl,
-        studentNumber: schema.user.studentNumber,
       })
       .from(schema.user)
       .leftJoin(
@@ -324,7 +322,13 @@ export class Database implements Loggable {
       );
 
     const members = await this.#db
-      .select()
+      .select({
+        draftId: schema.labMemberView.draftId,
+        email: schema.labMemberView.email,
+        givenName: schema.labMemberView.givenName,
+        familyName: schema.labMemberView.familyName,
+        avatarUrl: schema.labMemberView.avatarUrl,
+      })
       .from(schema.labMemberView)
       .where(eq(schema.labMemberView.draftLab, labId))
       .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName));
