@@ -1,5 +1,5 @@
-import { logError, logger } from '$lib/server/logger';
 import { Database } from '$lib/server/database';
+import { logError, logger } from '$lib/server/logger';
 import { NotificationDispatcher } from '$lib/server/queue';
 
 export async function handle({ event, resolve }) {

@@ -1,5 +1,5 @@
-import { getContext, setContext } from 'svelte';
 import { createToaster } from '@skeletonlabs/skeleton-svelte';
+import { getContext, setContext } from 'svelte';
 
 const TOASTER = Symbol('skeleton.toaster');
 

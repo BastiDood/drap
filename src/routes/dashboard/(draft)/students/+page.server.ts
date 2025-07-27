@@ -1,10 +1,12 @@
+import assert from 'node:assert/strict';
+
+import { error, redirect } from '@sveltejs/kit';
+
 import {
-  type Notification,
   createDraftRoundStartedNotification,
   createDraftRoundSubmittedNotification,
+  type Notification,
 } from '$lib/server/models/notification';
-import { error, redirect } from '@sveltejs/kit';
-import assert from 'node:assert/strict';
 import { validateString } from '$lib/forms';
 
 export async function load({ locals: { db, session }, parent }) {

@@ -1,5 +1,6 @@
-import type { Logger } from 'pino';
 import assert from 'node:assert/strict';
+
+import type { Logger } from 'pino';
 
 export interface Loggable {
   logger: Logger;

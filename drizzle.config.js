@@ -1,5 +1,5 @@
-import { env, loadEnvFile } from 'node:process';
 import assert from 'node:assert/strict';
+import { env, loadEnvFile } from 'node:process';
 
 import { defineConfig } from 'drizzle-kit';
 

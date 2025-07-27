@@ -1,8 +1,8 @@
 import type { BulkJobOptions } from 'bullmq';
 import type { Logger } from 'pino';
 
-import { type Loggable, timed } from '$lib/server/database/decorators';
 import type { Database } from '$lib/server/database';
+import { type Loggable, timed } from '$lib/server/database/decorators';
 import type { Notification } from '$lib/server/models/notification';
 
 import { getQueue } from './redis';

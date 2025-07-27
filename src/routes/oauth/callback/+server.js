@@ -1,11 +1,13 @@
-import * as GOOGLE from '$lib/server/env/google';
-import { AuthorizationCode, IdToken, TokenResponse } from '$lib/server/models/oauth';
-import { error, redirect } from '@sveltejs/kit';
-import { ok, strictEqual } from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
-import { fetchJwks } from '$lib/server/email/jwks';
+import { ok, strictEqual } from 'node:assert/strict';
+
+import { error, redirect } from '@sveltejs/kit';
 import { jwtVerify } from 'jose';
 import { parse } from 'valibot';
+
+import * as GOOGLE from '$lib/server/env/google';
+import { AuthorizationCode, IdToken, TokenResponse } from '$lib/server/models/oauth';
+import { fetchJwks } from '$lib/server/email/jwks';
 
 export async function GET({
   fetch,

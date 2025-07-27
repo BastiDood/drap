@@ -1,10 +1,9 @@
 import { Queue, QueueEvents, Worker } from 'bullmq';
 import { Redis } from 'ioredis';
 
-import { building } from '$app/environment';
-
 import * as APP from '$lib/server/env';
 import * as REDIS from '$lib/server/env/redis';
+import { building } from '$app/environment';
 import { initializeProcessor } from '$lib/server/email';
 import { logger } from '$lib/server/logger';
 

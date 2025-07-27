@@ -1,8 +1,8 @@
 import {
-  type InferOutput,
   boolean,
   email,
   everyItem,
+  type InferOutput,
   literal,
   maxLength,
   minLength,

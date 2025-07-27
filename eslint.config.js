@@ -1,12 +1,11 @@
-import globals from 'globals';
-
 import css from '@eslint/css';
+import globals from 'globals';
 import html from '@html-eslint/eslint-plugin';
+import imsort from '@bastidood/eslint-plugin-imsort';
 import js from '@eslint/js';
 import prettier from 'eslint-config-prettier';
 import svelte from 'eslint-plugin-svelte';
 import ts from 'typescript-eslint';
-
 import { defineConfig } from 'eslint/config';
 import { tailwind4 } from 'tailwind-csstree';
 
@@ -70,7 +69,14 @@ export default defineConfig(
   },
   {
     files: ['**/*.js', '**/*.ts', '**/*.svelte'],
-    extends: [js.configs.recommended, ...ts.configs.recommended, ...ts.configs.stylistic, prettier],
+    extends: [
+      js.configs.recommended,
+      ...ts.configs.recommended,
+      ...ts.configs.stylistic,
+      imsort.configs.all,
+      prettier,
+    ],
+    plugins: { '@bastidood/imsort': imsort },
     rules: {
       '@typescript-eslint/class-methods-use-this': 'error',
       '@typescript-eslint/default-param-last': 'error',
@@ -178,7 +184,6 @@ export default defineConfig(
       'require-atomic-updates': 'error',
       'require-await': 'error',
       'require-unicode-regexp': 'error',
-      'sort-imports': ['error', { allowSeparatedGroups: true }],
       'symbol-description': 'error',
       yoda: ['warn', 'never', { exceptRange: true }],
     },

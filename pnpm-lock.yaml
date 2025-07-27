@@ -69,6 +69,9 @@ importers:
         specifier: ^1.1.0
         version: 1.1.0(typescript@5.8.3)
     devDependencies:
+      '@bastidood/eslint-plugin-imsort':
+        specifier: ^0.9.0
+        version: 0.9.0
       '@eslint/css':
         specifier: ^0.10.0
         version: 0.10.0
@@ -152,6 +155,9 @@ packages:
   '@babel/runtime@7.28.2':
     resolution: {integrity: sha512-KHp2IflsnGywDjBWDkR9iEqiWSpc8GIi0lgTT3mOElT0PP1tG26P4tmFI2YvAdzgq9RGyoHZQEIEdZy6Ec5xCA==}
     engines: {node: '>=6.9.0'}
+
+  '@bastidood/eslint-plugin-imsort@0.9.0':
+    resolution: {integrity: sha512-bROzavoUKpARku9CbRJz6CNVWO4N7r8//286DAu5/rQVTljysbLw8l7A8tkTAgRVt3Dd9muLGNuFNxepmAKNcA==}
 
   '@drizzle-team/brocli@0.10.2':
     resolution: {integrity: sha512-z33Il7l5dKjUgGULTqBsQBQwckHh5AbIuxhdsIxDDiZAzBOrZO6q9ogcWC65kU382AfynTfgNumVcNIjuIua6w==}
@@ -2334,6 +2340,10 @@ snapshots:
       core-js-pure: 3.44.0
 
   '@babel/runtime@7.28.2': {}
+
+  '@bastidood/eslint-plugin-imsort@0.9.0':
+    dependencies:
+      itertools: 2.4.1
 
   '@drizzle-team/brocli@0.10.2': {}
 

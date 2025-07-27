@@ -1,4 +1,5 @@
 import { error, fail, redirect } from '@sveltejs/kit';
+
 import { validateEmail, validateString } from '$lib/forms';
 
 export async function load({ locals: { db, session } }) {

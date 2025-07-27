@@ -1,15 +1,17 @@
+import assert from 'node:assert/strict';
+
+import groupBy from 'just-group-by';
+import { error, fail, redirect } from '@sveltejs/kit';
+import { repeat, roundrobin, zip } from 'itertools';
+
 import {
-  type Notification,
   createDraftConcludedNotification,
   createDraftLotteryInterventionNotification,
   createDraftRoundStartedNotification,
   createUserNotification,
+  type Notification,
 } from '$lib/server/models/notification';
-import { error, fail, redirect } from '@sveltejs/kit';
-import { repeat, roundrobin, zip } from 'itertools';
 import { validateEmail, validateString } from '$lib/forms';
-import assert from 'node:assert/strict';
-import groupBy from 'just-group-by';
 
 export async function load({ locals: { db, session }, parent }) {
   if (typeof session?.user === 'undefined') {

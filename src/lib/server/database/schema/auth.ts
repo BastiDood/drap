@@ -1,10 +1,10 @@
 import { boolean, pgSchema, timestamp } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
+import { user } from './app';
+
 import { bytea } from './custom/bytea';
 import { ulid } from './custom/ulid';
-
-import { user } from './app';
 
 export const auth = pgSchema('auth');
 
