@@ -76,7 +76,7 @@
   const subject = $derived.by(determineSubject);
 </script>
 
-<form class="p-2" method="POST" action="/dashboard/notification/?/redispatch">
+<div class="p-2">
   <div class="flex justify-between">
     <h5 class="h5">
       {#if data.target === 'Draft'}
@@ -87,14 +87,16 @@
       Notification
     </h5>
     {#if deliveredAt === null}
+    <form method="POST" action="/dashboard/notification/?/redispatch">
+      <input type="hidden" name="id" value={id} />
       <button type="submit" class="preset-filled-warning-500 btn">
         <span><Icon src={ArrowPathRoundedSquare} class="h-6" /></span>
         <span>Retry Dispatch</span>
       </button>
+    </form>
     {/if}
   </div>
   <small>ID: {id}</small>
-  <input type="hidden" name="id" value={id} />
   <div class="grid grid-cols-2">
     <div>
       <p><strong>Trigger</strong>: {trigger}</p>
@@ -111,4 +113,4 @@
       {/if}
     </div>
   </div>
-</form>
+</div>
