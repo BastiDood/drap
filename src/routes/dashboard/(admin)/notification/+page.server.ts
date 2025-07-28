@@ -70,7 +70,7 @@ export const actions = {
     if (notificationRecord.deliveredAt !== null) {
       db.logger.error(
         { id, notification: notificationRecord },
-        'attempting redispatach of dispatched notification'
+        'attempting redispatch of dispatched notification'
       );
       error(400);
     }
