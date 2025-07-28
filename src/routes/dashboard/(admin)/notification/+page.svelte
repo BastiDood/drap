@@ -8,8 +8,8 @@
   let showDelivered = $state(false);
 
   const filteredNotificationRecords = $derived(
-    (notificationRecords ?? []).filter(({ deliveredAt }) => deliveredAt === null || showDelivered)
-  )
+    (notificationRecords ?? []).filter(({ deliveredAt }) => deliveredAt === null || showDelivered),
+  );
 </script>
 
 <div class="grid md:grid-cols-2">
@@ -29,7 +29,11 @@
       <ul class="space-y-1">
         {#each filteredNotificationRecords as notificationRecord (notificationRecord.id)}
           <li
-            class="{notificationRecord.deliveredAt === null ? "preset-filled-warning-100-900" : "preset-filled-surface-100-900"} hover:{notificationRecord.deliveredAt === null ? "preset-filled-warning-200-800" : "preset-filled-surface-200-800"} rounded-md p-2 transition-colors duration-150"
+            class="{notificationRecord.deliveredAt === null
+              ? 'preset-filled-warning-100-900'
+              : 'preset-filled-surface-100-900'} hover:{notificationRecord.deliveredAt === null
+              ? 'preset-filled-warning-200-800'
+              : 'preset-filled-surface-200-800'} rounded-md p-2 transition-colors duration-150"
           >
             <Notification {...notificationRecord} />
           </li>

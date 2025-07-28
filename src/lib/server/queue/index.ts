@@ -44,7 +44,7 @@ export class NotificationDispatcher implements Loggable {
   @timed async redispatchNotification(requestId: string) {
     const job = await getQueue().getJob(requestId);
     this.#logger.info('retrying job', { requestId });
-    
+
     // consider the possibility that the job might not be in the queue anymore
     if (typeof job === 'undefined') {
       this.#logger.warn('job no longer exists in queue; re-adding');

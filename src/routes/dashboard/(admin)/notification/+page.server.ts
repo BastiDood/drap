@@ -18,13 +18,13 @@ export async function load({ locals: { db, session }, parent }) {
   const notificationRecords = await Promise.all(
     notifications.map(async notification => {
       const { id, data, deliveredAt } = notification;
-      
+
       // check the job's status, assume existence of job.failReason implies job.isFailed
       let failReason = null;
       if (deliveredAt === null) {
         const job = await getQueue().getJob(id);
         // assume that any job in the db but without queue records has failed
-        failReason = await job?.failedReason ?? "Unknown - job is no longer in queue";
+        failReason = (await job?.failedReason) ?? 'Unknown - job is no longer in queue';
       }
 
       // retrieve the user data for notifications that involve it
@@ -61,21 +61,18 @@ export const actions = {
     const notificationRecord = await db.getNotification(id);
 
     if (typeof notificationRecord === 'undefined') {
-      db.logger.error(
-        { id },
-        'notification not found'
-      );
+      db.logger.error({ id }, 'notification not found');
       error(404);
     }
 
     if (notificationRecord.deliveredAt !== null) {
       db.logger.error(
         { id, notification: notificationRecord },
-        'attempting redispatch of dispatched notification'
+        'attempting redispatch of dispatched notification',
       );
       error(400);
     }
 
     await dispatch.redispatchNotification(id);
-  }
-}
+  },
+};

@@ -20,13 +20,13 @@
   }
 
   const { data, user, id, deliveredAt, createdAt, failReason }: Props = $props();
-  const delivery = $derived(deliveredAt === null ? null : format(deliveredAt, "PPPpp"));
-  const creation = $derived(format(createdAt, "PPPpp"));
+  const delivery = $derived(deliveredAt === null ? null : format(deliveredAt, 'PPPpp'));
+  const creation = $derived(format(createdAt, 'PPPpp'));
 
   function determineTrigger() {
     if (data.target === 'User') {
       assert(user !== null);
-      return "Syncing draft results"
+      return 'Syncing draft results';
     } else {
       switch (data.type) {
         case 'RoundStart':
@@ -34,9 +34,9 @@
         case 'RoundSubmit':
           return `Submission by ${data.labId.toLocaleUpperCase()}`;
         case 'LotteryIntervention':
-          return "Lottery Round";
+          return 'Lottery Round';
         case 'Concluded':
-          return "Draft Conclusion";
+          return 'Draft Conclusion';
       }
     }
   }
@@ -48,9 +48,9 @@
     } else {
       switch (data.type) {
         case 'RoundSubmit':
-          return "All Draft Administrators";
+          return 'All Draft Administrators';
         default:
-          return "All Draft Administrators and Lab Heads";
+          return 'All Draft Administrators and Lab Heads';
       }
     }
   }
@@ -58,7 +58,7 @@
   function determineSubject() {
     if (data.target === 'User') {
       assert(user !== null);
-      return `Assignment of ${user.familyName} to ${data.labId.toLocaleUpperCase()}`
+      return `Assignment of ${user.familyName} to ${data.labId.toLocaleUpperCase()}`;
     } else {
       switch (data.type) {
         case 'RoundStart':
@@ -91,29 +91,33 @@
       Notification
     </h5>
     {#if deliveredAt === null}
-    <form method="POST" action="/dashboard/notification/?/redispatch" use:enhance={({ submitter }) => {
-      assert(submitter !== null);
-      assert(submitter instanceof HTMLButtonElement);
-      submitter.disabled = true;
-      return async ({ update, result }) => {
-        submitter.disabled = false;
-        await update();
-        switch (result.type) {
-          case 'success':
-            toaster.success({ title: 'Redispatch successful!' })
-          case 'failure':
-            toaster.error({ title: `Redispatch failed (${result.status})` })
-          default:
-            break;
-        }
-      }
-    }}>
-      <input type="hidden" name="id" value={id} />
-      <button type="submit" class="preset-filled-warning-500 btn">
-        <span><Icon src={ArrowPathRoundedSquare} class="h-6" /></span>
-        <span>Retry Dispatch</span>
-      </button>
-    </form>
+      <form
+        method="POST"
+        action="/dashboard/notification/?/redispatch"
+        use:enhance={({ submitter }) => {
+          assert(submitter !== null);
+          assert(submitter instanceof HTMLButtonElement);
+          submitter.disabled = true;
+          return async ({ update, result }) => {
+            submitter.disabled = false;
+            await update();
+            switch (result.type) {
+              case 'success':
+                toaster.success({ title: 'Redispatch successful!' });
+              case 'failure':
+                toaster.error({ title: `Redispatch failed (${result.status})` });
+              default:
+                break;
+            }
+          };
+        }}
+      >
+        <input type="hidden" name="id" value={id} />
+        <button type="submit" class="preset-filled-warning-500 btn">
+          <span><Icon src={ArrowPathRoundedSquare} class="h-6" /></span>
+          <span>Retry Dispatch</span>
+        </button>
+      </form>
     {/if}
   </div>
   <small>ID: {id}</small>
@@ -124,12 +128,21 @@
       <p><strong>Subject</strong>: {subject}</p>
     </div>
     <div>
-      <p><strong>Created At</strong>: <time datetime={createdAt.toLocaleDateString()}>{creation}</time></p>
+      <p>
+        <strong>Created At</strong>:
+        <time datetime={createdAt.toLocaleDateString()}>{creation}</time>
+      </p>
       {#if deliveredAt === null}
         <p><strong class="text-warning-600">Undelivered notification</strong></p>
-        <p class="text-warning-600"><strong>Reason: </strong> {failReason ?? "Unknown - null failReason"}</p>
+        <p class="text-warning-600">
+          <strong>Reason: </strong>
+          {failReason ?? 'Unknown - null failReason'}
+        </p>
       {:else}
-        <p><strong>Delivered At</strong>: <time datetime={deliveredAt.toLocaleDateString()}>{delivery}</time></p>
+        <p>
+          <strong>Delivered At</strong>:
+          <time datetime={deliveredAt.toLocaleDateString()}>{delivery}</time>
+        </p>
       {/if}
     </div>
   </div>
