@@ -1,7 +1,9 @@
 <script lang="ts">
+  import { enhance } from '$app/forms';
   import { assert } from '$lib/assert';
   import { type User } from '$lib/server/database/schema';
   import type { Notification } from '$lib/server/models/notification';
+  import { useToaster } from '$lib/toast';
   import { ArrowPathRoundedSquare } from '@steeze-ui/heroicons';
   import { Icon } from '@steeze-ui/svelte-icon';
   import { format } from 'date-fns';
@@ -74,6 +76,8 @@
   const trigger = $derived.by(determineTrigger);
   const to = $derived.by(determineRecipient);
   const subject = $derived.by(determineSubject);
+
+  const toaster = useToaster();
 </script>
 
 <div class="p-2">
@@ -87,7 +91,23 @@
       Notification
     </h5>
     {#if deliveredAt === null}
-    <form method="POST" action="/dashboard/notification/?/redispatch">
+    <form method="POST" action="/dashboard/notification/?/redispatch" use:enhance={({ submitter }) => {
+      assert(submitter !== null);
+      assert(submitter instanceof HTMLButtonElement);
+      submitter.disabled = true;
+      return async ({ update, result }) => {
+        submitter.disabled = false;
+        await update();
+        switch (result.type) {
+          case 'success':
+            toaster.success({ title: 'Redispatch successful!' })
+          case 'failure':
+            toaster.error({ title: `Redispatch failed (${result.status})` })
+          default:
+            break;
+        }
+      }
+    }}>
       <input type="hidden" name="id" value={id} />
       <button type="submit" class="preset-filled-warning-500 btn">
         <span><Icon src={ArrowPathRoundedSquare} class="h-6" /></span>
