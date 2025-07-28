@@ -21,7 +21,7 @@ export class NotificationDispatcher implements Loggable {
     const requestIds = requests.map(({ id }) => id);
     this.#logger.info('new notification requests bulk received', { requestIds });
 
-    const jobs = await getQueue().addBulk(
+    const jobs = await this.queue.addBulk(
       requestIds.map(jobId => ({
         name: 'notification',
         data: null,
@@ -42,7 +42,7 @@ export class NotificationDispatcher implements Loggable {
   }
 
   @timed async redispatchNotification(requestId: string) {
-    const job = await getQueue().getJob(requestId);
+    const job = await this.queue.getJob(requestId);
     this.#logger.info('retrying job', { requestId });
 
     // consider the possibility that the job might not be in the queue anymore
@@ -57,5 +57,10 @@ export class NotificationDispatcher implements Loggable {
 
   get logger() {
     return this.#logger;
+  }
+
+  // eslint-disable-next-line @typescript-eslint/class-methods-use-this
+  get queue() {
+    return getQueue();
   }
 }
