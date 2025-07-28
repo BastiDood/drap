@@ -28,9 +28,10 @@ export async function load({ locals: { db, session }, parent }) {
       }
 
       // retrieve the user data for notifications that involve it
+      let user = null;
       if ('userId' in data && typeof data.userId !== 'undefined')
-        return { ...notification, user: await db.getUserById(data.userId), failReason };
-      return { ...notification, user: null, failReason };
+        user = await db.getUserById(data.userId);
+      return { ...notification, user, failReason };
     }),
   );
 
