@@ -14,7 +14,11 @@
   use:enhance={({ formData, submitter, cancel }) => {
     const rounds = parseInt(validateString(formData.get('rounds')), 10);
     const closesAt = new Date(validateString(formData.get('closes-at')));
-    if (!confirm(`Are you sure you want to start a new draft with ${rounds} rounds and with registation that closes at ${format(closesAt, 'PPPpp')}?`)) {
+    if (
+      !confirm(
+        `Are you sure you want to start a new draft with ${rounds} rounds and with registation that closes at ${format(closesAt, 'PPPpp')}?`,
+      )
+    ) {
       cancel();
       return;
     }
@@ -31,12 +35,7 @@
     <span>Registration Closing Date</span>
     <div class="input-group grid-cols-[auto_1fr_auto]">
       <div class="ig-cell preset-tonal"><Icon src={CalendarDays} class="size-6" /></div>
-      <input
-        type="datetime-local"
-        required
-        name="closes-at"
-        class="ig-input px-4 py-2"
-      />
+      <input type="datetime-local" required name="closes-at" class="ig-input px-4 py-2" />
     </div>
   </label>
   <label class="label">

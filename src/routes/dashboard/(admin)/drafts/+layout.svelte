@@ -22,7 +22,8 @@
         of <strong>{maxRounds}</strong>. It opened last <strong>{startDate}</strong> at
         <strong>{startTime}</strong>.
         {#if registrationClosesAt >= new Date()}
-          Draft registration is currently open and will close on <strong>{closeDate}</strong> at <strong>{closeTime}</strong>.
+          Draft registration is currently open and will close on <strong>{closeDate}</strong> at
+          <strong>{closeTime}</strong>.
         {:else}
           Draft registration closed on <strong>{closeDate}</strong> at <strong>{closeTime}</strong>.
         {/if}
