@@ -72,11 +72,11 @@ export const actions = {
     }
 
     const data = await request.formData();
-    const draft = BigInt(validateString(data.get('draft')));
+    const draftId = BigInt(validateString(data.get('draft')));
     const labs = data.getAll('labs').map(validateString);
     const remarks = data.getAll('remarks').map(validateMaybeEmptyString);
     db.logger.info(
-      { draft, labCount: labs.length, remarksCount: remarks.length },
+      { draftId, labCount: labs.length, remarksCount: remarks.length },
       'lab rankings submitted',
     );
 
@@ -85,7 +85,7 @@ export const actions = {
       return fail(400);
     }
 
-    const maxRounds = await db.getMaxRoundInDraft(draft);
+    const maxRounds = await db.getMaxRoundInDraft(draftId);
     if (typeof maxRounds === 'undefined') {
       db.logger.error('cannot find the target draft');
       error(404);
@@ -98,7 +98,7 @@ export const actions = {
       error(400);
     }
 
-    await db.insertStudentRanking(draft, user.id, labs, remarks);
+    await db.insertStudentRanking(draftId, user.id, labs, remarks);
     db.logger.info('lab rankings inserted');
     // TODO: Add proper logging/handling of insert errors.
   },
