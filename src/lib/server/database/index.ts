@@ -614,10 +614,10 @@ export class Database implements Loggable {
     };
   }
 
-  @timed async initDraft(maxRounds: number) {
+  @timed async initDraft(maxRounds: number, registrationClosesAt: Date) {
     return await this.#db
       .insert(schema.draft)
-      .values({ maxRounds })
+      .values({ maxRounds, registrationClosesAt })
       .returning({
         id: schema.draft.id,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
