@@ -6,7 +6,7 @@
 
   const { data } = $props();
   const {
-    draft: { id: draftId, currRound, maxRounds },
+    draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
     availableLabs,
     rankings,
   } = $derived(data);
@@ -21,8 +21,14 @@
   <Progress max={maxRounds} value={currRound} meterBg="bg-primary-700-300" />
 {:else}
   {#if typeof rankings === 'undefined'}
-    <SubmitRankings {draftId} {maxRounds} {availableLabs} />
-  {:else if typeof rankings !== 'undefined'}
+    {#if registrationClosesAt >= new Date()}
+      <SubmitRankings {draftId} {maxRounds} {availableLabs} />
+    {:else}
+      {@const closeDate = format(registrationClosesAt, 'PPP')}
+      {@const closeTime = format(registrationClosesAt, 'pp')}
+      <WarningAlert>Registration for the current draft closed on <strong>{closeDate}</strong> at <strong>{closeTime}</strong>. You may no longer register.</WarningAlert>
+    {/if}
+  {:else}
     {@const { createdAt, labRemarks } = rankings}
     {@const creationDate = format(createdAt, 'PPP')}
     {@const creationTime = format(createdAt, 'pp')}

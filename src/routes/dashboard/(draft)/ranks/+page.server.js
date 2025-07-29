@@ -91,10 +91,15 @@ export const actions = {
       error(404);
     }
 
-    const { currRound, maxRounds } = draft;
+    const { currRound, maxRounds, registrationClosesAt } = draft;
     db.logger.info({ maxRounds }, 'max rounds for target draft determined');
     if (currRound !== 0) {
       db.logger.error(draft, 'cannot submit rankings to an ongoing draft')
+      error(403);
+    }
+
+    if (registrationClosesAt < new Date()) {
+      db.logger.error(draft, 'attempt to submit rankings after registration closed')
       error(403);
     }
 

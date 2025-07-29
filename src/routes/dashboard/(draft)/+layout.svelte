@@ -3,10 +3,12 @@
 
   const { data, children } = $props();
   const {
-    draft: { id, currRound, maxRounds, activePeriodStart },
+    draft: { id, currRound, maxRounds, registrationClosesAt, activePeriodStart },
   } = $derived(data);
   const startDate = $derived(format(activePeriodStart, 'PPP'));
   const startTime = $derived(format(activePeriodStart, 'pp'));
+  const closeDate = $derived(format(registrationClosesAt, 'PPP'));
+  const closeTime = $derived(format(registrationClosesAt, 'pp'));
 </script>
 
 <div class="card prose dark:prose-invert max-w-none p-4">
@@ -19,6 +21,11 @@
       <strong>Draft #{id}</strong> is currently on Round <strong>{currRound}</strong>
       of <strong>{maxRounds}</strong>. It opened last <strong>{startDate}</strong> at
       <strong>{startTime}</strong>.
+      {#if currRound === 0 && registrationClosesAt >= new Date()}
+        Draft registration is currently open and will close on <strong>{closeDate}</strong> at <strong>{closeTime}</strong>.
+      {:else}
+        Draft registration closed on <strong>{closeDate}</strong> at <strong>{closeTime}</strong>.
+      {/if}
     {/if}
   </p>
 </div>
