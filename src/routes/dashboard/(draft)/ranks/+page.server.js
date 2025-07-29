@@ -85,13 +85,18 @@ export const actions = {
       return fail(400);
     }
 
-    const maxRounds = await db.getMaxRoundInDraft(draftId);
-    if (typeof maxRounds === 'undefined') {
+    const draft = await db.getDraftById(draftId);
+    if (typeof draft === 'undefined') {
       db.logger.error('cannot find the target draft');
       error(404);
     }
 
+    const { currRound, maxRounds } = draft;
     db.logger.info({ maxRounds }, 'max rounds for target draft determined');
+    if (currRound !== 0) {
+      db.logger.error(draft, 'cannot submit rankings to an ongoing draft')
+      error(403);
+    }
 
     if (labs.length > maxRounds) {
       db.logger.error({ labCount: labs.length }, 'lab rankings exceed max round');

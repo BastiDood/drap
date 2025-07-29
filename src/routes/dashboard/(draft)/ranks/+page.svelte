@@ -12,46 +12,47 @@
   } = $derived(data);
 </script>
 
-{#if typeof rankings === 'undefined'}
-  <SubmitRankings {draftId} {maxRounds} {availableLabs} />
-{:else}
-  {@const { createdAt, labRemarks } = rankings}
-  {@const creationDate = format(createdAt, 'PPP')}
-  {@const creationTime = format(createdAt, 'pp')}
-  {#if currRound === null}
-    <WarningAlert
-      >A lottery is currently ongoing. You may join again soon in the next draft.</WarningAlert
-    >
-  {:else}
-    <WarningAlert>A draft is currently ongoing. You may no longer register.</WarningAlert>
-    <Progress max={maxRounds} value={currRound} meterBg="bg-primary-700-300" />
-  {/if}
-  <div
-    class="card preset-tonal-secondary border-secondary-500 prose dark:prose-invert max-w-none border p-4"
+{#if currRound === null}
+  <WarningAlert
+    >A lottery is currently ongoing. You may join again soon in the next draft.</WarningAlert
   >
-    <p>
-      You have already submitted your lab preferences for this draft last <strong
-        >{creationDate}</strong
-      >
-      at
-      <strong>{creationTime}</strong>.
-    </p>
-    {#if labRemarks.length > 0}
-      <ol>
-        {#each labRemarks as { lab, remark } (lab)}
-          <li>
-            {lab}
-            {#if remark.length > 0}
-              <p class="text-sm">
-                <strong>Remarks:</strong>
-                {remark}
-              </p>
-            {/if}
-          </li>
-        {/each}
-      </ol>
-    {:else}
-      <p>You have selected none of the labs. You will thus skip ahead to the lottery phase.</p>
-    {/if}
-  </div>
+{:else if currRound > 0}
+  <WarningAlert>A draft is currently ongoing. You may no longer register.</WarningAlert>
+  <Progress max={maxRounds} value={currRound} meterBg="bg-primary-700-300" />
+{:else}
+  {#if typeof rankings === 'undefined'}
+    <SubmitRankings {draftId} {maxRounds} {availableLabs} />
+  {:else if typeof rankings !== 'undefined'}
+    {@const { createdAt, labRemarks } = rankings}
+    {@const creationDate = format(createdAt, 'PPP')}
+    {@const creationTime = format(createdAt, 'pp')}
+    <div
+      class="card preset-tonal-secondary border-secondary-500 prose dark:prose-invert max-w-none border p-4"
+    >
+      <p>
+        You have already submitted your lab preferences for this draft last <strong
+          >{creationDate}</strong
+        >
+        at
+        <strong>{creationTime}</strong>.
+      </p>
+      {#if labRemarks.length > 0}
+        <ol>
+          {#each labRemarks as { lab, remark } (lab)}
+            <li>
+              {lab}
+              {#if remark.length > 0}
+                <p class="text-sm">
+                  <strong>Remarks:</strong>
+                  {remark}
+                </p>
+              {/if}
+            </li>
+          {/each}
+        </ol>
+      {:else}
+        <p>You have selected none of the labs. You will thus skip ahead to the lottery phase.</p>
+      {/if}
+    </div>
+  {/if}
 {/if}
