@@ -42,7 +42,9 @@ export async function load({ locals: { db, session }, parent }) {
 
   db.logger.trace({ availableLabCount: availableLabs.length }, 'available labs fetched');
 
-  return { draft, availableLabs, rankings };
+  const requestedAt = new Date();
+
+  return { draft, availableLabs, rankings, requestedAt };
 }
 
 export const actions = {
@@ -72,11 +74,11 @@ export const actions = {
     }
 
     const data = await request.formData();
-    const draft = BigInt(validateString(data.get('draft')));
+    const draftId = BigInt(validateString(data.get('draft')));
     const labs = data.getAll('labs').map(validateString);
     const remarks = data.getAll('remarks').map(validateMaybeEmptyString);
     db.logger.info(
-      { draft, labCount: labs.length, remarksCount: remarks.length },
+      { draftId, labCount: labs.length, remarksCount: remarks.length },
       'lab rankings submitted',
     );
 
@@ -85,20 +87,30 @@ export const actions = {
       return fail(400);
     }
 
-    const maxRounds = await db.getMaxRoundInDraft(draft);
-    if (typeof maxRounds === 'undefined') {
+    const draft = await db.getDraftById(draftId);
+    if (typeof draft === 'undefined') {
       db.logger.error('cannot find the target draft');
       error(404);
     }
 
+    const { currRound, maxRounds, registrationClosesAt } = draft;
     db.logger.info({ maxRounds }, 'max rounds for target draft determined');
+    if (currRound !== 0) {
+      db.logger.error(draft, 'cannot submit rankings to an ongoing draft');
+      error(403);
+    }
+
+    if (registrationClosesAt < new Date()) {
+      db.logger.error(draft, 'attempt to submit rankings after registration closed');
+      error(403);
+    }
 
     if (labs.length > maxRounds) {
       db.logger.error({ labCount: labs.length }, 'lab rankings exceed max round');
       error(400);
     }
 
-    await db.insertStudentRanking(draft, user.id, labs, remarks);
+    await db.insertStudentRanking(draftId, user.id, labs, remarks);
     db.logger.info('lab rankings inserted');
     // TODO: Add proper logging/handling of insert errors.
   },

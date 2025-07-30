@@ -82,6 +82,10 @@ export const draft = app.table(
     id: bigint('id', { mode: 'bigint' }).notNull().generatedAlwaysAsIdentity().primaryKey(),
     currRound: smallint('curr_round').default(0),
     maxRounds: smallint('max_rounds').notNull(),
+    registrationClosesAt: timestamp('registration_closes_at', {
+      mode: 'date',
+      withTimezone: true,
+    }).notNull(),
     activePeriod: tstzrange('active_period')
       .notNull()
       .default(sql`tstzrange(now(), null, '[)')`),

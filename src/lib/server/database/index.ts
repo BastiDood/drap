@@ -342,6 +342,7 @@ export class Database implements Loggable {
         id: schema.draft.id,
         currRound: schema.draft.currRound,
         maxRounds: schema.draft.maxRounds,
+        registrationClosesAt: schema.draft.registrationClosesAt,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate).as('_'),
         activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceDate),
       })
@@ -354,6 +355,7 @@ export class Database implements Loggable {
       .select({
         currRound: schema.draft.currRound,
         maxRounds: schema.draft.maxRounds,
+        registrationClosesAt: schema.draft.registrationClosesAt,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
         activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceDate),
       })
@@ -368,6 +370,7 @@ export class Database implements Loggable {
         id: schema.draft.id,
         currRound: schema.draft.currRound,
         maxRounds: schema.draft.maxRounds,
+        registrationClosesAt: schema.draft.registrationClosesAt,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
         activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceDate),
       })
@@ -614,10 +617,10 @@ export class Database implements Loggable {
     };
   }
 
-  @timed async initDraft(maxRounds: number) {
+  @timed async initDraft(maxRounds: number, registrationClosesAt: Date) {
     return await this.#db
       .insert(schema.draft)
-      .values({ maxRounds })
+      .values({ maxRounds, registrationClosesAt })
       .returning({
         id: schema.draft.id,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),

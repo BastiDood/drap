@@ -87,9 +87,10 @@ export const actions = {
 
     const data = await request.formData();
     const rounds = parseInt(validateString(data.get('rounds')), 10);
-    db.logger.info({ rounds }, 'initializing draft');
+    const closesAt = new Date(validateString(data.get('closes-at')));
+    db.logger.info({ rounds, closesAt }, 'initializing draft');
 
-    const initDraft = await db.initDraft(rounds);
+    const initDraft = await db.initDraft(rounds, closesAt);
     db.logger.info(initDraft, 'draft initialized');
   },
   async start({ locals: { db, session, dispatch }, request }) {

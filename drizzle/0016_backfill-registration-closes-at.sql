@@ -1,0 +1,1 @@
+UPDATE "drap"."draft" SET "registration_closes_at" = upper("active_period") WHERE upper("drap"."draft"."active_period") IS NOT NULL;

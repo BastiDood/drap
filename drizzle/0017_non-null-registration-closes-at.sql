@@ -1,0 +1,1 @@
+ALTER TABLE "drap"."draft" ALTER COLUMN "registration_closes_at" SET NOT NULL;

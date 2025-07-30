@@ -7,5 +7,8 @@ export async function load({ locals: { db } }) {
     error(499);
   }
   db.logger.info(draft, 'active draft found');
-  return { draft };
+
+  const requestedAt = new Date();
+
+  return { draft, requestedAt };
 }
