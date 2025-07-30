@@ -20,7 +20,7 @@
   <WarningAlert>A draft is currently ongoing. You may no longer register.</WarningAlert>
   <Progress max={maxRounds} value={currRound} meterBg="bg-primary-700-300" />
 {:else if typeof rankings === 'undefined'}
-  {#if registrationClosesAt >= new Date()}
+  {#if new Date() < registrationClosesAt}
     <SubmitRankings {draftId} {maxRounds} {availableLabs} />
   {:else}
     {@const closeDate = format(registrationClosesAt, 'PPP')}

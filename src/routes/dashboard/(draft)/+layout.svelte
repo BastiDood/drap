@@ -21,7 +21,7 @@
       <strong>Draft #{id}</strong> is currently on Round <strong>{currRound}</strong>
       of <strong>{maxRounds}</strong>. It opened last <strong>{startDate}</strong> at
       <strong>{startTime}</strong>.
-      {#if currRound === 0 && registrationClosesAt >= new Date()}
+      {#if currRound === 0 && new Date() < registrationClosesAt}
         Draft registration is currently open and will close on <strong>{closeDate}</strong> at
         <strong>{closeTime}</strong>.
       {:else}
