@@ -4,7 +4,7 @@
   const { data, children } = $props();
   const {
     draft: { id, currRound, maxRounds, registrationClosesAt, activePeriodStart },
-    requestedAt
+    requestedAt,
   } = $derived(data);
   const startDate = $derived(format(activePeriodStart, 'PPP'));
   const startTime = $derived(format(activePeriodStart, 'pp'));
