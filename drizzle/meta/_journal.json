@@ -120,6 +120,13 @@
       "when": 1753848105230,
       "tag": "0016_backfill-registration-closes-at",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1753848264626,
+      "tag": "0017_non-null-registration-closes-at",
+      "breakpoints": true
     }
   ]
 }
