@@ -1,1 +1,1 @@
-ALTER TABLE "drap"."draft" ADD COLUMN "registration_closes_at" timestamp with time zone NOT NULL;
+ALTER TABLE "drap"."draft" ADD COLUMN "registration_closes_at" timestamp with time zone;

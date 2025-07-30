@@ -1,5 +1,5 @@
 {
-  "id": "e5598ac5-3d91-4fbb-9eac-1e63e4df0ce9",
+  "id": "946f55e7-059d-4c83-8d4f-4049e094babf",
   "prevId": "654c92fd-9ec2-48ad-a56c-89ab71065f7c",
   "version": "7",
   "dialect": "postgresql",
@@ -42,7 +42,7 @@
           "name": "registration_closes_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "active_period": {
           "name": "active_period",

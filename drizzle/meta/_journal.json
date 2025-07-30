@@ -110,7 +110,7 @@
     {
       "idx": 15,
       "version": "7",
-      "when": 1753799369310,
+      "when": 1753792995673,
       "tag": "0015_add_registration_closes_at",
       "breakpoints": true
     }
