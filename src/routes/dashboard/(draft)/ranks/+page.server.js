@@ -42,7 +42,9 @@ export async function load({ locals: { db, session }, parent }) {
 
   db.logger.trace({ availableLabCount: availableLabs.length }, 'available labs fetched');
 
-  return { draft, availableLabs, rankings };
+  const requestedAt = new Date();
+
+  return { draft, availableLabs, rankings, requestedAt };
 }
 
 export const actions = {

@@ -2,7 +2,7 @@
   import { format } from 'date-fns';
 
   const { data, children } = $props();
-  const { draft } = $derived(data);
+  const { draft, requestedAt } = $derived(data);
 </script>
 
 {#if typeof draft !== 'undefined'}
@@ -21,7 +21,7 @@
         <strong>Draft #{draftId}</strong> is currently on Round <strong>{currRound}</strong>
         of <strong>{maxRounds}</strong>. It opened last <strong>{startDate}</strong> at
         <strong>{startTime}</strong>.
-        {#if new Date() < registrationClosesAt}
+        {#if requestedAt < registrationClosesAt}
           Draft registration is currently open and will close on <strong>{closeDate}</strong> at
           <strong>{closeTime}</strong>.
         {:else}
