@@ -20,18 +20,7 @@
 {:else if currRound > 0}
   <WarningAlert>A draft is currently ongoing. You may no longer register.</WarningAlert>
   <Progress max={maxRounds} value={currRound} meterBg="bg-primary-700-300" />
-{:else if typeof rankings === 'undefined'}
-  {#if requestedAt < registrationClosesAt}
-    <SubmitRankings {draftId} {maxRounds} {availableLabs} />
-  {:else}
-    {@const closeDate = format(registrationClosesAt, 'PPP')}
-    {@const closeTime = format(registrationClosesAt, 'pp')}
-    <WarningAlert
-      >Registration for the current draft closed on <strong>{closeDate}</strong> at
-      <strong>{closeTime}</strong>. You may no longer register.</WarningAlert
-    >
-  {/if}
-{:else}
+{:else if typeof rankings !== 'undefined'}
   {@const { createdAt, labRemarks } = rankings}
   {@const creationDate = format(createdAt, 'PPP')}
   {@const creationTime = format(createdAt, 'pp')}
@@ -63,4 +52,13 @@
       <p>You have selected none of the labs. You will thus skip ahead to the lottery phase.</p>
     {/if}
   </div>
+{:else if requestedAt < registrationClosesAt}
+  <SubmitRankings {draftId} {maxRounds} {availableLabs} />
+{:else}
+  {@const closeDate = format(registrationClosesAt, 'PPP')}
+  {@const closeTime = format(registrationClosesAt, 'pp')}
+  <WarningAlert
+    >Registration for the current draft closed on <strong>{closeDate}</strong> at
+    <strong>{closeTime}</strong>. You may no longer register.</WarningAlert
+  >
 {/if}
