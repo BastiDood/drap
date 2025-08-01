@@ -280,7 +280,7 @@ export class Database implements Loggable {
   }
 
   /** Ideally invoked from within a transaction. */
-  @timed async getLabMembers(labId: string) {
+  @timed async getLabMembers(labId: string, draftId?: bigint) {
     const labInfo = await this.#db.query.lab.findFirst({
       columns: { name: true },
       where: ({ id }) => eq(id, labId),
@@ -321,17 +321,35 @@ export class Database implements Loggable {
         ),
       );
 
-    const members = await this.#db
-      .select({
-        draftId: schema.labMemberView.draftId,
-        email: schema.labMemberView.email,
-        givenName: schema.labMemberView.givenName,
-        familyName: schema.labMemberView.familyName,
-        avatarUrl: schema.labMemberView.avatarUrl,
-      })
-      .from(schema.labMemberView)
-      .where(eq(schema.labMemberView.draftLab, labId))
-      .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName));
+    let members = [];
+
+    // if no draft id is specified
+    if (typeof draftId === 'undefined') 
+      members = await this.#db
+        .select({
+          draftId: schema.labMemberView.draftId,
+          email: schema.labMemberView.email,
+          givenName: schema.labMemberView.givenName,
+          familyName: schema.labMemberView.familyName,
+          avatarUrl: schema.labMemberView.avatarUrl,
+        })
+        .from(schema.labMemberView)
+        .where(eq(schema.labMemberView.draftLab, labId))
+        .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName));
+
+    // if a draft id is specified
+    else 
+      members = await this.#db
+        .select({
+          draftId: schema.labMemberView.draftId,
+          email: schema.labMemberView.email,
+          givenName: schema.labMemberView.givenName,
+          familyName: schema.labMemberView.familyName,
+          avatarUrl: schema.labMemberView.avatarUrl,
+        })
+        .from(schema.labMemberView)
+        .where(and(eq(schema.labMemberView.draftLab, labId), eq(schema.labMemberView.draftId, draftId)))
+        .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName));
 
     return { lab: labInfo?.name, heads, members, faculty };
   }
