@@ -21,20 +21,24 @@ export async function load({ locals: { db, session } }) {
   let info;
 
   if (session.user.isAdmin) {
-    info = await db.getLabMembers(session.user.labId)
+    info = await db.getLabMembers(session.user.labId);
   } else {
-    const userLatestDraft = await db.getUserLabAssignmentDraftId(session.user.id, session.user.labId);
+    const userLatestDraft = await db.getUserLabAssignmentDraftId(
+      session.user.id,
+      session.user.labId,
+    );
     if (typeof userLatestDraft === 'undefined') {
       db.logger.error(
         {
           userId: session.user.id,
-          labId: session.user.labId
-        }, 
-        'attempt to get draft id for student-user\'s assignment to this lab returned undefined');
+          labId: session.user.labId,
+        },
+        "attempt to get draft id for student-user's assignment to this lab returned undefined",
+      );
       error(400);
-    } 
+    }
     const { draftId: userLatestDraftId } = userLatestDraft;
-    info = await db.getLabMembers(session.user.labId, userLatestDraftId)
+    info = await db.getLabMembers(session.user.labId, userLatestDraftId);
   }
 
   await db.getLabMembers(session.user.labId);

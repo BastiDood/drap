@@ -324,7 +324,7 @@ export class Database implements Loggable {
     let members = [];
 
     // if no draft id is specified
-    if (typeof draftId === 'undefined') 
+    if (typeof draftId === 'undefined')
       members = await this.#db
         .select({
           draftId: schema.labMemberView.draftId,
@@ -336,9 +336,8 @@ export class Database implements Loggable {
         .from(schema.labMemberView)
         .where(eq(schema.labMemberView.draftLab, labId))
         .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName));
-
     // if a draft id is specified
-    else 
+    else
       members = await this.#db
         .select({
           draftId: schema.labMemberView.draftId,
@@ -348,7 +347,9 @@ export class Database implements Loggable {
           avatarUrl: schema.labMemberView.avatarUrl,
         })
         .from(schema.labMemberView)
-        .where(and(eq(schema.labMemberView.draftLab, labId), eq(schema.labMemberView.draftId, draftId)))
+        .where(
+          and(eq(schema.labMemberView.draftLab, labId), eq(schema.labMemberView.draftId, draftId)),
+        )
         .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName));
 
     return { lab: labInfo?.name, heads, members, faculty };
@@ -360,13 +361,13 @@ export class Database implements Loggable {
    * @param labId The id of the lab they were assigned for
    */
   @timed async getUserLabAssignmentDraftId(userId: string, labId: string) {
-    const [first, ..._rest] =  await this.#db
+    const [first, ..._rest] = await this.#db
       .select({
-        draftId: schema.labMemberView.draftId
+        draftId: schema.labMemberView.draftId,
       })
       .from(schema.labMemberView)
       .where(and(eq(schema.labMemberView.userId, userId), eq(schema.labMemberView.draftLab, labId)))
-      .orderBy(desc(schema.labMemberView.draftId))
+      .orderBy(desc(schema.labMemberView.draftId));
     return first;
   }
 
