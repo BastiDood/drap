@@ -367,12 +367,12 @@ export class Database implements Loggable {
    * @param labId The id of the lab they were assigned for
    */
   @timed async getUserLabAssignmentDraftId(userId: string, labId: string) {
-    const [first, ..._rest] = await this.#db
+    return await this.#db
       .select({ draftId: schema.labMemberView.draftId })
       .from(schema.labMemberView)
       .where(and(eq(schema.labMemberView.userId, userId), eq(schema.labMemberView.draftLab, labId)))
-      .orderBy(desc(schema.labMemberView.draftId));
-    return first;
+      .orderBy(desc(schema.labMemberView.draftId))
+      .then(assertOptional);
   }
 
   @timed async getDrafts() {
