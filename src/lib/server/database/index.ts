@@ -322,11 +322,11 @@ export class Database implements Loggable {
       );
 
     let members: {
-        draftId: bigint;
-        email: string | null;
-        givenName: string | null;
-        familyName: string | null;
-        avatarUrl: string | null;
+      draftId: bigint;
+      email: string | null;
+      givenName: string | null;
+      familyName: string | null;
+      avatarUrl: string | null;
     }[] = [];
 
     // if no draft id is specified
@@ -368,9 +368,7 @@ export class Database implements Loggable {
    */
   @timed async getUserLabAssignmentDraftId(userId: string, labId: string) {
     const [first, ..._rest] = await this.#db
-      .select({
-        draftId: schema.labMemberView.draftId,
-      })
+      .select({ draftId: schema.labMemberView.draftId })
       .from(schema.labMemberView)
       .where(and(eq(schema.labMemberView.userId, userId), eq(schema.labMemberView.draftLab, labId)))
       .orderBy(desc(schema.labMemberView.draftId));
