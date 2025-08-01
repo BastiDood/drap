@@ -17,7 +17,7 @@ import {
 } from 'drizzle-orm';
 import { array, object, parse, string } from 'valibot';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { enumerate, izip } from 'itertools';
+import { enumerate, first, izip } from 'itertools';
 import type { Logger } from 'pino';
 
 import * as DRIZZLE from '$lib/server/env/drizzle';
@@ -352,6 +352,21 @@ export class Database implements Loggable {
         .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName));
 
     return { lab: labInfo?.name, heads, members, faculty };
+  }
+
+  /**
+   * Get the latest draft id that a user participated in
+   * @param userId The id of the user whose draft id is to be identified
+   */
+  @timed async getUserLatestDraftId(userId: string) {
+    const [first, ..._rest] =  await this.#db
+      .select({
+        draftId: schema.labMemberView.draftId
+      })
+      .from(schema.labMemberView)
+      .where(eq(schema.labMemberView.userId, userId))
+      .orderBy(desc(schema.labMemberView.draftId))
+    return first;
   }
 
   @timed async getDrafts() {
