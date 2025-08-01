@@ -321,7 +321,13 @@ export class Database implements Loggable {
         ),
       );
 
-    let members = [];
+    let members: {
+        draftId: bigint;
+        email: string | null;
+        givenName: string | null;
+        familyName: string | null;
+        avatarUrl: string | null;
+    }[] = [];
 
     // if no draft id is specified
     if (typeof draftId === 'undefined')
