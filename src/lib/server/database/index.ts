@@ -280,7 +280,7 @@ export class Database implements Loggable {
   }
 
   /** Ideally invoked from within a transaction. */
-  @timed async getLabMembers(labId: string) {
+  @timed async getLabMembers(labId: string, draftId?: bigint) {
     const labInfo = await this.#db.query.lab.findFirst({
       columns: { name: true },
       where: ({ id }) => eq(id, labId),
@@ -321,19 +321,59 @@ export class Database implements Loggable {
         ),
       );
 
-    const members = await this.#db
-      .select({
-        draftId: schema.labMemberView.draftId,
-        email: schema.labMemberView.email,
-        givenName: schema.labMemberView.givenName,
-        familyName: schema.labMemberView.familyName,
-        avatarUrl: schema.labMemberView.avatarUrl,
-      })
-      .from(schema.labMemberView)
-      .where(eq(schema.labMemberView.draftLab, labId))
-      .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName));
+    // eslint-disable-next-line @typescript-eslint/init-declarations
+    let members: {
+      draftId: bigint;
+      email: string | null;
+      givenName: string | null;
+      familyName: string | null;
+      avatarUrl: string | null;
+    }[];
+
+    // if no draft id is specified
+    if (typeof draftId === 'undefined')
+      members = await this.#db
+        .select({
+          draftId: schema.labMemberView.draftId,
+          email: schema.labMemberView.email,
+          givenName: schema.labMemberView.givenName,
+          familyName: schema.labMemberView.familyName,
+          avatarUrl: schema.labMemberView.avatarUrl,
+        })
+        .from(schema.labMemberView)
+        .where(eq(schema.labMemberView.draftLab, labId))
+        .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName));
+    // if a draft id is specified
+    else
+      members = await this.#db
+        .select({
+          draftId: schema.labMemberView.draftId,
+          email: schema.labMemberView.email,
+          givenName: schema.labMemberView.givenName,
+          familyName: schema.labMemberView.familyName,
+          avatarUrl: schema.labMemberView.avatarUrl,
+        })
+        .from(schema.labMemberView)
+        .where(
+          and(eq(schema.labMemberView.draftLab, labId), eq(schema.labMemberView.draftId, draftId)),
+        )
+        .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName));
 
     return { lab: labInfo?.name, heads, members, faculty };
+  }
+
+  /**
+   * Get the latest draft id that a user participated in to be assigned to a certain lab
+   * @param userId The id of the user whose draft id is to be identified
+   * @param labId The id of the lab they were assigned for
+   */
+  @timed async getUserLabAssignmentDraftId(userId: string, labId: string) {
+    return await this.#db
+      .select({ draftId: schema.labMemberView.draftId })
+      .from(schema.labMemberView)
+      .where(and(eq(schema.labMemberView.userId, userId), eq(schema.labMemberView.draftLab, labId)))
+      .orderBy(desc(schema.labMemberView.draftId))
+      .then(assertOptional);
   }
 
   @timed async getDrafts() {
