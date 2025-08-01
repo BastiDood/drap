@@ -19,6 +19,7 @@ export async function load({ locals: { db, session } }) {
   }
 
   type LabInfo = Awaited<ReturnType<typeof db.getLabMembers>>;
+  // eslint-disable-next-line @typescript-eslint/init-declarations
   let info: LabInfo;
 
   if (session.user.isAdmin) {
