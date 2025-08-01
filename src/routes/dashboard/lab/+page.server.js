@@ -18,7 +18,7 @@ export async function load({ locals: { db, session } }) {
     error(403);
   }
 
-  let info;
+  let info = Object();
 
   if (session.user.isAdmin) {
     info = await db.getLabMembers(session.user.labId);

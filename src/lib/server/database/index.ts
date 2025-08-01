@@ -17,7 +17,7 @@ import {
 } from 'drizzle-orm';
 import { array, object, parse, string } from 'valibot';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import { enumerate, first, izip } from 'itertools';
+import { enumerate, izip } from 'itertools';
 import type { Logger } from 'pino';
 
 import * as DRIZZLE from '$lib/server/env/drizzle';
