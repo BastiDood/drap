@@ -18,7 +18,26 @@ export async function load({ locals: { db, session } }) {
     error(403);
   }
 
-  const info = await db.getLabMembers(session.user.labId);
+  let info;
+
+  if (session.user.isAdmin) {
+    info = await db.getLabMembers(session.user.labId)
+  } else {
+    const userLatestDraft = await db.getUserLabAssignmentDraftId(session.user.id, session.user.labId);
+    if (typeof userLatestDraft === 'undefined') {
+      db.logger.error(
+        {
+          userId: session.user.id,
+          labId: session.user.labId
+        }, 
+        'attempt to get draft id for student-user\'s assignment to this lab returned undefined');
+      error(400);
+    } 
+    const { draftId: userLatestDraftId } = userLatestDraft;
+    info = await db.getLabMembers(session.user.labId, userLatestDraftId)
+  }
+
+  await db.getLabMembers(session.user.labId);
   db.logger.info(
     { labName: info.lab, headCount: info.heads.length, memberCount: info.members.length },
     'lab info fetched',
