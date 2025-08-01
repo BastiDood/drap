@@ -18,7 +18,8 @@ export async function load({ locals: { db, session } }) {
     error(403);
   }
 
-  let info = Object();
+  type LabInfo = Awaited<ReturnType<typeof db.getLabMembers>>;
+  let info: LabInfo;
 
   if (session.user.isAdmin) {
     info = await db.getLabMembers(session.user.labId);
