@@ -51,6 +51,9 @@ At runtime, the server requires the following environment variables to be presen
 
 [Google Cloud Console]: https://console.cloud.google.com/
 
+> [!IMPORTANT]
+> The `GOOGLE_OAUTH_REDIRECT_URI` must point to `/oauth/callback/`.
+
 ### Setting up the Codebase
 
 ```bash
@@ -58,10 +61,10 @@ At runtime, the server requires the following environment variables to be presen
 pnpm install
 
 # Check formatting.
-pnpm fmt # prettier
+pnpm fmt
 
 # Apply formatting auto-fix.
-pnpm fmt:fix # prettier --write .
+pnpm fmt:fix
 ```
 
 ### Linting the Codebase
@@ -78,19 +81,29 @@ pnpm lint
 ### Running the Development Server
 
 ```bash
+# Run all database and queue services in the background.
+docker compose --profile dev up --detach
+
 # Run the Vite dev server for SvelteKit.
 pnpm dev
-
-# Run the Vite preview server for SvelteKit.
-pnpm preview
 ```
 
-### Building the Applications
+### Running the Production Server
 
 ```bash
 # Build the main web application (SvelteKit).
 pnpm build
+
+# Run the Vite preview server for SvelteKit.
+pnpm preview
+
+# Alternatively, run the Node.js script directly.
 node --env-file=.env build/index.js
+```
+
+```bash
+# Or, just use Docker for everything.
+docker compose --profile prod up --detach
 ```
 
 ## Acknowledgements
