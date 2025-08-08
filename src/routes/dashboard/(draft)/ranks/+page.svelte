@@ -1,8 +1,10 @@
 <script lang="ts">
-  import { Progress } from '@skeletonlabs/skeleton-svelte';
-  import SubmitRankings from './SubmitRankings.svelte';
-  import WarningAlert from '$lib/alerts/Warning.svelte';
   import { format } from 'date-fns';
+  import { Progress } from '@skeletonlabs/skeleton-svelte';
+
+  import WarningAlert from '$lib/alerts/Warning.svelte';
+
+  import SubmitRankings from './SubmitRankings.svelte';
 
   const { data } = $props();
   const {

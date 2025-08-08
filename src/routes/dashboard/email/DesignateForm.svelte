@@ -22,6 +22,7 @@
 <script lang="ts">
   import { Avatar } from '@skeletonlabs/skeleton-svelte';
   import { Icon } from '@steeze-ui/svelte-icon';
+
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';
 

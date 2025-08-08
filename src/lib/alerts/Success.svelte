@@ -1,7 +1,7 @@
 <script lang="ts">
+  import { CheckCircle as src } from '@steeze-ui/heroicons';
   import { Icon } from '@steeze-ui/svelte-icon';
   import type { Snippet } from 'svelte';
-  import { CheckCircle as src } from '@steeze-ui/heroicons';
 
   interface Props {
     children?: Snippet;

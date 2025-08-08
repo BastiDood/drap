@@ -1,9 +1,9 @@
 <script lang="ts">
-  import InvitedVersusRegistered from './InvitedVersusRegistered.svelte';
   import groupBy from 'just-group-by';
 
   import AdminForm from './AdminForm.svelte';
   import FacultyForm from './FacultyForm.svelte';
+  import InvitedVersusRegistered from './InvitedVersusRegistered.svelte';
 
   const { data } = $props();
   const { labs, faculty } = $derived(data);

@@ -10,6 +10,7 @@
   import { Accordion } from '@skeletonlabs/skeleton-svelte';
   import { Github } from '@steeze-ui/simple-icons';
   import { Icon } from '@steeze-ui/svelte-icon';
+
   import banner from '$lib/banner.png?url';
 </script>
 

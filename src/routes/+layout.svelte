@@ -1,9 +1,11 @@
 <script lang="ts">
-  import './app.css';
-  import SideBar from './SideBar.svelte';
   import { Toaster } from '@skeletonlabs/skeleton-svelte';
+
   import banner from '$lib/banner.png?url';
   import { initToaster } from '$lib/toast';
+
+  import './app.css';
+  import SideBar from './SideBar.svelte';
 
   const { data, children } = $props();
   const { user } = $derived(data);

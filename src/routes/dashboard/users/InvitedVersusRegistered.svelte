@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { ComponentProps } from 'svelte';
+
   import Faculty from '$lib/users/Faculty.svelte';
   import Invited from '$lib/users/Invited.svelte';
   import type { schema } from '$lib/server/database';

@@ -9,11 +9,13 @@
   import { Accordion, Tabs } from '@skeletonlabs/skeleton-svelte';
   import type { ComponentProps } from 'svelte';
   import { Icon } from '@steeze-ui/svelte-icon';
-  import LabAccordionItem from './LabAccordionItem.svelte';
+
   import Student from '$lib/users/Student.svelte';
+  import type { schema } from '$lib/server/database';
+
+  import LabAccordionItem from './LabAccordionItem.svelte';
   import SystemLogsTab from './SystemLogsTab.svelte';
   import { TabType } from './TabType';
-  import type { schema } from '$lib/server/database';
 
   type Lab = Pick<schema.Lab, 'id' | 'name' | 'quota'>;
   type SystemLogsProps = ComponentProps<typeof SystemLogsTab>;

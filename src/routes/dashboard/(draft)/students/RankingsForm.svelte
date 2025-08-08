@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Avatar } from '@skeletonlabs/skeleton-svelte';
   import { SvelteSet } from 'svelte/reactivity';
+
   import { assert } from '$lib/assert';
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';

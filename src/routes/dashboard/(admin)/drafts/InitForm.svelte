@@ -1,9 +1,10 @@
 <script>
   import { CalendarDays } from '@steeze-ui/heroicons';
+  import { format } from 'date-fns';
   import { Icon } from '@steeze-ui/svelte-icon';
+
   import { assert } from '$lib/assert';
   import { enhance } from '$app/forms';
-  import { format } from 'date-fns';
   import { validateString } from '$lib/forms';
 </script>
 

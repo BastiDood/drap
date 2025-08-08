@@ -1,9 +1,11 @@
 <script lang="ts">
   import { Avatar } from '@skeletonlabs/skeleton-svelte';
-  import RankingsForm from './RankingsForm.svelte';
   import { SvelteSet } from 'svelte/reactivity';
+
   import WarningAlert from '$lib/alerts/Warning.svelte';
   import { getOrdinalSuffix } from '$lib/ordinal';
+
+  import RankingsForm from './RankingsForm.svelte';
 
   const { data } = $props();
   const {

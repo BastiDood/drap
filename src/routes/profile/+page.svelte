@@ -1,6 +1,7 @@
 <script lang="ts">
-  import ProfileForm from './ProfileForm.svelte';
   import WarningAlert from '$lib/alerts/Warning.svelte';
+
+  import ProfileForm from './ProfileForm.svelte';
 
   const { data } = $props();
   const {

@@ -1,11 +1,13 @@
 <script lang="ts">
   import { Icon } from '@steeze-ui/svelte-icon';
-  import LotteryStudent from './LotteryStudent.svelte';
   import { ShieldExclamation } from '@steeze-ui/heroicons';
+
   import { assert } from '$lib/assert';
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';
   import { useToaster } from '$lib/toast';
+
+  import LotteryStudent from './LotteryStudent.svelte';
 
   type Lab = Pick<schema.Lab, 'id' | 'name'>;
   type User = Pick<

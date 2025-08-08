@@ -1,5 +1,6 @@
 <script lang="ts">
   import { Avatar } from '@skeletonlabs/skeleton-svelte';
+
   import type { schema } from '$lib/server/database';
 
   type Lab = Pick<schema.Lab, 'id' | 'name'>;

@@ -1,10 +1,11 @@
 <script lang="ts">
-  import DesignateForm from './DesignateForm.svelte';
   import { Icon } from '@steeze-ui/svelte-icon';
   import { ShieldExclamation } from '@steeze-ui/heroicons';
 
   import ErrorAlert from '$lib/alerts/Error.svelte';
   import WarningAlert from '$lib/alerts/Warning.svelte';
+
+  import DesignateForm from './DesignateForm.svelte';
 
   const { data } = $props();
   const {

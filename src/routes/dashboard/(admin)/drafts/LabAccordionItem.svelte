@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { run } from 'svelte/legacy';
-
   import { Accordion } from '@skeletonlabs/skeleton-svelte';
   import type { ComponentProps } from 'svelte';
+  import { run } from 'svelte/legacy';
+
   import Student from '$lib/users/Student.svelte';
   import type { schema } from '$lib/server/database';
 

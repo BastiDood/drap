@@ -1,6 +1,7 @@
 <script lang="ts">
   import { ArrowRight } from '@steeze-ui/heroicons';
   import { Icon } from '@steeze-ui/svelte-icon';
+
   import { assert } from '$lib/assert';
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';

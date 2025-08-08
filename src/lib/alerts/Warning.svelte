@@ -1,7 +1,7 @@
 <script lang="ts">
+  import { ExclamationTriangle as src } from '@steeze-ui/heroicons';
   import { Icon } from '@steeze-ui/svelte-icon';
   import type { Snippet } from 'svelte';
-  import { ExclamationTriangle as src } from '@steeze-ui/heroicons';
 
   interface Props {
     children?: Snippet;

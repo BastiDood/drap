@@ -2,6 +2,7 @@
   import { Avatar } from '@skeletonlabs/skeleton-svelte';
   import { Icon } from '@steeze-ui/svelte-icon';
   import { UserCircle } from '@steeze-ui/heroicons';
+
   import type { schema } from '$lib/server/database';
 
   interface User extends Pick<schema.User, 'givenName' | 'familyName' | 'email' | 'avatarUrl'> {

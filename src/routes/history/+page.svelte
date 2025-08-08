@@ -1,8 +1,9 @@
 <script lang="ts">
   import { CheckCircle, Clock, Scale, Sparkles } from '@steeze-ui/heroicons';
-  import { Icon } from '@steeze-ui/svelte-icon';
-  import WarningAlert from '$lib/alerts/Warning.svelte';
   import { format } from 'date-fns';
+  import { Icon } from '@steeze-ui/svelte-icon';
+
+  import WarningAlert from '$lib/alerts/Warning.svelte';
 
   const { data } = $props();
   const { drafts } = $derived(data);

@@ -1,9 +1,9 @@
 <script lang="ts">
   import { Accordion } from '@skeletonlabs/skeleton-svelte';
+  import { format } from 'date-fns/format';
   import { groupby } from 'itertools';
 
   import Member from './Member.svelte';
-  import { format } from 'date-fns/format';
 
   const { data } = $props();
   const { lab, heads, members, faculty, drafts } = $derived(data);

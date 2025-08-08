@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Icon } from '@steeze-ui/svelte-icon';
   import { PencilSquare } from '@steeze-ui/heroicons';
+
   import { assert } from '$lib/assert';
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';

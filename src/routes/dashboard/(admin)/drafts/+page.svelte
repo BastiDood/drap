@@ -1,11 +1,12 @@
 <script lang="ts">
-  import Dashboard from './Dashboard.svelte';
+  import { ArrowUpTray } from '@steeze-ui/heroicons';
+  import { Icon } from '@steeze-ui/svelte-icon';
+
   import Student from '$lib/users/Student.svelte';
   import WarningAlert from '$lib/alerts/Warning.svelte';
 
-  import { ArrowUpTray } from '@steeze-ui/heroicons';
   import ConcludeForm from './ConcludeForm.svelte';
-  import { Icon } from '@steeze-ui/svelte-icon';
+  import Dashboard from './Dashboard.svelte';
   import InitForm from './InitForm.svelte';
   import InterveneForm from './InterveneForm.svelte';
   import StartForm from './StartForm.svelte';

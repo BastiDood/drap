@@ -1,6 +1,7 @@
 <script>
   import { Icon } from '@steeze-ui/svelte-icon';
   import { PaperAirplane } from '@steeze-ui/heroicons';
+
   import { assert } from '$lib/assert';
   import { enhance } from '$app/forms';
   import { useToaster } from '$lib/toast';

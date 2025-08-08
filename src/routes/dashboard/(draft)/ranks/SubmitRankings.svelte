@@ -4,16 +4,16 @@
 
 <script lang="ts">
   import { ArrowDown, ArrowUp, XMark } from '@steeze-ui/heroicons';
-  import { Icon } from '@steeze-ui/svelte-icon';
-  import { assert } from '$lib/assert';
   import { crossfade } from 'svelte/transition';
-  import { enhance } from '$app/forms';
   import { flip } from 'svelte/animate';
-  import type { schema } from '$lib/server/database';
-  import { useToaster } from '$lib/toast';
+  import { Icon } from '@steeze-ui/svelte-icon';
 
   import ErrorAlert from '$lib/alerts/Error.svelte';
   import WarningAlert from '$lib/alerts/Warning.svelte';
+  import { assert } from '$lib/assert';
+  import { enhance } from '$app/forms';
+  import type { schema } from '$lib/server/database';
+  import { useToaster } from '$lib/toast';
 
   type Lab = Pick<schema.Lab, 'id' | 'name'>;
   interface Props {
