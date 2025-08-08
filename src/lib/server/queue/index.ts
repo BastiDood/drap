@@ -19,7 +19,7 @@ export class NotificationDispatcher implements Loggable {
   @timed async bulkDispatchNotification(...notifications: Notification[]) {
     const requests = await this.#db.bulkInsertNotifications(...notifications);
     const requestIds = requests.map(({ id }) => id);
-    this.#logger.info('new notification requests bulk received', { requestIds });
+    this.#logger.info({ requestIds }, 'new notification requests bulk received');
 
     const jobs = await getQueue().addBulk(
       requestIds.map(jobId => ({
