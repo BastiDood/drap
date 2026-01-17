@@ -1,5 +1,4 @@
-import { Queue, QueueEvents, Worker } from 'bullmq';
-import { Redis } from 'ioredis';
+import { Queue, QueueEvents, RedisConnection, Worker } from 'bullmq';
 
 import * as APP from '$lib/server/env';
 import * as REDIS from '$lib/server/env/redis';
@@ -26,7 +25,8 @@ export function getQueue() {
 if (building) {
   // No Redis connections are needed during the build step.
 } else {
-  const connection = new Redis(REDIS.URL, {
+  const connection = new RedisConnection({
+    url: REDIS.URL,
     // We *must* lazily connect so that Redis does not try to connect during builds.
     lazyConnect: true,
     // BullMQ wants to retry indefinitely, so it requires this to be set to `null`.
@@ -34,6 +34,7 @@ if (building) {
   });
 
   // Monitoring for job completion events
+  // @ts-expect-error - Version mismatch for some reason?
   const events = new QueueEvents(QUEUE_NAME, { connection });
   events.on('completed', ({ jobId }) => logger.info({ jobId }, 'job completed'));
   events.on('failed', ({ jobId }) => logger.error({ jobId }, 'job failed'));
@@ -41,8 +42,9 @@ if (building) {
   // NOTE: This will only register if this module is imported (even transitively).
   const child = logger.child({ notifications: 'worker' });
   const worker = new Worker(QUEUE_NAME, initializeProcessor(child), {
-    concurrency: APP.JOB_CONCURRENCY,
+    // @ts-expect-error - Version mismatch for some reason?
     connection,
+    concurrency: APP.JOB_CONCURRENCY,
   });
   child.info({ workerId: worker.id }, 'worker initialized');
 }
