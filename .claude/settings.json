@@ -1,5 +1,9 @@
 {
-  "enabledMcpjsonServers": ["context7", "deepwiki", "svelte"],
+  "enabledMcpjsonServers": [
+    "context7",
+    "deepwiki",
+    "svelte"
+  ],
   "permissions": {
     "allow": [
       "Bash(pnpm lint)",
@@ -11,10 +15,12 @@
       "Bash(pnpm build)"
     ],
     "deny": [
+      "Bash(bun :*)",
+      "Bash(bunx :*)",
       "Bash(npm :*)",
       "Bash(npx :*)",
+      "Bash(pnpx :*)",
       "Bash(yarn :*)",
-      "Bash(bun :*)",
       "Bash(pnpm dev)",
       "Bash(pnpm preview)",
       "Bash(pnpm db:studio)"
