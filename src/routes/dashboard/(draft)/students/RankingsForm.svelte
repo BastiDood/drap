@@ -29,6 +29,7 @@
   action="/dashboard/students/?/rankings"
   use:enhance={({ formData, submitter, cancel }) => {
     const count = formData.getAll('students').length;
+    // eslint-disable-next-line no-alert
     if (!confirm(`Are you sure you want to select these ${count} students?`)) {
       cancel();
       return;

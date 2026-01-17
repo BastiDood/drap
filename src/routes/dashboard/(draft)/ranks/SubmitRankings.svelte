@@ -82,6 +82,7 @@
   method="post"
   class="space-y-4"
   use:enhance={({ submitter, cancel }) => {
+    // eslint-disable-next-line no-alert
     if (!confirm(`Are you sure you want to select ${selectedLabs.length} labs?`)) {
       cancel();
       return;

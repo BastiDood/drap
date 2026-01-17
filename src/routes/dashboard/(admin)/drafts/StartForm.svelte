@@ -17,6 +17,7 @@
   method="post"
   action="/dashboard/drafts/?/start"
   use:enhance={({ submitter, cancel }) => {
+    // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to start the draft?')) {
       cancel();
       return;

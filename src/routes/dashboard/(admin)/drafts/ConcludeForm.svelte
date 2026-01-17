@@ -21,6 +21,7 @@
   action="/dashboard/drafts/?/conclude"
   class="not-prose"
   use:enhance={({ submitter, cancel }) => {
+    // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to conclude this draft?')) {
       cancel();
       return;

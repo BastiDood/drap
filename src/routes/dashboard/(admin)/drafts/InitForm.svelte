@@ -16,6 +16,7 @@
     const rounds = parseInt(validateString(formData.get('rounds')), 10);
     const closesAt = new Date(validateString(formData.get('closes-at')));
     if (
+      // eslint-disable-next-line no-alert
       !confirm(
         `Are you sure you want to start a new draft with ${rounds} rounds and with registation that closes at ${format(closesAt, 'PPPpp')}?`,
       )
