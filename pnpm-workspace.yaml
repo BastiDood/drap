@@ -1,5 +1,16 @@
-onlyBuiltDependencies:
-  - '@tailwindcss/oxide'
-  - core-js-pure
-  - esbuild
-  - msgpackr-extract
+blockExoticSubdeps: true
+
+cleanupUnusedCatalogs: true
+
+engineStrict: true
+
+minimumReleaseAge: 1440 # 1 Day
+
+strictDepBuilds: true
+
+trustPolicy: no-downgrade
+
+trustPolicyExclude:
+  - chokidar@4.0.3
+  - pino@9.14.0
+  - ts-api-utils@2.3.0
