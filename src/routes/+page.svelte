@@ -12,6 +12,7 @@
   import { Icon } from '@steeze-ui/svelte-icon';
 
   import banner from '$lib/banner.png?url';
+  import { asset, resolve } from '$app/paths';
 </script>
 
 <section class="prose dark:prose-invert max-w-none">
@@ -93,11 +94,13 @@
     {#snippet panel()}
       <ol>
         <li>
-          Go to your <a href="/profile/">profile</a> and set your student number.
+          Go to your <a href={resolve('/profile/')}>profile</a> and set your student number.
           <em>Note that this can only be done once.</em>
         </li>
-        <li>Set your <a href="/dashboard/ranks/">lab rankings and preferences</a>.</li>
-        <li>Track the progress of the draft in the <a href="/history/">history</a> page.</li>
+        <li>Set your <a href={resolve('/dashboard/ranks/')}>lab rankings and preferences</a>.</li>
+        <li>
+          Track the progress of the draft in the <a href={resolve('/history/')}>history</a> page.
+        </li>
         <li>Wait until the draft is finished.</li>
       </ol>
     {/snippet}
@@ -116,10 +119,12 @@
     {#snippet panel()}
       <ol>
         <li>Wait for the administrators to open a draft.</li>
-        <li>Track the progress of the draft in the <a href="/history/">history</a> page.</li>
         <li>
-          Visit the <a href="/dashboard/students/">students</a> page to select draftees who chose your
-          lab.
+          Track the progress of the draft in the <a href={resolve('/history/')}>history</a> page.
+        </li>
+        <li>
+          Visit the <a href={resolve('/dashboard/students/')}>students</a> page to select draftees who
+          chose your lab.
         </li>
         <li>Wait until the regular draft process to finish.</li>
         <li>
@@ -146,26 +151,28 @@
     {/snippet}
     {#snippet panel()}
       <ol>
-        <li>Set the <a href="/dashboard/labs/">lab quota</a>.</li>
-        <li>Initialize a <a href="/dashboard/drafts/">new draft</a>.</li>
+        <li>Set the <a href={resolve('/dashboard/labs/')}>lab quota</a>.</li>
+        <li>Initialize a <a href={resolve('/dashboard/drafts/')}>new draft</a>.</li>
         <li>Wait for participating draftees to register their lab preferences.</li>
         <li>
-          Officially <a href="/dashboard/drafts/">start the draft</a>. This will notify all of the
-          concerned lab heads of the interested draftees.
+          Officially <a href={resolve('/dashboard/drafts/')}>start the draft</a>. This will notify
+          all of the concerned lab heads of the interested draftees.
         </li>
-        <li>Audit the progress of the draft in the <a href="/history/">history</a> page.</li>
+        <li>
+          Audit the progress of the draft in the <a href={resolve('/history/')}>history</a> page.
+        </li>
         <li>Wait for all rounds of the draft to finish.</li>
         <li>
-          After the regular draft process, <a href="/dashboard/drafts/">resolve</a> the membership of
-          the remaining undrafted students by negotiating with the lab heads.
+          After the regular draft process, <a href={resolve('/dashboard/drafts/')}>resolve</a> the membership
+          of the remaining undrafted students by negotiating with the lab heads.
         </li>
         <li>
-          <a href="/dashboard/drafts/">Apply</a> the necessary manual interventions (i.e., assigning students
-          to their labs based on the agreed terms between labs)
+          <a href={resolve('/dashboard/drafts/')}>Apply</a> the necessary manual interventions (i.e.,
+          assigning students to their labs based on the agreed terms between labs)
         </li>
         <li>
-          <a href="/dashboard/drafts/">Conclude</a> the draft to proceed to the randomized round-robin
-          stage.
+          <a href={resolve('/dashboard/drafts/')}>Conclude</a> the draft to proceed to the randomized
+          round-robin stage.
         </li>
       </ol>
     {/snippet}
@@ -186,7 +193,8 @@
     <a target="_blank" href="https://github.com/ehrelevant">Ehren A. Castillo</a> as a service
     project under the
     <a target="_blank" href="https://up-csi.org/">UP Center for Student Innovations</a>. The DRAP
-    <a target="_blank" href="/favicon.ico">logo</a>
+    <a target="_blank" href={asset('/favicon.ico')}>logo</a>
+    <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- Vite ?url import is pre-resolved -->
     and <a target="_blank" href={banner}>banner</a> were originally designed and created by
     <a target="_blank" href="https://github.com/Anjellyrika">Angelica Julianne A. Raborar</a>.
   </p>
@@ -215,7 +223,7 @@
       <Icon src={BugAnt} size="24" />
       <span>Report a Bug</span>
     </a>
-    <a href="/privacy/" class="preset-filled-tertiary-500 btn btn-lg no-underline">
+    <a href={resolve('/privacy/')} class="preset-filled-tertiary-500 btn btn-lg no-underline">
       <Icon src={LockClosed} size="24" />
       <span>Privacy Policy</span>
     </a>

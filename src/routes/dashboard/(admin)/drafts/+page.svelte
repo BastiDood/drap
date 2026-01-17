@@ -4,6 +4,7 @@
 
   import Student from '$lib/users/Student.svelte';
   import WarningAlert from '$lib/alerts/Warning.svelte';
+  import { resolve } from '$app/paths';
 
   import ConcludeForm from './ConcludeForm.svelte';
   import Dashboard from './Dashboard.svelte';
@@ -18,7 +19,7 @@
 {#if draft !== null}
   <div class="flex flex-row gap-2">
     <a
-      href="/dashboard/drafts/{draft.id}/students.csv"
+      href={resolve(`/dashboard/drafts/${draft.id}/students.csv`)}
       class="not-prose preset-filled-primary-500 btn"
       download
     >
@@ -26,7 +27,7 @@
       <span>Export Student Ranks</span>
     </a>
     <a
-      href="/dashboard/drafts/{draft.id}/results.csv"
+      href={resolve(`/dashboard/drafts/${draft.id}/results.csv`)}
       class="not-prose preset-filled-primary-500 btn"
       download
     >

@@ -4,6 +4,7 @@
   import { Icon } from '@steeze-ui/svelte-icon';
 
   import WarningAlert from '$lib/alerts/Warning.svelte';
+  import { resolve } from '$app/paths';
 
   const { data } = $props();
   const { drafts } = $derived(data);
@@ -19,7 +20,7 @@
           <!-- Concluded Draft -->
           {@const end = format(activePeriodEnd, 'PPPpp')}
           <li class="card preset-tonal-surface">
-            <a href="/history/{draftId}/" class="flex items-center gap-3 px-2 py-1">
+            <a href={resolve(`/history/${draftId}/`)} class="flex items-center gap-3 px-2 py-1">
               <Icon src={CheckCircle} class="size-8" />
               <span
                 ><strong>Draft #{draftId}</strong> was held from
@@ -31,7 +32,7 @@
         {:else if currRound === null}
           <!-- Lottery Stage -->
           <li class="card preset-tonal-secondary border-secondary-500 border">
-            <a href="/history/{draftId}/" class="flex items-center gap-3 px-2 py-1">
+            <a href={resolve(`/history/${draftId}/`)} class="flex items-center gap-3 px-2 py-1">
               <Icon src={Sparkles} class="size-8" />
               <span
                 ><strong>Draft #{draftId}</strong> started on
@@ -43,7 +44,7 @@
         {:else if currRound === 0}
           <!-- Registration Stage -->
           <li class="card preset-tonal-tertiary border-tertiary-500 border">
-            <a href="/history/{draftId}/" class="flex items-center gap-3 px-2 py-1">
+            <a href={resolve(`/history/${draftId}/`)} class="flex items-center gap-3 px-2 py-1">
               <Icon src={Clock} class="size-8" />
               <span
                 ><strong>Draft #{draftId}</strong> started on
@@ -55,7 +56,7 @@
         {:else}
           <!-- Regular Draft Process -->
           <li class="card preset-tonal-secondary">
-            <a href="/history/{draftId}/" class="flex items-center gap-3 px-2 py-1">
+            <a href={resolve(`/history/${draftId}/`)} class="flex items-center gap-3 px-2 py-1">
               <Icon src={Scale} class="size-8" />
               <span
                 ><strong>Draft #{draftId}</strong> started on
