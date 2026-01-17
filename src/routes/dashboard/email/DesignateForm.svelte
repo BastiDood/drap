@@ -26,8 +26,10 @@
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';
 
-  interface User
-    extends Pick<schema.User, 'id' | 'email' | 'givenName' | 'familyName' | 'avatarUrl'> {
+  interface User extends Pick<
+    schema.User,
+    'id' | 'email' | 'givenName' | 'familyName' | 'avatarUrl'
+  > {
     isActive: boolean;
   }
 

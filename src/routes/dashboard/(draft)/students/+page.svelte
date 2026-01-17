@@ -49,8 +49,8 @@
         more students in this round. The following students have selected your lab as their
         <strong>{currRound}{suffix}</strong>
         choice. Simply click on the student's name to toggle the selection. By default, none are selected.
-        Note that you <em>not</em> required to exhaust your entire allocation in this round. You may
-        hold off on some of your slots for the next round.
+        Note that you <em>not</em> required to exhaust your entire allocation in this round. You may hold
+        off on some of your slots for the next round.
       </p>
       <p>
         When ready, you may press the <strong>"Submit"</strong> button. Empty submissions are

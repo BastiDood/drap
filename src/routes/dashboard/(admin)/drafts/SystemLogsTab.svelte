@@ -5,8 +5,10 @@
   import { assert } from '$lib/assert';
   import type { schema } from '$lib/server/database';
 
-  interface ChoiceRecord
-    extends Pick<schema.FacultyChoice, 'draftId' | 'round' | 'labId' | 'createdAt' | 'userId'> {
+  interface ChoiceRecord extends Pick<
+    schema.FacultyChoice,
+    'draftId' | 'round' | 'labId' | 'createdAt' | 'userId'
+  > {
     userEmail: schema.User['email'] | null;
     studentEmail: schema.User['email'] | null;
   }

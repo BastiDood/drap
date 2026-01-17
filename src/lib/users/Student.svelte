@@ -3,11 +3,10 @@
 
   import type { schema } from '$lib/server/database';
 
-  interface User
-    extends Pick<
-      schema.User,
-      'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
-    > {
+  interface User extends Pick<
+    schema.User,
+    'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
+  > {
     labs: string[];
     labId: string | null;
   }

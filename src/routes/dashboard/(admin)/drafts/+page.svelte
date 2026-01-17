@@ -75,15 +75,14 @@
         </li>
         <li>
           Meanwhile, the <strong>"Already Drafted"</strong> section features an <em>immutable</em> list
-          of students who have already been drafted into their respective labs. These are considered
-          final.
+          of students who have already been drafted into their respective labs. These are considered final.
         </li>
       </ul>
       <p>
         <!-- TODO: Add reminder about resetting the lab quota. -->
-        When ready, administrators can press the <strong>"Conclude Draft"</strong> button to proceed
-        with the randomization stage. The list of students will be randomly shuffled and distributed
-        among the labs in a round-robin fashion. To uphold fairness, it is important that uneven distributions
+        When ready, administrators can press the <strong>"Conclude Draft"</strong> button to proceed with
+        the randomization stage. The list of students will be randomly shuffled and distributed among
+        the labs in a round-robin fashion. To uphold fairness, it is important that uneven distributions
         are manually resolved beforehand.
       </p>
       <p>

@@ -59,8 +59,8 @@
     <h2>Your Rights</h2>
     <ul>
       <li>
-        <strong>Access.</strong> You have the right to access the personal information we hold about
-        you. Feel free to contact us for a copy of your data.
+        <strong>Access.</strong> You have the right to access the personal information we hold about you.
+        Feel free to contact us for a copy of your data.
       </li>
       <li>
         <strong>Correction.</strong> If you believe the personal information we hold about you is inaccurate

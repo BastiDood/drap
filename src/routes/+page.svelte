@@ -160,8 +160,8 @@
           the remaining undrafted students by negotiating with the lab heads.
         </li>
         <li>
-          <a href="/dashboard/drafts/">Apply</a> the necessary manual interventions (i.e., assigning
-          students to their labs based on the agreed terms between labs)
+          <a href="/dashboard/drafts/">Apply</a> the necessary manual interventions (i.e., assigning students
+          to their labs based on the agreed terms between labs)
         </li>
         <li>
           <a href="/dashboard/drafts/">Conclude</a> the draft to proceed to the randomized round-robin
