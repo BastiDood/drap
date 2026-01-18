@@ -101,7 +101,8 @@
     {#snippet panel()}
       <ol>
         <li>
-          Go to your <a href={resolve('/dashboard/profile/')}>profile</a> and set your student number.
+          Go to your <a href={resolve('/dashboard/profile/')}>profile</a> and set your student
+          number.
           <em>Note that this can only be done once.</em>
         </li>
         <li>Set your <a href={resolve('/dashboard/ranks/')}>lab rankings and preferences</a>.</li>
