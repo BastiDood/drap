@@ -23,7 +23,10 @@
       "Bash(pnpm preview)",
       "Bash(pnpm preview :*)",
       "Bash(pnpm db:studio)",
-      "Bash(pnpm db:studio :*)"
+      "Bash(pnpm db:studio :*)",
+      "Bash(cat .env:*)",
+      "Read(.env)",
+      "Read(.env.*)"
     ]
   }
 }
