@@ -83,6 +83,7 @@ Email sent via Gmail API using OAuth credentials from designated sender.
 
 ## Code Conventions
 
+- Strive to use **JavaScript by default** (`.js`), and only resort to TypeScript (`.ts`) when syntax requires it
 - **Discriminated unions** with explicit `interface` over inlined object types
 - **`switch`** over long `if` chains for union discrimination
 - **`const enum`** over hardcoded strings
