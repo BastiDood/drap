@@ -53,6 +53,7 @@ Docker (prod): `docker compose --profile prod up --detach`
 ### Notification System (`src/lib/server/models/notification.ts`)
 
 Discriminated unions for type-safe notifications:
+
 ```
 Notification = variant('target', [DraftNotification, UserNotification])
 DraftNotification = variant('type', [RoundStart, RoundSubmit, LotteryIntervention, Concluded])
@@ -91,15 +92,15 @@ Email sent via Gmail API using OAuth credentials from designated sender.
 
 ## Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `POSTGRES_URL` | PostgreSQL connection string |
-| `REDIS_URL` | Redis connection URL for BullMQ |
-| `GOOGLE_OAUTH_CLIENT_ID` | Google OAuth credentials |
-| `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth credentials |
-| `GOOGLE_OAUTH_REDIRECT_URI` | Must point to `/oauth/callback/` |
-| `JOB_CONCURRENCY` | Max concurrent email jobs |
-| `DRIZZLE_DEBUG` | Enable verbose Drizzle logs |
+| Variable                     | Description                      |
+| ---------------------------- | -------------------------------- |
+| `POSTGRES_URL`               | PostgreSQL connection string     |
+| `REDIS_URL`                  | Redis connection URL for BullMQ  |
+| `GOOGLE_OAUTH_CLIENT_ID`     | Google OAuth credentials         |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth credentials         |
+| `GOOGLE_OAUTH_REDIRECT_URI`  | Must point to `/oauth/callback/` |
+| `JOB_CONCURRENCY`            | Max concurrent email jobs        |
+| `DRIZZLE_DEBUG`              | Enable verbose Drizzle logs      |
 
 ## Development Notes
 
@@ -112,6 +113,7 @@ Email sent via Gmail API using OAuth credentials from designated sender.
 **Always run `pnpm lint` then `pnpm fmt:fix` before committing.**
 
 If errors appear:
+
 1. Run `pnpm lint:eslint --fix` first to address low-hanging fruit (may not be necessary).
 2. Analyze remaining errors with `pnpm lint:eslint` and `pnpm lint:svelte` individually.
 3. Only run the linter that reports errors.
