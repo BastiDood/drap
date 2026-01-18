@@ -32,23 +32,23 @@ schemas: new EventSchemas().fromSchema({
 
 ## Function Structure
 
+Use `batchEvents` for bulk processing (up to 100 events batched with 10s timeout):
+
 ```ts
 export const sendEmail = inngest.createFunction(
-  { id: 'send-email', name: 'Send Email', retries: 3 },
+  { id: 'send-email', name: 'Send Email', batchEvents: { maxSize: 100, timeout: '10s' } },
   [
     { event: 'draft/round.started' },
     { event: 'draft/round.submitted' },
-    { event: 'draft/lottery.intervened' },
-    { event: 'draft/draft.concluded' },
-    { event: 'draft/user.assigned' },
-  ],
-  async ({ event, step }) => {
-    const creds = await step.run('get-sender-credentials', () =>
-      tracer.asyncSpan('get-sender-credentials', async () => {
-        // ...
-      }),
-    );
     // ...
+  ],
+  async ({ events, step }) => {
+    await step.run('step-name', async () => {
+      // Access `events` array (not single `event`)
+      for (const event of events) {
+        // Process each event
+      }
+    });
   },
 );
 ```

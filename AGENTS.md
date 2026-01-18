@@ -26,36 +26,37 @@ Docker (prod): `docker compose --profile prod up --detach`
 
 - **Framework:** SvelteKit 2 + Svelte 5, TailwindCSS + Skeleton UI
 - **Database:** PostgreSQL with Drizzle ORM
-- **Queue:** BullMQ (Redis-backed) for async email
+- **Jobs:** Inngest for event-driven background processing
 - **Auth:** Google OAuth 2.0 (restricted to `@up.edu.ph` emails)
 - **Validation:** Valibot for runtime schemas
 
 ## Architecture
 
-### Request Flow (`src/hooks.server.ts`)
+### Request Flow (`src/hooks.server.js`)
 
-1. Each request gets a Pino logger with unique request ID
-2. `Database.withLogger()` attaches DB instance to `event.locals.db`
-3. `NotificationDispatcher` attached to `event.locals.dispatch`
-4. Session validated from `sid` cookie via `db.getUserFromValidSession(sid)`
+1. Each request wrapped in OpenTelemetry span with unique request ID
+2. Session validated from `sid` cookie via `getUserFromValidSession(db, sid)`
+3. User attached to `event.locals.session`
 
 ### Database Layer (`src/lib/server/database/`)
 
-- `Database` class wraps Drizzle with logging/timing decorators
-- `@timed` decorator auto-logs query execution time
-- Transactions via `.begin(fn)` method
-- Three schemas: `drap` (main data), `auth` (sessions), `email` (notifications)
+- Drizzle ORM with singleton `db` export
+- Transactions via `begin(db, fn)` function
+- Three schemas: `drap` (main data), `auth` (sessions), `email` (sender credentials)
 
-### Notification System (`src/lib/server/models/notification.ts`)
+### Event System (`src/lib/server/inngest/`)
 
-Discriminated unions for type-safe notifications:
+Inngest-based event-driven notifications.
 
-```
-Notification = variant('target', [DraftNotification, UserNotification])
-DraftNotification = variant('type', [RoundStart, RoundSubmit, LotteryIntervention, Concluded])
-```
+**Event types:**
 
-Email sent via Gmail API using OAuth credentials from designated sender.
+- `draft/round.started` - Notifies faculty when round begins
+- `draft/round.submitted` - Acknowledges lab submission
+- `draft/lottery.intervened` - Manual lottery assignment notification
+- `draft/draft.concluded` - Draft completion notification
+- `draft/user.assigned` - Direct notification to assigned student
+
+**Bulk email:** Up to 100 events batched per Inngest function invocation, sent via Gmail API batch endpoint.
 
 ### Route Structure
 
@@ -92,11 +93,11 @@ Email sent via Gmail API using OAuth credentials from designated sender.
 | Variable                     | Description                      |
 | ---------------------------- | -------------------------------- |
 | `POSTGRES_URL`               | PostgreSQL connection string     |
-| `REDIS_URL`                  | Redis connection URL for BullMQ  |
 | `GOOGLE_OAUTH_CLIENT_ID`     | Google OAuth credentials         |
 | `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth credentials         |
 | `GOOGLE_OAUTH_REDIRECT_URI`  | Must point to `/oauth/callback/` |
-| `JOB_CONCURRENCY`            | Max concurrent email jobs        |
+| `INNGEST_EVENT_KEY`          | Inngest event signing key        |
+| `INNGEST_SIGNING_KEY`        | Inngest webhook signing key      |
 | `DRIZZLE_DEBUG`              | Enable verbose Drizzle logs      |
 
 ## Development Notes
