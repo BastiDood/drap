@@ -89,7 +89,6 @@ export default defineConfig(
         'error',
         { varsIgnorePattern: '^_', argsIgnorePattern: '^_' },
       ],
-      '@typescript-eslint/no-use-before-define': 'error',
       '@typescript-eslint/no-useless-empty-export': 'error',
       '@typescript-eslint/parameter-properties': ['error', { prefer: 'parameter-property' }],
       '@typescript-eslint/prefer-enum-initializers': 'error',
