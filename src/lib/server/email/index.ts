@@ -1,17 +1,15 @@
 import { fail } from 'node:assert/strict';
 
 import { createMimeMessage } from 'mimetext/node';
-import { isFuture, sub } from 'date-fns';
-import type { Job } from 'bullmq';
-import { jwtVerify } from 'jose';
-import { parse, pick } from 'valibot';
+
+import { GoogleOAuthClient } from '$lib/server/google';
 
 import * as GOOGLE from '$lib/server/env/google';
 import {
   begin,
   type DbConnection,
   db,
-  getDesignatedSenderCredentials,
+  getDesignatedSenderCredentialsForUpdate,
   getFacultyAndStaff,
   getLabById,
   getNotification,
@@ -20,6 +18,8 @@ import {
   markNotificationDelivered,
   type schema,
   upsertCandidateSender,
+  type DrizzleTransaction,
+  updateCandidateSender,
 } from '$lib/server/database';
 import type { DraftNotification, UserNotification } from '$lib/server/models/notification';
 import { GmailMessageSendResult } from '$lib/server/models/email';
@@ -30,6 +30,7 @@ import { fetchJwks } from './jwks';
 
 const SERVICE_NAME = 'email';
 const logger = Logger.byName(SERVICE_NAME);
+const tracer = Tracer.byName(SERVICE_NAME);
 
 export type EmailAddress = schema.User['email'];
 
@@ -61,7 +62,7 @@ export class Emailer {
   /** Must be called within a transaction context for correctness. */
   async #getLatestCredentials() {
     logger.debug('fetching latest credentials');
-    const creds = await getDesignatedSenderCredentials(this.#db);
+    const creds = await getDesignatedSenderCredentialsForUpdate(this.#db);
 
     if (typeof creds === 'undefined') {
       logger.warn('no credentials found');
@@ -164,64 +165,121 @@ export class MissingDesignatedSender extends Error {
     super('no designated sender configured');
     this.name = 'MissingDesignatedSender';
   }
+
+  static throwNew(): never {
+    const error = new MissingDesignatedSender();
+    logger.error('no designated sender configured', error);
+    throw error;
+  }
 }
 
-async function processDraftNotification(
-  db: DbConnection,
-  emailer: Emailer,
-  notification: DraftNotification,
-) {
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  let emails: EmailAddress[];
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  let subject: string;
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  let message: string;
-  switch (notification.type) {
-    case 'RoundStart': {
-      const facultyAndStaff = await getFacultyAndStaff(db);
-      emails = facultyAndStaff.map(({ email }) => email);
-      if (notification.round === null) {
-        subject = `[DRAP] Lottery Round for Draft #${notification.draftId} has begun!`;
-        message = `The lottery round for Draft #${notification.draftId} has begun. For lab heads, kindly coordinate with the draft administrators for the next steps.`;
-      } else {
-        subject = `[DRAP] Round #${notification.round} for Draft #${notification.draftId} has begun!`;
-        message = `Round #${notification.round} for Draft #${notification.draftId} has begun. For lab heads, kindly check the students module to see the list of students who have chosen your lab.`;
+async function processDraftNotification(db: DbConnection, notification: DraftNotification) {
+  return await tracer.asyncSpan('process-draft-notification', async () => {
+    // eslint-disable-next-line @typescript-eslint/init-declarations
+    let emails: EmailAddress[];
+    // eslint-disable-next-line @typescript-eslint/init-declarations
+    let subject: string;
+    // eslint-disable-next-line @typescript-eslint/init-declarations
+    let message: string;
+    switch (notification.type) {
+      case 'RoundStart': {
+        const facultyAndStaff = await getFacultyAndStaff(db);
+        emails = facultyAndStaff.map(({ email }) => email);
+        if (notification.round === null) {
+          subject = `[DRAP] Lottery Round for Draft #${notification.draftId} has begun!`;
+          message = `The lottery round for Draft #${notification.draftId} has begun. For lab heads, kindly coordinate with the draft administrators for the next steps.`;
+        } else {
+          subject = `[DRAP] Round #${notification.round} for Draft #${notification.draftId} has begun!`;
+          message = `Round #${notification.round} for Draft #${notification.draftId} has begun. For lab heads, kindly check the students module to see the list of students who have chosen your lab.`;
+        }
+        break;
       }
-      break;
+      case 'RoundSubmit': {
+        const [staffEmails, { name }] = await Promise.all([
+          getValidStaffEmails(db),
+          getLabById(db, notification.labId),
+        ]);
+        emails = staffEmails;
+        subject = `[DRAP] Acknowledgement from ${notification.labId.toUpperCase()} for Round #${notification.round} of Draft #${notification.draftId}`;
+        message = `The ${name} has submitted their student preferences for Round #${notification.round} of Draft #${notification.draftId}.`;
+        break;
+      }
+      case 'LotteryIntervention': {
+        const [facultyAndStaff, { name }, { givenName, familyName, email }] = await Promise.all([
+          getFacultyAndStaff(db),
+          getLabById(db, notification.labId),
+          getUserById(db, notification.userId),
+        ]);
+        emails = facultyAndStaff.map(({ email }) => email);
+        subject = `[DRAP] Lottery Intervention for ${notification.labId.toUpperCase()} in Draft #${notification.draftId}`;
+        message = `${givenName} ${familyName} <${email}> has been manually assigned to ${name} during the lottery round of Draft #${notification.draftId}.`;
+        break;
+      }
+      case 'Concluded': {
+        const facultyAndStaff = await getFacultyAndStaff(db);
+        emails = facultyAndStaff.map(({ email }) => email);
+        subject = `[DRAP] Draft #${notification.draftId} Concluded`;
+        message = `Draft #${notification.draftId} has just concluded. See the new roster of researchers using the lab module.`;
+        break;
+      }
+      default:
+        return null;
     }
-    case 'RoundSubmit': {
-      const [staffEmails, { name }] = await Promise.all([
-        getValidStaffEmails(db),
-        getLabById(db, notification.labId),
-      ]);
-      emails = staffEmails;
-      subject = `[DRAP] Acknowledgement from ${notification.labId.toUpperCase()} for Round #${notification.round} of Draft #${notification.draftId}`;
-      message = `The ${name} has submitted their student preferences for Round #${notification.round} of Draft #${notification.draftId}.`;
-      break;
-    }
-    case 'LotteryIntervention': {
-      const [facultyAndStaff, { name }, { givenName, familyName, email }] = await Promise.all([
-        getFacultyAndStaff(db),
-        getLabById(db, notification.labId),
-        getUserById(db, notification.userId),
-      ]);
-      emails = facultyAndStaff.map(({ email }) => email);
-      subject = `[DRAP] Lottery Intervention for ${notification.labId.toUpperCase()} in Draft #${notification.draftId}`;
-      message = `${givenName} ${familyName} <${email}> has been manually assigned to ${name} during the lottery round of Draft #${notification.draftId}.`;
-      break;
-    }
-    case 'Concluded': {
-      const facultyAndStaff = await getFacultyAndStaff(db);
-      emails = facultyAndStaff.map(({ email }) => email);
-      subject = `[DRAP] Draft #${notification.draftId} Concluded`;
-      message = `Draft #${notification.draftId} has just concluded. See the new roster of researchers using the lab module.`;
-      break;
-    }
-    default:
-      return null;
+
+    // Upsert transactions should be short-lived to keep the row lock critical section short.
+    const { client, sender } = await db.transaction(obtainRefreshedCredentials);
+
+    const mime = createMimeMessage();
+    mime.setSender({
+      name: `[DRAP] ${sender.givenName} ${sender.familyName}`,
+      addr: sender.email,
+    });
+    mime.setRecipient(emails);
+    mime.setSubject(subject);
+    mime.addMessage({
+      contentType: 'text/plain',
+      encoding: 'base64',
+      data: Buffer.from(message, 'utf-8').toString('base64'),
+    });
+
+    logger.debug('sending email...');
+    return await client.sendEmail(mime);
+  });
+}
+
+async function obtainRefreshedCredentials(db: DrizzleTransaction) {
+  logger.trace('getting designated sender credentials...');
+  const sender = await getDesignatedSenderCredentialsForUpdate(db);
+  if (typeof sender === 'undefined') MissingDesignatedSender.throwNew();
+
+  // eslint-disable-next-line @typescript-eslint/init-declarations
+  let client: GoogleOAuthClient;
+  if (sender.isValid) {
+    // TODO: Retrieve the OAuth scopes from the database.
+    client = new GoogleOAuthClient(sender.accessToken, []);
+  } else {
+    // TODO: Persist the new OAuth scopes to the database.
+    logger.debug('refreshing candidate sender credentials...');
+    const refreshed = await GoogleOAuthClient.fromRefreshToken(sender.refreshToken);
+    ({ client } = refreshed);
+    logger.debug('updating candidate sender credentials...');
+    await updateCandidateSender(
+      db,
+      sender.id,
+      refreshed.token.expiresIn,
+      client.accessToken,
+      sender.refreshToken,
+    );
   }
-  return await emailer.send(emails, subject, message);
+
+  return new ObtainedRefreshedCredentials(client, sender);
+}
+
+class ObtainedRefreshedCredentials {
+  constructor(
+    public readonly client: GoogleOAuthClient,
+    public readonly sender: Pick<schema.User, 'email' | 'givenName' | 'familyName'>,
+  ) {}
 }
 
 async function processUserNotification(

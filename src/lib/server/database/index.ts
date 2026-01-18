@@ -12,6 +12,7 @@ import {
   gte,
   isNotNull,
   isNull,
+  lt,
   or,
   sql,
 } from 'drizzle-orm';
@@ -22,6 +23,7 @@ import { enumerate, izip } from 'itertools';
 import * as DRIZZLE from '$lib/server/env/drizzle';
 import * as POSTGRES from '$lib/server/env/postgres';
 import { assertOptional, assertSingle } from '$lib/server/assert';
+import { Logger } from '$lib/server/telemetry/logger';
 import { Notification } from '$lib/server/models/notification';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
@@ -37,6 +39,7 @@ function init(url: string) {
 export const db = init(POSTGRES.URL);
 
 const SERVICE_NAME = 'database';
+const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -913,7 +916,7 @@ export async function getCandidateSenders(db: DbConnection) {
  * A designated sender is an admin (i.e., `is_admin=True` and `lab_id=NULL`) with valid
  * OAuth 2.0 credentials such that the access token will not expire in the next five minutes.
  */
-export async function getDesignatedSenderCredentials(db: DbConnection) {
+export async function getDesignatedSenderCredentialsForUpdate(db: DrizzleTransaction) {
   return await tracer.asyncSpan('get-designated-sender-credentials', async () => {
     return await db
       .select({
@@ -923,7 +926,7 @@ export async function getDesignatedSenderCredentials(db: DbConnection) {
         familyName: schema.user.familyName,
         accessToken: schema.candidateSender.accessToken,
         refreshToken: schema.candidateSender.refreshToken,
-        expiration: schema.candidateSender.expiration,
+        isValid: lt(schema.candidateSender.expiration, sql`now()`).mapWith(Boolean),
       })
       .from(schema.designatedSender)
       .innerJoin(
@@ -938,7 +941,34 @@ export async function getDesignatedSenderCredentials(db: DbConnection) {
           isNull(schema.user.labId),
         ),
       )
+      .for('update')
       .then(assertOptional);
+  });
+}
+
+export async function updateCandidateSender(
+  db: DbConnection,
+  userId: string,
+  expiresIn: number,
+  accessToken: string,
+  refreshToken?: string,
+) {
+  // TODO: Persist the OAuth scopes to the database.
+  return await tracer.asyncSpan('update-candidate-sender', async span => {
+    span.setAttributes({
+      'database.user.id': userId,
+      'database.candidate_sender.expires_in': expiresIn,
+    });
+    const { rowCount } = await db
+      .update(schema.candidateSender)
+      .set({
+        userId,
+        accessToken,
+        refreshToken: refreshToken ?? schema.candidateSender.refreshToken,
+        expiration: sql`now() + make_interval(secs => ${expiresIn})`,
+      })
+      .where(eq(schema.candidateSender.userId, userId));
+    logger.debug('updated candidate sender', { rowCount });
   });
 }
 

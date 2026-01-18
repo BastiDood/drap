@@ -12,7 +12,7 @@ const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
 export class GoogleOAuthClient {
-  private constructor(
+  constructor(
     public readonly accessToken: string,
     public readonly scopes: string[],
   ) {}
