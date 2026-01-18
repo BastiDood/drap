@@ -1,3 +1,5 @@
+import HttpRawRequest from 'http-raw-request';
+import { Component, Multipart } from 'multipart-ts';
 import type { MIMEMessage } from 'mimetext/node';
 import { parse } from 'valibot';
 
@@ -94,6 +96,49 @@ export class GoogleOAuthClient {
       }
     });
   }
+
+  /** Bulk version of {@linkcode sendEmail}. */
+  async sendEmails(messages: MIMEMessage[]) {
+    if (messages.length > 100) BatchError.throwNew(messages.length);
+
+    const multipart = new Multipart(
+      messages.map(message => {
+        const encoder = new TextEncoder();
+        const body = encoder.encode(
+          HttpRawRequest.toString(
+            {
+              httpVersion: '1.1',
+              method: 'POST',
+              url: 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send',
+            },
+            { 'Content-Type': 'application/json' },
+            JSON.stringify({ raw: message.asEncoded() }),
+          ),
+        );
+        return new Component({ 'Content-Type': 'application/http' }, body);
+      }),
+    );
+
+    const response = await fetch('https://www.googleapis.com/batch/gmail/v1', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.accessToken}`,
+        'Content-Type': multipart.mediaType,
+      },
+      body: multipart.bytes(),
+    });
+
+    switch (response.status) {
+      case 200:
+      // TODO: Parse each HTTP response.
+      // falls through
+      case 429:
+        // TODO: Handle rate limits.
+        break;
+      default:
+        throw GmailError.throwNew(response.status, await response.text());
+    }
+  }
 }
 
 export class GoogleOAuthToken {
@@ -123,9 +168,22 @@ export class GmailError extends Error {
   static throwNew(status: number, body: string): never {
     const error = new GmailError(status, body);
     logger.error('gmail api error message', error, {
-      'gmail.response.status': status,
-      'gmail.response.body': body,
+      'error.gmail.response.status': status,
+      'error.gmail.response.body': body,
     });
+    throw error;
+  }
+}
+
+export class BatchError extends Error {
+  constructor(public readonly length: number) {
+    super(`too many requests in batch: ${length}`);
+    this.name = 'BatchError';
+  }
+
+  static throwNew(length: number): never {
+    const error = new BatchError(length);
+    logger.error('too many requests in batch', error, { 'error.length': length });
     throw error;
   }
 }
