@@ -8,12 +8,12 @@ const logger = Logger.byName(SERVICE_NAME);
 
 export async function load({ locals: { session } }) {
   if (typeof session?.user === 'undefined') {
-    logger.error('attempt to access lab page without session');
+    logger.warn('attempt to access lab page without session');
     redirect(307, '/oauth/login/');
   }
 
   if (session.user.googleUserId === null || session.user.labId === null) {
-    logger.error('insufficient permissions to access lab page', void 0, {
+    logger.warn('insufficient permissions to access lab page', {
       isAdmin: session.user.isAdmin,
       googleUserId: session.user.googleUserId,
       labId: session.user.labId,
@@ -34,9 +34,8 @@ export async function load({ locals: { session } }) {
       session.user.labId,
     );
     if (typeof userLatestDraft === 'undefined') {
-      logger.error(
+      logger.warn(
         "attempt to get draft id for student-user's assignment to this lab returned undefined",
-        void 0,
         {
           userId: session.user.id,
           labId: session.user.labId,
@@ -49,7 +48,7 @@ export async function load({ locals: { session } }) {
   }
 
   await getLabMembers(db, session.user.labId);
-  logger.info('lab info fetched', {
+  logger.debug('lab info fetched', {
     labName: info.lab,
     headCount: info.heads.length,
     memberCount: info.members.length,

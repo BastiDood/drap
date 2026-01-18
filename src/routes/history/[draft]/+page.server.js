@@ -14,7 +14,7 @@ export async function load({ params: { draft: id } }) {
     error(404, 'Invalid draft ID.');
   }
 
-  logger.info('fetching draft', { 'draft.id': did.toString() });
+  logger.debug('fetching draft', { 'draft.id': did.toString() });
 
   const draft = await getDraftById(db, did);
   if (typeof draft === 'undefined') {
@@ -22,14 +22,14 @@ export async function load({ params: { draft: id } }) {
     error(404, 'Draft not found.');
   }
 
-  logger.info('draft fetched', {
+  logger.debug('draft fetched', {
     'draft.round.current': draft.currRound,
     'draft.round.max': draft.maxRounds,
     'draft.registration.closes_at': draft.registrationClosesAt.toISOString(),
   });
 
   const events = await getDraftEvents(db, did);
-  logger.info('draft events fetched', { 'draft.event_count': events.length });
+  logger.debug('draft events fetched', { 'draft.event_count': events.length });
 
   return { did, draft, events };
 }

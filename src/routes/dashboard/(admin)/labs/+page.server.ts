@@ -10,10 +10,12 @@ import {
   updateLabQuotas,
 } from '$lib/server/database';
 import { Logger } from '$lib/server/telemetry/logger';
+import { Tracer } from '$lib/server/telemetry/tracer';
 import { validateString } from '$lib/forms';
 
 const SERVICE_NAME = 'routes.dashboard.admin.labs';
 const logger = Logger.byName(SERVICE_NAME);
+const tracer = Tracer.byName(SERVICE_NAME);
 
 export async function load({ locals: { session } }) {
   if (typeof session?.user === 'undefined') redirect(307, '/oauth/login/');
@@ -34,13 +36,13 @@ function* mapRowTuples(data: FormData) {
 export const actions = {
   async lab({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to create lab without session');
+      logger.warn('attempt to create lab without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.error('insufficient permissions to create lab', void 0, {
+      logger.warn('insufficient permissions to create lab', {
         'auth.user.is_admin': user.isAdmin,
         'auth.user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -50,27 +52,29 @@ export const actions = {
 
     const draft = await getActiveDraft(db);
     if (typeof draft !== 'undefined') {
-      logger.error('no drafts are active');
+      logger.warn('cannot create lab while draft is active');
       error(403);
     }
 
-    const data = await request.formData();
-    const id = validateString(data.get('id'));
-    const lab = validateString(data.get('name'));
-    logger.info('creating lab', { id, lab });
+    return await tracer.asyncSpan('action.lab', async () => {
+      const data = await request.formData();
+      const id = validateString(data.get('id'));
+      const lab = validateString(data.get('name'));
+      logger.debug('creating lab', { id, lab });
 
-    await insertNewLab(db, id, lab);
-    logger.info('lab created', { id, lab });
+      await insertNewLab(db, id, lab);
+      logger.info('lab created', { id, lab });
+    });
   },
   async quota({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to update lab quota without session');
+      logger.warn('attempt to update lab quota without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.error('insufficient permissions to update lab quota', void 0, {
+      logger.warn('insufficient permissions to update lab quota', {
         'auth.user.is_admin': user.isAdmin,
         'auth.user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -80,25 +84,27 @@ export const actions = {
 
     const draft = await getActiveDraft(db);
     if (typeof draft !== 'undefined' && draft.currRound !== null && draft.currRound > 0) {
-      logger.error('cannot update lab quota while a draft is ongoing', void 0, {
+      logger.warn('cannot update lab quota while a draft is ongoing', {
         'draft.round.current': draft.currRound,
       });
       error(403, 'It is unsafe to update the lab quota while a draft is ongoing.');
     }
 
-    const pairs = mapRowTuples(await request.formData());
-    await updateLabQuotas(db, pairs);
-    logger.info('lab quotas updated');
+    return await tracer.asyncSpan('action.quota', async () => {
+      const pairs = mapRowTuples(await request.formData());
+      await updateLabQuotas(db, pairs);
+      logger.info('lab quotas updated');
+    });
   },
   async delete({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to soft-delete lab without session');
+      logger.warn('attempt to soft-delete lab without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.error('insufficient permissions to soft-delete lab', void 0, {
+      logger.warn('insufficient permissions to soft-delete lab', {
         'auth.user.is_admin': user.isAdmin,
         'auth.user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -106,22 +112,24 @@ export const actions = {
       error(403);
     }
 
-    const data = await request.formData();
-    const id = validateString(data.get('delete'));
-    logger.info('soft-deleting lab', { id });
+    return await tracer.asyncSpan('action.delete', async () => {
+      const data = await request.formData();
+      const id = validateString(data.get('delete'));
+      logger.debug('soft-deleting lab', { id });
 
-    await deleteLab(db, id);
-    logger.info('lab soft-deleted');
+      await deleteLab(db, id);
+      logger.info('lab soft-deleted');
+    });
   },
   async restore({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to restore lab without session');
+      logger.warn('attempt to restore lab without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.error('insufficient permissions to restore lab', void 0, {
+      logger.warn('insufficient permissions to restore lab', {
         'auth.user.is_admin': user.isAdmin,
         'auth.user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -129,11 +137,13 @@ export const actions = {
       error(403);
     }
 
-    const data = await request.formData();
-    const id = validateString(data.get('restore'));
-    logger.info('restoring lab', { id });
+    return await tracer.asyncSpan('action.restore', async () => {
+      const data = await request.formData();
+      const id = validateString(data.get('restore'));
+      logger.debug('restoring lab', { id });
 
-    await restoreLab(db, id);
-    logger.info('lab restored');
+      await restoreLab(db, id);
+      logger.info('lab restored');
+    });
   },
 };

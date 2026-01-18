@@ -60,7 +60,7 @@ export class Emailer {
 
   /** Must be called within a transaction context for correctness. */
   async #getLatestCredentials() {
-    logger.info('fetching latest credentials');
+    logger.debug('fetching latest credentials');
     const creds = await getDesignatedSenderCredentials(this.#db);
 
     if (typeof creds === 'undefined') {
@@ -69,11 +69,11 @@ export class Emailer {
     }
 
     if (isFuture(sub(creds.expiration, { minutes: 10 }))) {
-      logger.info('using existing credentials');
+      logger.debug('using existing credentials');
       return creds;
     }
 
-    logger.info('refreshing credentials', {
+    logger.debug('refreshing credentials', {
       'email.sender.id': creds.id,
       'email.token.expiration': creds.expiration.toISOString(),
     });
@@ -90,18 +90,18 @@ export class Emailer {
       }),
     });
 
-    logger.info('reading token response');
+    logger.debug('reading token response');
     const json = await res.json();
     const { id_token, access_token } = parse(TokenResponse, json);
     creds.accessToken = access_token; // overwritten credentials
 
-    logger.info('verifying id token');
+    logger.debug('verifying id token');
     const { payload } = await jwtVerify(id_token, fetchJwks, {
       issuer: 'https://accounts.google.com',
       audience: this.#clientId,
     });
 
-    logger.info('upserting candidate sender with new verified token');
+    logger.debug('upserting candidate sender with new verified token');
     const token = parse(pick(IdToken, ['exp']), payload);
     await upsertCandidateSender(this.#db, creds.id, token.exp, creds.accessToken);
     return creds;
@@ -109,7 +109,7 @@ export class Emailer {
 
   /** Must be called within a transaction context for correctness. */
   async send(to: EmailAddress[], subject: string, body: string) {
-    logger.info('fetching latest credentials');
+    logger.debug('fetching latest credentials');
     const creds = await this.#getLatestCredentials();
     if (typeof creds === 'undefined') {
       logger.warn('no credentials found for sending email');
@@ -126,7 +126,7 @@ export class Emailer {
       data: Buffer.from(body, 'utf-8').toString('base64'),
     });
 
-    logger.info('sending email request to gmail api');
+    logger.debug('sending email request to gmail api');
     const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
       method: 'POST',
       headers: {
@@ -146,7 +146,7 @@ export class Emailer {
       throw new UpstreamGmailError(response.status, body);
     }
 
-    logger.info('receiving successful response from gmail api');
+    logger.debug('receiving successful response from gmail api');
     const json = await response.json();
     return parse(GmailMessageSendResult, json);
   }
@@ -264,7 +264,7 @@ export function initializeProcessor() {
           return; // ACK to remove from the queue...
         }
 
-        logger.info('processing notification data', {
+        logger.debug('processing notification data', {
           'notification.target': data.target,
           'notification.type': 'type' in data ? data.type : 'User',
         });
