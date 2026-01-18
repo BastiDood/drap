@@ -1,34 +1,41 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 
+import {
+  db,
+  getFacultyAndStaff,
+  getLabRegistry,
+  inviteNewFacultyOrStaff,
+} from '$lib/server/database';
+import { Logger } from '$lib/server/telemetry/logger';
 import { validateEmail, validateString } from '$lib/forms';
 
-export async function load({ locals: { db, session } }) {
+const SERVICE_NAME = 'routes.dashboard.users';
+const logger = Logger.byName(SERVICE_NAME);
+
+export async function load({ locals: { session } }) {
   if (typeof session?.user === 'undefined') {
-    db.logger.error('attempt to access users page without session');
+    logger.error('attempt to access users page without session');
     redirect(307, '/oauth/login/');
   }
 
   if (!session.user.isAdmin || session.user.googleUserId === null || session.user.labId !== null) {
-    db.logger.error(
-      {
-        isAdmin: session.user.isAdmin,
-        googleUserId: session.user.googleUserId,
-        labId: session.user.labId,
-      },
-      'insufficient permissions to access users page',
-    );
+    logger.error('insufficient permissions to access users page', void 0, {
+      'auth.user.is_admin': session.user.isAdmin,
+      'auth.user.google_id': session.user.googleUserId,
+      'user.lab_id': session.user.labId,
+    });
     error(403);
   }
 
-  const [labs, faculty] = await Promise.all([db.getLabRegistry(), db.getFacultyAndStaff()]);
-  db.logger.info({ labCount: labs.length, facultyCount: faculty.length }, 'users page loaded');
+  const [labs, faculty] = await Promise.all([getLabRegistry(db), getFacultyAndStaff(db)]);
+  logger.info('users page loaded', { 'lab.count': labs.length, 'user.faculty_count': faculty.length });
   return { labs, faculty };
 }
 
 export const actions = {
-  async admin({ locals: { db, session }, request }) {
+  async admin({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      db.logger.error('attempt to invite user without session');
+      logger.error('attempt to invite user without session');
       error(401);
     }
 
@@ -37,32 +44,29 @@ export const actions = {
       session.user.googleUserId === null ||
       session.user.labId !== null
     ) {
-      db.logger.error(
-        {
-          isAdmin: session.user.isAdmin,
-          googleUserId: session.user.googleUserId,
-          labId: session.user.labId,
-        },
-        'insufficient permissions to invite user',
-      );
+      logger.error('insufficient permissions to invite user', void 0, {
+        'auth.user.is_admin': session.user.isAdmin,
+        'auth.user.google_id': session.user.googleUserId,
+        'user.lab_id': session.user.labId,
+      });
       error(403);
     }
 
     const data = await request.formData();
     const email = validateEmail(data.get('email'));
-    db.logger.info({ email }, 'inviting new admin');
+    logger.info('inviting new admin', { email });
 
-    if (await db.inviteNewFacultyOrStaff(email, null)) {
-      db.logger.info('new admin invited');
+    if (await inviteNewFacultyOrStaff(db, email, null)) {
+      logger.info('new admin invited');
       return;
     }
 
-    db.logger.warn('admin email was already invited before');
+    logger.warn('admin email was already invited before');
     return fail(409);
   },
-  async faculty({ locals: { db, session }, request }) {
+  async faculty({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      db.logger.error('attempt to invite faculty without session');
+      logger.error('attempt to invite faculty without session');
       error(401);
     }
 
@@ -71,28 +75,25 @@ export const actions = {
       session.user.googleUserId === null ||
       session.user.labId !== null
     ) {
-      db.logger.error(
-        {
-          isAdmin: session.user.isAdmin,
-          googleUserId: session.user.googleUserId,
-          labId: session.user.labId,
-        },
-        'insufficient permissions to invite faculty',
-      );
+      logger.error('insufficient permissions to invite faculty', void 0, {
+        'auth.user.is_admin': session.user.isAdmin,
+        'auth.user.google_id': session.user.googleUserId,
+        'user.lab_id': session.user.labId,
+      });
       error(403);
     }
 
     const data = await request.formData();
     const email = validateEmail(data.get('email'));
     const lab = validateString(data.get('invite'));
-    db.logger.info({ email, lab }, 'inviting new faculty');
+    logger.info('inviting new faculty', { email, lab });
 
-    if (await db.inviteNewFacultyOrStaff(email, lab)) {
-      db.logger.info('new faculty invited');
+    if (await inviteNewFacultyOrStaff(db, email, lab)) {
+      logger.info('new faculty invited');
       return;
     }
 
-    db.logger.warn('faculty email was already invited before');
+    logger.warn('faculty email was already invited before');
     return fail(409);
   },
 };

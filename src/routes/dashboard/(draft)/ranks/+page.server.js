@@ -1,10 +1,21 @@
 import { error, fail, redirect } from '@sveltejs/kit';
 
+import {
+  db,
+  getDraftById,
+  getLabRegistry,
+  getStudentRankings,
+  insertStudentRanking,
+} from '$lib/server/database';
+import { Logger } from '$lib/server/telemetry/logger';
 import { validateMaybeEmptyString, validateString } from '$lib/forms';
 
-export async function load({ locals: { db, session }, parent }) {
+const SERVICE_NAME = 'routes.dashboard.draft.ranks';
+const logger = Logger.byName(SERVICE_NAME);
+
+export async function load({ locals: { session }, parent }) {
   if (typeof session?.user === 'undefined') {
-    db.logger.error('attempt to access ranks page without session');
+    logger.error('attempt to access ranks page without session');
     redirect(307, '/oauth/login/');
   }
 
@@ -15,32 +26,28 @@ export async function load({ locals: { db, session }, parent }) {
     user.labId !== null ||
     user.studentNumber === null
   ) {
-    db.logger.error(
-      {
-        isAdmin: user.isAdmin,
-        googleUserId: user.googleUserId,
-        labId: user.labId,
-        studentNumber: user.studentNumber,
-      },
-      'insufficient permissions to access ranks page',
-    );
+    logger.error('insufficient permissions to access ranks page', void 0, {
+      'auth.user.is_admin': user.isAdmin,
+      'auth.user.google_id': user.googleUserId,
+      'user.lab_id': user.labId,
+      'user.student_number': user.studentNumber?.toString(),
+    });
     error(403);
   }
 
   const { draft } = await parent();
   const [rankings, availableLabs] = await Promise.all([
-    db.getStudentRankings(draft.id, user.id),
-    db.getLabRegistry(true),
+    getStudentRankings(db, draft.id, user.id),
+    getLabRegistry(db, true),
   ]);
 
-  if (typeof rankings === 'undefined') db.logger.warn('no rankings submitted yet');
+  if (typeof rankings === 'undefined') logger.warn('no rankings submitted yet');
   else
-    db.logger.info(
-      { rankingsLabCount: rankings.labRemarks.length },
-      'rankings previously submitted',
-    );
+    logger.info('rankings previously submitted', {
+      'ranking.lab_count': rankings.labRemarks.length,
+    });
 
-  db.logger.trace({ availableLabCount: availableLabs.length }, 'available labs fetched');
+  logger.trace('available labs fetched', { 'lab.available_count': availableLabs.length });
 
   const requestedAt = new Date();
 
@@ -48,9 +55,9 @@ export async function load({ locals: { db, session }, parent }) {
 }
 
 export const actions = {
-  async default({ locals: { db, session }, request }) {
+  async default({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      db.logger.error('attempt to submit lab rankings without session');
+      logger.error('attempt to submit lab rankings without session');
       error(401);
     }
 
@@ -61,15 +68,12 @@ export const actions = {
       user.labId !== null ||
       user.studentNumber === null
     ) {
-      db.logger.error(
-        {
-          isAdmin: user.isAdmin,
-          googleUserId: user.googleUserId,
-          labId: user.labId,
-          studentNumber: user.studentNumber,
-        },
-        'insufficient permissions to submit lab rankings',
-      );
+      logger.error('insufficient permissions to submit lab rankings', void 0, {
+        'auth.user.is_admin': user.isAdmin,
+        'auth.user.google_id': user.googleUserId,
+        'user.lab_id': user.labId,
+        'user.student_number': user.studentNumber?.toString(),
+      });
       error(403);
     }
 
@@ -77,41 +81,44 @@ export const actions = {
     const draftId = BigInt(validateString(data.get('draft')));
     const labs = data.getAll('labs').map(validateString);
     const remarks = data.getAll('remarks').map(validateMaybeEmptyString);
-    db.logger.info(
-      { draftId, labCount: labs.length, remarksCount: remarks.length },
-      'lab rankings submitted',
-    );
+    logger.info('lab rankings submitted', {
+      'draft.id': draftId.toString(),
+      'ranking.lab_count': labs.length,
+      'ranking.remarks_count': remarks.length,
+    });
 
     if (labs.length <= 0) {
-      db.logger.error('no lab rankings submitted');
+      logger.error('no lab rankings submitted');
       return fail(400);
     }
 
-    const draft = await db.getDraftById(draftId);
+    const draft = await getDraftById(db, draftId);
     if (typeof draft === 'undefined') {
-      db.logger.error('cannot find the target draft');
+      logger.error('cannot find the target draft');
       error(404);
     }
 
     const { currRound, maxRounds, registrationClosesAt } = draft;
-    db.logger.info({ maxRounds }, 'max rounds for target draft determined');
+    logger.info('max rounds for target draft determined', { 'draft.round.max': maxRounds });
     if (currRound !== 0) {
-      db.logger.error(draft, 'cannot submit rankings to an ongoing draft');
+      logger.error('cannot submit rankings to an ongoing draft', void 0, { 'draft.round.current': currRound, 'draft.round.max': maxRounds });
       error(403);
     }
 
     if (registrationClosesAt < new Date()) {
-      db.logger.error(draft, 'attempt to submit rankings after registration closed');
+      logger.error('attempt to submit rankings after registration closed', void 0, {
+        'draft.registration.closes_at': registrationClosesAt.toISOString(),
+      });
       error(403);
     }
 
     if (labs.length > maxRounds) {
-      db.logger.error({ labCount: labs.length }, 'lab rankings exceed max round');
+      logger.error('lab rankings exceed max round', void 0, { 'ranking.lab_count': labs.length });
       error(400);
     }
 
-    await db.insertStudentRanking(draftId, user.id, labs, remarks);
-    db.logger.info('lab rankings inserted');
+    await insertStudentRanking(db, draftId, user.id, labs, remarks);
+    logger.info('lab rankings inserted');
     // TODO: Add proper logging/handling of insert errors.
   },
 };

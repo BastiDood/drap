@@ -1,55 +1,60 @@
 import { error, redirect } from '@sveltejs/kit';
 
-export async function load({ locals: { db, session } }) {
+import { db, getDrafts, getLabMembers, getUserLabAssignmentDraftId } from '$lib/server/database';
+import { Logger } from '$lib/server/telemetry/logger';
+
+const SERVICE_NAME = 'routes.dashboard.lab';
+const logger = Logger.byName(SERVICE_NAME);
+
+export async function load({ locals: { session } }) {
   if (typeof session?.user === 'undefined') {
-    db.logger.error('attempt to access lab page without session');
+    logger.error('attempt to access lab page without session');
     redirect(307, '/oauth/login/');
   }
 
   if (session.user.googleUserId === null || session.user.labId === null) {
-    db.logger.error(
-      {
-        isAdmin: session.user.isAdmin,
-        googleUserId: session.user.googleUserId,
-        labId: session.user.labId,
-      },
-      'insufficient permissions to access lab page',
-    );
+    logger.error('insufficient permissions to access lab page', void 0, {
+      isAdmin: session.user.isAdmin,
+      googleUserId: session.user.googleUserId,
+      labId: session.user.labId,
+    });
     error(403);
   }
 
-  type LabInfo = Awaited<ReturnType<typeof db.getLabMembers>>;
+  type LabInfo = Awaited<ReturnType<typeof getLabMembers>>;
   // eslint-disable-next-line @typescript-eslint/init-declarations
   let info: LabInfo;
 
   if (session.user.isAdmin) {
-    info = await db.getLabMembers(session.user.labId);
+    info = await getLabMembers(db, session.user.labId);
   } else {
-    const userLatestDraft = await db.getUserLabAssignmentDraftId(
+    const userLatestDraft = await getUserLabAssignmentDraftId(
+      db,
       session.user.id,
       session.user.labId,
     );
     if (typeof userLatestDraft === 'undefined') {
-      db.logger.error(
+      logger.error(
+        "attempt to get draft id for student-user's assignment to this lab returned undefined",
+        void 0,
         {
           userId: session.user.id,
           labId: session.user.labId,
         },
-        "attempt to get draft id for student-user's assignment to this lab returned undefined",
       );
       error(400);
     }
     const { draftId: userLatestDraftId } = userLatestDraft;
-    info = await db.getLabMembers(session.user.labId, userLatestDraftId);
+    info = await getLabMembers(db, session.user.labId, userLatestDraftId);
   }
 
-  await db.getLabMembers(session.user.labId);
-  db.logger.info(
-    { labName: info.lab, headCount: info.heads.length, memberCount: info.members.length },
-    'lab info fetched',
-  );
+  await getLabMembers(db, session.user.labId);
+  logger.info('lab info fetched', {
+    labName: info.lab,
+    headCount: info.heads.length,
+    memberCount: info.members.length,
+  });
 
-  const drafts = await db.getDrafts();
-
+  const drafts = await getDrafts(db);
   return { ...info, drafts };
 }

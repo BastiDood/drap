@@ -1,38 +1,44 @@
 import Papa from 'papaparse';
 import { error, redirect } from '@sveltejs/kit';
 
+import { db, getDraftById, getStudentRanksExport } from '$lib/server/database';
+import { Logger } from '$lib/server/telemetry/logger';
 import { validateBigInt } from '$lib/validators.js';
 
-export async function GET({ params: { draftId }, locals: { db, session } }) {
+const SERVICE_NAME = 'routes.dashboard.admin.drafts.students-csv';
+const logger = Logger.byName(SERVICE_NAME);
+
+export async function GET({ params: { draftId }, locals: { session } }) {
   const did = validateBigInt(draftId);
 
   if (did === null) {
-    db.logger.error('invalid draft id');
+    logger.error('invalid draft id');
     error(404, 'Invalid draft ID.');
   }
 
   if (typeof session?.user === 'undefined') {
-    db.logger.error('attempt to export student ranks without session');
+    logger.error('attempt to export student ranks without session');
     redirect(307, '/oauth/login/');
   }
 
   const { user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-    db.logger.error(
-      { isAdmin: user.isAdmin, googleUserId: user.googleUserId, labId: user.labId },
-      'insufficient permissions to export student ranks',
-    );
+    logger.error('insufficient permissions to export student ranks', void 0, {
+      isAdmin: user.isAdmin,
+      googleUserId: user.googleUserId,
+      labId: user.labId,
+    });
     error(403);
   }
 
-  const draft = await db.getDraftById(did);
+  const draft = await getDraftById(db, did);
   if (typeof draft === 'undefined') {
-    db.logger.error('cannot find the target draft');
+    logger.error('cannot find the target draft');
     error(404);
   }
 
-  db.logger.info('exporting student ranks');
-  const studentRanks = await db.getStudentRanksExport(did);
+  logger.info('exporting student ranks');
+  const studentRanks = await getStudentRanksExport(db, did);
 
   return new Response(Papa.unparse(studentRanks), {
     headers: {

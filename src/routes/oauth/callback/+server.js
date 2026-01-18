@@ -7,11 +7,23 @@ import { parse } from 'valibot';
 
 import * as GOOGLE from '$lib/server/env/google';
 import { AuthorizationCode, IdToken, TokenResponse } from '$lib/server/models/oauth';
+import {
+  begin,
+  db,
+  deletePendingSession,
+  insertValidSession,
+  upsertCandidateSender,
+  upsertOpenIdUser,
+} from '$lib/server/database';
 import { fetchJwks } from '$lib/server/email/jwks';
+import { Logger } from '$lib/server/telemetry/logger';
+
+const SERVICE_NAME = 'routes.oauth.callback';
+const logger = Logger.byName(SERVICE_NAME);
 
 export async function GET({
   fetch,
-  locals: { db, session },
+  locals: { session },
   cookies,
   setHeaders,
   url: { searchParams },
@@ -34,10 +46,10 @@ export async function GET({
   });
 
   const sid = session.id;
-  const { hasExtendedScope, expires } = await db.begin(async db => {
-    const pending = await db.deletePendingSession(sid);
+  const { hasExtendedScope, expires } = await begin(db, async db => {
+    const pending = await deletePendingSession(db, sid);
     if (typeof pending === 'undefined') {
-      db.logger.error('pending session not found');
+      logger.error('pending session not found');
       redirect(307, '/oauth/login/');
     }
 
@@ -49,7 +61,7 @@ export async function GET({
 
     if (!res.ok) {
       const message = await res.text();
-      db.logger.fatal({ status: res.status, message }, 'failed to fetch token');
+      logger.fatal('failed to fetch token', void 0, { status: res.status, message });
       error(500, 'Cannot log you in at the moment. Please try again later.');
     }
 
@@ -70,17 +82,22 @@ export async function GET({
       id: userId,
       isAdmin,
       labId,
-    } = await db.upsertOpenIdUser(
+    } = await upsertOpenIdUser(
+      db,
       token.email,
       token.sub,
       token.given_name,
       token.family_name,
       token.picture,
     );
-    db.logger.info({ userId, isAdmin, labId }, 'user upserted');
+    logger.info('user upserted', {
+      'user.id': userId,
+      'auth.user.is_admin': isAdmin,
+      'user.lab_id': labId,
+    });
 
-    await db.insertValidSession(sid, userId, token.exp);
-    db.logger.info({ expiration: token.exp }, 'valid session inserted');
+    await insertValidSession(db, sid, userId, token.exp);
+    logger.info('valid session inserted', { 'auth.session.expiration': token.exp.toISOString() });
 
     if (
       pending.hasExtendedScope &&
@@ -88,8 +105,8 @@ export async function GET({
       isAdmin &&
       labId === null
     ) {
-      await db.upsertCandidateSender(userId, token.exp, access_token, refresh_token);
-      db.logger.info('amending credential scope for candidate sender');
+      await upsertCandidateSender(db, userId, token.exp, access_token, refresh_token);
+      logger.info('amending credential scope for candidate sender');
     }
 
     return { hasExtendedScope: pending.hasExtendedScope, expires: token.exp };
@@ -97,6 +114,6 @@ export async function GET({
 
   cookies.set('sid', sid, { path: '/', httpOnly: true, sameSite: 'lax', expires });
 
-  db.logger.info({ hasExtendedScope }, 'callback complete');
+  logger.info('callback complete', { 'oauth.scope.extended': hasExtendedScope });
   redirect(303, hasExtendedScope ? '/dashboard/email/' : '/');
 }

@@ -1,17 +1,22 @@
 import { error, redirect } from '@sveltejs/kit';
 
 import * as GOOGLE from '$lib/server/env/google';
+import { db, generatePendingSession } from '$lib/server/database';
+import { Logger } from '$lib/server/telemetry/logger';
 import { OAUTH_SCOPE_STRING, SENDER_SCOPE_STRING } from '$lib/server/models/oauth';
 
-export async function GET({ locals: { db, session }, cookies, setHeaders, url: { searchParams } }) {
+const SERVICE_NAME = 'routes.oauth.login';
+const logger = Logger.byName(SERVICE_NAME);
+
+export async function GET({ locals: { session }, cookies, setHeaders, url: { searchParams } }) {
   setHeaders({ 'Cache-Control': 'no-store' });
 
   const hasExtendedScope = searchParams.has('extended');
-  db.logger.info({ hasExtendedScope }, 'requested login');
+  logger.info('requested login', { 'oauth.scope.extended': hasExtendedScope });
 
   if (typeof session?.user !== 'undefined') {
     if (!hasExtendedScope) {
-      db.logger.error('attempt to login with extended scope without admin privileges');
+      logger.error('attempt to login with extended scope without admin privileges');
       redirect(307, '/');
     }
     if (
@@ -19,20 +24,17 @@ export async function GET({ locals: { db, session }, cookies, setHeaders, url: {
       !session.user.isAdmin ||
       session.user.labId !== null
     ) {
-      db.logger.error(
-        {
-          isAdmin: session.user.isAdmin,
-          googleUserId: session.user.googleUserId,
-          labId: session.user.labId,
-        },
-        'attempt to login with extended scope without admin privileges',
-      );
+      logger.error('attempt to login with extended scope without admin privileges', void 0, {
+        'auth.user.is_admin': session.user.isAdmin,
+        'auth.user.google_id': session.user.googleUserId,
+        'user.lab_id': session.user.labId,
+      });
       error(403);
     }
   }
 
-  const { id: sessionId, nonce, expiration } = await db.generatePendingSession(hasExtendedScope);
-  db.logger.info({ sessionId, expiration }, 'pending session generated');
+  const { id: sessionId, nonce, expiration } = await generatePendingSession(db, hasExtendedScope);
+  logger.info('pending session generated', { 'auth.session.id': sessionId, 'auth.session.expiration': expiration.toISOString() });
   cookies.set('sid', sessionId, {
     path: '/',
     httpOnly: true,

@@ -1,26 +1,35 @@
 import { error } from '@sveltejs/kit';
 
+import { db, getDraftById, getDraftEvents } from '$lib/server/database';
+import { Logger } from '$lib/server/telemetry/logger';
 import { validateBigInt } from '$lib/validators';
 
-export async function load({ locals: { db }, params: { draft: id } }) {
-  const did = validateBigInt(id);
-  db.logger.info({ did }, 'fetching draft');
+const SERVICE_NAME = 'routes.history.draft';
+const logger = Logger.byName(SERVICE_NAME);
 
+export async function load({ params: { draft: id } }) {
+  const did = validateBigInt(id);
   if (did === null) {
-    db.logger.error('invalid draft id');
+    logger.error('invalid draft id');
     error(404, 'Invalid draft ID.');
   }
 
-  const draft = await db.getDraftById(did);
+  logger.info('fetching draft', { 'draft.id': did.toString() });
+
+  const draft = await getDraftById(db, did);
   if (typeof draft === 'undefined') {
-    db.logger.error('draft not found');
+    logger.error('draft not found');
     error(404, 'Draft not found.');
   }
 
-  db.logger.info(draft, 'draft fetched');
+  logger.info('draft fetched', {
+    'draft.round.current': draft.currRound,
+    'draft.round.max': draft.maxRounds,
+    'draft.registration.closes_at': draft.registrationClosesAt.toISOString(),
+  });
 
-  const events = await db.getDraftEvents(did);
-  db.logger.info({ eventCount: events.length }, 'draft events fetched');
+  const events = await getDraftEvents(db, did);
+  logger.info('draft events fetched', { 'draft.event_count': events.length });
 
   return { did, draft, events };
 }

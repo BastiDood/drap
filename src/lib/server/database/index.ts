@@ -18,15 +18,14 @@ import {
 import { array, object, parse, string } from 'valibot';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { enumerate, izip } from 'itertools';
-import type { Logger } from 'pino';
 
 import * as DRIZZLE from '$lib/server/env/drizzle';
 import * as POSTGRES from '$lib/server/env/postgres';
 import { assertOptional, assertSingle } from '$lib/server/assert';
 import { Notification } from '$lib/server/models/notification';
+import { Tracer } from '$lib/server/telemetry/tracer';
 
 import * as schema from './schema';
-import { type Loggable, timed } from './decorators';
 
 const StringArray = array(string());
 const LabRemark = array(object({ lab: string(), remark: string() }));
@@ -35,7 +34,10 @@ function init(url: string) {
   return drizzle(url, { schema, logger: DRIZZLE.DEBUG });
 }
 
-const database = init(POSTGRES.URL);
+export const db = init(POSTGRES.URL);
+
+const SERVICE_NAME = 'database';
+const tracer = Tracer.byName(SERVICE_NAME);
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function coerceDate(value: any) {
@@ -47,32 +49,17 @@ export type { schema };
 
 export type DrizzleDatabase = ReturnType<typeof init>;
 export type DrizzleTransaction = Parameters<Parameters<DrizzleDatabase['transaction']>[0]>[0];
+export type DbConnection = DrizzleDatabase | DrizzleTransaction;
 
-export class Database implements Loggable {
-  #logger: Logger;
-  #db: DrizzleDatabase | DrizzleTransaction;
+/** Begins a transaction. */
+export function begin<T>(conn: DrizzleDatabase, fn: (tx: DrizzleTransaction) => Promise<T>) {
+  return conn.transaction(fn);
+}
 
-  private constructor(logger: Logger, db: DrizzleDatabase | DrizzleTransaction = database) {
-    this.#logger = logger;
-    this.#db = db;
-  }
-
-  /** Constructs a Database instance using the default static drizzle instance */
-  static withLogger(logger: Logger) {
-    return new Database(logger);
-  }
-
-  get logger() {
-    return this.#logger;
-  }
-
-  /** Begins a transaction. */
-  begin<T>(fn: (db: Database) => Promise<T>) {
-    return this.#db.transaction(tx => fn(new Database(this.#logger, tx)));
-  }
-
-  @timed async generatePendingSession(hasExtendedScope: boolean) {
-    return await this.#db
+export async function generatePendingSession(db: DbConnection, hasExtendedScope: boolean) {
+  return await tracer.asyncSpan('generate-pending-session', async span => {
+    span.setAttribute('database.session.has_extended_scope', hasExtendedScope);
+    return await db
       .insert(schema.pending)
       .values({ hasExtendedScope })
       .returning({
@@ -81,10 +68,13 @@ export class Database implements Loggable {
         nonce: schema.pending.nonce,
       })
       .then(assertSingle);
-  }
+  });
+}
 
-  @timed async deletePendingSession(id: string) {
-    return await this.#db
+export async function deletePendingSession(db: DbConnection, id: string) {
+  return await tracer.asyncSpan('delete-pending-session', async span => {
+    span.setAttribute('database.session.id', id);
+    return await db
       .delete(schema.pending)
       .where(eq(schema.pending.id, id))
       .returning({
@@ -94,43 +84,64 @@ export class Database implements Loggable {
         hasExtendedScope: schema.pending.hasExtendedScope,
       })
       .then(assertOptional);
-  }
+  });
+}
 
-  @timed async insertDummySession(dummyUserId: string) {
+export async function insertDummySession(db: DbConnection, dummyUserId: string) {
+  return await tracer.asyncSpan('insert-dummy-session', async span => {
+    span.setAttribute('database.user.id', dummyUserId);
     // create a session that expires after an hour
-    const { sessionId } = await this.#db
+    const { sessionId } = await db
       .insert(schema.session)
       .values({ userId: dummyUserId, expiration: new Date(Date.now() + 3600000) })
       .returning({ sessionId: schema.session.id })
       .then(assertSingle);
     return sessionId;
-  }
+  });
+}
 
-  @timed async insertValidSession(id: string, userId: string, expiration: Date) {
-    const { rowCount } = await this.#db.insert(schema.session).values({ id, userId, expiration });
+export async function insertValidSession(
+  db: DbConnection,
+  id: string,
+  userId: string,
+  expiration: Date,
+) {
+  return await tracer.asyncSpan('insert-valid-session', async span => {
+    span.setAttribute('database.session.id', id);
+    span.setAttribute('database.user.id', userId);
+    const { rowCount } = await db.insert(schema.session).values({ id, userId, expiration });
     strictEqual(rowCount, 1, 'only one session must be inserted');
-  }
+  });
+}
 
-  @timed async getUserById(userId: string) {
+export async function getUserById(db: DbConnection, userId: string) {
+  return await tracer.asyncSpan('get-user-by-id', async span => {
+    span.setAttribute('database.user.id', userId);
     const { id: _, ...columns } = getTableColumns(schema.user);
-    return await this.#db
+    return await db
       .select(columns)
       .from(schema.user)
       .where(eq(schema.user.id, userId))
       .then(assertSingle);
-  }
+  });
+}
 
-  @timed async getUserFromValidSession(sid: string) {
-    const result = await this.#db.query.session.findFirst({
+export async function getUserFromValidSession(db: DbConnection, sid: string) {
+  return await tracer.asyncSpan('get-user-from-valid-session', async span => {
+    span.setAttribute('database.session.id', sid);
+    const result = await db.query.session.findFirst({
       columns: {},
       with: { user: true },
       where: ({ id }, { eq }) => eq(id, sid),
     });
     return result?.user;
-  }
+  });
+}
 
-  @timed async deleteValidSession(sid: string) {
-    return await this.#db
+export async function deleteValidSession(db: DbConnection, sid: string) {
+  return await tracer.asyncSpan('delete-valid-session', async span => {
+    span.setAttribute('database.session.id', sid);
+    return await db
       .delete(schema.session)
       .where(eq(schema.session.id, sid))
       .returning({
@@ -138,16 +149,20 @@ export class Database implements Loggable {
         expiration: schema.session.expiration,
       })
       .then(assertOptional);
-  }
+  });
+}
 
-  @timed async upsertOpenIdUser(
-    email: string,
-    uid: string | null,
-    given: string,
-    family: string,
-    avatar: string,
-  ) {
-    return await this.#db
+export async function upsertOpenIdUser(
+  db: DbConnection,
+  email: string,
+  uid: string | null,
+  given: string,
+  family: string,
+  avatar: string,
+) {
+  return await tracer.asyncSpan('upsert-openid-user', async span => {
+    span.setAttribute('database.user.email', email);
+    return await db
       .insert(schema.user)
       .values({ email, googleUserId: uid, givenName: given, familyName: family, avatarUrl: avatar })
       .onConflictDoUpdate({
@@ -161,15 +176,19 @@ export class Database implements Loggable {
       })
       .returning({ id: schema.user.id, isAdmin: schema.user.isAdmin, labId: schema.user.labId })
       .then(assertSingle);
-  }
+  });
+}
 
-  @timed async updateProfileByUserId(
-    uid: string,
-    studentNumber: bigint | null,
-    given: string,
-    family: string,
-  ) {
-    await this.#db
+export async function updateProfileByUserId(
+  db: DbConnection,
+  uid: string,
+  studentNumber: bigint | null,
+  given: string,
+  family: string,
+) {
+  return await tracer.asyncSpan('update-profile-by-user-id', async span => {
+    span.setAttribute('database.user.id', uid);
+    await db
       .update(schema.user)
       .set({
         studentNumber: sql`coalesce(${schema.user.studentNumber}, ${studentNumber})`,
@@ -177,26 +196,38 @@ export class Database implements Loggable {
         familyName: family,
       })
       .where(and(eq(schema.user.id, uid)));
-  }
+  });
+}
 
-  @timed async insertNewLab(id: string, name: string) {
-    await this.#db.insert(schema.lab).values({ id, name });
-  }
+export async function insertNewLab(db: DbConnection, id: string, name: string) {
+  return await tracer.asyncSpan('insert-new-lab', async span => {
+    span.setAttribute('database.lab.id', id);
+    await db.insert(schema.lab).values({ id, name });
+  });
+}
 
-  @timed async deleteLab(id: string) {
-    await this.#db
+export async function deleteLab(db: DbConnection, id: string) {
+  return await tracer.asyncSpan('delete-lab', async span => {
+    span.setAttribute('database.lab.id', id);
+    await db
       .update(schema.lab)
       .set({ deletedAt: new Date(), quota: 0 })
       .where(eq(schema.lab.id, id));
-  }
+  });
+}
 
-  @timed async restoreLab(id: string) {
-    await this.#db.update(schema.lab).set({ deletedAt: null }).where(eq(schema.lab.id, id));
-  }
+export async function restoreLab(db: DbConnection, id: string) {
+  return await tracer.asyncSpan('restore-lab', async span => {
+    span.setAttribute('database.lab.id', id);
+    await db.update(schema.lab).set({ deletedAt: null }).where(eq(schema.lab.id, id));
+  });
+}
 
-  @timed async getLabRegistry(activeOnly = true) {
+export async function getLabRegistry(db: DbConnection, activeOnly = true) {
+  return await tracer.asyncSpan('get-lab-registry', async span => {
+    span.setAttribute('database.lab.active_only', activeOnly);
     const targetSchema = activeOnly ? schema.activeLabView : schema.lab;
-    return await this.#db
+    return await db
       .select({
         id: targetSchema.id,
         name: targetSchema.name,
@@ -205,52 +236,70 @@ export class Database implements Loggable {
       })
       .from(targetSchema)
       .orderBy(({ name }) => name);
-  }
+  });
+}
 
-  @timed async getLabById(labId: string) {
-    return await this.#db
+export async function getLabById(db: DbConnection, labId: string) {
+  return await tracer.asyncSpan('get-lab-by-id', async span => {
+    span.setAttribute('database.lab.id', labId);
+    return await db
       .select({
         name: schema.lab.name,
       })
       .from(schema.lab)
       .where(eq(schema.lab.id, labId))
       .then(assertSingle);
-  }
+  });
+}
 
-  @timed async isValidTotalLabQuota() {
-    const { result } = await this.#db
+export async function isValidTotalLabQuota(db: DbConnection) {
+  return await tracer.asyncSpan('is-valid-total-lab-quota', async () => {
+    const { result } = await db
       .select({ result: sql`bool_or(${schema.lab.quota} > 0)`.mapWith(Boolean) })
       .from(schema.lab)
       .then(assertSingle);
     return result;
-  }
+  });
+}
 
-  @timed async getLabCount(activeOnly = true) {
+export async function getLabCount(db: DbConnection, activeOnly = true) {
+  return await tracer.asyncSpan('get-lab-count', async span => {
+    span.setAttribute('database.lab.active_only', activeOnly);
     const targetSchema = activeOnly ? schema.activeLabView : schema.lab;
-    const { result } = await this.#db
+    const { result } = await db
       .select({ result: count(targetSchema.id) })
       .from(targetSchema)
       .then(assertSingle);
     return result;
-  }
+  });
+}
 
-  @timed async getStudentCountInDraft(id: bigint) {
-    const { result } = await this.#db
+export async function getStudentCountInDraft(db: DbConnection, id: bigint) {
+  return await tracer.asyncSpan('get-student-count-in-draft', async span => {
+    span.setAttribute('database.draft.id', id.toString());
+    const { result } = await db
       .select({ result: count(schema.studentRank.userId) })
       .from(schema.studentRank)
       .where(eq(schema.studentRank.draftId, id))
       .then(assertSingle);
     return result;
-  }
+  });
+}
 
-  /** @deprecated Internally uses a `for` loop. */
-  @timed async updateLabQuotas(quotas: Iterable<readonly [string, number]>) {
+/** @deprecated Internally uses a `for` loop. */
+export async function updateLabQuotas(
+  db: DbConnection,
+  quotas: Iterable<readonly [string, number]>,
+) {
+  return await tracer.asyncSpan('update-lab-quotas', async () => {
     for (const [id, quota] of quotas)
-      await this.#db.update(schema.lab).set({ quota }).where(eq(schema.lab.id, id));
-  }
+      await db.update(schema.lab).set({ quota }).where(eq(schema.lab.id, id));
+  });
+}
 
-  @timed async getFacultyAndStaff() {
-    return await this.#db
+export async function getFacultyAndStaff(db: DbConnection) {
+  return await tracer.asyncSpan('get-faculty-and-staff', async () => {
+    return await db
       .select({
         id: schema.user.id,
         googleUserId: schema.user.googleUserId,
@@ -263,10 +312,12 @@ export class Database implements Loggable {
       .from(schema.user)
       .leftJoin(schema.lab, eq(schema.user.labId, schema.lab.id))
       .where(eq(schema.user.isAdmin, true));
-  }
+  });
+}
 
-  @timed async getValidStaffEmails() {
-    const results = await this.#db
+export async function getValidStaffEmails(db: DbConnection) {
+  return await tracer.asyncSpan('get-valid-staff-emails', async () => {
+    const results = await db
       .select({ email: schema.user.email })
       .from(schema.user)
       .where(
@@ -277,16 +328,20 @@ export class Database implements Loggable {
         ),
       );
     return results.map(({ email }) => email);
-  }
+  });
+}
 
-  /** Ideally invoked from within a transaction. */
-  @timed async getLabMembers(labId: string, draftId?: bigint) {
-    const labInfo = await this.#db.query.lab.findFirst({
+/** Ideally invoked from within a transaction. */
+export async function getLabMembers(db: DbConnection, labId: string, draftId?: bigint) {
+  return await tracer.asyncSpan('get-lab-members', async span => {
+    span.setAttribute('database.lab.id', labId);
+    if (typeof draftId !== 'undefined') span.setAttribute('database.draft.id', draftId.toString());
+    const labInfo = await db.query.lab.findFirst({
       columns: { name: true },
       where: ({ id }) => eq(id, labId),
     });
 
-    const heads = await this.#db.query.user.findMany({
+    const heads = await db.query.user.findMany({
       columns: {
         email: true,
         givenName: true,
@@ -301,7 +356,7 @@ export class Database implements Loggable {
       orderBy: ({ familyName }) => familyName,
     });
 
-    const faculty = await this.#db
+    const faculty = await db
       .select({
         email: schema.user.email,
         givenName: schema.user.givenName,
@@ -332,7 +387,7 @@ export class Database implements Loggable {
 
     // if no draft id is specified
     if (typeof draftId === 'undefined')
-      members = await this.#db
+      members = await db
         .select({
           draftId: schema.labMemberView.draftId,
           email: schema.labMemberView.email,
@@ -345,7 +400,7 @@ export class Database implements Loggable {
         .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName));
     // if a draft id is specified
     else
-      members = await this.#db
+      members = await db
         .select({
           draftId: schema.labMemberView.draftId,
           email: schema.labMemberView.email,
@@ -360,24 +415,30 @@ export class Database implements Loggable {
         .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName));
 
     return { lab: labInfo?.name, heads, members, faculty };
-  }
+  });
+}
 
-  /**
-   * Get the latest draft id that a user participated in to be assigned to a certain lab
-   * @param userId The id of the user whose draft id is to be identified
-   * @param labId The id of the lab they were assigned for
-   */
-  @timed async getUserLabAssignmentDraftId(userId: string, labId: string) {
-    return await this.#db
+/**
+ * Get the latest draft id that a user participated in to be assigned to a certain lab
+ * @param userId The id of the user whose draft id is to be identified
+ * @param labId The id of the lab they were assigned for
+ */
+export async function getUserLabAssignmentDraftId(db: DbConnection, userId: string, labId: string) {
+  return await tracer.asyncSpan('get-user-lab-assignment-draft-id', async span => {
+    span.setAttribute('database.user.id', userId);
+    span.setAttribute('database.lab.id', labId);
+    return await db
       .select({ draftId: schema.labMemberView.draftId })
       .from(schema.labMemberView)
       .where(and(eq(schema.labMemberView.userId, userId), eq(schema.labMemberView.draftLab, labId)))
       .orderBy(desc(schema.labMemberView.draftId))
       .then(assertOptional);
-  }
+  });
+}
 
-  @timed async getDrafts() {
-    return await this.#db
+export async function getDrafts(db: DbConnection) {
+  return await tracer.asyncSpan('get-drafts', async () => {
+    return await db
       .select({
         id: schema.draft.id,
         currRound: schema.draft.currRound,
@@ -388,10 +449,13 @@ export class Database implements Loggable {
       })
       .from(schema.draft)
       .orderBy(({ activePeriodStart }) => sql`${desc(activePeriodStart)} NULLS FIRST`);
-  }
+  });
+}
 
-  @timed async getDraftById(id: bigint) {
-    return await this.#db
+export async function getDraftById(db: DbConnection, id: bigint) {
+  return await tracer.asyncSpan('get-draft-by-id', async span => {
+    span.setAttribute('database.draft.id', id.toString());
+    return await db
       .select({
         currRound: schema.draft.currRound,
         maxRounds: schema.draft.maxRounds,
@@ -402,10 +466,12 @@ export class Database implements Loggable {
       .from(schema.draft)
       .where(eq(schema.draft.id, id))
       .then(assertOptional);
-  }
+  });
+}
 
-  @timed async getActiveDraft() {
-    return await this.#db
+export async function getActiveDraft(db: DbConnection) {
+  return await tracer.asyncSpan('get-active-draft', async () => {
+    return await db
       .select({
         id: schema.draft.id,
         currRound: schema.draft.currRound,
@@ -417,19 +483,25 @@ export class Database implements Loggable {
       .from(schema.draft)
       .where(sql`upper_inf(${schema.draft.activePeriod})`)
       .then(assertOptional);
-  }
+  });
+}
 
-  @timed async getMaxRoundInDraft(draftId: bigint) {
-    const result = await this.#db
+export async function getMaxRoundInDraft(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-max-round-in-draft', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    const result = await db
       .select({ maxRounds: schema.draft.maxRounds })
       .from(schema.draft)
       .where(eq(schema.draft.id, draftId))
       .then(assertOptional);
     return result?.maxRounds;
-  }
+  });
+}
 
-  @timed async getStudentsInDraftTaggedByLab(draftId: bigint) {
-    return await this.#db
+export async function getStudentsInDraftTaggedByLab(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-students-in-draft-tagged-by-lab', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    return await db
       .select({
         id: schema.user.id,
         email: schema.user.email,
@@ -461,105 +533,121 @@ export class Database implements Loggable {
       .where(eq(schema.studentRank.draftId, draftId))
       .groupBy(schema.user.id, schema.facultyChoiceUser.labId)
       .orderBy(schema.user.familyName);
-  }
+  });
+}
 
-  /**
-   * Typically invoked from within a transaction.
-   *
-   * For a lab to be auto-acknowledged:
-   * 1. The lab has exhausted their entire quota (i.e., no remaining quota).
-   * 2. The lab must not be preferred by anyone in the current draft round.
-   */
-  @timed async getLabAndRemainingStudentsInDraftWithLabPreference(draftId: bigint, labId: string) {
-    const labInfo = await this.#db.query.lab.findFirst({
-      columns: { name: true, quota: true },
-      where: ({ id }) => eq(id, labId),
-    });
+/**
+ * Typically invoked from within a transaction.
+ *
+ * For a lab to be auto-acknowledged:
+ * 1. The lab has exhausted their entire quota (i.e., no remaining quota).
+ * 2. The lab must not be preferred by anyone in the current draft round.
+ */
+export async function getLabAndRemainingStudentsInDraftWithLabPreference(
+  db: DbConnection,
+  draftId: bigint,
+  labId: string,
+) {
+  return await tracer.asyncSpan(
+    'get-lab-and-remaining-students-in-draft-with-lab-preference',
+    async span => {
+      span.setAttribute('database.draft.id', draftId.toString());
+      span.setAttribute('database.lab.id', labId);
+      const labInfo = await db.query.lab.findFirst({
+        columns: { name: true, quota: true },
+        where: ({ id }) => eq(id, labId),
+      });
 
-    const students = await this.#db
-      .select({
-        id: schema.user.id,
-        email: schema.user.email,
-        givenName: schema.user.givenName,
-        familyName: schema.user.familyName,
-        avatarUrl: schema.user.avatarUrl,
-        studentNumber: schema.user.studentNumber,
-        remark: schema.studentRankLab.remark,
-      })
-      .from(schema.studentRank)
-      .innerJoin(schema.draft, eq(schema.studentRank.draftId, schema.draft.id))
-      .leftJoin(
-        schema.facultyChoiceUser,
-        and(
-          eq(schema.studentRank.draftId, schema.facultyChoiceUser.draftId),
-          eq(schema.studentRank.userId, schema.facultyChoiceUser.studentUserId),
-        ),
-      )
-      .innerJoin(
-        schema.studentRankLab,
-        and(
-          eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
-          eq(schema.studentRank.userId, schema.studentRankLab.userId),
-        ),
-      )
-      .innerJoin(schema.user, eq(schema.studentRank.userId, schema.user.id))
-      .where(
-        and(
-          eq(schema.studentRank.draftId, draftId),
-          isNull(schema.facultyChoiceUser.studentUserId),
-          eq(schema.studentRankLab.index, schema.draft.currRound),
-          eq(schema.studentRankLab.labId, labId),
-        ),
-      )
-      .orderBy(schema.user.familyName);
+      const students = await db
+        .select({
+          id: schema.user.id,
+          email: schema.user.email,
+          givenName: schema.user.givenName,
+          familyName: schema.user.familyName,
+          avatarUrl: schema.user.avatarUrl,
+          studentNumber: schema.user.studentNumber,
+          remark: schema.studentRankLab.remark,
+        })
+        .from(schema.studentRank)
+        .innerJoin(schema.draft, eq(schema.studentRank.draftId, schema.draft.id))
+        .leftJoin(
+          schema.facultyChoiceUser,
+          and(
+            eq(schema.studentRank.draftId, schema.facultyChoiceUser.draftId),
+            eq(schema.studentRank.userId, schema.facultyChoiceUser.studentUserId),
+          ),
+        )
+        .innerJoin(
+          schema.studentRankLab,
+          and(
+            eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
+            eq(schema.studentRank.userId, schema.studentRankLab.userId),
+          ),
+        )
+        .innerJoin(schema.user, eq(schema.studentRank.userId, schema.user.id))
+        .where(
+          and(
+            eq(schema.studentRank.draftId, draftId),
+            isNull(schema.facultyChoiceUser.studentUserId),
+            eq(schema.studentRankLab.index, schema.draft.currRound),
+            eq(schema.studentRankLab.labId, labId),
+          ),
+        )
+        .orderBy(schema.user.familyName);
 
-    const researchers = await this.#db
-      .select({
-        email: schema.user.email,
-        givenName: schema.user.givenName,
-        familyName: schema.user.familyName,
-        avatarUrl: schema.user.avatarUrl,
-        studentNumber: schema.user.studentNumber,
-      })
-      .from(schema.facultyChoiceUser)
-      .innerJoin(schema.user, eq(schema.facultyChoiceUser.studentUserId, schema.user.id))
-      .where(
-        and(
-          eq(schema.facultyChoiceUser.draftId, draftId),
-          eq(schema.facultyChoiceUser.labId, labId),
-        ),
-      );
+      const researchers = await db
+        .select({
+          email: schema.user.email,
+          givenName: schema.user.givenName,
+          familyName: schema.user.familyName,
+          avatarUrl: schema.user.avatarUrl,
+          studentNumber: schema.user.studentNumber,
+        })
+        .from(schema.facultyChoiceUser)
+        .innerJoin(schema.user, eq(schema.facultyChoiceUser.studentUserId, schema.user.id))
+        .where(
+          and(
+            eq(schema.facultyChoiceUser.draftId, draftId),
+            eq(schema.facultyChoiceUser.labId, labId),
+          ),
+        );
 
-    const chosen = await this.#db
-      .select({ createdAt: schema.facultyChoice.createdAt })
-      .from(schema.facultyChoice)
-      .innerJoin(
-        schema.draft,
-        and(
-          eq(schema.facultyChoice.draftId, schema.draft.id),
-          eq(schema.facultyChoice.round, schema.draft.currRound),
-        ),
-      )
-      .where(and(eq(schema.facultyChoice.draftId, draftId), eq(schema.facultyChoice.labId, labId)));
+      const chosen = await db
+        .select({ createdAt: schema.facultyChoice.createdAt })
+        .from(schema.facultyChoice)
+        .innerJoin(
+          schema.draft,
+          and(
+            eq(schema.facultyChoice.draftId, schema.draft.id),
+            eq(schema.facultyChoice.round, schema.draft.currRound),
+          ),
+        )
+        .where(
+          and(eq(schema.facultyChoice.draftId, draftId), eq(schema.facultyChoice.labId, labId)),
+        );
 
-    return { lab: labInfo, students, researchers, isDone: chosen.length > 0 };
-  }
+      return { lab: labInfo, students, researchers, isDone: chosen.length > 0 };
+    },
+  );
+}
 
-  /** Typically invoked from within a transaction. */
-  @timed async autoAcknowledgeLabsWithoutPreferences(draftId: bigint) {
+/** Typically invoked from within a transaction. */
+export async function autoAcknowledgeLabsWithoutPreferences(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('auto-acknowledge-labs-without-preferences', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
     // Define the draft CTE
-    const draftsCte = this.#db
+    const draftsCte = db
       .$with('_drafts')
       .as(
-        this.#db
+        db
           .select({ draftId: schema.draft.id, currRound: schema.draft.currRound })
           .from(schema.draft)
           .where(eq(schema.draft.id, draftId)),
       );
 
     // Define the drafted students CTE
-    const draftedCte = this.#db.$with('_drafted').as(
-      this.#db
+    const draftedCte = db.$with('_drafted').as(
+      db
         .with(draftsCte)
         .select({
           labId: schema.facultyChoiceUser.labId,
@@ -575,7 +663,7 @@ export class Database implements Loggable {
     );
 
     // Define the preferred labs CTE
-    const preferredSubquery = this.#db
+    const preferredSubquery = db
       .with(draftsCte)
       .select({
         labId: schema.studentRankLab.labId,
@@ -604,8 +692,8 @@ export class Database implements Loggable {
         ),
       )
       .as('_');
-    const preferredCte = this.#db.$with('_preferred').as(
-      this.#db
+    const preferredCte = db.$with('_preferred').as(
+      db
         .select({
           labId: preferredSubquery.labId,
           preferrers: countDistinct(preferredSubquery.studentUserId).as('preferrers'),
@@ -614,7 +702,7 @@ export class Database implements Loggable {
         .groupBy(preferredSubquery.labId),
     );
 
-    await this.#db.transaction(async txn => {
+    await db.transaction(async txn => {
       const toAcknowledge = await txn
         .with(draftsCte, draftedCte, preferredCte)
         .select({
@@ -635,15 +723,23 @@ export class Database implements Loggable {
 
       for (const row of toAcknowledge) await txn.insert(schema.facultyChoice).values(row);
     });
-  }
+  });
+}
 
-  @timed async getLabQuotaAndSelectedStudentCountInDraft(did: bigint, lid: string) {
-    const labInfo = await this.#db.query.lab.findFirst({
+export async function getLabQuotaAndSelectedStudentCountInDraft(
+  db: DbConnection,
+  did: bigint,
+  lid: string,
+) {
+  return await tracer.asyncSpan('get-lab-quota-and-selected-student-count-in-draft', async span => {
+    span.setAttribute('database.draft.id', did.toString());
+    span.setAttribute('database.lab.id', lid);
+    const labInfo = await db.query.lab.findFirst({
       columns: { quota: true },
       where: ({ id }, { eq }) => eq(id, lid),
     });
 
-    const draftCount = await this.#db
+    const draftCount = await db
       .select({ studentCount: count(schema.facultyChoiceUser.studentUserId) })
       .from(schema.facultyChoiceUser)
       .where(
@@ -655,10 +751,13 @@ export class Database implements Loggable {
       quota: labInfo?.quota,
       selected: draftCount.studentCount,
     };
-  }
+  });
+}
 
-  @timed async initDraft(maxRounds: number, registrationClosesAt: Date) {
-    return await this.#db
+export async function initDraft(db: DbConnection, maxRounds: number, registrationClosesAt: Date) {
+  return await tracer.asyncSpan('init-draft', async span => {
+    span.setAttribute('database.draft.max_rounds', maxRounds);
+    return await db
       .insert(schema.draft)
       .values({ maxRounds, registrationClosesAt })
       .returning({
@@ -666,10 +765,13 @@ export class Database implements Loggable {
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
       })
       .then(assertSingle);
-  }
+  });
+}
 
-  @timed async incrementDraftRound(draftId: bigint) {
-    return await this.#db
+export async function incrementDraftRound(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('increment-draft-round', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    return await db
       .update(schema.draft)
       .set({
         currRound: sql`case when ${schema.draft.currRound} < ${schema.draft.maxRounds} then ${schema.draft.currRound} + 1 else null end`,
@@ -680,10 +782,13 @@ export class Database implements Loggable {
         maxRounds: schema.draft.maxRounds,
       })
       .then(assertOptional);
-  }
+  });
+}
 
-  @timed async randomizeRemainingStudents(draftId: bigint) {
-    const results = await this.#db
+export async function randomizeRemainingStudents(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('randomize-remaining-students', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    const results = await db
       .select({ userId: schema.studentRank.userId })
       .from(schema.studentRank)
       .leftJoin(
@@ -701,10 +806,13 @@ export class Database implements Loggable {
       )
       .orderBy(sql`random()`);
     return results.map(({ userId }) => userId);
-  }
+  });
+}
 
-  @timed async concludeDraft(draftId: bigint) {
-    const { activePeriodEnd } = await this.#db
+export async function concludeDraft(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('conclude-draft', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    const { activePeriodEnd } = await db
       .update(schema.draft)
       .set({
         activePeriod: sql`tstzrange(lower(${schema.draft.activePeriod}), coalesce(upper(${schema.draft.activePeriod}), now()), '[)')`,
@@ -713,15 +821,20 @@ export class Database implements Loggable {
       .returning({ activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceDate) })
       .then(assertSingle);
     return activePeriodEnd;
-  }
+  });
+}
 
-  @timed async insertStudentRanking(
-    draftId: bigint,
-    userId: string,
-    labs: string[],
-    remarks: string[],
-  ) {
-    await this.#db.transaction(async txn => {
+export async function insertStudentRanking(
+  db: DbConnection,
+  draftId: bigint,
+  userId: string,
+  labs: string[],
+  remarks: string[],
+) {
+  return await tracer.asyncSpan('insert-student-ranking', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    span.setAttribute('database.user.id', userId);
+    await db.transaction(async txn => {
       await txn
         .insert(schema.studentRank)
         .values({ draftId, userId })
@@ -732,10 +845,14 @@ export class Database implements Loggable {
           .insert(schema.studentRankLab)
           .values({ draftId, userId, labId, index: BigInt(index + 1), remark });
     });
-  }
+  });
+}
 
-  @timed async getStudentRankings(draftId: bigint, userId: string) {
-    const sub = this.#db
+export async function getStudentRankings(db: DbConnection, draftId: bigint, userId: string) {
+  return await tracer.asyncSpan('get-student-rankings', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    span.setAttribute('database.user.id', userId);
+    const sub = db
       .select({
         createdAt: schema.studentRank.createdAt,
         index: schema.studentRankLab.index,
@@ -753,7 +870,7 @@ export class Database implements Loggable {
       .where(and(eq(schema.studentRank.draftId, draftId), eq(schema.studentRank.userId, userId)))
       .as('_');
 
-    return await this.#db
+    return await db
       .select({
         createdAt: sub.createdAt,
         labRemarks:
@@ -765,10 +882,12 @@ export class Database implements Loggable {
       .innerJoin(schema.activeLabView, eq(sub.labId, schema.activeLabView.id))
       .groupBy(sub.createdAt)
       .then(assertOptional);
-  }
+  });
+}
 
-  @timed async getCandidateSenders() {
-    return await this.#db
+export async function getCandidateSenders(db: DbConnection) {
+  return await tracer.asyncSpan('get-candidate-senders', async () => {
+    return await db
       .select({
         id: schema.user.id,
         email: schema.user.email,
@@ -787,14 +906,16 @@ export class Database implements Loggable {
         and(isNotNull(schema.user.id), eq(schema.user.isAdmin, true), isNull(schema.user.labId)),
       )
       .orderBy(schema.user.familyName);
-  }
+  });
+}
 
-  /**
-   * A designated sender is an admin (i.e., `is_admin=True` and `lab_id=NULL`) with valid
-   * OAuth 2.0 credentials such that the access token will not expire in the next five minutes.
-   */
-  @timed async getDesignatedSenderCredentials() {
-    return await this.#db
+/**
+ * A designated sender is an admin (i.e., `is_admin=True` and `lab_id=NULL`) with valid
+ * OAuth 2.0 credentials such that the access token will not expire in the next five minutes.
+ */
+export async function getDesignatedSenderCredentials(db: DbConnection) {
+  return await tracer.asyncSpan('get-designated-sender-credentials', async () => {
+    return await db
       .select({
         id: schema.user.id,
         email: schema.user.email,
@@ -818,21 +939,25 @@ export class Database implements Loggable {
         ),
       )
       .then(assertOptional);
-  }
+  });
+}
 
-  @timed async upsertCandidateSender(
-    userId: string,
-    expiration: Date,
-    accessToken: string,
-    refreshToken?: string,
-  ) {
+export async function upsertCandidateSender(
+  db: DbConnection,
+  userId: string,
+  expiration: Date,
+  accessToken: string,
+  refreshToken?: string,
+) {
+  return await tracer.asyncSpan('upsert-candidate-sender', async span => {
+    span.setAttribute('database.user.id', userId);
     const query =
       typeof refreshToken === 'undefined'
-        ? this.#db
+        ? db
             .update(schema.candidateSender)
             .set({ expiration, accessToken, updatedAt: sql`now()` })
             .where(eq(schema.candidateSender.userId, userId))
-        : this.#db
+        : db
             .insert(schema.candidateSender)
             .values({ userId, expiration, accessToken, refreshToken })
             .onConflictDoUpdate({
@@ -851,10 +976,13 @@ export class Database implements Loggable {
       default:
         fail(`upsertCandidateSender => unexpected insertion count ${rowCount}`);
     }
-  }
+  });
+}
 
-  @timed async deleteCandidateSender(userId: string) {
-    const { rowCount } = await this.#db
+export async function deleteCandidateSender(db: DbConnection, userId: string) {
+  return await tracer.asyncSpan('delete-candidate-sender', async span => {
+    span.setAttribute('database.user.id', userId);
+    const { rowCount } = await db
       .delete(schema.candidateSender)
       .where(eq(schema.candidateSender.userId, userId));
     switch (rowCount) {
@@ -865,10 +993,13 @@ export class Database implements Loggable {
       default:
         fail(`deleteCandidateSender => unexpected delete count ${count}`);
     }
-  }
+  });
+}
 
-  @timed async deleteDesignatedSender(userId: string) {
-    const { rowCount } = await this.#db
+export async function deleteDesignatedSender(db: DbConnection, userId: string) {
+  return await tracer.asyncSpan('delete-designated-sender', async span => {
+    span.setAttribute('database.user.id', userId);
+    const { rowCount } = await db
       .delete(schema.designatedSender)
       .where(eq(schema.designatedSender.candidateSenderUserId, userId));
     switch (rowCount) {
@@ -879,10 +1010,13 @@ export class Database implements Loggable {
       default:
         fail(`deleteDesignatedSender => unexpected delete count ${rowCount}`);
     }
-  }
+  });
+}
 
-  @timed async upsertDesignatedSender(userId: string) {
-    const { rowCount } = await this.#db
+export async function upsertDesignatedSender(db: DbConnection, userId: string) {
+  return await tracer.asyncSpan('upsert-designated-sender', async span => {
+    span.setAttribute('database.user.id', userId);
+    const { rowCount } = await db
       .insert(schema.designatedSender)
       .values({ candidateSenderUserId: userId })
       .onConflictDoNothing({ target: schema.designatedSender.candidateSenderUserId });
@@ -894,31 +1028,37 @@ export class Database implements Loggable {
       default:
         fail(`upsertDesignatedSender => unexpected insertion count ${rowCount}`);
     }
-  }
+  });
+}
 
-  /**
-   * Typically invoked from within a transaction.
-   *
-   * The operation of inserting a faculty choice must necessarily occur
-   * with the updating of a student_rank entry's chosen_by field; note
-   * the two return values for this function.
-   *
-   * @deprecated This is due for a refactor.
-   * @returns The current draft based on the `draftId` provided.
-   */
-  @timed async insertFacultyChoice(
-    draftId: bigint,
-    labId: string,
-    facultyUserId: string,
-    studentUserIds: string[],
-  ) {
-    const draft = await this.#db.query.draft.findFirst({
+/**
+ * Typically invoked from within a transaction.
+ *
+ * The operation of inserting a faculty choice must necessarily occur
+ * with the updating of a student_rank entry's chosen_by field; note
+ * the two return values for this function.
+ *
+ * @deprecated This is due for a refactor.
+ * @returns The current draft based on the `draftId` provided.
+ */
+export async function insertFacultyChoice(
+  db: DbConnection,
+  draftId: bigint,
+  labId: string,
+  facultyUserId: string,
+  studentUserIds: string[],
+) {
+  return await tracer.asyncSpan('insert-faculty-choice', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    span.setAttribute('database.lab.id', labId);
+    span.setAttribute('database.user.id', facultyUserId);
+    const draft = await db.query.draft.findFirst({
       columns: { currRound: true },
       where: ({ id }, { eq }) => eq(id, draftId),
     });
     if (typeof draft === 'undefined') return;
 
-    const { rowCount: facultyChoiceRowCount } = await this.#db
+    const { rowCount: facultyChoiceRowCount } = await db
       .insert(schema.facultyChoice)
       .values({ draftId, round: draft.currRound, labId, userId: facultyUserId });
     strictEqual(
@@ -928,7 +1068,7 @@ export class Database implements Loggable {
     );
 
     if (studentUserIds.length > 0) {
-      const { rowCount: facultyChoiceUserRowCount } = await this.#db
+      const { rowCount: facultyChoiceUserRowCount } = await db
         .insert(schema.facultyChoiceUser)
         .values(
           studentUserIds.map(
@@ -950,24 +1090,29 @@ export class Database implements Loggable {
     }
 
     return draft;
-  }
+  });
+}
 
-  /** Typically invoked from within a transaction. */
-  @timed async insertLotteryChoices(
-    draftId: bigint,
-    adminUserId: string,
-    assignmentUserIdToLabPairs: (readonly [string, string])[],
-  ) {
-    const draft = await this.#db.query.draft.findFirst({
+/** Typically invoked from within a transaction. */
+export async function insertLotteryChoices(
+  db: DbConnection,
+  draftId: bigint,
+  adminUserId: string,
+  assignmentUserIdToLabPairs: (readonly [string, string])[],
+) {
+  return await tracer.asyncSpan('insert-lottery-choices', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    span.setAttribute('database.user.admin_id', adminUserId);
+    const draft = await db.query.draft.findFirst({
       columns: { currRound: true },
       where: ({ id }, { eq }) => eq(id, draftId),
     });
     if (typeof draft === 'undefined') return;
 
-    const labs = await this.#db.select().from(schema.activeLabView);
+    const labs = await db.select().from(schema.activeLabView);
     if (labs.length === 0) return;
 
-    await this.#db
+    await db
       .insert(schema.facultyChoice)
       .values(
         labs.map(
@@ -991,7 +1136,7 @@ export class Database implements Loggable {
       });
 
     if (assignmentUserIdToLabPairs.length > 0)
-      await this.#db.insert(schema.facultyChoiceUser).values(
+      await db.insert(schema.facultyChoiceUser).values(
         assignmentUserIdToLabPairs.map(
           ([studentUserId, labId]) =>
             ({
@@ -1006,10 +1151,13 @@ export class Database implements Loggable {
       );
 
     return draft;
-  }
+  });
+}
 
-  @timed async getPendingLabCountInDraft(draftId: bigint) {
-    const subquery = this.#db
+export async function getPendingLabCountInDraft(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-pending-lab-count-in-draft', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    const subquery = db
       .select({ labId: schema.facultyChoice.labId })
       .from(schema.facultyChoice)
       .innerJoin(
@@ -1021,19 +1169,22 @@ export class Database implements Loggable {
       )
       .where(eq(schema.facultyChoice.draftId, draftId))
       .as('_');
-    const { pendingCount } = await this.#db
+    const { pendingCount } = await db
       .select({ pendingCount: count(schema.activeLabView.id) })
       .from(schema.activeLabView)
       .leftJoin(subquery, eq(schema.activeLabView.id, subquery.labId))
       .where(isNull(subquery.labId))
       .then(assertSingle);
     return pendingCount;
-  }
+  });
+}
 
-  @timed async getFacultyChoiceRecords(draftId: bigint) {
+export async function getFacultyChoiceRecords(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-faculty-choice-records', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
     const facultyUser = alias(schema.user, 'faculty_user');
     const studentUser = alias(schema.user, 'student_user');
-    return await this.#db
+    return await db
       .select({
         draftId: schema.facultyChoice.draftId,
         round: schema.facultyChoice.round,
@@ -1060,10 +1211,13 @@ export class Database implements Loggable {
         desc(schema.facultyChoice.round),
         asc(schema.facultyChoice.labId),
       );
-  }
+  });
+}
 
-  @timed async getStudentRanksExport(draftId: bigint) {
-    return await this.#db
+export async function getStudentRanksExport(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-student-ranks-export', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    return await db
       .select({
         createdAt: schema.studentRank.createdAt,
         email: schema.user.email,
@@ -1088,12 +1242,15 @@ export class Database implements Loggable {
       .where(eq(schema.studentRank.draftId, draftId))
       .groupBy(schema.user.id, schema.studentRank.createdAt)
       .orderBy(schema.user.familyName);
-  }
+  });
+}
 
-  @timed async getDraftResultsExport(draftId: bigint) {
+export async function getDraftResultsExport(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-draft-results-export', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
     const facultyUser = alias(schema.user, 'faculty_user');
     const studentUser = alias(schema.user, 'student_user');
-    return await this.#db
+    return await db
       .select({
         studentEmail: studentUser.email,
         studentNumber: studentUser.studentNumber,
@@ -1111,10 +1268,13 @@ export class Database implements Loggable {
       .innerJoin(studentUser, eq(schema.facultyChoiceUser.studentUserId, studentUser.id))
       .where(eq(schema.facultyChoiceUser.draftId, draftId))
       .orderBy(asc(schema.facultyChoiceUser.round), asc(schema.lab.id), asc(studentUser.email));
-  }
+  });
+}
 
-  @timed async getDraftEvents(draftId: bigint) {
-    return await this.#db
+export async function getDraftEvents(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-draft-events', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    return await db
       .select({
         createdAt: schema.facultyChoice.createdAt,
         round: schema.facultyChoice.round,
@@ -1124,10 +1284,18 @@ export class Database implements Loggable {
       .from(schema.facultyChoice)
       .where(eq(schema.facultyChoice.draftId, draftId))
       .orderBy(({ createdAt, round, labId }) => [desc(createdAt), desc(round), asc(labId)]);
-  }
+  });
+}
 
-  @timed async inviteNewFacultyOrStaff(email: string, labId: string | null) {
-    const { rowCount } = await this.#db
+export async function inviteNewFacultyOrStaff(
+  db: DbConnection,
+  email: string,
+  labId: string | null,
+) {
+  return await tracer.asyncSpan('invite-new-faculty-or-staff', async span => {
+    span.setAttribute('database.user.email', email);
+    if (labId !== null) span.setAttribute('database.lab.id', labId);
+    const { rowCount } = await db
       .insert(schema.user)
       .values({ email, labId, isAdmin: true })
       .onConflictDoNothing({ target: schema.user.email });
@@ -1139,49 +1307,63 @@ export class Database implements Loggable {
       default:
         fail(`inviteNewFacultyOrStaff => unexpected insertion count ${rowCount}`);
     }
-  }
+  });
+}
 
-  @timed async insertNotification(data: Notification) {
-    return await this.#db
+export async function insertNotification(db: DbConnection, data: Notification) {
+  return await tracer.asyncSpan('insert-notification', async () => {
+    return await db
       .insert(schema.notification)
       .values({ data })
       .returning({ id: schema.notification.id })
       .onConflictDoNothing()
       .then(assertOptional);
-  }
+  });
+}
 
-  @timed bulkInsertNotifications(...data: Notification[]) {
-    return this.#db
+export function bulkInsertNotifications(db: DbConnection, ...data: Notification[]) {
+  return tracer.span('bulk-insert-notifications', span => {
+    span.setAttribute('database.notification.count', data.length);
+    return db
       .insert(schema.notification)
       .values(data.map(data => ({ data })))
       .returning({ id: schema.notification.id })
       .onConflictDoNothing();
-  }
+  });
+}
 
-  @timed async markNotificationDelivered(id: string) {
-    await this.#db
+export async function markNotificationDelivered(db: DbConnection, id: string) {
+  return await tracer.asyncSpan('mark-notification-delivered', async span => {
+    span.setAttribute('database.notification.id', id);
+    await db
       .update(schema.notification)
       .set({ deliveredAt: new Date() })
       .where(eq(schema.notification.id, id))
       .returning({ returnedId: schema.notification.id })
       .then(assertSingle);
-  }
+  });
+}
 
-  @timed async getNotification(id: string) {
-    return await this.#db
+export async function getNotification(db: DbConnection, id: string) {
+  return await tracer.asyncSpan('get-notification', async span => {
+    span.setAttribute('database.notification.id', id);
+    return await db
       .select({ data: schema.notification.data, deliveredAt: schema.notification.deliveredAt })
       .from(schema.notification)
       .where(eq(schema.notification.id, id))
       .for('update')
       .then(assertOptional);
-  }
+  });
+}
 
-  /**
-   * Synchronizes user objects with draft results by assigning student-users' lab fields to their
-   * respective labs (as reflected by the faculty choices) for a given draft.
-   */
-  @timed async syncResultsToUsers(draftId: bigint) {
-    return await this.#db
+/**
+ * Synchronizes user objects with draft results by assigning student-users' lab fields to their
+ * respective labs (as reflected by the faculty choices) for a given draft.
+ */
+export async function syncResultsToUsers(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('sync-results-to-users', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    return await db
       .update(schema.user)
       .set({ labId: schema.facultyChoiceUser.labId })
       .from(schema.facultyChoiceUser)
@@ -1192,5 +1374,5 @@ export class Database implements Loggable {
         ),
       )
       .returning({ userId: schema.user.id, labId: schema.facultyChoiceUser.labId });
-  }
+  });
 }

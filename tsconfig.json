@@ -10,7 +10,6 @@
     "skipLibCheck": true,
     "moduleDetection": "force",
     "resolveJsonModule": true,
-    "experimentalDecorators": true,
   },
   // Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias.
 }

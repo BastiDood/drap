@@ -5,6 +5,11 @@ import adapter from '@sveltejs/adapter-node';
  * @type {Config}
  */
 export default {
-  extensions: ['.svelte'],
-  kit: { adapter: adapter() },
+  kit: {
+    adapter: adapter(),
+    experimental: {
+      tracing: { server: true },
+      instrumentation: { server: true },
+    },
+  },
 };

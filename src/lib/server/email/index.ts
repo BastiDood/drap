@@ -4,17 +4,32 @@ import { createMimeMessage } from 'mimetext/node';
 import { isFuture, sub } from 'date-fns';
 import type { Job } from 'bullmq';
 import { jwtVerify } from 'jose';
-import type { Logger } from 'pino';
 import { parse, pick } from 'valibot';
 
 import * as GOOGLE from '$lib/server/env/google';
-import { Database, type schema } from '$lib/server/database';
+import {
+  begin,
+  type DbConnection,
+  db,
+  getDesignatedSenderCredentials,
+  getFacultyAndStaff,
+  getLabById,
+  getNotification,
+  getUserById,
+  getValidStaffEmails,
+  markNotificationDelivered,
+  type schema,
+  upsertCandidateSender,
+} from '$lib/server/database';
 import type { DraftNotification, UserNotification } from '$lib/server/models/notification';
 import { GmailMessageSendResult } from '$lib/server/models/email';
 import { IdToken, TokenResponse } from '$lib/server/models/oauth';
-import { logError } from '$lib/server/logger';
+import { Logger } from '$lib/server/telemetry/logger';
 
 import { fetchJwks } from './jwks';
+
+const SERVICE_NAME = 'email';
+const logger = Logger.byName(SERVICE_NAME);
 
 export type EmailAddress = schema.User['email'];
 
@@ -29,11 +44,11 @@ export class UpstreamGmailError extends Error {
 }
 
 export class Emailer {
-  #db: Database;
+  #db: DbConnection;
   #clientId: string;
   #clientSecret: string;
 
-  constructor(db: Database, id: string, secret: string) {
+  constructor(db: DbConnection, id: string, secret: string) {
     this.#db = db;
     this.#clientId = id;
     this.#clientSecret = secret;
@@ -45,23 +60,23 @@ export class Emailer {
 
   /** Must be called within a transaction context for correctness. */
   async #getLatestCredentials() {
-    this.#db.logger.info('fetching latest credentials');
-    const creds = await this.#db.getDesignatedSenderCredentials();
+    logger.info('fetching latest credentials');
+    const creds = await getDesignatedSenderCredentials(this.#db);
 
     if (typeof creds === 'undefined') {
-      this.#db.logger.warn('no credentials found');
+      logger.warn('no credentials found');
       return;
     }
 
     if (isFuture(sub(creds.expiration, { minutes: 10 }))) {
-      this.#db.logger.info('using existing credentials');
+      logger.info('using existing credentials');
       return creds;
     }
 
-    this.#db.logger.info(
-      { designatedSenderId: creds.id, expiration: creds.expiration },
-      'refreshing credentials',
-    );
+    logger.info('refreshing credentials', {
+      'email.sender.id': creds.id,
+      'email.token.expiration': creds.expiration.toISOString(),
+    });
 
     // Refresh the access token if necessary
     const res = await fetch('https://oauth2.googleapis.com/token', {
@@ -75,29 +90,29 @@ export class Emailer {
       }),
     });
 
-    this.#db.logger.info('reading token response');
+    logger.info('reading token response');
     const json = await res.json();
     const { id_token, access_token } = parse(TokenResponse, json);
     creds.accessToken = access_token; // overwritten credentials
 
-    this.#db.logger.info('verifying id token');
+    logger.info('verifying id token');
     const { payload } = await jwtVerify(id_token, fetchJwks, {
       issuer: 'https://accounts.google.com',
       audience: this.#clientId,
     });
 
-    this.#db.logger.info('upserting candidate sender with new verified token');
+    logger.info('upserting candidate sender with new verified token');
     const token = parse(pick(IdToken, ['exp']), payload);
-    await this.#db.upsertCandidateSender(creds.id, token.exp, creds.accessToken);
+    await upsertCandidateSender(this.#db, creds.id, token.exp, creds.accessToken);
     return creds;
   }
 
   /** Must be called within a transaction context for correctness. */
   async send(to: EmailAddress[], subject: string, body: string) {
-    this.#db.logger.info('fetching latest credentials');
+    logger.info('fetching latest credentials');
     const creds = await this.#getLatestCredentials();
     if (typeof creds === 'undefined') {
-      this.#db.logger.warn('no credentials found for sending email');
+      logger.warn('no credentials found for sending email');
       return null;
     }
 
@@ -111,7 +126,7 @@ export class Emailer {
       data: Buffer.from(body, 'utf-8').toString('base64'),
     });
 
-    this.#db.logger.info('sending email request to gmail api');
+    logger.info('sending email request to gmail api');
     const response = await fetch('https://gmail.googleapis.com/gmail/v1/users/me/messages/send', {
       method: 'POST',
       headers: {
@@ -123,13 +138,15 @@ export class Emailer {
 
     // TODO: Handle rate limits.
     if (response.status !== 200) {
-      this.#db.logger.error({ status: response.status }, 'unexpected status code from gmail api');
+      logger.error('unexpected status code from gmail api', void 0, {
+        'gmail.response.status': response.status,
+      });
       const body = await response.text();
-      this.#db.logger.error({ body }, 'gmail api error message');
+      logger.error('gmail api error message', void 0, { 'gmail.response.body': body });
       throw new UpstreamGmailError(response.status, body);
     }
 
-    this.#db.logger.info('receiving successful response from gmail api');
+    logger.info('receiving successful response from gmail api');
     const json = await response.json();
     return parse(GmailMessageSendResult, json);
   }
@@ -150,7 +167,7 @@ export class MissingDesignatedSender extends Error {
 }
 
 async function processDraftNotification(
-  db: Database,
+  db: DbConnection,
   emailer: Emailer,
   notification: DraftNotification,
 ) {
@@ -162,7 +179,7 @@ async function processDraftNotification(
   let message: string;
   switch (notification.type) {
     case 'RoundStart': {
-      const facultyAndStaff = await db.getFacultyAndStaff();
+      const facultyAndStaff = await getFacultyAndStaff(db);
       emails = facultyAndStaff.map(({ email }) => email);
       if (notification.round === null) {
         subject = `[DRAP] Lottery Round for Draft #${notification.draftId} has begun!`;
@@ -175,8 +192,8 @@ async function processDraftNotification(
     }
     case 'RoundSubmit': {
       const [staffEmails, { name }] = await Promise.all([
-        db.getValidStaffEmails(),
-        db.getLabById(notification.labId),
+        getValidStaffEmails(db),
+        getLabById(db, notification.labId),
       ]);
       emails = staffEmails;
       subject = `[DRAP] Acknowledgement from ${notification.labId.toUpperCase()} for Round #${notification.round} of Draft #${notification.draftId}`;
@@ -185,9 +202,9 @@ async function processDraftNotification(
     }
     case 'LotteryIntervention': {
       const [facultyAndStaff, { name }, { givenName, familyName, email }] = await Promise.all([
-        db.getFacultyAndStaff(),
-        db.getLabById(notification.labId),
-        db.getUserById(notification.userId),
+        getFacultyAndStaff(db),
+        getLabById(db, notification.labId),
+        getUserById(db, notification.userId),
       ]);
       emails = facultyAndStaff.map(({ email }) => email);
       subject = `[DRAP] Lottery Intervention for ${notification.labId.toUpperCase()} in Draft #${notification.draftId}`;
@@ -195,7 +212,7 @@ async function processDraftNotification(
       break;
     }
     case 'Concluded': {
-      const facultyAndStaff = await db.getFacultyAndStaff();
+      const facultyAndStaff = await getFacultyAndStaff(db);
       emails = facultyAndStaff.map(({ email }) => email);
       subject = `[DRAP] Draft #${notification.draftId} Concluded`;
       message = `Draft #${notification.draftId} has just concluded. See the new roster of researchers using the lab module.`;
@@ -208,13 +225,13 @@ async function processDraftNotification(
 }
 
 async function processUserNotification(
-  db: Database,
+  db: DbConnection,
   emailer: Emailer,
   notification: UserNotification,
 ) {
   const [{ name }, { email, givenName, familyName }] = await Promise.all([
-    db.getLabById(notification.labId),
-    db.getUserById(notification.userId),
+    getLabById(db, notification.labId),
+    getUserById(db, notification.userId),
   ]);
   return await emailer.send(
     [email],
@@ -223,18 +240,17 @@ async function processUserNotification(
   );
 }
 
-export function initializeProcessor(parent: Logger) {
+export function initializeProcessor() {
   return async function processor({ id }: Pick<Job<unknown>, 'id'>) {
-    const logger = parent.child({ notificationId: id });
     try {
-      logger.info('processing notification');
+      logger.info('processing notification', { 'notification.id': id });
       if (typeof id === 'undefined') {
         logger.warn('attempted to process notification with no id');
         return;
       }
 
-      await Database.withLogger(logger).begin(async db => {
-        const notification = await db.getNotification(id);
+      await begin(db, async db => {
+        const notification = await getNotification(db, id);
         if (typeof notification === 'undefined') {
           logger.warn('attempted to process nonexistent notification');
           throw new UnknownNotificationError();
@@ -242,11 +258,16 @@ export function initializeProcessor(parent: Logger) {
 
         const { data, deliveredAt } = notification;
         if (deliveredAt !== null) {
-          logger.warn({ deliveredAt }, 'attempted to process delivered notification');
+          logger.warn('attempted to process delivered notification', {
+            'notification.delivered_at': deliveredAt.toISOString(),
+          });
           return; // ACK to remove from the queue...
         }
 
-        logger.info(data, 'processing notification');
+        logger.info('processing notification data', {
+          'notification.target': data.target,
+          'notification.type': 'type' in data ? data.type : 'User',
+        });
         const emailer = new Emailer(db, GOOGLE.OAUTH_CLIENT_ID, GOOGLE.OAUTH_CLIENT_SECRET);
 
         // eslint-disable-next-line @typescript-eslint/init-declarations
@@ -267,13 +288,17 @@ export function initializeProcessor(parent: Logger) {
           throw new MissingDesignatedSender();
         }
 
-        logger.info(result, 'email sent');
-        await db.markNotificationDelivered(id);
+        logger.info('email sent', {
+          'email.message.id': result.id,
+          'email.message.thread_id': result.threadId,
+        });
+        await markNotificationDelivered(db, id);
       });
 
       logger.info('notification processed');
     } catch (error) {
-      logError(logger, error);
+      if (error instanceof Error) logger.error('failed to process notification', error);
+      else logger.error('failed to process notification with unknown error');
       throw error;
     }
   };

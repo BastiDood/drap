@@ -1,6 +1,8 @@
-export async function load({ locals: { db } }) {
+import { db, getActiveDraft } from '$lib/server/database';
+
+export async function load() {
   return {
-    draft: await db.getActiveDraft(),
+    draft: await getActiveDraft(db),
     requestedAt: new Date(),
   };
 }

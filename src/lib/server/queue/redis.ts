@@ -4,7 +4,10 @@ import * as APP from '$lib/server/env';
 import * as REDIS from '$lib/server/env/redis';
 import { building } from '$app/environment';
 import { initializeProcessor } from '$lib/server/email';
-import { logger } from '$lib/server/logger';
+import { Logger } from '$lib/server/telemetry/logger';
+
+const SERVICE_NAME = 'queue.redis';
+const logger = Logger.byName(SERVICE_NAME);
 
 // Queue should lazily connect to Redis.
 const QUEUE_NAME = 'notifications';
@@ -36,15 +39,14 @@ if (building) {
   // Monitoring for job completion events
   // @ts-expect-error - Version mismatch for some reason?
   const events = new QueueEvents(QUEUE_NAME, { connection });
-  events.on('completed', ({ jobId }) => logger.info({ jobId }, 'job completed'));
-  events.on('failed', ({ jobId }) => logger.error({ jobId }, 'job failed'));
+  events.on('completed', ({ jobId }) => logger.info('job completed', { 'queue.job.id': jobId }));
+  events.on('failed', ({ jobId }) => logger.error('job failed', void 0, { 'queue.job.id': jobId }));
 
   // NOTE: This will only register if this module is imported (even transitively).
-  const child = logger.child({ notifications: 'worker' });
-  const worker = new Worker(QUEUE_NAME, initializeProcessor(child), {
+  const worker = new Worker(QUEUE_NAME, initializeProcessor(), {
     // @ts-expect-error - Version mismatch for some reason?
     connection,
     concurrency: APP.JOB_CONCURRENCY,
   });
-  child.info({ workerId: worker.id }, 'worker initialized');
+  logger.info('worker initialized', { 'queue.worker.id': worker.id });
 }
