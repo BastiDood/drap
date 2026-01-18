@@ -109,7 +109,7 @@ export class GoogleOAuthClient {
             {
               httpVersion: '1.1',
               method: 'POST',
-              url: 'https://gmail.googleapis.com/gmail/v1/users/me/messages/send',
+              url: '/gmail/v1/users/me/messages/send',
             },
             { 'Content-Type': 'application/json' },
             JSON.stringify({ raw: message.asEncoded() }),
