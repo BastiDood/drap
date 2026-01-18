@@ -24,6 +24,15 @@ jobs:
           cache-dependency-path: pnpm-lock.yaml
       - name: Install Dependencies
         run: pnpm install
+      - name: Cache ESLint and Prettier Runs
+        uses: actions/cache@v5
+        with:
+          path: |
+            .eslintcache
+            .prettiercache
+          key: ${{ runner.os }}-lint-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.js', '.prettierrc.json') }}
+          restore-keys: |
+            ${{ runner.os }}-lint-
       - name: Check Formatters
         run: pnpm fmt
       - name: Run All Lints in Parallel
