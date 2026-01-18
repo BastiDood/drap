@@ -54,9 +54,9 @@
     </Navigation.Tile>
     {#if typeof user !== 'undefined' && user.googleUserId !== null}
       <Navigation.Tile
-        href="/profile/"
+        href="/dashboard/profile/"
         label="Profile"
-        selected={pathname === '/profile/'}
+        selected={pathname === '/dashboard/profile/'}
         padding="px-4 py-2"
         rounded="rounded-none"
         hover="hover:preset-tonal-primary"

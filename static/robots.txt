@@ -1,5 +1,2 @@
 User-agent: *
-Allow: /$
-Allow: /drafts/history/
-Allow: /privacy/
-Disallow: /
+Disallow: /dashboard/
