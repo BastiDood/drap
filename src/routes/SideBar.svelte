@@ -178,7 +178,7 @@
       {#if dev}
         <form
           method="post"
-          action="/?/dummy"
+          action="/dashboard/oauth/?/dummy"
           use:enhance={({ submitter }) => {
             assert(submitter !== null);
             assert(submitter instanceof HTMLButtonElement);
@@ -200,7 +200,7 @@
       {/if}
       <div class="p-1">
         <a
-          href="/oauth/login/"
+          href="/dashboard/oauth/login"
           rel="external"
           class="preset-filled-tertiary-100-900 hover:preset-tonal-tertiary block rounded-full p-3 transition-colors duration-150"
         >
@@ -210,7 +210,7 @@
     {:else}
       <form
         method="post"
-        action="/?/logout"
+        action="/dashboard/oauth/?/logout"
         class="p-2"
         use:enhance={({ submitter }) => {
           assert(submitter !== null);

@@ -18,7 +18,7 @@ const tracer = Tracer.byName(SERVICE_NAME);
 export async function load({ locals: { session }, parent }) {
   if (typeof session?.user === 'undefined') {
     logger.warn('attempt to access ranks page without session');
-    redirect(307, '/oauth/login/');
+    redirect(307, '/dashboard/oauth/login');
   }
 
   const { user } = session;

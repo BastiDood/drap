@@ -1,11 +1,11 @@
 import Papa from 'papaparse';
 import { error, redirect } from '@sveltejs/kit';
 
-import { db, getDraftById, getStudentRanksExport } from '$lib/server/database';
+import { db, getDraftById, getDraftResultsExport } from '$lib/server/database';
 import { Logger } from '$lib/server/telemetry/logger';
-import { validateBigInt } from '$lib/validators.js';
+import { validateBigInt } from '$lib/validators';
 
-const SERVICE_NAME = 'routes.dashboard.admin.drafts.students-csv';
+const SERVICE_NAME = 'routes.dashboard.admin.drafts.results-csv';
 const logger = Logger.byName(SERVICE_NAME);
 
 export async function GET({ params: { draftId }, locals: { session } }) {
@@ -17,13 +17,13 @@ export async function GET({ params: { draftId }, locals: { session } }) {
   }
 
   if (typeof session?.user === 'undefined') {
-    logger.error('attempt to export student ranks without session');
-    redirect(307, '/oauth/login/');
+    logger.error('attempt to export draft results without session');
+    redirect(307, '/dashboard/oauth/login');
   }
 
   const { user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-    logger.error('insufficient permissions to export student ranks', void 0, {
+    logger.error('insufficient permissions to export draft results', void 0, {
       isAdmin: user.isAdmin,
       googleUserId: user.googleUserId,
       labId: user.labId,
@@ -37,12 +37,11 @@ export async function GET({ params: { draftId }, locals: { session } }) {
     error(404);
   }
 
-  logger.info('exporting student ranks');
-  const studentRanks = await getStudentRanksExport(db, did);
-
-  return new Response(Papa.unparse(studentRanks), {
+  logger.info('exporting draft results');
+  const results = await getDraftResultsExport(db, did);
+  return new Response(Papa.unparse(results), {
     headers: {
-      'Content-Type': 'application/csv',
+      'Content-Type': 'text/csv',
       'Content-Disposition': 'attachment',
     },
   });

@@ -36,7 +36,7 @@
       has already volunteered previously). Pressing the button redirects the user to the Google consent
       screen.
     </p>
-    <form method="get" action="/oauth/login/">
+    <form method="get" action="/dashboard/oauth/login">
       <input type="hidden" name="extended" value="1" />
       <button type="submit" {disabled} class="not-prose preset-filled-primary-500 btn w-full">
         <span><Icon src={ShieldExclamation} class="h-8" /></span>

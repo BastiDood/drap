@@ -1,4 +1,3 @@
-import { db, getUserFromValidSession } from '$lib/server/database';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
@@ -8,7 +7,6 @@ const tracer = Tracer.byName(SERVICE_NAME);
 
 export async function handle({ event, resolve }) {
   const { cookies, locals, request, getClientAddress } = event;
-
   return await tracer.asyncSpan('http-request', async span => {
     span.setAttributes({
       'http.request.id': crypto.randomUUID(),
@@ -25,10 +23,15 @@ export async function handle({ event, resolve }) {
 
     const sid = cookies.get('sid');
     if (typeof sid !== 'undefined') {
+      // Dynamic import is required here to avoid database connections during prerendering.
+      const { db, getUserFromValidSession } = await import('$lib/server/database');
+
       logger.trace('finding session...');
       const user = await getUserFromValidSession(db, sid);
+
       locals.session = { id: sid, user };
       span.setAttributes({ 'http.session.id': sid });
+
       if (typeof user !== 'undefined') {
         span.setAttributes({
           'http.session.user.id': user.id,
@@ -48,7 +51,9 @@ export async function handle({ event, resolve }) {
   });
 }
 
-export function handleError({ error }) {
+export async function handleError({ error }) {
+  const { Logger } = await import('$lib/server/telemetry/logger');
+  const logger = Logger.byName('hooks');
   if (error instanceof Error) logger.error(error.message, error);
   else logger.error(String(error));
 }

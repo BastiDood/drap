@@ -1,9 +1,12 @@
-import { Logger } from '$lib/server/telemetry/logger';
+import { building } from '$app/environment';
 
-const SERVICE_NAME = 'routes.layout';
-const logger = Logger.byName(SERVICE_NAME);
+export async function load({ locals: { session } }) {
+  // During prerendering (building), skip session handling
+  if (building) return;
 
-export function load({ locals: { session } }) {
+  const { Logger } = await import('$lib/server/telemetry/logger');
+  const logger = Logger.byName('routes.layout');
+
   if (typeof session === 'undefined') {
     logger.trace('session-less page access');
     return;

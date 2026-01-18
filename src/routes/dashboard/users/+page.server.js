@@ -17,7 +17,7 @@ const tracer = Tracer.byName(SERVICE_NAME);
 export async function load({ locals: { session } }) {
   if (typeof session?.user === 'undefined') {
     logger.warn('attempt to access users page without session');
-    redirect(307, '/oauth/login/');
+    redirect(307, '/dashboard/oauth/login');
   }
 
   if (!session.user.isAdmin || session.user.googleUserId === null || session.user.labId !== null) {

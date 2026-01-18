@@ -19,7 +19,7 @@ import { fetchJwks } from '$lib/server/email/jwks';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
-const SERVICE_NAME = 'routes.oauth.callback';
+const SERVICE_NAME = 'routes.dashboard.oauth.callback';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
@@ -31,11 +31,11 @@ export async function GET({
   url: { searchParams },
 }) {
   setHeaders({ 'Cache-Control': 'no-store' });
-  if (typeof session === 'undefined') redirect(307, '/oauth/login/');
+  if (typeof session === 'undefined') redirect(307, '/dashboard/oauth/login');
 
   const code = searchParams.get('code');
   if (code === null) {
-    cookies.delete('sid', { path: '/', httpOnly: true, sameSite: 'lax' });
+    cookies.delete('sid', { path: '/dashboard', httpOnly: true, sameSite: 'lax' });
     error(400, 'Authorization code is missing.');
   }
 
@@ -53,7 +53,7 @@ export async function GET({
       const pending = await deletePendingSession(db, sid);
       if (typeof pending === 'undefined') {
         logger.warn('pending session not found');
-        redirect(307, '/oauth/login/');
+        redirect(307, '/dashboard/oauth/login');
       }
 
       const res = await fetch('https://oauth2.googleapis.com/token', {
@@ -118,8 +118,8 @@ export async function GET({
     });
   });
 
-  cookies.set('sid', sid, { path: '/', httpOnly: true, sameSite: 'lax', expires });
+  cookies.set('sid', sid, { path: '/dashboard', httpOnly: true, sameSite: 'lax', expires });
 
   logger.info('oauth callback complete', { 'oauth.scope.extended': hasExtendedScope });
-  redirect(303, hasExtendedScope ? '/dashboard/email/' : '/');
+  redirect(303, hasExtendedScope ? '/dashboard/email/' : '/dashboard/');
 }

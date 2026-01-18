@@ -12,7 +12,7 @@ const tracer = Tracer.byName(SERVICE_NAME);
 export function load({ locals: { session } }) {
   if (typeof session?.user === 'undefined') {
     logger.warn('attempt to access profile page without session');
-    redirect(307, '/oauth/login/');
+    redirect(307, '/dashboard/oauth/login');
   }
 
   logger.debug('profile page loaded', {

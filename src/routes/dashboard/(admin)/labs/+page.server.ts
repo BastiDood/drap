@@ -18,7 +18,7 @@ const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
 export async function load({ locals: { session } }) {
-  if (typeof session?.user === 'undefined') redirect(307, '/oauth/login/');
+  if (typeof session?.user === 'undefined') redirect(307, '/dashboard/oauth/login');
 
   const { user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);

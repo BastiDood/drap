@@ -4,7 +4,7 @@ import { db, deleteValidSession, insertDummySession, upsertOpenIdUser } from '$l
 import { dev } from '$app/environment';
 import { Logger } from '$lib/server/telemetry/logger';
 
-const SERVICE_NAME = 'routes.index';
+const SERVICE_NAME = 'routes.dashboard.oauth';
 const logger = Logger.byName(SERVICE_NAME);
 
 export const actions = {
@@ -23,8 +23,8 @@ export const actions = {
         'auth.session.expiration': deleted.expiration.toISOString(),
       });
 
-    cookies.delete('sid', { path: '/', httpOnly: true, sameSite: 'lax' });
-    redirect(303, '/');
+    cookies.delete('sid', { path: '/dashboard', httpOnly: true, sameSite: 'lax' });
+    redirect(303, '/dashboard/');
   },
   ...(dev
     ? {
@@ -46,9 +46,13 @@ export const actions = {
           logger.info('dummy user inserted', dummyUser);
 
           const dummySessionId = await insertDummySession(db, dummyUser.id);
-          cookies.set('sid', dummySessionId, { path: '/', httpOnly: true, sameSite: 'lax' });
-          redirect(303, '/');
+          cookies.set('sid', dummySessionId, {
+            path: '/dashboard',
+            httpOnly: true,
+            sameSite: 'lax',
+          });
+          redirect(303, '/dashboard/');
         },
       }
-    : {}),
+    : null),
 };

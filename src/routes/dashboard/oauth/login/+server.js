@@ -5,7 +5,7 @@ import { db, generatePendingSession } from '$lib/server/database';
 import { Logger } from '$lib/server/telemetry/logger';
 import { OAUTH_SCOPE_STRING, SENDER_SCOPE_STRING } from '$lib/server/models/oauth';
 
-const SERVICE_NAME = 'routes.oauth.login';
+const SERVICE_NAME = 'routes.dashboard.oauth.login';
 const logger = Logger.byName(SERVICE_NAME);
 
 export async function GET({ locals: { session }, cookies, setHeaders, url: { searchParams } }) {
@@ -17,7 +17,7 @@ export async function GET({ locals: { session }, cookies, setHeaders, url: { sea
   if (typeof session?.user !== 'undefined') {
     if (!hasExtendedScope) {
       logger.error('attempt to login with extended scope without admin privileges');
-      redirect(307, '/');
+      redirect(307, '/dashboard/');
     }
     if (
       session.user.googleUserId === null ||
@@ -39,7 +39,7 @@ export async function GET({ locals: { session }, cookies, setHeaders, url: { sea
     'auth.session.expiration': expiration.toISOString(),
   });
   cookies.set('sid', sessionId, {
-    path: '/',
+    path: '/dashboard',
     httpOnly: true,
     sameSite: 'lax',
     expires: expiration,

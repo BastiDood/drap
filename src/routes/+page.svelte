@@ -1,6 +1,7 @@
 <script>
   import {
     AcademicCap,
+    ArrowRight,
     Beaker,
     BugAnt,
     DocumentDuplicate,
@@ -25,6 +26,12 @@
     draft of research lab assignments. In a nutshell, this web application automates the mechanics
     of the draft:
   </p>
+  <div class="not-prose my-6">
+    <a href={resolve('/dashboard/')} class="preset-filled-primary-500 btn btn-xl no-underline">
+      <Icon src={ArrowRight} size="24" />
+      <span>Go to Dashboard</span>
+    </a>
+  </div>
   <ol>
     <li>
       All participating students register for the draft by providing their full name, email, student
@@ -73,7 +80,7 @@
   <h2>Getting Started</h2>
   <p>
     All interactions with the application require UP Mail authentication. To <a
-      href="/oauth/login/"
+      href="/dashboard/oauth/login"
       rel="external">sign in with Google</a
     >, simply press the login button at the lower left corner of the dashboard. When logged in, the
     button functions as a logout button instead. The next steps depend on your role in the draft.
