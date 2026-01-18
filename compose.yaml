@@ -1,59 +1,29 @@
+# The base configuration features the default development environment.
 name: drap
 
 services:
-  www:
-    build: .
-    profiles:
-      - prod
-    restart: always
-    ports:
-      - 3000:3000
-    env_file:
-      - .env
-    healthcheck:
-      test: ['CMD-SHELL', 'wget -q0- http://localhost:3000/']
-      interval: 10s
-      timeout: 30s
-      retries: 5
-      start_period: 10s
-
-  db:
+  postgres:
     build: ./docker/postgres
-    profiles:
-      - dev
-      - prod
-    restart: always
     ports:
       - 5432:5432
     volumes:
       - postgres:/var/lib/postgresql/data
-    healthcheck:
-      test:
-        - CMD
-        - pg_isready
-      interval: 1s
-      timeout: 5s
-      retries: 10
     environment:
       # Development-only credentials!
       POSTGRES_PASSWORD: password
-
-  redis:
-    image: redis:8.4.0-alpine3.22
-    profiles:
-      - dev
-      - prod
     restart: always
-    volumes:
-      - redis:/data
+
+  inngest:
+    image: inngest/inngest:v1.16.0
     ports:
-      - 6379:6379
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 10s
-      timeout: 30s
-      retries: 5
-      start_period: 10s
+      - 8288:8288
+    command:
+      - inngest
+      - dev
+      - '--no-discovery'
+      - '--sdk-url'
+      - 'http://host.docker.internal:5173/api/inngest' # Vite
+    restart: always
 
   o2:
     image: public.ecr.aws/zinclabs/openobserve:v0.40.3
