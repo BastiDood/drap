@@ -34,8 +34,9 @@ services:
       interval: 1s
       timeout: 5s
       retries: 10
-    env_file:
-      - .env
+    environment:
+      # Development-only credentials!
+      POSTGRES_PASSWORD: password
 
   redis:
     image: redis:8.4.0-alpine3.22

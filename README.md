@@ -20,21 +20,6 @@ Welcome to DRAP: the Draft Ranking Automated Processor for the [University of th
 
 The [main web application](./src) is powered by SvelteKit. Data persistence is backed by PostgreSQL.
 
-### Docker Environment Variables
-
-For local development, we use a Docker Compose to build an image of PostgreSQL with the required extensions. See the [`Dockerfile`](./docker/postgres/Dockerfile) for more details.
-
-As the image builds on top of the official [`postgres`][docker-postgres] image, the following environment variables (stored in a `.env` file at the project root) will be relevant to the image initialization.
-
-[docker-postgres]: https://hub.docker.com/_/postgres
-
-| **Variable**        | **Description**                                                                   |
-| ------------------- | --------------------------------------------------------------------------------- |
-| `POSTGRES_PASSWORD` | The password that will be used to initialize the local PostgreSQL instance.       |
-| `POSTGRES_USER`     | Used in conjunction with `POSTGRES_PASSWORD` to set up the initial database user. |
-
-See more initialization variables [here][docker-postgres]. In most cases, however, the default values are fine with some standard password like "password". There is no need to overthink it as the instance should only be local for development.
-
 ### Server Environment Variables
 
 At runtime, the server requires the following environment variables to be present.
