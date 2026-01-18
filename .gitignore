@@ -3,6 +3,7 @@
 /.svelte-kit
 /build
 
+.claude/**.local.json
 .env
 .env.*
 node_modules
