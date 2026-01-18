@@ -24,7 +24,6 @@ import * as DRIZZLE from '$lib/server/env/drizzle';
 import * as POSTGRES from '$lib/server/env/postgres';
 import { assertOptional, assertSingle } from '$lib/server/assert';
 import { Logger } from '$lib/server/telemetry/logger';
-import { Notification } from '$lib/server/models/notification';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 import * as schema from './schema';
@@ -54,7 +53,10 @@ export type DrizzleDatabase = ReturnType<typeof init>;
 export type DrizzleTransaction = Parameters<Parameters<DrizzleDatabase['transaction']>[0]>[0];
 export type DbConnection = DrizzleDatabase | DrizzleTransaction;
 
-/** Begins a transaction. */
+/**
+ * Begins a transaction.
+ * @deprecated
+ */
 export function begin<T>(conn: DrizzleDatabase, fn: (tx: DrizzleTransaction) => Promise<T>) {
   return conn.transaction(fn);
 }
@@ -1337,52 +1339,6 @@ export async function inviteNewFacultyOrStaff(
       default:
         fail(`inviteNewFacultyOrStaff => unexpected insertion count ${rowCount}`);
     }
-  });
-}
-
-export async function insertNotification(db: DbConnection, data: Notification) {
-  return await tracer.asyncSpan('insert-notification', async () => {
-    return await db
-      .insert(schema.notification)
-      .values({ data })
-      .returning({ id: schema.notification.id })
-      .onConflictDoNothing()
-      .then(assertOptional);
-  });
-}
-
-export function bulkInsertNotifications(db: DbConnection, ...data: Notification[]) {
-  return tracer.span('bulk-insert-notifications', span => {
-    span.setAttribute('database.notification.count', data.length);
-    return db
-      .insert(schema.notification)
-      .values(data.map(data => ({ data })))
-      .returning({ id: schema.notification.id })
-      .onConflictDoNothing();
-  });
-}
-
-export async function markNotificationDelivered(db: DbConnection, id: string) {
-  return await tracer.asyncSpan('mark-notification-delivered', async span => {
-    span.setAttribute('database.notification.id', id);
-    await db
-      .update(schema.notification)
-      .set({ deliveredAt: new Date() })
-      .where(eq(schema.notification.id, id))
-      .returning({ returnedId: schema.notification.id })
-      .then(assertSingle);
-  });
-}
-
-export async function getNotification(db: DbConnection, id: string) {
-  return await tracer.asyncSpan('get-notification', async span => {
-    span.setAttribute('database.notification.id', id);
-    return await db
-      .select({ data: schema.notification.data, deliveredAt: schema.notification.deliveredAt })
-      .from(schema.notification)
-      .where(eq(schema.notification.id, id))
-      .for('update')
-      .then(assertOptional);
   });
 }
 

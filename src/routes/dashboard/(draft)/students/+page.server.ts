@@ -4,20 +4,17 @@ import { error, redirect } from '@sveltejs/kit';
 
 import {
   autoAcknowledgeLabsWithoutPreferences,
-  begin,
   db,
+  getFacultyAndStaff,
   getLabAndRemainingStudentsInDraftWithLabPreference,
+  getLabById,
   getLabQuotaAndSelectedStudentCountInDraft,
   getPendingLabCountInDraft,
+  getValidStaffEmails,
   incrementDraftRound,
   insertFacultyChoice,
 } from '$lib/server/database';
-import {
-  createDraftRoundStartedNotification,
-  createDraftRoundSubmittedNotification,
-  type Notification,
-} from '$lib/server/models/notification';
-import { dispatch } from '$lib/server/queue';
+import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 import { validateString } from '$lib/forms';
@@ -116,43 +113,79 @@ export const actions = {
         'lab.quota': quota,
       });
 
-      const notifications = await begin(db, async db => {
-        const notifications: Notification[] = [];
+      // Track data needed for notifications after transaction
+      let submittedRound: number | null = null;
+      const roundsToNotify: (number | null)[] = [];
 
-        const draft = await insertFacultyChoice(db, draftId, lab, faculty, students);
-        if (typeof draft === 'undefined') {
-          logger.error('draft must exist prior to faculty choice submission');
-          error(404);
-        }
-
-        notifications.push(createDraftRoundSubmittedNotification(draftId, draft.currRound, lab));
-
-        while (true) {
-          const count = await getPendingLabCountInDraft(db, draftId);
-          if (count > 0) {
-            logger.debug('more pending labs found', { 'lab.pending_count': count });
-            break;
+      await db.transaction(
+        async db => {
+          const draft = await insertFacultyChoice(db, draftId, lab, faculty, students);
+          if (typeof draft === 'undefined') {
+            logger.error('draft must exist prior to faculty choice submission');
+            error(404);
           }
 
-          const draftRound = await incrementDraftRound(db, draftId);
-          assert(typeof draftRound !== 'undefined', 'The draft to be incremented does not exist.');
-          logger.debug('draft round incremented', draftRound);
+          submittedRound = draft.currRound;
 
-          notifications.push(createDraftRoundStartedNotification(draftId, draftRound.currRound));
+          while (true) {
+            const count = await getPendingLabCountInDraft(db, draftId);
+            if (count > 0) {
+              logger.debug('more pending labs found', { 'lab.pending_count': count });
+              break;
+            }
 
-          if (draftRound.currRound === null) {
-            logger.info('lottery round reached');
-            break;
+            const draftRound = await incrementDraftRound(db, draftId);
+            assert(
+              typeof draftRound !== 'undefined',
+              'The draft to be incremented does not exist.',
+            );
+            logger.debug('draft round incremented', draftRound);
+
+            roundsToNotify.push(draftRound.currRound);
+
+            if (draftRound.currRound === null) {
+              logger.info('lottery round reached');
+              break;
+            }
+
+            await autoAcknowledgeLabsWithoutPreferences(db, draftId);
+            logger.debug('labs without preferences auto-acknowledged');
           }
+        },
+        { isolationLevel: 'repeatable read' },
+      );
 
-          await autoAcknowledgeLabsWithoutPreferences(db, draftId);
-          logger.debug('labs without preferences auto-acknowledged');
-        }
+      // Dispatch notifications after successful transaction
+      const [staffEmails, { name: labName }, facultyAndStaff] = await Promise.all([
+        getValidStaffEmails(db),
+        getLabById(db, lab),
+        getFacultyAndStaff(db),
+      ]);
 
-        return notifications;
-      });
+      const roundSubmittedEvents = staffEmails.map(email => ({
+        name: 'draft/round.submitted' as const,
+        data: {
+          draftId: Number(draftId),
+          round: submittedRound,
+          labId: lab,
+          labName,
+          recipientEmail: email,
+        },
+      }));
 
-      await dispatch.bulkDispatchNotification(...notifications);
+      const roundStartedEvents = roundsToNotify.flatMap(round =>
+        facultyAndStaff.map(({ email, givenName, familyName }) => ({
+          name: 'draft/round.started' as const,
+          data: {
+            draftId: Number(draftId),
+            round,
+            recipientEmail: email,
+            recipientName: `${givenName} ${familyName}`,
+          },
+        })),
+      );
+
+      await inngest.send([...roundSubmittedEvents, ...roundStartedEvents]);
       logger.info('student rankings submitted');
     });
   },

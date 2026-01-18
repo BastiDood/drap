@@ -1,8 +1,8 @@
 import type { MIMEMessage } from 'mimetext/node';
 import { parse } from 'valibot';
 
-import { OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET } from '$lib/server/env/google';
 import { Logger } from '$lib/server/telemetry/logger';
+import { OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET } from '$lib/server/env/google';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 import { GmailMessageSendResult, TokenResponse } from './schema';
@@ -86,6 +86,7 @@ export class GoogleOAuthClient {
         }
         case 429:
         // TODO: Handle rate limits.
+        // falls through
         default: {
           const body = await response.text();
           return GmailError.throwNew(response.status, body);

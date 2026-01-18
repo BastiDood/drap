@@ -1,8 +1,8 @@
 import { Buffer } from 'node:buffer';
 import { ok, strictEqual } from 'node:assert/strict';
 
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { error, redirect } from '@sveltejs/kit';
-import { jwtVerify } from 'jose';
 import { parse } from 'valibot';
 
 import * as GOOGLE from '$lib/server/env/google';
@@ -15,9 +15,10 @@ import {
   upsertCandidateSender,
   upsertOpenIdUser,
 } from '$lib/server/database';
-import { fetchJwks } from '$lib/server/email/jwks';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
+
+const fetchJwks = createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'));
 
 const SERVICE_NAME = 'routes.dashboard.oauth.callback';
 const logger = Logger.byName(SERVICE_NAME);
