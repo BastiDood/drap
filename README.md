@@ -54,6 +54,19 @@ At runtime, the server requires the following environment variables to be presen
 > [!IMPORTANT]
 > The `GOOGLE_OAUTH_REDIRECT_URI` must point to `/oauth/callback/`.
 
+The following variables are optional in development, but _highly_ recommended in the production environment for [OpenTelemetry](#opentelemetry-instrumentation) integration. The standard environment variables are supported, such as (but not limited to):
+
+| **Name**                      | **Description**                                                                         | **Recommended**                                                |
+| ----------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | The base OTLP endpoint URL for exporting logs, metrics, and traces.                     | `http://localhost:5080/api/default`                            |
+| `OTEL_EXPORTER_OTLP_HEADERS`  | Extra percent-encoded HTTP headers used for exporting telemetry (e.g., authentication). | `Authorization=Basic%20YWRtaW5AZXhhbXBsZS5jb206cGFzc3dvcmQ%3D` |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` | The underlying exporter protocol (e.g., JSON, Protobufs, gRPC, etc.).                   | `http/protobuf`                                                |
+
+> [!NOTE]
+> The "recommended" values are only applicable to the development environment with OpenObserve running in the background. See the [`compose.yaml`] for more details on the OpenObserve configuration.
+
+[`compose.yaml`]: ./compose.yaml
+
 ### Setting up the Codebase
 
 ```bash
@@ -105,6 +118,23 @@ node --env-file=.env build/index.js
 # Or, just use Docker for everything.
 docker compose --profile prod up --detach
 ```
+
+### Local Telemetry with OpenObserve
+
+To enable full observability in local development:
+
+1. Start the local services (including OpenObserve):
+   ```bash
+   docker compose up --detach
+   ```
+2. Export the OTEL environment variables before running the dev server:
+   ```bash
+   export OTEL_EXPORTER_OTLP_ENDPOINT='http://localhost:5080/api/default'
+   export OTEL_EXPORTER_OTLP_HEADERS='Authorization=Basic%20YWRtaW5AZXhhbXBsZS5jb206cGFzc3dvcmQ%3D'
+   export OTEL_EXPORTER_OTLP_PROTOCOL='http/protobuf'
+   pnpm dev
+   ```
+3. View traces and logs at `http://localhost:5080`.
 
 ## Acknowledgements
 
