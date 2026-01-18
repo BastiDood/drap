@@ -1,10 +1,15 @@
+allowBuilds:
+  core-js-pure: false
+  esbuild: false
+  msgpackr-extract: false
+
 blockExoticSubdeps: true
 
 cleanupUnusedCatalogs: true
 
 engineStrict: true
 
-minimumReleaseAge: 1440 # 1 Day
+minimumReleaseAge: 1440 # 1 day
 
 strictDepBuilds: true
 
