@@ -2,6 +2,7 @@ allowBuilds:
   core-js-pure: false
   esbuild: false
   msgpackr-extract: false
+  protobufjs: false
 
 blockExoticSubdeps: true
 
