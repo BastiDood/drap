@@ -13,7 +13,10 @@ export function load({ locals: { session } }) {
     redirect(307, '/oauth/login/');
   }
 
-  logger.info('profile page loaded', { 'user.id': session.user.id, 'user.email': session.user.email });
+  logger.info('profile page loaded', {
+    'user.id': session.user.id,
+    'user.email': session.user.email,
+  });
   return { user: session.user };
 }
 
@@ -24,13 +27,20 @@ export const actions = {
       error(401);
     }
 
-    logger.info('updating profile request', { 'user.id': session.user.id, 'user.email': session.user.email });
+    logger.info('updating profile request', {
+      'user.id': session.user.id,
+      'user.email': session.user.email,
+    });
 
     const data = await request.formData();
     const studentNumber = maybeValidateBigInt(data.get('student-number'));
     const given = validateString(data.get('given'));
     const family = validateString(data.get('family'));
-    logger.info('updating profile', { 'user.student_number': studentNumber?.toString(), 'user.given_name': given, 'user.family_name': family });
+    logger.info('updating profile', {
+      'user.student_number': studentNumber?.toString(),
+      'user.given_name': given,
+      'user.family_name': family,
+    });
 
     await updateProfileByUserId(db, session.user.id, studentNumber, given, family);
     logger.info('profile updated');

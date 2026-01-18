@@ -34,7 +34,10 @@ export async function GET({ locals: { session }, cookies, setHeaders, url: { sea
   }
 
   const { id: sessionId, nonce, expiration } = await generatePendingSession(db, hasExtendedScope);
-  logger.info('pending session generated', { 'auth.session.id': sessionId, 'auth.session.expiration': expiration.toISOString() });
+  logger.info('pending session generated', {
+    'auth.session.id': sessionId,
+    'auth.session.expiration': expiration.toISOString(),
+  });
   cookies.set('sid', sessionId, {
     path: '/',
     httpOnly: true,

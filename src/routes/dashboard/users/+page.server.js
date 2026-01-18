@@ -28,7 +28,10 @@ export async function load({ locals: { session } }) {
   }
 
   const [labs, faculty] = await Promise.all([getLabRegistry(db), getFacultyAndStaff(db)]);
-  logger.info('users page loaded', { 'lab.count': labs.length, 'user.faculty_count': faculty.length });
+  logger.info('users page loaded', {
+    'lab.count': labs.length,
+    'user.faculty_count': faculty.length,
+  });
   return { labs, faculty };
 }
 

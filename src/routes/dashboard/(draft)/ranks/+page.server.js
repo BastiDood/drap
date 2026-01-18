@@ -101,7 +101,10 @@ export const actions = {
     const { currRound, maxRounds, registrationClosesAt } = draft;
     logger.info('max rounds for target draft determined', { 'draft.round.max': maxRounds });
     if (currRound !== 0) {
-      logger.error('cannot submit rankings to an ongoing draft', void 0, { 'draft.round.current': currRound, 'draft.round.max': maxRounds });
+      logger.error('cannot submit rankings to an ongoing draft', void 0, {
+        'draft.round.current': currRound,
+        'draft.round.max': maxRounds,
+      });
       error(403);
     }
 
