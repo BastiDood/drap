@@ -2,6 +2,7 @@ import { createMimeMessage } from 'mimetext/node';
 import { NonRetriableError } from 'inngest';
 
 import {
+  type DrizzleTransaction,
   db,
   getDesignatedSenderCredentialsForUpdate,
   type schema,
@@ -77,38 +78,10 @@ export const sendEmail = inngest.createFunction(
           }
 
           // Always obtain the freshest credentials per retry.
-          const { client, sender } = await db.transaction(async db => {
-            logger.trace('getting designated sender credentials...');
-            const sender = await getDesignatedSenderCredentialsForUpdate(db);
-            if (typeof sender === 'undefined') {
-              const error = new NonRetriableError('no designated sender configured');
-              logger.error('no designated sender configured', error);
-              throw error;
-            }
-
-            // eslint-disable-next-line @typescript-eslint/init-declarations
-            let client: GoogleOAuthClient;
-            if (sender.isValid) {
-              // TODO: Retrieve scopes from the database.
-              client = new GoogleOAuthClient(sender.accessToken, []);
-            } else {
-              // TODO: Persist scopes to the database.
-              logger.debug('refreshing OAuth token...');
-              const refreshed = await GoogleOAuthClient.fromRefreshToken(sender.refreshToken);
-              ({ client } = refreshed);
-
-              logger.debug('updating candidate sender...');
-              await updateCandidateSender(
-                db,
-                sender.id,
-                refreshed.token.expiresIn,
-                client.accessToken,
-                sender.refreshToken,
-              );
-            }
-
-            return new RefreshedCredentials(client, sender);
-          });
+          const { client, sender } = await db.transaction(
+            async db => await RefreshedCredentials.fromTransaction(db),
+            { isolationLevel: 'read uncommitted' },
+          );
 
           const mime = createMimeMessage();
           mime.setSender({
@@ -135,8 +108,41 @@ export const sendEmail = inngest.createFunction(
 );
 
 class RefreshedCredentials {
-  constructor(
+  private constructor(
     public readonly client: GoogleOAuthClient,
     public readonly sender: Pick<schema.User, 'email' | 'givenName' | 'familyName'>,
   ) {}
+
+  static async fromTransaction(db: DrizzleTransaction) {
+    logger.trace('getting designated sender credentials...');
+    const sender = await getDesignatedSenderCredentialsForUpdate(db);
+    if (typeof sender === 'undefined') {
+      const error = new NonRetriableError('no designated sender configured');
+      logger.error('no designated sender configured', error);
+      throw error;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/init-declarations
+    let client: GoogleOAuthClient;
+    if (sender.isValid) {
+      // TODO: Retrieve scopes from the database.
+      client = new GoogleOAuthClient(sender.accessToken, []);
+    } else {
+      // TODO: Persist scopes to the database.
+      logger.debug('refreshing OAuth token...');
+      const refreshed = await GoogleOAuthClient.fromRefreshToken(sender.refreshToken);
+      ({ client } = refreshed);
+
+      logger.debug('updating candidate sender...');
+      await updateCandidateSender(
+        db,
+        sender.id,
+        refreshed.token.expiresIn,
+        client.accessToken,
+        sender.refreshToken,
+      );
+    }
+
+    return new RefreshedCredentials(client, sender);
+  }
 }
