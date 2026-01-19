@@ -1,30 +1,23 @@
-<script>
-  import {
-    AcademicCap,
-    ArrowRight,
-    Beaker,
-    BugAnt,
-    DocumentDuplicate,
-    LockClosed,
-    ShieldExclamation,
-  } from '@steeze-ui/heroicons';
+<script lang="ts">
+  import { AcademicCap, ArrowRight, Beaker, ShieldExclamation } from '@steeze-ui/heroicons';
   import { Accordion } from '@skeletonlabs/skeleton-svelte';
-  import { Github } from '@steeze-ui/simple-icons';
   import { Icon } from '@steeze-ui/svelte-icon';
 
   import banner from '$lib/banner.png?url';
   import { asset, resolve } from '$app/paths';
+
+  import Link from '$lib/components/link.svelte';
 </script>
 
 <section class="prose dark:prose-invert max-w-none">
   <h1>DRAP: Draft Ranking Automated Processor</h1>
   <p>
     Welcome to <strong>DRAP</strong>: the <strong>Draft Ranking Automated Processor</strong> for the
-    <a href="https://up.edu.ph/" target="_blank">University of the Philippines</a>
-    <a href="https://upd.edu.ph/" target="_blank">Diliman</a>
-    - <a href="https://dcs.upd.edu.ph/" target="_blank">Department of Computer Science</a>'s yearly
-    draft of research lab assignments. In a nutshell, this web application automates the mechanics
-    of the draft:
+    <Link href="https://up.edu.ph/" target="_blank">University of the Philippines</Link>
+    <Link href="https://upd.edu.ph/" target="_blank">Diliman</Link>
+    - <Link href="https://dcs.upd.edu.ph/" target="_blank">Department of Computer Science</Link>'s
+    yearly draft of research lab assignments. In a nutshell, this web application automates the
+    mechanics of the draft:
   </p>
   <div class="not-prose my-6">
     <a href={resolve('/dashboard/')} class="preset-filled-primary-500 btn btn-xl no-underline">
@@ -79,9 +72,9 @@
 <section class="prose dark:prose-invert max-w-none">
   <h2>Getting Started</h2>
   <p>
-    All interactions with the application require UP Mail authentication. To <a
+    All interactions with the application require UP Mail authentication. To <Link
       href="/dashboard/oauth/login"
-      rel="external">sign in with Google</a
+      rel="external">sign in with Google</Link
     >, simply press the login button at the lower left corner of the dashboard. When logged in, the
     button functions as a logout button instead. The next steps depend on your role in the draft.
   </p>
@@ -101,13 +94,14 @@
     {#snippet panel()}
       <ol>
         <li>
-          Go to your <a href={resolve('/dashboard/profile/')}>profile</a> and set your student
-          number.
+          Go to your <Link href={resolve('/dashboard/profile/')}>profile</Link> and set your student number.
           <em>Note that this can only be done once.</em>
         </li>
-        <li>Set your <a href={resolve('/dashboard/ranks/')}>lab rankings and preferences</a>.</li>
         <li>
-          Track the progress of the draft in the <a href={resolve('/history/')}>history</a> page.
+          Set your <Link href={resolve('/dashboard/ranks/')}>lab rankings and preferences</Link>.
+        </li>
+        <li>
+          Track the progress of the draft in the <Link href={resolve('/history/')}>history</Link> page.
         </li>
         <li>Wait until the draft is finished.</li>
       </ol>
@@ -128,11 +122,11 @@
       <ol>
         <li>Wait for the administrators to open a draft.</li>
         <li>
-          Track the progress of the draft in the <a href={resolve('/history/')}>history</a> page.
+          Track the progress of the draft in the <Link href={resolve('/history/')}>history</Link> page.
         </li>
         <li>
-          Visit the <a href={resolve('/dashboard/students/')}>students</a> page to select draftees who
-          chose your lab.
+          Visit the <Link href={resolve('/dashboard/students/')}>students</Link> page to select draftees
+          who chose your lab.
         </li>
         <li>Wait until the regular draft process to finish.</li>
         <li>
@@ -159,27 +153,27 @@
     {/snippet}
     {#snippet panel()}
       <ol>
-        <li>Set the <a href={resolve('/dashboard/labs/')}>lab quota</a>.</li>
-        <li>Initialize a <a href={resolve('/dashboard/drafts/')}>new draft</a>.</li>
+        <li>Set the <Link href={resolve('/dashboard/labs/')}>lab quota</Link>.</li>
+        <li>Initialize a <Link href={resolve('/dashboard/drafts/')}>new draft</Link>.</li>
         <li>Wait for participating draftees to register their lab preferences.</li>
         <li>
-          Officially <a href={resolve('/dashboard/drafts/')}>start the draft</a>. This will notify
-          all of the concerned lab heads of the interested draftees.
+          Officially <Link href={resolve('/dashboard/drafts/')}>start the draft</Link>. This will
+          notify all of the concerned lab heads of the interested draftees.
         </li>
         <li>
-          Audit the progress of the draft in the <a href={resolve('/history/')}>history</a> page.
+          Audit the progress of the draft in the <Link href={resolve('/history/')}>history</Link> page.
         </li>
         <li>Wait for all rounds of the draft to finish.</li>
         <li>
-          After the regular draft process, <a href={resolve('/dashboard/drafts/')}>resolve</a> the membership
-          of the remaining undrafted students by negotiating with the lab heads.
+          After the regular draft process, <Link href={resolve('/dashboard/drafts/')}>resolve</Link> the
+          membership of the remaining undrafted students by negotiating with the lab heads.
         </li>
         <li>
-          <a href={resolve('/dashboard/drafts/')}>Apply</a> the necessary manual interventions (i.e.,
+          <Link href={resolve('/dashboard/drafts/')}>Apply</Link> the necessary manual interventions (i.e.,
           assigning students to their labs based on the agreed terms between labs)
         </li>
         <li>
-          <a href={resolve('/dashboard/drafts/')}>Conclude</a> the draft to proceed to the randomized
+          <Link href={resolve('/dashboard/drafts/')}>Conclude</Link> the draft to proceed to the randomized
           round-robin stage.
         </li>
       </ol>
@@ -189,51 +183,22 @@
 <section class="prose dark:prose-invert max-w-none">
   <h2>Acknowledgements</h2>
   <p>
-    The <a target="_blank" href="https://github.com/BastiDood/drap">DRAP project</a>, licensed under
-    the free and open-source
-    <a
+    The <Link target="_blank" href="https://github.com/BastiDood/drap">DRAP project</Link>, licensed
+    under the free and open-source
+    <Link
       target="_blank"
       href="https://github.com/BastiDood/drap/blob/bbd5be8b2b3528d2ba28643a91212c2abaa38ce7/LICENSE"
-      >GNU Affero General Public License v3</a
+      >GNU Affero General Public License v3</Link
     >, was originally developed by
-    <a target="_blank" href="https://github.com/BastiDood">Sebastian Luis S. Ortiz</a>,
-    <a target="_blank" href="https://github.com/VeeIsForVictor">Victor Edwin E. Reyes</a>, and
-    <a target="_blank" href="https://github.com/ehrelevant">Ehren A. Castillo</a> as a service
-    project under the
-    <a target="_blank" href="https://up-csi.org/">UP Center for Student Innovations</a>. The DRAP
-    <a target="_blank" href={asset('/favicon.ico')}>logo</a>
+    <Link target="_blank" href="https://github.com/BastiDood">Sebastian Luis S. Ortiz</Link>,
+    <Link target="_blank" href="https://github.com/VeeIsForVictor">Victor Edwin E. Reyes</Link>, and
+    <Link target="_blank" href="https://github.com/ehrelevant">Ehren A. Castillo</Link> as a service project
+    under the
+    <Link target="_blank" href="https://up-csi.org/">UP Center for Student Innovations</Link>. The
+    DRAP
+    <Link target="_blank" href={asset('/favicon.ico')}>logo</Link>
     <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- Vite ?url import is pre-resolved -->
-    and <a target="_blank" href={banner}>banner</a> were originally designed and created by
-    <a target="_blank" href="https://github.com/Anjellyrika">Angelica Julianne A. Raborar</a>.
+    and <Link target="_blank" href={banner}>banner</Link> were originally designed and created by
+    <Link target="_blank" href="https://github.com/Anjellyrika">Angelica Julianne A. Raborar</Link>.
   </p>
-  <div class="not-prose flex flex-wrap gap-1">
-    <a
-      target="_blank"
-      href="https://github.com/BastiDood/drap"
-      class="preset-filled-primary-500 btn btn-lg no-underline"
-    >
-      <Icon src={Github} size="24" />
-      <span>BastiDood/drap</span>
-    </a>
-    <a
-      target="_blank"
-      href="https://github.com/BastiDood/drap/fork"
-      class="preset-filled-secondary-500 btn btn-lg no-underline"
-    >
-      <Icon src={DocumentDuplicate} size="24" />
-      <span>Fork the Repository</span>
-    </a>
-    <a
-      target="_blank"
-      href="https://github.com/BastiDood/drap/issues/new"
-      class="preset-filled-error-500 btn btn-lg no-underline"
-    >
-      <Icon src={BugAnt} size="24" />
-      <span>Report a Bug</span>
-    </a>
-    <a href={resolve('/privacy/')} class="preset-filled-tertiary-500 btn btn-lg no-underline">
-      <Icon src={LockClosed} size="24" />
-      <span>Privacy Policy</span>
-    </a>
-  </div>
 </section>
