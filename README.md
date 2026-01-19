@@ -24,15 +24,15 @@ The [main web application](./src) is powered by SvelteKit. Data persistence is b
 
 At runtime, the server requires the following environment variables to be present.
 
-| **Variable**                 | **Description**                                                                      |
-| ---------------------------- | ------------------------------------------------------------------------------------ |
-| `DRIZZLE_DEBUG`              | Enables verbose logs from Drizzle queries.                                           |
-| `GOOGLE_OAUTH_CLIENT_ID`     | OAuth 2.0 credentials retrieved from the [Google Cloud Console].                     |
-| `GOOGLE_OAUTH_CLIENT_SECRET` | OAuth 2.0 credentials retrieved from the [Google Cloud Console].                     |
-| `GOOGLE_OAUTH_REDIRECT_URI`  | OAuth 2.0 credentials retrieved from the [Google Cloud Console].                     |
-| `JOB_CONCURRENCY`            | Configures the maximum number of concurrent jobs that the email worker will consume. |
-| `POSTGRES_URL`               | The connection string to the PostgreSQL instance.                                    |
-| `REDIS_URL`                  | The connection URL of the Redis instance to which BullMQ will persist its queue.     |
+| **Variable**                 | **Description**                                                  |
+| ---------------------------- | ---------------------------------------------------------------- |
+| `DRIZZLE_DEBUG`              | Enables verbose logs from Drizzle queries.                       |
+| `GOOGLE_OAUTH_CLIENT_ID`     | OAuth 2.0 credentials retrieved from the [Google Cloud Console]. |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | OAuth 2.0 credentials retrieved from the [Google Cloud Console]. |
+| `GOOGLE_OAUTH_REDIRECT_URI`  | OAuth 2.0 credentials retrieved from the [Google Cloud Console]. |
+| `INNGEST_EVENT_KEY`          | Inngest event signing key.                                       |
+| `INNGEST_SIGNING_KEY`        | Inngest webhook signing key.                                     |
+| `POSTGRES_URL`               | The connection string to the PostgreSQL instance.                |
 
 [Google Cloud Console]: https://console.cloud.google.com/
 
@@ -63,6 +63,19 @@ pnpm fmt
 
 # Apply formatting auto-fix.
 pnpm fmt:fix
+```
+
+### Database Commands
+
+```bash
+# Generate Drizzle migrations.
+pnpm db:generate
+
+# Apply migrations.
+pnpm db:migrate
+
+# Open Drizzle Studio UI.
+pnpm db:studio
 ```
 
 ### Linting the Codebase
