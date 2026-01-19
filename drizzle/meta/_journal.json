@@ -134,6 +134,13 @@
       "when": 1768796083672,
       "tag": "0018_remove-notification-tables",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1768800225490,
+      "tag": "0019_assert-oauth-scopes",
+      "breakpoints": true
     }
   ]
 }
