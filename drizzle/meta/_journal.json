@@ -127,6 +127,13 @@
       "when": 1753848264626,
       "tag": "0017_non-null-registration-closes-at",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1768796083672,
+      "tag": "0018_remove-notification-tables",
+      "breakpoints": true
     }
   ]
 }
