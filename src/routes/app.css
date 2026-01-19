@@ -6,6 +6,7 @@
 @import '@skeletonlabs/skeleton';
 @import '@skeletonlabs/skeleton/optional/presets';
 
-@import './dcs.css';
+/* @import './dcs.css'; */
+@import './dcs-v2.css';
 
 @source '../../node_modules/@skeletonlabs/skeleton-svelte/dist';
