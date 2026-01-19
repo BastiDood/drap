@@ -53,69 +53,28 @@ export type DrizzleDatabase = ReturnType<typeof init>;
 export type DrizzleTransaction = Parameters<Parameters<DrizzleDatabase['transaction']>[0]>[0];
 export type DbConnection = DrizzleDatabase | DrizzleTransaction;
 
-/**
- * Begins a transaction.
- * @deprecated
- */
-export function begin<T>(conn: DrizzleDatabase, fn: (tx: DrizzleTransaction) => Promise<T>) {
-  return conn.transaction(fn);
-}
-
-export async function generatePendingSession(db: DbConnection, hasExtendedScope: boolean) {
-  return await tracer.asyncSpan('generate-pending-session', async span => {
-    span.setAttribute('database.session.has_extended_scope', hasExtendedScope);
-    return await db
-      .insert(schema.pending)
-      .values({ hasExtendedScope })
-      .returning({
-        id: schema.pending.id,
-        expiration: schema.pending.expiration,
-        nonce: schema.pending.nonce,
-      })
-      .then(assertSingle);
-  });
-}
-
-export async function deletePendingSession(db: DbConnection, id: string) {
-  return await tracer.asyncSpan('delete-pending-session', async span => {
-    span.setAttribute('database.session.id', id);
-    return await db
-      .delete(schema.pending)
-      .where(eq(schema.pending.id, id))
-      .returning({
-        id: schema.pending.id,
-        expiration: schema.pending.expiration,
-        nonce: schema.pending.nonce,
-        hasExtendedScope: schema.pending.hasExtendedScope,
-      })
-      .then(assertOptional);
-  });
-}
-
 export async function insertDummySession(db: DbConnection, dummyUserId: string) {
   return await tracer.asyncSpan('insert-dummy-session', async span => {
     span.setAttribute('database.user.id', dummyUserId);
     // create a session that expires after an hour
     const { sessionId } = await db
       .insert(schema.session)
-      .values({ userId: dummyUserId, expiration: new Date(Date.now() + 3600000) })
+      .values({ userId: dummyUserId, expiration: sql`now() + interval '1 hour'` })
       .returning({ sessionId: schema.session.id })
       .then(assertSingle);
     return sessionId;
   });
 }
 
-export async function insertValidSession(
-  db: DbConnection,
-  id: string,
-  userId: string,
-  expiration: Date,
-) {
+export async function insertValidSession(db: DbConnection, userId: string, expiration: Date) {
   return await tracer.asyncSpan('insert-valid-session', async span => {
-    span.setAttribute('database.session.id', id);
     span.setAttribute('database.user.id', userId);
-    const { rowCount } = await db.insert(schema.session).values({ id, userId, expiration });
-    strictEqual(rowCount, 1, 'only one session must be inserted');
+    const { sessionId } = await db
+      .insert(schema.session)
+      .values({ userId, expiration })
+      .returning({ sessionId: schema.session.id })
+      .then(assertSingle);
+    return sessionId;
   });
 }
 
@@ -928,6 +887,7 @@ export async function getDesignatedSenderCredentialsForUpdate(db: DrizzleTransac
         familyName: schema.user.familyName,
         accessToken: schema.candidateSender.accessToken,
         refreshToken: schema.candidateSender.refreshToken,
+        scopes: schema.candidateSender.scopes,
         isValid: lt(schema.candidateSender.expiration, sql`now()`).mapWith(Boolean),
       })
       .from(schema.designatedSender)
@@ -952,10 +912,10 @@ export async function updateCandidateSender(
   db: DbConnection,
   userId: string,
   expiresIn: number,
+  scopes: string[],
   accessToken: string,
   refreshToken?: string,
 ) {
-  // TODO: Persist the OAuth scopes to the database.
   return await tracer.asyncSpan('update-candidate-sender', async span => {
     span.setAttributes({
       'database.user.id': userId,
@@ -966,6 +926,7 @@ export async function updateCandidateSender(
       .set({
         userId,
         accessToken,
+        scopes,
         refreshToken: refreshToken ?? schema.candidateSender.refreshToken,
         expiration: sql`now() + make_interval(secs => ${expiresIn})`,
       })
@@ -979,29 +940,24 @@ export async function upsertCandidateSender(
   userId: string,
   expiration: Date,
   accessToken: string,
-  refreshToken?: string,
+  refreshToken: string,
+  scopes: string[],
 ) {
   return await tracer.asyncSpan('upsert-candidate-sender', async span => {
     span.setAttribute('database.user.id', userId);
-    const query =
-      typeof refreshToken === 'undefined'
-        ? db
-            .update(schema.candidateSender)
-            .set({ expiration, accessToken, updatedAt: sql`now()` })
-            .where(eq(schema.candidateSender.userId, userId))
-        : db
-            .insert(schema.candidateSender)
-            .values({ userId, expiration, accessToken, refreshToken })
-            .onConflictDoUpdate({
-              target: schema.candidateSender.userId,
-              set: {
-                updatedAt: sql`now()`,
-                expiration: sql`excluded.${sql.raw(schema.candidateSender.expiration.name)}`,
-                accessToken: sql`excluded.${sql.raw(schema.candidateSender.accessToken.name)}`,
-                refreshToken: sql`excluded.${sql.raw(schema.candidateSender.refreshToken.name)}`,
-              },
-            });
-    const { rowCount } = await query;
+    const { rowCount } = await db
+      .insert(schema.candidateSender)
+      .values({ userId, expiration, accessToken, refreshToken, scopes })
+      .onConflictDoUpdate({
+        target: schema.candidateSender.userId,
+        set: {
+          updatedAt: sql`now()`,
+          expiration: sql`excluded.${sql.raw(schema.candidateSender.expiration.name)}`,
+          accessToken: sql`excluded.${sql.raw(schema.candidateSender.accessToken.name)}`,
+          refreshToken: sql`excluded.${sql.raw(schema.candidateSender.refreshToken.name)}`,
+          scopes: sql`excluded.${sql.raw(schema.candidateSender.scopes.name)}`,
+        },
+      });
     switch (rowCount) {
       case 1:
         return;

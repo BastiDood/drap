@@ -124,10 +124,8 @@ class RefreshedCredentials {
     // eslint-disable-next-line @typescript-eslint/init-declarations
     let client: GoogleOAuthClient;
     if (sender.isValid) {
-      // TODO: Retrieve scopes from the database.
-      client = new GoogleOAuthClient(sender.accessToken, []);
+      client = new GoogleOAuthClient(sender.accessToken, sender.scopes);
     } else {
-      // TODO: Persist scopes to the database.
       logger.debug('refreshing OAuth token...');
       const refreshed = await GoogleOAuthClient.fromRefreshToken(sender.refreshToken);
       ({ client } = refreshed);
@@ -137,6 +135,7 @@ class RefreshedCredentials {
         db,
         sender.id,
         refreshed.token.expiresIn,
+        client.scopes,
         client.accessToken,
         sender.refreshToken,
       );

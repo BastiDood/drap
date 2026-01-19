@@ -1,14 +1,14 @@
+import { addMinutes } from 'date-fns';
 import { error, redirect } from '@sveltejs/kit';
 
 import * as GOOGLE from '$lib/server/env/google';
-import { db, generatePendingSession } from '$lib/server/database';
 import { Logger } from '$lib/server/telemetry/logger';
 import { OAUTH_SCOPE_STRING, SENDER_SCOPE_STRING } from '$lib/server/models/oauth';
 
 const SERVICE_NAME = 'routes.dashboard.oauth.login';
 const logger = Logger.byName(SERVICE_NAME);
 
-export async function GET({ locals: { session }, cookies, setHeaders, url: { searchParams } }) {
+export function GET({ locals: { session }, cookies, setHeaders, url: { searchParams } }) {
   setHeaders({ 'Cache-Control': 'no-store' });
 
   const hasExtendedScope = searchParams.has('extended');
@@ -33,13 +33,11 @@ export async function GET({ locals: { session }, cookies, setHeaders, url: { sea
     }
   }
 
-  const { id: sessionId, nonce, expiration } = await generatePendingSession(db, hasExtendedScope);
-  logger.info('pending session generated', {
-    'auth.session.id': sessionId,
-    'auth.session.expiration': expiration.toISOString(),
-  });
-  cookies.set('sid', sessionId, {
-    path: '/dashboard',
+  const random = crypto.getRandomValues(new Uint8Array(64));
+  const nonce = Buffer.from(random).toString('base64url');
+  const expiration = addMinutes(new Date(), 15);
+  cookies.set('nonce', nonce, {
+    path: '/dashboard/oauth',
     httpOnly: true,
     sameSite: 'lax',
     expires: expiration,
@@ -48,7 +46,7 @@ export async function GET({ locals: { session }, cookies, setHeaders, url: { sea
   const params = new URLSearchParams({
     client_id: GOOGLE.OAUTH_CLIENT_ID,
     redirect_uri: GOOGLE.OAUTH_REDIRECT_URI,
-    nonce: nonce.toString('base64url'),
+    nonce,
     hd: 'up.edu.ph',
     response_type: 'code',
     prompt: 'select_account',

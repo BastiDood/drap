@@ -13,6 +13,8 @@ const SERVICE_NAME = 'lib.server.google';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
+const GMAIL_SEND_SCOPE = 'https://www.googleapis.com/auth/gmail.send';
+
 export class GoogleOAuthClient {
   constructor(
     public readonly accessToken: string,
@@ -48,6 +50,8 @@ export class GoogleOAuthClient {
 
   async sendEmail(message: MIMEMessage) {
     return await tracer.asyncSpan('google-oauth-client-send-email', async span => {
+      if (!this.scopes.includes(GMAIL_SEND_SCOPE)) GmailScopeError.throwNew(this.scopes);
+
       let subjectLength = 0;
       const subject = message.getSubject();
       if (typeof subject !== 'undefined') subjectLength = subject.length;
@@ -99,6 +103,7 @@ export class GoogleOAuthClient {
 
   /** Bulk version of {@linkcode sendEmail}. */
   async sendEmails(messages: MIMEMessage[]) {
+    if (!this.scopes.includes(GMAIL_SEND_SCOPE)) GmailScopeError.throwNew(this.scopes);
     if (messages.length > 100) BatchError.throwNew(messages.length);
 
     const multipart = new Multipart(
@@ -184,6 +189,19 @@ export class BatchError extends Error {
   static throwNew(length: number): never {
     const error = new BatchError(length);
     logger.error('too many requests in batch', error, { 'error.length': length });
+    throw error;
+  }
+}
+
+export class GmailScopeError extends Error {
+  constructor(public readonly scopes: string[]) {
+    super(`missing gmail.send scope; available: ${scopes.join(', ')}`);
+    this.name = 'GmailScopeError';
+  }
+
+  static throwNew(scopes: string[]): never {
+    const error = new GmailScopeError(scopes);
+    logger.error('missing gmail.send scope', error, { 'error.scopes': scopes.join(' ') });
     throw error;
   }
 }
