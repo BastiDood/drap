@@ -1,5 +1,5 @@
 import { Buffer } from 'node:buffer';
-import { ok, strictEqual } from 'node:assert/strict';
+import { ok } from 'node:assert/strict';
 
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { error, redirect } from '@sveltejs/kit';
