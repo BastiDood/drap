@@ -19,6 +19,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@lucide/svelte": "^0.562.0",
     "@opentelemetry/instrumentation-http": "^0.210.0",
     "@opentelemetry/instrumentation-pg": "^0.62.0",
     "@opentelemetry/sdk-node": "^0.210.0",
