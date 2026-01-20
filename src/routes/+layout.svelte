@@ -15,7 +15,7 @@
 
 <div class="h-dvh overflow-y-auto">
   <Navbar />
-  <div class="px-10 mb-8">
+  <div class="mb-8 px-10">
     {@render children?.()}
   </div>
   <Footer />
