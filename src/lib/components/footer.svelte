@@ -3,28 +3,10 @@
 
   import Logo from '$lib/assets/logo-DRAP-icon-colored.svg';
   import { resolve } from '$app/paths';
-
-  const externalLinks = [
-    {
-      href: 'https://github.com/BastiDood/drap',
-      label: 'View Source',
-      icon: Github,
-    },
-    {
-      href: 'https://github.com/BastiDood/drap/fork',
-      label: 'Fork the Repository',
-      icon: GitFork,
-    },
-    {
-      href: 'https://github.com/BastiDood/drap/issues/new',
-      label: 'Report a Bug',
-      icon: Bug,
-    },
-  ];
 </script>
 
 <footer class="border-surface-700 space-y-4 border-t p-6">
-  <div class="flex flex-col items-start justify-between lg:flex-row">
+  <div class="flex flex-col items-start justify-between gap-8 lg:flex-row">
     <div class="flex items-center gap-6">
       <img src={Logo} alt="DRAP Logo" class="size-12" />
       <div class="flex flex-col">
@@ -41,7 +23,7 @@
         <span>University of the Philippines - Diliman</span>
       </div>
     </div>
-    <div class="flex min-w-fit flex-col gap-4 lg:flex-row lg:gap-24">
+    <div class="flex min-w-fit flex-col gap-8 xs:gap-12 xs:flex-row-reverse lg:flex-row lg:gap-24">
       <div class="flex flex-col gap-2 text-sm">
         <h6 class="text-surface-400 font-semibold">Navigation</h6>
         <a
@@ -61,19 +43,33 @@
       </div>
       <div class="flex flex-col gap-2 text-sm">
         <h6 class="text-surface-400 font-semibold">GitHub</h6>
-        {#each externalLinks as { href, label, icon: Icon } (href)}
-          <!-- eslint-disable svelte/no-navigation-without-resolve -->
-          <a
-            {href}
-            target="_blank"
-            rel="noopener noreferrer"
-            class="hover:text-secondary-500 inline-flex w-fit items-center gap-1 transition duration-150"
-          >
-            <Icon size="16" />
-            <span>{label}</span>
-          </a>
-          <!-- eslint-enable svelte/no-navigation-without-resolve -->
-        {/each}
+        <a
+          href="https://github.com/BastiDood/drap"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="hover:text-secondary-500 inline-flex w-fit items-center gap-1 transition duration-150"
+        >
+          <Github size="16" />
+          <span>View Source</span>
+        </a>
+        <a
+          href="https://github.com/BastiDood/drap/fork"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="hover:text-secondary-500 inline-flex w-fit items-center gap-1 transition duration-150"
+        >
+          <GitFork size="16" />
+          <span>Fork the Repository</span>
+        </a>
+        <a
+          href="https://github.com/BastiDood/drap/issues/new"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="hover:text-secondary-500 inline-flex w-fit items-center gap-1 transition duration-150"
+        >
+          <Bug size="16" />
+          <span>Report a Bug</span>
+        </a>
       </div>
     </div>
   </div>
