@@ -23,7 +23,7 @@
         <span>University of the Philippines - Diliman</span>
       </div>
     </div>
-    <div class="flex min-w-fit flex-col gap-8 xs:gap-12 xs:flex-row-reverse lg:flex-row lg:gap-24">
+    <div class="xs:gap-12 xs:flex-row-reverse flex min-w-fit flex-col gap-8 lg:flex-row lg:gap-24">
       <div class="flex flex-col gap-2 text-sm">
         <h6 class="text-surface-400 font-semibold">Navigation</h6>
         <a
