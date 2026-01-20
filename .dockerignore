@@ -1,20 +1,26 @@
+.claude
 .dockerignore
 .env
+.env.*
+.eslintcache
 .git
 .github
 .gitignore
 .linthtmlrc.json
+.mcp.json
+.prettiercache
 .prettierignore
 .prettierrc.json
-.stylelintrc.json
 .svelte-kit
 
 Dockerfile
 LICENSE
 README.md
-docker-compose.yml
+compose.yaml
+compose.*.yaml
+drizzle.config.js
 eslint.config.js
-fly.toml
+opencode.json
 
 build
 dist
