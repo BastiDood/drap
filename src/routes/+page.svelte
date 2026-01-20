@@ -4,13 +4,13 @@
   import { Icon } from '@steeze-ui/svelte-icon';
 
   import banner from '$lib/banner.png?url';
-  import { asset, resolve } from '$app/paths';
-
+  import Hero from '$lib/components/hero.svelte';
   import Link from '$lib/components/link.svelte';
+  import { asset, resolve } from '$app/paths';
 </script>
 
 <section class="prose dark:prose-invert max-w-none">
-  <h1>DRAP: Draft Ranking Automated Processor</h1>
+  <Hero />
   <p>
     Welcome to <strong>DRAP</strong>: the <strong>Draft Ranking Automated Processor</strong> for the
     <Link href="https://up.edu.ph/" target="_blank">University of the Philippines</Link>
