@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { AcademicCap, ArrowRight, Beaker, ShieldExclamation } from '@steeze-ui/heroicons';
   import { Accordion } from '@skeletonlabs/skeleton-svelte';
+  import { AcademicCap, Beaker, ShieldExclamation } from '@steeze-ui/heroicons';
   import { Icon } from '@steeze-ui/svelte-icon';
 
   import banner from '$lib/banner.png?url';
@@ -17,56 +17,97 @@
     <Link href="https://upd.edu.ph/" target="_blank">Diliman</Link>
     - <Link href="https://dcs.upd.edu.ph/" target="_blank">Department of Computer Science</Link>'s
     yearly draft of research lab assignments. In a nutshell, this web application automates the
-    mechanics of the draft:
+    mechanics of the draft.
   </p>
-  <div class="not-prose my-6">
-    <a href={resolve('/dashboard/')} class="preset-filled-primary-500 btn btn-xl no-underline">
-      <Icon src={ArrowRight} size="24" />
-      <span>Go to Dashboard</span>
-    </a>
-  </div>
-  <ol>
-    <li>
-      All participating students register for the draft by providing their full name, email, student
-      number, and lab rankings (ordered by preference) to the draft administrators.
+</section>
+
+<section class="prose dark:prose-invert my-8 max-w-none prose-h3:mt-0 prose-h3:mb-2 prose-li:m-0">
+  <h2 class="border-b border-surface-800 pb-2">How It Works</h2>
+  <ol class="max-w-prose mx-auto pl-0">
+    <li class="grid grid-cols-[auto_1fr] gap-4">
+      <div class="flex flex-col items-center">
+        <div
+          class="bg-primary-500 text-primary-contrast-dark flex size-9 items-center justify-center rounded-full font-bold"
+        >
+          1
+        </div>
+        <div aria-hidden="true" class="bg-surface-700 w-1 flex-1"></div>
+      </div>
+      <div class="pb-8">
+        <h3 class="text-xl font-bold">Registration</h3>
+        <p>
+          All participating students register for the draft by providing their full name, email,
+          student number, and lab rankings (ordered by preference) to the draft administrators.
+        </p>
+      </div>
     </li>
-    <li>
-      <span>The <strong>regular draft process</strong> begins. For each round in the draft:</span>
-      <ol class="list-[lower-alpha]">
-        <li>
-          Draft administrators notify (typically via email) the lab heads about all of the students
-          that have chosen their respective research lab as the first choice.
-        </li>
-        <li>
-          Each lab selects a subset (i.e., possibly none, some, or all) of these first-choice
-          students to accept them into the lab. After this point, the selected students are
-          considered to be "drafted" and are thus no longer part of the next rounds.
-        </li>
-        <li>
-          The next round begins when all of the labs have submitted their preferences. This time
-          around, the second-choice preferences of the <em>remaining</em> students are evaluated (and
-          so on).
-        </li>
-      </ol>
+
+    <li class="grid grid-cols-[auto_1fr] gap-4">
+      <div class="flex flex-col items-center">
+        <div
+          class="bg-primary-500 text-primary-contrast-dark flex size-9 items-center justify-center rounded-full font-bold"
+        >
+          2
+        </div>
+        <div aria-hidden="true" class="bg-surface-700 w-1 flex-1"></div>
+      </div>
+      <div class="pb-8">
+        <h3 class="text-xl font-bold">Regular Draft</h3>
+        <p>
+          For each round:
+        </p>
+        <ol class="prose-li:my-2">
+          <li>
+            Draft administrators notify (typically via email) the lab heads about all of the students that have chosen their respective research lab as the first choice in their rankings.
+          </li>
+          <li>
+            Each lab selects a subset (i.e., possibly none, some, or all) of these first-choice students to accept them into the lab. After this point, the selected students are considered to be "drafted" and are thus no longer part of the next rounds.
+          </li>
+          <li>
+            The next round of the regular draft begins when all of the labs have submitted their preferences. Then, the second-choice preferences of the remaining students are evaluated (and so on).
+          </li>
+        </ol>
+      </div>
     </li>
-    <li>
-      <span>
-        Should there be students remaining by the end of the regular draft process, the
-        <strong>lottery round</strong> begins.
-      </span>
-      <ol class="list-[lower-alpha]">
-        <li>
-          Before the randomization stage, draft administrators first negotiate with participating
-          labs (that have remaining slots) to check if any of the labs would like to accept some of
-          the remaining students immediately.
-        </li>
-        <li>
-          After manual negotiation and intervention, the remaining students are shuffled and
-          assigned to participating labs in a round-robin fashion.
-        </li>
-      </ol>
+
+    <li class="grid grid-cols-[auto_1fr] gap-4">
+      <div class="flex flex-col items-center">
+        <div
+          class="bg-primary-500 text-primary-contrast-dark flex size-9 items-center justify-center rounded-full font-bold"
+        >
+          3
+        </div>
+        <div aria-hidden="true" class="bg-surface-700 w-1 flex-1"></div>
+      </div>
+      <div class="pb-8">
+        <h3 class="text-xl font-bold">Lottery Round</h3>
+        <p>
+          The lottery round begins when there are unassigned students remaining by the end of the regular draft.
+        </p>
+        <ol class="prose-li:my-2">
+          <li>
+            Before the lottery, draft administrators can negotiate with participating labs (with available slots) to accept some of the remaining students.
+          </li>
+          <li>
+            After manual intervention, any remaining students are shuffled and assigned to participating labs in a round-robin fashion.
+          </li>
+        </ol>
+      </div>
     </li>
-    <li>The draft concludes when all registered participants have been assigned to a lab.</li>
+
+    <li class="grid grid-cols-[auto_1fr] gap-4">
+      <div class="flex flex-col items-center">
+        <div
+          class="bg-primary-500 text-primary-contrast-dark flex size-9 items-center justify-center rounded-full font-bold"
+        >
+          4
+        </div>
+      </div>
+      <div class="pb-8">
+        <h3 class="text-xl font-bold">Conclusion</h3>
+        <p>The draft concludes when all registered participants have been assigned to a lab.</p>
+      </div>
+    </li>
   </ol>
 </section>
 <section class="prose dark:prose-invert max-w-none">
