@@ -1,7 +1,8 @@
 <script lang="ts">
   import type { HTMLAnchorAttributes } from 'svelte/elements';
 
-  const { children, ...rest }: HTMLAnchorAttributes = $props();
+  type Props = Omit<HTMLAnchorAttributes, 'class'>;
+  const { children, ...rest }: Props = $props();
 </script>
 
 <a
