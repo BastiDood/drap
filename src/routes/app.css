@@ -2,6 +2,7 @@
 
 @theme {
   --breakpoint-xs: 30rem;
+  --background-image-dcs: url('$lib/assets/dcs.webp');
 }
 
 @plugin '@tailwindcss/forms';
