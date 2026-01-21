@@ -184,3 +184,18 @@
     @apply not-italic;
   }
 }
+
+@layer components {
+  .preset-tonal-primary {
+    @apply bg-primary/50 border-primary;
+    color: hsl(from var(--primary) h 90% 80%);
+  }
+  .preset-tonal-secondary {
+    @apply bg-secondary/30 border-secondary/60;
+    color: hsl(from var(--secondary) h 70% 90%);
+  }
+  .preset-tonal-accent {
+    @apply bg-accent/60 border-accent;
+    color: hsl(from var(--accent) h 100% 85%);
+  }
+}
