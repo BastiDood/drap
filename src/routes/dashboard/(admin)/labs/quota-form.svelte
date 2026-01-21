@@ -1,5 +1,5 @@
 <script lang="ts">
-  import PencilSquare from '@lucide/svelte/icons/pencil';
+  import PencilSquareIcon from '@lucide/svelte/icons/pencil';
   import { toast } from 'svelte-sonner';
 
   import { assert } from '$lib/assert';
@@ -105,7 +105,7 @@
     </table>
   </div>
   <Button type="submit" class="w-full">
-    <PencilSquare class="size-5" />
+    <PencilSquareIcon class="size-5" />
     <span>Update Lab Quota</span>
   </Button>
 </form>

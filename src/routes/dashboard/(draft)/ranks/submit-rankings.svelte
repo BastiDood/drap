@@ -3,11 +3,11 @@
 </script>
 
 <script lang="ts">
-  import ArrowDown from '@lucide/svelte/icons/arrow-down';
-  import ArrowUp from '@lucide/svelte/icons/arrow-up';
-  import CircleAlert from '@lucide/svelte/icons/circle-alert';
-  import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
-  import X from '@lucide/svelte/icons/x';
+  import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
+  import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
+  import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
+  import XIcon from '@lucide/svelte/icons/x';
   import { crossfade } from 'svelte/transition';
   import { flip } from 'svelte/animate';
   import { toast } from 'svelte-sonner';
@@ -166,7 +166,7 @@
                 onclick={moveLabUp.bind(null, idx)}
                 disabled={idx <= 0}
               >
-                <ArrowUp class="size-5" />
+                <ArrowUpIcon class="size-5" />
               </Button>
               <Button
                 type="button"
@@ -175,7 +175,7 @@
                 onclick={moveLabDown.bind(null, idx)}
                 disabled={idx >= selectedLabs.length - 1}
               >
-                <ArrowDown class="size-5" />
+                <ArrowDownIcon class="size-5" />
               </Button>
               <Button
                 type="button"
@@ -183,7 +183,7 @@
                 variant="destructive"
                 onclick={resetSelection.bind(null, idx)}
               >
-                <X class="size-5" />
+                <XIcon class="size-5" />
               </Button>
             </div>
           </div>
@@ -198,7 +198,7 @@
     </ol>
   {:else}
     <Alert.Root variant="warning">
-      <TriangleAlert />
+      <TriangleAlertIcon />
       <Alert.Description>No labs selected yet.</Alert.Description>
     </Alert.Root>
   {/if}
@@ -222,7 +222,7 @@
   </ul>
 {:else}
   <Alert.Root variant="destructive">
-    <CircleAlert />
+    <CircleAlertIcon />
     <Alert.Description>No more labs with remaining slots left.</Alert.Description>
   </Alert.Root>
 {/if}

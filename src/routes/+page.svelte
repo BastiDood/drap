@@ -1,7 +1,7 @@
 <script lang="ts">
-  import FlaskConical from '@lucide/svelte/icons/flask-conical';
-  import GraduationCap from '@lucide/svelte/icons/graduation-cap';
-  import ShieldAlert from '@lucide/svelte/icons/shield-alert';
+  import FlaskConicalIcon from '@lucide/svelte/icons/flask-conical';
+  import GraduationCapIcon from '@lucide/svelte/icons/graduation-cap';
+  import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
 
   import * as Accordion from '$lib/components/ui/accordion';
   import banner from '$lib/banner.png?url';
@@ -133,7 +133,7 @@
       <Accordion.Item value="student">
         <Accordion.Trigger class="px-4">
           <span class="flex items-center gap-2">
-            <GraduationCap class="size-5" />
+            <GraduationCapIcon class="size-5" />
             <span>For Students</span>
           </span>
         </Accordion.Trigger>
@@ -158,7 +158,7 @@
       <Accordion.Item value="lab-head">
         <Accordion.Trigger class="px-4">
           <span class="flex items-center gap-2">
-            <FlaskConical class="size-5" />
+            <FlaskConicalIcon class="size-5" />
             <span>For Lab Heads</span>
           </span>
         </Accordion.Trigger>
@@ -188,7 +188,7 @@
       <Accordion.Item value="admin">
         <Accordion.Trigger class="px-4">
           <span class="flex items-center gap-2">
-            <ShieldAlert class="size-5" />
+            <ShieldAlertIcon class="size-5" />
             <span>For Administrators</span>
           </span>
         </Accordion.Trigger>

@@ -1,5 +1,5 @@
 <script>
-  import CircleAlert from '@lucide/svelte/icons/circle-alert';
+  import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
 
   import * as Alert from '$lib/components/ui/alert';
   import { page } from '$app/state';
@@ -9,12 +9,12 @@
 
 {#if error !== null}
   <Alert.Root variant="destructive">
-    <CircleAlert />
+    <CircleAlertIcon />
     <Alert.Description><strong>{status}:</strong> {error.message}</Alert.Description>
   </Alert.Root>
 {:else}
   <Alert.Root variant="destructive">
-    <CircleAlert />
+    <CircleAlertIcon />
     <Alert.Description><strong>{status}</strong></Alert.Description>
   </Alert.Root>
 {/if}

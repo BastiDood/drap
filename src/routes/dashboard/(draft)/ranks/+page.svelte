@@ -1,5 +1,5 @@
 <script lang="ts">
-  import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
   import { format } from 'date-fns';
 
   import * as Alert from '$lib/components/ui/alert';
@@ -19,14 +19,14 @@
 
 {#if currRound === null}
   <Alert.Root variant="warning">
-    <TriangleAlert />
+    <TriangleAlertIcon />
     <Alert.Description
       >A lottery is currently ongoing. You may join again soon in the next draft.</Alert.Description
     >
   </Alert.Root>
 {:else if currRound > 0}
   <Alert.Root variant="warning">
-    <TriangleAlert />
+    <TriangleAlertIcon />
     <Alert.Description>A draft is currently ongoing. You may no longer register.</Alert.Description>
   </Alert.Root>
   <Progress max={maxRounds} value={currRound} />
@@ -68,7 +68,7 @@
   {@const closeDate = format(registrationClosesAt, 'PPP')}
   {@const closeTime = format(registrationClosesAt, 'pp')}
   <Alert.Root variant="warning">
-    <TriangleAlert />
+    <TriangleAlertIcon />
     <Alert.Description>
       Registration for the current draft closed on <strong>{closeDate}</strong> at
       <strong>{closeTime}</strong>. You may no longer register.

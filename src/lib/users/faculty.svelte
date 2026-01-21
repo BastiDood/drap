@@ -1,5 +1,5 @@
 <script lang="ts">
-  import UserCircle from '@lucide/svelte/icons/circle-user';
+  import UserCircleIcon from '@lucide/svelte/icons/circle-user';
 
   import * as Avatar from '$lib/components/ui/avatar';
   import type { schema } from '$lib/server/database';
@@ -20,7 +20,7 @@
   <Avatar.Root class="size-14">
     <Avatar.Image src={avatarUrl} alt="{givenName} {familyName}" />
     <Avatar.Fallback>
-      <UserCircle class="size-14" />
+      <UserCircleIcon class="size-14" />
     </Avatar.Fallback>
   </Avatar.Root>
   <span class="flex flex-col">

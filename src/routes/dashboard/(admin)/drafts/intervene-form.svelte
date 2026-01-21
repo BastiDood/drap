@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ShieldAlert from '@lucide/svelte/icons/shield-alert';
+  import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
   import { toast } from 'svelte-sonner';
 
   import { assert } from '$lib/assert';
@@ -56,7 +56,7 @@
     size="lg"
     class="border-warning bg-warning/10 text-warning hover:bg-warning/20 w-full shadow-lg"
   >
-    <ShieldAlert class="size-6" />
+    <ShieldAlertIcon class="size-6" />
     <span>Apply Interventions</span>
   </Button>
 </form>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
   import { format } from 'date-fns';
 
   import * as Alert from '$lib/components/ui/alert';
@@ -50,7 +50,7 @@
   {@const startDate = format(activePeriodStart, 'PPP')}
   {@const startTime = format(activePeriodStart, 'pp')}
   <Alert.Root variant="warning">
-    <TriangleAlert />
+    <TriangleAlertIcon />
     <Alert.Description>
       <strong>Draft #{draftId}</strong> started last <strong>{startDate}</strong> at
       <strong>{startTime}</strong> and is now in Round <strong>{currRound}</strong> of

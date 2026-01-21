@@ -1,7 +1,7 @@
 <script lang="ts">
-  import CircleAlert from '@lucide/svelte/icons/circle-alert';
-  import ShieldAlert from '@lucide/svelte/icons/shield-alert';
-  import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
+  import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
+  import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
 
   import * as Alert from '$lib/components/ui/alert';
   import { Button } from '$lib/components/ui/button';
@@ -40,7 +40,7 @@
     <form method="get" action="/dashboard/oauth/login">
       <input type="hidden" name="extended" value="1" />
       <Button type="submit" {disabled} class="not-prose w-full">
-        <ShieldAlert class="size-5" />
+        <ShieldAlertIcon class="size-5" />
         <span>Volunteer as a Candidate Sender</span>
       </Button>
     </form>
@@ -53,14 +53,14 @@
     </p>
     <div class="not-prose space-y-4">
       <Alert.Root variant="warning">
-        <TriangleAlert />
+        <TriangleAlertIcon />
         <Alert.Description>
           Note that consent is user-specific. Nevertheless, <em>any</em> draft administrator may
           promote, demote, and remove <em>any</em> of the candidate senders.
         </Alert.Description>
       </Alert.Root>
       <Alert.Root variant="warning">
-        <TriangleAlert />
+        <TriangleAlertIcon />
         <Alert.Description>
           Google sets <a
             target="_blank"
@@ -76,7 +76,7 @@
     <DesignateForm {senders} />
   {:else}
     <Alert.Root variant="destructive">
-      <CircleAlert />
+      <CircleAlertIcon />
       <Alert.Description>There are no candidate senders yet.</Alert.Description>
     </Alert.Root>
   {/if}

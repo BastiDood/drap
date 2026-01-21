@@ -1,6 +1,6 @@
 <script lang="ts">
-  import ArrowUpFromLine from '@lucide/svelte/icons/arrow-up-from-line';
-  import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
+  import ArrowUpFromLineIcon from '@lucide/svelte/icons/arrow-up-from-line';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
 
   import * as Alert from '$lib/components/ui/alert';
   import * as Card from '$lib/components/ui/card';
@@ -21,11 +21,11 @@
 {#if draft !== null}
   <div class="flex flex-row gap-2">
     <Button href={resolve(`/dashboard/drafts/${draft.id}/students.csv`)} download>
-      <ArrowUpFromLine class="size-5" />
+      <ArrowUpFromLineIcon class="size-5" />
       <span>Export Student Ranks</span>
     </Button>
     <Button href={resolve(`/dashboard/drafts/${draft.id}/results.csv`)} download>
-      <ArrowUpFromLine class="size-5" />
+      <ArrowUpFromLineIcon class="size-5" />
       <span>Export Ongoing Draft Results</span>
     </Button>
   </div>
@@ -45,7 +45,7 @@
         historically been set to <strong>5</strong>.
       </p>
       <Alert.Root variant="warning">
-        <TriangleAlert />
+        <TriangleAlertIcon />
         <Alert.Description>
           Please be aware that once the draft starts and students are allowed to register,
           <strong>no labs can be deleted or restored</strong>. Further, once student registration is
@@ -152,7 +152,7 @@
   </div>
 {:else}
   <Alert.Root variant="warning">
-    <TriangleAlert />
+    <TriangleAlertIcon />
     <Alert.Description>
       No students have registered for this draft yet. The draft cannot proceed until at least one
       student participates.

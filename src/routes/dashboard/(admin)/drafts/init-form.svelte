@@ -1,5 +1,5 @@
 <script>
-  import CalendarDays from '@lucide/svelte/icons/calendar-days';
+  import CalendarDaysIcon from '@lucide/svelte/icons/calendar-days';
   import { format } from 'date-fns';
 
   import { assert } from '$lib/assert';
@@ -38,7 +38,7 @@
   <div class="space-y-1">
     <Label for="closes-at">Registration Closing Date</Label>
     <div class="border-input flex overflow-hidden rounded-md border">
-      <div class="bg-muted flex items-center px-3"><CalendarDays class="size-5" /></div>
+      <div class="bg-muted flex items-center px-3"><CalendarDaysIcon class="size-5" /></div>
       <Input
         type="datetime-local"
         required
@@ -51,7 +51,7 @@
   <div class="space-y-1">
     <Label for="rounds">Number of Rounds</Label>
     <div class="border-input flex overflow-hidden rounded-md border">
-      <div class="bg-muted flex items-center px-3"><CalendarDays class="size-5" /></div>
+      <div class="bg-muted flex items-center px-3"><CalendarDaysIcon class="size-5" /></div>
       <Input
         type="number"
         min="1"

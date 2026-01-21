@@ -1,5 +1,5 @@
 <script lang="ts">
-  import ArrowRight from '@lucide/svelte/icons/arrow-right';
+  import ArrowRightIcon from '@lucide/svelte/icons/arrow-right';
   import { toast } from 'svelte-sonner';
 
   import { assert } from '$lib/assert';
@@ -41,7 +41,7 @@
 >
   <input type="hidden" name="draft" value={draft} />
   <Button type="submit" size="lg" class="w-full">
-    <ArrowRight class="size-6" />
+    <ArrowRightIcon class="size-6" />
     <span>Conclude Draft</span>
   </Button>
 </form>

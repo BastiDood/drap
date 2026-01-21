@@ -1,5 +1,5 @@
 <script lang="ts">
-  import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
 
   import * as Alert from '$lib/components/ui/alert';
 
@@ -14,7 +14,7 @@
 <h1 class="scroll-m-20 text-4xl font-extrabold tracking-tight">User Profile</h1>
 {#if studentNumber === null}
   <Alert.Root variant="warning">
-    <TriangleAlert />
+    <TriangleAlertIcon />
     <Alert.Description
       >The student number must be set. Note that this can only be done once.</Alert.Description
     >

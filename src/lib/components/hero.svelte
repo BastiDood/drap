@@ -1,6 +1,6 @@
 <script>
-  import ArrowRight from '@lucide/svelte/icons/arrow-right';
-  import ScrollText from '@lucide/svelte/icons/scroll-text';
+  import ArrowRightIcon from '@lucide/svelte/icons/arrow-right';
+  import ScrollTextIcon from '@lucide/svelte/icons/scroll-text';
 
   import Logo from '$lib/assets/logo-DRAP-colored.svg';
   import { Button } from '$lib/components/ui/button';
@@ -19,11 +19,11 @@
       class="flex flex-col items-center justify-center gap-4 *:w-3/5 *:min-w-fit md:flex-row md:gap-2 *:md:w-auto"
     >
       <Button href={resolve('/dashboard/')} size="lg" class="h-12 px-6">
-        <ArrowRight class="size-5" />
+        <ArrowRightIcon class="size-5" />
         <span>Go to Dashboard</span>
       </Button>
       <Button href={resolve('/history/')} variant="secondary" size="lg" class="h-12 px-6">
-        <ScrollText class="size-5" />
+        <ScrollTextIcon class="size-5" />
         <span>View Draft</span>
       </Button>
     </div>

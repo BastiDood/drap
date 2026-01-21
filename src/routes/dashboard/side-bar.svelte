@@ -1,16 +1,16 @@
 <script lang="ts">
-  import ClipboardList from '@lucide/svelte/icons/clipboard-list';
-  import Clock from '@lucide/svelte/icons/clock';
-  import FlaskConical from '@lucide/svelte/icons/flask-conical';
-  import GraduationCap from '@lucide/svelte/icons/graduation-cap';
-  import Home from '@lucide/svelte/icons/home';
-  import List from '@lucide/svelte/icons/list';
-  import LockKeyhole from '@lucide/svelte/icons/lock-keyhole';
-  import LogIn from '@lucide/svelte/icons/log-in';
-  import LogOut from '@lucide/svelte/icons/log-out';
-  import Mail from '@lucide/svelte/icons/mail';
-  import UserPlus from '@lucide/svelte/icons/user-plus';
-  import Users from '@lucide/svelte/icons/users';
+  import ClipboardListIcon from '@lucide/svelte/icons/clipboard-list';
+  import ClockIcon from '@lucide/svelte/icons/clock';
+  import FlaskConicalIcon from '@lucide/svelte/icons/flask-conical';
+  import GraduationCapIcon from '@lucide/svelte/icons/graduation-cap';
+  import HomeIcon from '@lucide/svelte/icons/home';
+  import ListIcon from '@lucide/svelte/icons/list';
+  import LockKeyholeIcon from '@lucide/svelte/icons/lock-keyhole';
+  import LogInIcon from '@lucide/svelte/icons/log-in';
+  import LogOutIcon from '@lucide/svelte/icons/log-out';
+  import MailIcon from '@lucide/svelte/icons/mail';
+  import UserPlusIcon from '@lucide/svelte/icons/user-plus';
+  import UsersIcon from '@lucide/svelte/icons/users';
 
   import * as Avatar from '$lib/components/ui/avatar';
   import * as Sidebar from '$lib/components/ui/sidebar';
@@ -46,7 +46,7 @@
               <Sidebar.MenuButton isActive={pathname === '/'} tooltipContent="Home">
                 {#snippet child({ props })}
                   <a href={resolve('/')} {...props}>
-                    <Home class="size-5" />
+                    <HomeIcon class="size-5" />
                     <span>Home</span>
                   </a>
                 {/snippet}
@@ -85,7 +85,7 @@
                     >
                       {#snippet child({ props })}
                         <a href={resolve('/dashboard/labs/')} {...props}>
-                          <FlaskConical class="size-5" />
+                          <FlaskConicalIcon class="size-5" />
                           <span>Labs</span>
                         </a>
                       {/snippet}
@@ -98,7 +98,7 @@
                     >
                       {#snippet child({ props })}
                         <a href={resolve('/dashboard/users/')} {...props}>
-                          <Users class="size-5" />
+                          <UsersIcon class="size-5" />
                           <span>Users</span>
                         </a>
                       {/snippet}
@@ -111,7 +111,7 @@
                     >
                       {#snippet child({ props })}
                         <a href={resolve('/dashboard/drafts/')} {...props}>
-                          <ClipboardList class="size-5" />
+                          <ClipboardListIcon class="size-5" />
                           <span>Drafts</span>
                         </a>
                       {/snippet}
@@ -124,7 +124,7 @@
                     >
                       {#snippet child({ props })}
                         <a href={resolve('/dashboard/email/')} {...props}>
-                          <Mail class="size-5" />
+                          <MailIcon class="size-5" />
                           <span>Email</span>
                         </a>
                       {/snippet}
@@ -138,7 +138,7 @@
                     >
                       {#snippet child({ props })}
                         <a href={resolve('/dashboard/ranks/')} {...props}>
-                          <List class="size-5" />
+                          <ListIcon class="size-5" />
                           <span>Ranks</span>
                         </a>
                       {/snippet}
@@ -153,7 +153,7 @@
                   >
                     {#snippet child({ props })}
                       <a href={resolve('/dashboard/lab/')} {...props}>
-                        <FlaskConical class="size-5" />
+                        <FlaskConicalIcon class="size-5" />
                         <span>Lab</span>
                       </a>
                     {/snippet}
@@ -167,7 +167,7 @@
                     >
                       {#snippet child({ props })}
                         <a href={resolve('/dashboard/students/')} {...props}>
-                          <GraduationCap class="size-5" />
+                          <GraduationCapIcon class="size-5" />
                           <span>Students</span>
                         </a>
                       {/snippet}
@@ -184,7 +184,7 @@
               >
                 {#snippet child({ props })}
                   <a href={resolve('/history/')} {...props}>
-                    <Clock class="size-5" />
+                    <ClockIcon class="size-5" />
                     <span>History</span>
                   </a>
                 {/snippet}
@@ -195,7 +195,7 @@
               <Sidebar.MenuButton isActive={pathname === '/privacy/'} tooltipContent="Privacy">
                 {#snippet child({ props })}
                   <a href={resolve('/privacy/')} {...props}>
-                    <LockKeyhole class="size-5" />
+                    <LockKeyholeIcon class="size-5" />
                     <span>Privacy</span>
                   </a>
                 {/snippet}
@@ -230,7 +230,7 @@
                   size="icon"
                   class="size-full rounded-full"
                 >
-                  <UserPlus class="size-5" />
+                  <UserPlusIcon class="size-5" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent side="right">Create Dummy User</TooltipContent>
@@ -245,7 +245,7 @@
               size="icon"
               class="size-full rounded-full"
             >
-              <LogIn class="size-5" />
+              <LogInIcon class="size-5" />
             </Button>
           </TooltipTrigger>
           <TooltipContent side="right">Login</TooltipContent>
@@ -267,7 +267,7 @@
           <Tooltip>
             <TooltipTrigger>
               <Button type="submit" variant="outline" size="icon" class="size-full rounded-full">
-                <LogOut class="size-5" />
+                <LogOutIcon class="size-5" />
               </Button>
             </TooltipTrigger>
             <TooltipContent side="right">Logout</TooltipContent>

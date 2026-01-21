@@ -1,5 +1,5 @@
 <script>
-  import PlusCircle from '@lucide/svelte/icons/plus-circle';
+  import PlusCircleIcon from '@lucide/svelte/icons/plus-circle';
   import { toast } from 'svelte-sonner';
 
   import * as Card from '$lib/components/ui/card';
@@ -51,7 +51,7 @@
         />
       </div>
       <Button type="submit" class="w-full">
-        <PlusCircle class="size-5" />
+        <PlusCircleIcon class="size-5" />
         <span>Create Lab</span>
       </Button>
     </form>

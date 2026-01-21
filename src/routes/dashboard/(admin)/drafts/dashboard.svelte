@@ -1,9 +1,9 @@
 <script lang="ts">
-  import CheckCircle from '@lucide/svelte/icons/check-circle';
-  import CircleHelp from '@lucide/svelte/icons/circle-help';
-  import FlaskConical from '@lucide/svelte/icons/flask-conical';
-  import GraduationCap from '@lucide/svelte/icons/graduation-cap';
-  import Paperclip from '@lucide/svelte/icons/paperclip';
+  import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
+  import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
+  import FlaskConicalIcon from '@lucide/svelte/icons/flask-conical';
+  import GraduationCapIcon from '@lucide/svelte/icons/graduation-cap';
+  import PaperclipIcon from '@lucide/svelte/icons/paperclip';
   import type { ComponentProps } from 'svelte';
 
   import * as Accordion from '$lib/components/ui/accordion';
@@ -53,15 +53,15 @@
 >
   <Tabs.List>
     <Tabs.Trigger value={TabType.Students}>
-      <GraduationCap class="size-5" />
+      <GraduationCapIcon class="size-5" />
       <span>Registered Students</span>
     </Tabs.Trigger>
     <Tabs.Trigger value={TabType.Labs}>
-      <FlaskConical class="size-5" />
+      <FlaskConicalIcon class="size-5" />
       <span>Laboratories</span>
     </Tabs.Trigger>
     <Tabs.Trigger value={TabType.Logs}>
-      <Paperclip class="size-5" />
+      <PaperclipIcon class="size-5" />
       <span>System Logs</span>
     </Tabs.Trigger>
   </Tabs.List>
@@ -69,7 +69,7 @@
     <Accordion.Root type="multiple">
       <Accordion.Item value="pending-selection">
         <Accordion.Trigger>
-          <CheckCircle class="size-5" />
+          <CheckCircleIcon class="size-5" />
           <span>Pending Selection ({available.length}/{total})</span>
         </Accordion.Trigger>
         <Accordion.Content>
@@ -82,7 +82,7 @@
       </Accordion.Item>
       <Accordion.Item value="already-drafted">
         <Accordion.Trigger>
-          <CircleHelp class="size-5" />
+          <CircleHelpIcon class="size-5" />
           <span>Already Drafted ({selected.length}/{total})</span>
         </Accordion.Trigger>
         <Accordion.Content>

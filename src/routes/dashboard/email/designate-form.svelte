@@ -1,7 +1,7 @@
 <script lang="ts" context="module">
-  import ArrowDown from '@lucide/svelte/icons/arrow-down';
-  import ArrowUp from '@lucide/svelte/icons/arrow-up';
-  import X from '@lucide/svelte/icons/x';
+  import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
+  import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
+  import XIcon from '@lucide/svelte/icons/x';
   import type { Component } from 'svelte';
 
   import { SenderAction } from './constants';
@@ -21,14 +21,14 @@
           buttonClass: 'bg-warning text-warning-foreground hover:bg-warning/80',
           cardClass: 'border border-border bg-muted',
           text: 'Demote',
-          icon: ArrowDown,
+          icon: ArrowDownIcon,
         }
       : {
           action: SenderAction.Promote,
           buttonClass: 'bg-success text-success-foreground hover:bg-success/80',
           cardClass: 'bg-muted',
           text: 'Promote',
-          icon: ArrowUp,
+          icon: ArrowUpIcon,
         };
   }
 </script>
@@ -93,7 +93,7 @@
           {disabled}
           formaction="/dashboard/email/?/remove"
         >
-          <X class="size-4" />
+          <XIcon class="size-4" />
           <span>Remove</span>
         </Button>
       </form>

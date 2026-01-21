@@ -1,13 +1,13 @@
 <script lang="ts">
-  import CalendarDays from '@lucide/svelte/icons/calendar-days';
-  import CheckCircle from '@lucide/svelte/icons/check-circle';
-  import Clock from '@lucide/svelte/icons/clock';
-  import Cog from '@lucide/svelte/icons/cog';
-  import RefreshCw from '@lucide/svelte/icons/refresh-cw';
-  import Scale from '@lucide/svelte/icons/scale';
-  import Sparkles from '@lucide/svelte/icons/sparkles';
-  import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
-  import Users from '@lucide/svelte/icons/users';
+  import CalendarDaysIcon from '@lucide/svelte/icons/calendar-days';
+  import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
+  import ClockIcon from '@lucide/svelte/icons/clock';
+  import CogIcon from '@lucide/svelte/icons/cog';
+  import RefreshCwIcon from '@lucide/svelte/icons/refresh-cw';
+  import ScaleIcon from '@lucide/svelte/icons/scale';
+  import SparklesIcon from '@lucide/svelte/icons/sparkles';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
+  import UsersIcon from '@lucide/svelte/icons/users';
   import { format, fromUnixTime, getUnixTime } from 'date-fns';
   import { groupby } from 'itertools';
 
@@ -47,7 +47,7 @@
   {@const { endIsoString, endDateTime } = end}
   <!-- Concluded Draft -->
   <Alert.Root variant="success">
-    <CheckCircle />
+    <CheckCircleIcon />
     <Alert.Description>
       This draft was held from <strong
         ><time datetime={startIsoString}>{startDateTime}</time></strong
@@ -59,7 +59,7 @@
   <!-- Lottery Stage -->
   <Progress value={100} />
   <div class="border-secondary bg-secondary/10 flex items-center gap-3 rounded-lg border px-2 py-1">
-    <Sparkles class="size-8" />
+    <SparklesIcon class="size-8" />
     <div>
       This draft started last <strong><time datetime={startIsoString}>{startDateTime}</time></strong
       > and is currently in the lottery stage.
@@ -68,7 +68,7 @@
 {:else if currRound === 0}
   <!-- Registration Stage -->
   <div class="border-accent bg-accent/10 flex items-center gap-3 rounded-lg border px-2 py-1">
-    <Clock class="size-8" />
+    <ClockIcon class="size-8" />
     <div>
       This draft started last <strong><time datetime={startIsoString}>{startDateTime}</time></strong
       > and is currently in the registration stage.
@@ -78,7 +78,7 @@
   <!-- Regular Draft Process -->
   <Progress max={maxRounds} value={currRound} />
   <div class="bg-secondary/10 flex items-center gap-3 rounded-lg px-2 py-1">
-    <Scale class="size-8" />
+    <ScaleIcon class="size-8" />
     <div>
       This draft started last <strong><time datetime={startIsoString}>{startDateTime}</time></strong
       >
@@ -93,7 +93,7 @@
       <li class="ms-6 mb-10">
         <span
           class="bg-primary ring-background absolute -start-3 flex size-6 items-center justify-center rounded-full ring-2"
-          ><CalendarDays class="text-primary-foreground size-4" /></span
+          ><CalendarDaysIcon class="text-primary-foreground size-4" /></span
         >
         <h4 class="mb-2 scroll-m-20 text-xl font-semibold tracking-tight">
           <time datetime={endIsoString}>{endDateTime}</time>
@@ -111,7 +111,7 @@
       <li class="ms-6 mb-10">
         <span
           class="bg-primary ring-background absolute -start-3 flex size-6 items-center justify-center rounded-full ring-2"
-          ><CalendarDays class="text-primary-foreground size-4" /></span
+          ><CalendarDaysIcon class="text-primary-foreground size-4" /></span
         >
         <h4 class="mb-2 scroll-m-20 text-xl font-semibold tracking-tight">
           <time datetime={date.toISOString()}>{heading}</time>
@@ -123,7 +123,7 @@
               {#if isSystem}
                 <li class="border-warning bg-warning/10 rounded-lg border px-3 py-1.5">
                   <div class="flex items-center gap-3">
-                    <Cog class="size-4" />
+                    <CogIcon class="size-4" />
                     <span>
                       The system has skipped the <strong class="uppercase">{labId}</strong> for the {ordinal}
                       round due to insufficient quota and/or zero demand.
@@ -133,7 +133,7 @@
               {:else}
                 <li class="border-secondary bg-secondary/10 rounded-lg border px-3 py-1.5">
                   <div class="flex items-center gap-3">
-                    <Users class="size-4" />
+                    <UsersIcon class="size-4" />
                     <span>
                       The <strong class="uppercase">{labId}</strong> has selected their {ordinal} batch
                       of draftees.
@@ -144,7 +144,7 @@
             {:else if isSystem}
               <li class="border-destructive bg-destructive/10 rounded-lg border px-3 py-1.5">
                 <div class="flex items-center gap-3">
-                  <TriangleAlert class="size-4" />
+                  <TriangleAlertIcon class="size-4" />
                   <span>
                     A system-automated event for the <strong class="uppercase">{labId}</strong>
                     occurred during a lottery. This should be impossible. Kindly
@@ -158,7 +158,7 @@
             {:else}
               <li class="border-accent bg-accent/10 rounded-lg border px-3 py-1.5">
                 <div class="flex items-center gap-3">
-                  <RefreshCw class="size-4" />
+                  <RefreshCwIcon class="size-4" />
                   <span>
                     The <strong class="uppercase">{labId}</strong> has obtained a batch of draftees from
                     the lottery round.
@@ -173,7 +173,7 @@
     <li class="ms-6 mb-10">
       <span
         class="bg-primary ring-background absolute -start-3 flex size-6 items-center justify-center rounded-full ring-2"
-        ><CalendarDays class="text-primary-foreground size-4" /></span
+        ><CalendarDaysIcon class="text-primary-foreground size-4" /></span
       >
       <h4 class="mb-2 scroll-m-20 text-xl font-semibold tracking-tight">
         <time datetime={startIsoString}>{startDateTime}</time>

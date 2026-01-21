@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Send from '@lucide/svelte/icons/send';
+  import SendIcon from '@lucide/svelte/icons/send';
   import { toast } from 'svelte-sonner';
 
   import { assert } from '$lib/assert';
@@ -59,7 +59,7 @@
   <div class="space-y-2">
     <Label for="faculty-email">Email</Label>
     <div class="border-input flex overflow-hidden rounded-md border">
-      <div class="bg-muted flex items-center px-3"><Send class="size-5" /></div>
+      <div class="bg-muted flex items-center px-3"><SendIcon class="size-5" /></div>
       <Input
         type="email"
         required

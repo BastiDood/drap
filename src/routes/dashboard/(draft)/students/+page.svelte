@@ -1,5 +1,5 @@
 <script lang="ts">
-  import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
   import { SvelteSet } from 'svelte/reactivity';
 
   import * as Alert from '$lib/components/ui/alert';
@@ -24,7 +24,7 @@
 
 {#if currRound === null}
   <Alert.Root variant="warning">
-    <TriangleAlert />
+    <TriangleAlertIcon />
     <Alert.Description>
       The draft is now in the lottery stage. Kindly contact the draft administrators on how to
       proceed.
@@ -32,7 +32,7 @@
   </Alert.Root>
 {:else if currRound === 0}
   <Alert.Root variant="warning">
-    <TriangleAlert />
+    <TriangleAlertIcon />
     <Alert.Description>
       Students are still registering for this draft. Kindly wait for the draft administrators to
       officially open the draft.
@@ -40,7 +40,7 @@
   </Alert.Root>
 {:else if isDone}
   <Alert.Root variant="warning">
-    <TriangleAlert />
+    <TriangleAlertIcon />
     <Alert.Description>
       This lab either has no draft slots remaining or has already submitted their picks for this
       round. No action is required until the next one.
@@ -72,7 +72,7 @@
   </div>
 {:else}
   <Alert.Root variant="warning">
-    <TriangleAlert />
+    <TriangleAlertIcon />
     <Alert.Description>
       No students have selected this lab in this round. No action is required until the next round.
     </Alert.Description>

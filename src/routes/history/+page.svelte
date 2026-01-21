@@ -1,9 +1,9 @@
 <script lang="ts">
-  import CheckCircle from '@lucide/svelte/icons/check-circle';
-  import Clock from '@lucide/svelte/icons/clock';
-  import Scale from '@lucide/svelte/icons/scale';
-  import Sparkles from '@lucide/svelte/icons/sparkles';
-  import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
+  import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
+  import ClockIcon from '@lucide/svelte/icons/clock';
+  import ScaleIcon from '@lucide/svelte/icons/scale';
+  import SparklesIcon from '@lucide/svelte/icons/sparkles';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
   import { format } from 'date-fns';
 
   import * as Alert from '$lib/components/ui/alert';
@@ -24,7 +24,7 @@
           {@const end = format(activePeriodEnd, 'PPPpp')}
           <li class="bg-muted rounded-lg">
             <a href={resolve(`/history/${draftId}/`)} class="flex items-center gap-3 px-2 py-1">
-              <CheckCircle class="size-8" />
+              <CheckCircleIcon class="size-8" />
               <span
                 ><strong>Draft #{draftId}</strong> was held from
                 <time datetime={activePeriodStart.toISOString()}>{start}</time> –
@@ -36,7 +36,7 @@
           <!-- Lottery Stage -->
           <li class="border-secondary bg-secondary/10 rounded-lg border">
             <a href={resolve(`/history/${draftId}/`)} class="flex items-center gap-3 px-2 py-1">
-              <Sparkles class="size-8" />
+              <SparklesIcon class="size-8" />
               <span
                 ><strong>Draft #{draftId}</strong> started on
                 <time datetime={activePeriodStart.toISOString()}>{start}</time> and is now in the
@@ -48,7 +48,7 @@
           <!-- Registration Stage -->
           <li class="border-accent bg-accent/10 rounded-lg border">
             <a href={resolve(`/history/${draftId}/`)} class="flex items-center gap-3 px-2 py-1">
-              <Clock class="size-8" />
+              <ClockIcon class="size-8" />
               <span
                 ><strong>Draft #{draftId}</strong> started on
                 <time datetime={activePeriodStart.toISOString()}>{start}</time> and is currently waiting
@@ -60,7 +60,7 @@
           <!-- Regular Draft Process -->
           <li class="bg-secondary/10 rounded-lg">
             <a href={resolve(`/history/${draftId}/`)} class="flex items-center gap-3 px-2 py-1">
-              <Scale class="size-8" />
+              <ScaleIcon class="size-8" />
               <span
                 ><strong>Draft #{draftId}</strong> started on
                 <time datetime={activePeriodStart.toISOString()}>{start}</time>
@@ -74,7 +74,7 @@
   </nav>
 {:else}
   <Alert.Root variant="warning">
-    <TriangleAlert />
+    <TriangleAlertIcon />
     <Alert.Description
       >No drafts have been recorded yet. Please check again later.</Alert.Description
     >
