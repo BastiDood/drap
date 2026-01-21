@@ -19,7 +19,6 @@
     selected: StudentUser[];
   }
 
-  // eslint-disable-next-line prefer-const
   let { round, lab, available, selected = $bindable() }: Props = $props();
 
   run(() => {

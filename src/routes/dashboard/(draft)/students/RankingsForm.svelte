@@ -20,7 +20,6 @@
     drafteeIds: SvelteSet<schema.User['id']>;
   }
 
-  // eslint-disable-next-line prefer-const
   let { disabled, draft, students, drafteeIds = $bindable() }: Props = $props();
 </script>
 

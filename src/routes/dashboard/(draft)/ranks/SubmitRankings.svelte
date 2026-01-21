@@ -22,7 +22,6 @@
     availableLabs: Lab[];
   }
 
-  // eslint-disable-next-line prefer-const
   let { draftId, maxRounds, availableLabs = $bindable() }: Props = $props();
 
   const toaster = useToaster();
