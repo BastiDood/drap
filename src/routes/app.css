@@ -187,15 +187,24 @@
 
 @layer components {
   .preset-tonal-primary {
-    @apply bg-primary/50 border-primary;
+    @apply bg-primary/40 dark:bg-primary/50 dark:border-primary border-current/90;
+    color: hsl(from var(--primary) h 90% 15%);
+  }
+  .dark .preset-tonal-primary {
     color: hsl(from var(--primary) h 90% 80%);
   }
   .preset-tonal-secondary {
-    @apply bg-secondary/30 border-secondary/60;
+    @apply bg-secondary/30 dark:bg-secondary/30 dark:border-secondary/60 border-current/80;
+    color: hsl(from var(--secondary) h 30% 30%);
+  }
+  .dark .preset-tonal-secondary {
     color: hsl(from var(--secondary) h 70% 90%);
   }
   .preset-tonal-accent {
-    @apply bg-accent/60 border-accent;
+    @apply bg-accent/40 dark:bg-accent/60 dark:border-accent border-current/60;
+    color: hsl(from var(--accent) h 50% 50%);
+  }
+  .dark .preset-tonal-accent {
     color: hsl(from var(--accent) h 100% 85%);
   }
 }
