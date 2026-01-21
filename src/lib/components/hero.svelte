@@ -8,7 +8,7 @@
 </script>
 
 <div
-  class="not-prose bg-dcs m-6 flex min-h-104 flex-col items-center justify-center rounded-2xl bg-[rgb(30,79,65)] bg-cover bg-center p-6 text-center bg-blend-multiply shadow-inner shadow-black/30"
+  class="not-prose bg-dcs m-6 flex min-h-104 flex-col items-center justify-center rounded-2xl bg-[rgb(30,79,65)] bg-cover bg-center p-6 text-center bg-blend-multiply shadow-md shadow-black/30 dark:shadow-inner"
 >
   <img src={Logo} alt="Logo of DRAP" class="w-4/5 max-w-136 md:-mb-8" />
   <div>
