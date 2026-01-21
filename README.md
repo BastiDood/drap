@@ -18,10 +18,6 @@ Welcome to DRAP: the Draft Ranking Automated Processor for the [University of th
 
 ## Development
 
-The [main web application](./src) is powered by SvelteKit. Data persistence is backed by PostgreSQL.
-
-### Production Architecture
-
 ```mermaid
 flowchart TD
     subgraph External
@@ -30,20 +26,22 @@ flowchart TD
     end
 
     subgraph Production
-        App[DRAP :3000]
+        SvelteKit[DRAP :3000]
         Inngest[Inngest :8288]
         Postgres[(PostgreSQL :5432)]
         Redis[(Redis :6379)]
+        SQLite[(SQLite)]
         O2[OpenObserve :5080]
         Drizzle[Drizzle Gateway :4983]
     end
 
-    User --> App
-    App --> Google
-    App --> Postgres
-    App <--> Inngest
-    App -.->|OTEL| O2
+    User --> SvelteKit
+    SvelteKit --> Google
+    SvelteKit --> Postgres
+    SvelteKit <--> Inngest
+    SvelteKit -.->|OpenTelemetry| O2
     Inngest --> Redis
+    Inngest --> SQLite
     Drizzle --> Postgres
 ```
 
