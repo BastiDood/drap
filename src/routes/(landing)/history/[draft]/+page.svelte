@@ -1,6 +1,5 @@
 <script lang="ts">
   import CalendarDaysIcon from '@lucide/svelte/icons/calendar-days';
-  import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
   import ClockIcon from '@lucide/svelte/icons/clock';
   import CogIcon from '@lucide/svelte/icons/cog';
   import RefreshCwIcon from '@lucide/svelte/icons/refresh-cw';
@@ -11,7 +10,7 @@
   import { format, fromUnixTime, getUnixTime } from 'date-fns';
   import { groupby } from 'itertools';
 
-  import * as Alert from '$lib/components/ui/alert';
+  import Callout from '$lib/components/callout.svelte';
   import { getOrdinalSuffix } from '$lib/ordinal';
   import { Progress } from '$lib/components/ui/progress';
 
@@ -42,19 +41,14 @@
   );
 </script>
 
-<h2 class="scroll-m-20 text-3xl font-semibold tracking-tight">Draft #{did}</h2>
+<h2 class="mb-8 scroll-m-20 text-3xl font-semibold tracking-tight">Draft #{did}</h2>
 {#if end !== null}
   {@const { endIsoString, endDateTime } = end}
   <!-- Concluded Draft -->
-  <Alert.Root variant="success">
-    <CheckCircleIcon />
-    <Alert.Description>
-      This draft was held from <strong
-        ><time datetime={startIsoString}>{startDateTime}</time></strong
-      >
-      – <strong><time datetime={endIsoString}>{endDateTime}</time></strong> over {maxRounds} rounds.
-    </Alert.Description>
-  </Alert.Root>
+  <Callout variant="success">
+    This draft was held from <strong><time datetime={startIsoString}>{startDateTime}</time></strong
+    >–<strong><time datetime={endIsoString}>{endDateTime}</time></strong> over {maxRounds} rounds.
+  </Callout>
 {:else if currRound === null}
   <!-- Lottery Stage -->
   <Progress value={100} />

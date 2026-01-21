@@ -80,8 +80,5 @@
     </ul>
   </nav>
 {:else}
-  <Callout
-    variant="warning"
-    description="No drafts have been recorded yet. Please check again later."
-  />
+  <Callout variant="warning">No drafts have been recorded yet. Please check again later.</Callout>
 {/if}
