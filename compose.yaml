@@ -26,7 +26,7 @@ services:
     restart: always
 
   o2:
-    image: public.ecr.aws/zinclabs/openobserve:v0.50.1
+    image: public.ecr.aws/zinclabs/openobserve:v0.50.2
     environment:
       ZO_DATA_DIR: /data
       # Development-only credentials!
