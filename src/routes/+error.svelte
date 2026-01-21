@@ -1,11 +1,20 @@
 <script>
-  import ErrorAlert from '$lib/alerts/Error.svelte';
+  import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
+
+  import * as Alert from '$lib/components/ui/alert';
   import { page } from '$app/state';
+
   const { status, error } = $derived(page);
 </script>
 
 {#if error !== null}
-  <ErrorAlert><strong>{status}:</strong> {error.message}</ErrorAlert>
+  <Alert.Root variant="destructive">
+    <CircleAlertIcon />
+    <Alert.Description><strong>{status}:</strong> {error.message}</Alert.Description>
+  </Alert.Root>
 {:else}
-  <ErrorAlert><strong>{status}</strong></ErrorAlert>
+  <Alert.Root variant="destructive">
+    <CircleAlertIcon />
+    <Alert.Description><strong>{status}</strong></Alert.Description>
+  </Alert.Root>
 {/if}

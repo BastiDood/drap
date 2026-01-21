@@ -1,4 +1,3 @@
-import css from '@eslint/css';
 import globals from 'globals';
 import html from '@html-eslint/eslint-plugin';
 import imsort from '@bastidood/eslint-plugin-imsort';
@@ -7,7 +6,6 @@ import prettier from 'eslint-config-prettier';
 import svelte from 'eslint-plugin-svelte';
 import ts from 'typescript-eslint';
 import { defineConfig } from 'eslint/config';
-import { tailwind4 } from 'tailwind-csstree';
 
 import svelteConfig from './svelte.config.js';
 
@@ -53,18 +51,6 @@ export default defineConfig(
       '@html-eslint/require-frame-title': 'error',
       '@html-eslint/require-input-label': 'error',
       '@html-eslint/require-meta-viewport': 'error',
-    },
-  },
-  {
-    files: ['**/*.css'],
-    plugins: { css },
-    language: 'css/css',
-    languageOptions: { customSyntax: tailwind4 },
-    rules: {
-      ...css.configs.recommended.rules,
-      'css/prefer-logical-properties': 'error',
-      'css/no-invalid-at-rules': 'off',
-      'css/no-invalid-at-rule-placement': 'off',
     },
   },
   {
@@ -115,7 +101,7 @@ export default defineConfig(
       'no-div-regex': 'error',
       'no-duplicate-imports': 'error',
       'no-else-return': 'error',
-      'no-empty-function': 'error',
+      'no-empty-function': 'off',
       'no-empty-static-block': 'error',
       'no-eq-null': 'error',
       'no-eval': 'error',
@@ -167,7 +153,7 @@ export default defineConfig(
       'one-var': ['error', 'never'],
       'operator-assignment': 'error',
       'prefer-arrow-callback': 'error',
-      'prefer-const': 'error',
+      'prefer-const': 'off',
       'prefer-destructuring': 'error',
       'prefer-exponentiation-operator': 'error',
       'prefer-named-capture-group': 'error',
@@ -198,5 +184,6 @@ export default defineConfig(
         svelteConfig,
       },
     },
+    rules: { 'svelte/prefer-const': 'error' },
   },
 );

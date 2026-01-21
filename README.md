@@ -26,10 +26,11 @@ At runtime, the server requires the following environment variables to be presen
 
 | **Variable**                 | **Description**                                                  |
 | ---------------------------- | ---------------------------------------------------------------- |
+| `ORIGIN`                     | Server origin (e.g., `https://drap.dcs.upd.edu.ph`).             |
+| `PUBLIC_ORIGIN`              | Public origin for meta tags (same as `ORIGIN`).                  |
 | `DRIZZLE_DEBUG`              | Enables verbose logs from Drizzle queries.                       |
 | `GOOGLE_OAUTH_CLIENT_ID`     | OAuth 2.0 credentials retrieved from the [Google Cloud Console]. |
 | `GOOGLE_OAUTH_CLIENT_SECRET` | OAuth 2.0 credentials retrieved from the [Google Cloud Console]. |
-| `GOOGLE_OAUTH_REDIRECT_URI`  | OAuth 2.0 credentials retrieved from the [Google Cloud Console]. |
 | `INNGEST_EVENT_KEY`          | Inngest event signing key.                                       |
 | `INNGEST_SIGNING_KEY`        | Inngest webhook signing key.                                     |
 | `POSTGRES_URL`               | The connection string to the PostgreSQL instance.                |
@@ -37,7 +38,7 @@ At runtime, the server requires the following environment variables to be presen
 [Google Cloud Console]: https://console.cloud.google.com/
 
 > [!IMPORTANT]
-> The `GOOGLE_OAUTH_REDIRECT_URI` must point to `/oauth/callback/`.
+> The OAuth redirect URI is computed as `${ORIGIN}/dashboard/oauth/callback`.
 
 The following variables are optional in development, but _highly_ recommended in the production environment for [OpenTelemetry](#opentelemetry-instrumentation) integration. The standard environment variables are supported, such as (but not limited to):
 
@@ -133,6 +134,9 @@ To enable full observability in local development:
    pnpm dev
    ```
 3. View traces and logs at `http://localhost:5080`.
+
+> [!WARNING]
+> The `OTEL_*` environment variables **must** be set in the shell before running `pnpm dev` or `pnpm preview`. They cannot be loaded from `.env` files because the OpenTelemetry instrumentation initializes before SvelteKit processes environment files.
 
 ## Acknowledgements
 

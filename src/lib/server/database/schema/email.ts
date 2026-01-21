@@ -13,7 +13,7 @@ export const candidateSender = email.table('candidate_sender', {
     .primaryKey(),
   accessToken: text('access_token').notNull(),
   refreshToken: text('refresh_token').notNull(),
-  scopes: text('scopes').array().notNull(),
+  scopes: text('scopes').array().notNull().default([]),
   expiration: timestamp('expiration', { mode: 'date', withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true }),

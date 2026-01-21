@@ -1,11 +1,13 @@
 <script lang="ts">
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
   import { format } from 'date-fns';
 
-  import WarningAlert from '$lib/alerts/Warning.svelte';
+  import * as Alert from '$lib/components/ui/alert';
+  import { Button } from '$lib/components/ui/button';
 
-  import CreateForm from './CreateForm.svelte';
-  import QuotaForm from './QuotaForm.svelte';
-  import RestoreForm from './RestoreForm.svelte';
+  import CreateForm from './create-form.svelte';
+  import QuotaForm from './quota-form.svelte';
+  import RestoreForm from './restore-form.svelte';
 
   const { data } = $props();
   const { draft, labs } = $derived(data);
@@ -21,23 +23,19 @@
   <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-[56ch_1fr]">
     <CreateForm />
     <div class="flex w-full flex-col gap-y-4">
-      <label
-        class="btn preset-filled-surface-500 flex w-48 cursor-pointer items-center"
-        for="see-deleted"
+      <Button
+        variant="secondary"
+        class="w-48"
+        onclick={() => {
+          isRestoreFormVisible = !isRestoreFormVisible;
+        }}
       >
-        <input
-          class="hidden"
-          type="checkbox"
-          name="see-deleted"
-          id="see-deleted"
-          bind:checked={isRestoreFormVisible}
-        />
         {#if isRestoreFormVisible}
-          <p>Set Lab Quotas</p>
+          Set Lab Quotas
         {:else}
-          <p>See Deleted Labs</p>
+          See Deleted Labs
         {/if}
-      </label>
+      </Button>
       {#if isRestoreFormVisible}
         <RestoreForm {deletedLabs} />
       {:else}
@@ -51,12 +49,13 @@
   {@const { id: draftId, activePeriodStart, currRound, maxRounds } = draft}
   {@const startDate = format(activePeriodStart, 'PPP')}
   {@const startTime = format(activePeriodStart, 'pp')}
-  <WarningAlert>
-    <span>
+  <Alert.Root variant="warning">
+    <TriangleAlertIcon />
+    <Alert.Description>
       <strong>Draft #{draftId}</strong> started last <strong>{startDate}</strong> at
       <strong>{startTime}</strong> and is now in Round <strong>{currRound}</strong> of
       <strong>{maxRounds}</strong>. It's unsafe to update the lab quota while a draft is in
       progress.
-    </span>
-  </WarningAlert>
+    </Alert.Description>
+  </Alert.Root>
 {/if}

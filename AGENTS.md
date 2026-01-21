@@ -24,7 +24,7 @@ Docker (prod): `docker compose --profile prod up --detach`
 
 ## Tech Stack
 
-- **Framework:** SvelteKit 2 + Svelte 5, TailwindCSS + Skeleton UI
+- **Framework:** SvelteKit 2 + Svelte 5, Tailwind 4 + shadcn-svelte (bits-ui)
 - **Database:** PostgreSQL with Drizzle ORM
 - **Jobs:** Inngest for event-driven background processing
 - **Auth:** Google OAuth 2.0 (restricted to `@up.edu.ph` emails)
@@ -61,15 +61,17 @@ Inngest-based event-driven notifications.
 ### Route Structure
 
 - `/` - Landing page
-- `/oauth/` - Google OAuth flow
+- `/history/` - Draft history index
+- `/history/[draft]` - Past draft results
+- `/privacy/` - Privacy policy
 - `/dashboard/` - Main app
-  - `(admin)/` - Admin routes: `/labs`, `/drafts`, `/users`
+  - `(admin)/` - Admin routes: `/labs`, `/drafts`
   - `(draft)/` - Student routes: `/ranks`, `/students`
   - `/email` - Email sender config
   - `/lab` - Lab management (faculty)
-- `/profile/` - User profile
-- `/history/[draft]` - Past draft results
-- `/privacy/` - Privacy policy
+  - `/oauth` - Google OAuth flow
+  - `/profile` - User profile
+  - `/users` - User management (admin)
 
 ### Draft Process Flow
 
@@ -90,20 +92,21 @@ Inngest-based event-driven notifications.
 
 ## Environment Variables
 
-| Variable                     | Description                      |
-| ---------------------------- | -------------------------------- |
-| `POSTGRES_URL`               | PostgreSQL connection string     |
-| `GOOGLE_OAUTH_CLIENT_ID`     | Google OAuth credentials         |
-| `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth credentials         |
-| `GOOGLE_OAUTH_REDIRECT_URI`  | Must point to `/oauth/callback/` |
-| `INNGEST_EVENT_KEY`          | Inngest event signing key        |
-| `INNGEST_SIGNING_KEY`        | Inngest webhook signing key      |
-| `DRIZZLE_DEBUG`              | Enable verbose Drizzle logs      |
+| Variable                     | Description                             |
+| ---------------------------- | --------------------------------------- |
+| `ORIGIN`                     | Server origin (computes OAuth redirect) |
+| `PUBLIC_ORIGIN`              | Public origin (meta tags)               |
+| `POSTGRES_URL`               | PostgreSQL connection string            |
+| `GOOGLE_OAUTH_CLIENT_ID`     | Google OAuth credentials                |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth credentials                |
+| `INNGEST_EVENT_KEY`          | Inngest event signing key               |
+| `INNGEST_SIGNING_KEY`        | Inngest webhook signing key             |
+| `DRIZZLE_DEBUG`              | Enable verbose Drizzle logs             |
 
 ## Development Notes
 
 - **Dummy user:** `?/dummy` form action creates test user (dev only)
-- **Package manager:** pnpm 10.28.0 enforced
+- **Package manager:** pnpm 10.28.1 enforced
 - **Node version:** 24.13.0
 
 ## Pre-commit Workflow
