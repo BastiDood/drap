@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { ModeWatcher } from 'mode-watcher';
+
   import banner from '$lib/banner.png?url';
   import Footer from '$lib/components/footer.svelte';
   import Navbar from '$lib/components/navbar.svelte';
@@ -8,6 +10,8 @@
 
   const { children } = $props();
 </script>
+
+<ModeWatcher />
 
 <svelte:head>
   <meta property="og:image" content="{ORIGIN}{banner}" />
