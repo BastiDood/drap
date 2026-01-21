@@ -8,11 +8,20 @@ export async function handle({ event, resolve }) {
     const { logger, tracer } = await import('./hooks.telemetry');
 
     await tracer.asyncSpan('http-request', async span => {
+      // eslint-disable-next-line @typescript-eslint/init-declarations
+      let clientAddress: string | undefined;
+      try {
+        clientAddress = getClientAddress();
+      } catch (error) {
+        if (error instanceof Error) logger.error('failed to get client address', error);
+        else throw error;
+      }
+
       span.setAttributes({
         'http.request.id': crypto.randomUUID(),
         'http.request.method': request.method,
         'http.request.url': request.url,
-        'network.client.address': getClientAddress(),
+        'network.client.address': clientAddress,
       });
 
       const realIp = request.headers.get('X-Real-IP');
