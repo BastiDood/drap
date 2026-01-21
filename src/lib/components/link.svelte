@@ -7,6 +7,6 @@
 
 <a
   {...rest}
-  class="decoration-muted-foreground hover:text-secondary-foreground underline underline-offset-3 transition"
+  class="decoration-muted-foreground hover:text-muted-foreground/80 dark:hover:text-secondary underline underline-offset-3 transition"
   >{@render children?.()}</a
 >
