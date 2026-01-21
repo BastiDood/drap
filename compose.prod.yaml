@@ -1,0 +1,101 @@
+# Production overrides for compose.yaml.
+# Invocation: docker compose --file compose.yaml --file compose.prod.yaml up --detach --build
+name: drap
+
+services:
+  postgres:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:8.4.0
+    command:
+      - redis-server
+      - '--appendonly'
+      - 'yes'
+    volumes:
+      - redis:/data
+    restart: always
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  inngest:
+    command:
+      - inngest
+      - start
+      - '--dir'
+      - '/app'
+      - '--sdk-url'
+      - 'http://app:3000/api/inngest'
+    environment:
+      INNGEST_REDIS_URI: redis://redis:6379
+    volumes:
+      - inngest:/app
+    depends_on:
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--spider', 'http://localhost:8288/health']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  o2:
+    environment:
+      ZO_ROOT_USER_EMAIL: ${ZO_ROOT_USER_EMAIL:?required}
+      ZO_ROOT_USER_PASSWORD: ${ZO_ROOT_USER_PASSWORD:?required}
+    healthcheck:
+      test: ['CMD', 'wget', '--quiet', '--spider', 'http://localhost:5080/healthz']
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  drizzle-gateway:
+    image: ghcr.io/drizzle-team/gateway:1.2.0
+    ports:
+      - 4983:4983
+    environment:
+      PORT: 4983
+      STORE_PATH: /app
+      MASTERPASS: ${DRIZZLE_MASTERPASS:?required}
+    volumes:
+      - drizzle-gateway:/app
+    restart: always
+
+  app:
+    build: .
+    ports:
+      - 3000:3000
+    environment:
+      ORIGIN: ${ORIGIN:?required}
+      PUBLIC_ORIGIN: ${ORIGIN:?required}
+      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD:?required}@postgres:5432/postgres
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:?required}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:?required}
+      INNGEST_EVENT_KEY: ${INNGEST_EVENT_KEY:?required}
+      INNGEST_SIGNING_KEY: ${INNGEST_SIGNING_KEY:?required}
+      INNGEST_BASE_URL: http://inngest:8288
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://o2:5080/api/default
+      OTEL_EXPORTER_OTLP_HEADERS: ${OTEL_EXPORTER_OTLP_HEADERS:?required}
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+    depends_on:
+      postgres:
+        condition: service_healthy
+      inngest:
+        condition: service_healthy
+      o2:
+        condition: service_healthy
+    restart: always
+
+volumes:
+  redis:
+  inngest:
+  drizzle-gateway:
