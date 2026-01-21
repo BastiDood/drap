@@ -8,7 +8,7 @@ import {
   type schema,
   updateCandidateSender,
 } from '$lib/server/database';
-import { GoogleOAuthClient } from '$lib/server/google';
+import { GmailScopeError, GoogleOAuthClient } from '$lib/server/google';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
@@ -100,7 +100,14 @@ export const sendEmail = inngest.createFunction(
           });
 
           logger.debug('sending email...');
-          await client.sendEmails(messages);
+          try {
+            await client.sendEmails(messages);
+          } catch (cause) {
+            if (cause instanceof GmailScopeError)
+              throw new NonRetriableError('missing gmail scopes', { cause });
+            throw cause;
+          }
+
           // TODO: Log the result of the bulk operation.
         }),
     ),
