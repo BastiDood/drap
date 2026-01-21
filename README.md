@@ -135,6 +135,9 @@ To enable full observability in local development:
    ```
 3. View traces and logs at `http://localhost:5080`.
 
+> [!WARNING]
+> The `OTEL_*` environment variables **must** be set in the shell before running `pnpm dev` or `pnpm preview`. They cannot be loaded from `.env` files because the OpenTelemetry instrumentation initializes before SvelteKit processes environment files.
+
 ## Acknowledgements
 
 The DRAP project, licensed under the [GNU Affero General Public License v3], was originally developed by [Sebastian Luis S. Ortiz][BastiDood], [Victor Edwin E. Reyes][VeeIsForVanana], and [Ehren A. Castillo][ehrelevant] as a service project under the [UP Center for Student Innovations]. The DRAP [logo](./static/favicon.ico) and [banner](./src/lib/banner.png) were originally designed and created by [Angelica Julianne A. Raborar][Anjellyrika].
