@@ -10,13 +10,20 @@
         success: 'preset-tonal-success',
         warning: 'preset-tonal-warning',
       },
+      border: {
+        sm: 'border-1',
+        md: 'border-2',
+        lg: 'border-4',
+      },
     },
     defaultVariants: {
       variant: 'default',
+      border: 'md',
     },
   });
 
   export type AlertVariant = VariantProps<typeof alertVariants>['variant'];
+  export type AlertBorder = VariantProps<typeof alertVariants>['border'];
 </script>
 
 <script lang="ts">
@@ -28,17 +35,19 @@
     ref = $bindable(null),
     class: className,
     variant = 'default',
+    border = 'md',
     children,
     ...restProps
   }: WithElementRef<HTMLAttributes<HTMLDivElement>> & {
     variant?: AlertVariant;
+    border?: AlertBorder;
   } = $props();
 </script>
 
 <div
   bind:this={ref}
   data-slot="alert"
-  class={cn(alertVariants({ variant }), className)}
+  class={cn(alertVariants({ variant, border }), className)}
   {...restProps}
   role="alert"
 >
