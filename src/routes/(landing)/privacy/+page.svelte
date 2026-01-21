@@ -79,7 +79,7 @@
       If you have questions, concerns, or requests regarding this Privacy Policy or our data
       practices, please contact us through the following channels.
     </p>
-    <p>
+    <address>
       <span>Department of Computer Science</span>
       <br />
       <span>Alumni Engineers Centennial Hall</span>
@@ -92,14 +92,14 @@
       <br />
       <Link href="mailto:info@dcs.upd.edu.ph">info@dcs.upd.edu.ph</Link>
       <br />
-    </p>
+    </address>
     <p>
       Report a privacy security incident or personal data breach using email subject
       “Incident/Breach – Name of the Unit” at <Link href="mailto:dpo.updiliman@up.edu.ph"
         >dpo.updiliman@up.edu.ph</Link
       >.
     </p>
-    <p>
+    <address>
       <span>UP Diliman Data Protection Office</span>
       <br />
       <span>L/GF, PHIVOLCS Bldg.</span>
@@ -111,7 +111,7 @@
       <span>Landline: <Link href="tel:+82553561">8255-3561</Link></span>
       <br />
       <span>Email: <Link href="mailto:dpo.updiliman@up.edu.ph">dpo.updiliman@up.edu.ph</Link></span>
-    </p>
+    </address>
     <p>
       <span>Links to UP Diliman Data Privacy</span>
       <br />
