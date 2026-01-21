@@ -207,4 +207,28 @@
   .dark .preset-tonal-accent {
     color: hsl(from var(--accent) h 100% 85%);
   }
+  .preset-tonal-muted {
+    @apply bg-muted/30 text-foreground/60 dark:text-foreground/80 border-border/60;
+  }
+  .preset-tonal-success {
+    @apply bg-success/40 dark:bg-success/40 border-current/50;
+    color: hsl(from var(--success) h 30% 20%);
+  }
+  .dark .preset-tonal-success {
+    color: hsl(from var(--success) h 90% 80%);
+  }
+  .preset-tonal-destructive {
+    @apply bg-destructive/35 border-destructive/70 dark:bg-destructive/40 dark:border-destructive/90;
+    color: hsl(from var(--destructive) h 90% 35%);
+  }
+  .dark .preset-tonal-destructive {
+    color: hsl(from var(--destructive) h 100% 90%);
+  }
+  .preset-tonal-warning {
+    @apply bg-warning/60 dark:bg-warning/40 border-current/40;
+    color: hsl(from var(--warning) h 60% 20%);
+  }
+  .dark .preset-tonal-warning {
+    color: hsl(from var(--warning) h 100% 75%);
+  }
 }
