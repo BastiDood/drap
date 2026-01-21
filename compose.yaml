@@ -14,7 +14,7 @@ services:
     restart: always
 
   inngest:
-    image: inngest/inngest:v1.16.0
+    image: inngest/inngest:v1.16.1
     ports:
       - 8288:8288
     command:
