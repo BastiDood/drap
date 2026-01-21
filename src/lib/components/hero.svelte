@@ -18,7 +18,7 @@
     <div
       class="flex flex-col items-center justify-center gap-4 *:w-3/5 *:min-w-fit md:flex-row md:gap-2 *:md:w-auto"
     >
-      <Button href={resolve('/dashboard/oauth/login')} size="lg" class="h-12 px-6">
+      <Button href={resolve('/dashboard/')} size="lg" class="h-12 px-6">
         <ArrowRight class="size-5" />
         <span>Go to Dashboard</span>
       </Button>

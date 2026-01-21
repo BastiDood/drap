@@ -140,8 +140,7 @@
         <Accordion.Content class="prose dark:prose-invert px-4">
           <ol>
             <li>
-              Go to your <Link href={resolve('/dashboard/profile/')}>profile</Link> and set your student
-              number.
+              Go to your <Link href={resolve('/dashboard/')}>profile</Link> and set your student number.
               <em>Note that this can only be done once.</em>
             </li>
             <li>

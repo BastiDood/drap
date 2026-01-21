@@ -10,5 +10,5 @@
   <a href={resolve('/')}>
     <img src={Logo} alt="DRAP Logo" class="size-10" />
   </a>
-  <Button href={resolve('/dashboard/oauth/login')}>Sign in with UP Mail</Button>
+  <Button href={resolve('/dashboard/')}>Sign in with UP Mail</Button>
 </nav>

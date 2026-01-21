@@ -24,7 +24,7 @@ export const actions = {
       });
 
     cookies.delete('sid', { path: '/dashboard', httpOnly: true, sameSite: 'lax' });
-    redirect(303, '/dashboard/');
+    redirect(303, '/');
   },
   ...(dev
     ? {
