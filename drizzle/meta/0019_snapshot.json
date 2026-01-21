@@ -1,5 +1,5 @@
 {
-  "id": "ffc2ab45-3f59-4480-931f-38d764fe6ca8",
+  "id": "06084762-9536-4b6c-9688-997304aa887d",
   "prevId": "ebaec2de-0463-41a6-80e1-a369887860d1",
   "version": "7",
   "dialect": "postgresql",
@@ -724,7 +724,8 @@
           "name": "scopes",
           "type": "text[]",
           "primaryKey": false,
-          "notNull": true
+          "notNull": true,
+          "default": "'{}'"
         },
         "expiration": {
           "name": "expiration",
