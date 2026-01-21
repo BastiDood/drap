@@ -4,7 +4,7 @@
   import SunIcon from '@lucide/svelte/icons/sun';
   import { setMode, userPrefersMode } from 'mode-watcher';
 
-  import { Button } from '$lib/components/ui/button';
+  import { buttonVariants } from '$lib/components/ui/button';
   import { Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui/tooltip';
 
   function nextMode() {
@@ -36,9 +36,14 @@
 </script>
 
 <Tooltip>
-  <TooltipTrigger onclick={() => setMode(nextMode())}>
+  <TooltipTrigger>
     {#snippet child({ props })}
-      <Button {...props} variant="ghost" size="icon" aria-label="Toggle theme">
+      <button
+        {...props}
+        class={buttonVariants({ variant: 'ghost', size: 'icon' })}
+        aria-label="Toggle theme"
+        onclick={() => setMode(nextMode())}
+      >
         {#if userPrefersMode.current === 'light'}
           <SunIcon class="size-5" />
         {:else if userPrefersMode.current === 'dark'}
@@ -46,7 +51,7 @@
         {:else}
           <MonitorIcon class="size-5" />
         {/if}
-      </Button>
+      </button>
     {/snippet}
   </TooltipTrigger>
   <TooltipContent>Theme: {modeLabel}</TooltipContent>

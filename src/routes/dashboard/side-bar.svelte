@@ -15,7 +15,7 @@
   import * as Avatar from '$lib/components/ui/avatar';
   import * as Sidebar from '$lib/components/ui/sidebar';
   import { assert } from '$lib/assert';
-  import { Button } from '$lib/components/ui/button';
+  import { buttonVariants } from '$lib/components/ui/button';
   import { dev } from '$app/environment';
   import { enhance } from '$app/forms';
   import { page } from '$app/state';
@@ -224,14 +224,19 @@
           >
             <Tooltip>
               <TooltipTrigger>
-                <Button
-                  type="submit"
-                  variant="secondary"
-                  size="icon"
-                  class="size-full rounded-full"
-                >
-                  <UserPlusIcon class="size-5" />
-                </Button>
+                {#snippet child({ props })}
+                  <button
+                    {...props}
+                    type="submit"
+                    class={buttonVariants({
+                      variant: 'secondary',
+                      size: 'icon',
+                      class: 'size-full rounded-full',
+                    })}
+                  >
+                    <UserPlusIcon class="size-5" />
+                  </button>
+                {/snippet}
               </TooltipTrigger>
               <TooltipContent side="right">Create Dummy User</TooltipContent>
             </Tooltip>
@@ -239,14 +244,19 @@
         {/if}
         <Tooltip>
           <TooltipTrigger>
-            <Button
-              href="/dashboard/oauth/login"
-              variant="outline"
-              size="icon"
-              class="size-full rounded-full"
-            >
-              <LogInIcon class="size-5" />
-            </Button>
+            {#snippet child({ props })}
+              <a
+                {...props}
+                href={resolve('/dashboard/oauth/login')}
+                class={buttonVariants({
+                  variant: 'outline',
+                  size: 'icon',
+                  class: 'size-full rounded-full',
+                })}
+              >
+                <LogInIcon class="size-5" />
+              </a>
+            {/snippet}
           </TooltipTrigger>
           <TooltipContent side="right">Login</TooltipContent>
         </Tooltip>
@@ -266,9 +276,19 @@
         >
           <Tooltip>
             <TooltipTrigger>
-              <Button type="submit" variant="outline" size="icon" class="size-full rounded-full">
-                <LogOutIcon class="size-5" />
-              </Button>
+              {#snippet child({ props })}
+                <button
+                  {...props}
+                  type="submit"
+                  class={buttonVariants({
+                    variant: 'outline',
+                    size: 'icon',
+                    class: 'size-full rounded-full',
+                  })}
+                >
+                  <LogOutIcon class="size-5" />
+                </button>
+              {/snippet}
             </TooltipTrigger>
             <TooltipContent side="right">Logout</TooltipContent>
           </Tooltip>
