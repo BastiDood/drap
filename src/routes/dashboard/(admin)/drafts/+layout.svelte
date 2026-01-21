@@ -1,6 +1,8 @@
 <script lang="ts">
   import { format } from 'date-fns';
 
+  import * as Card from '$lib/components/ui/card';
+
   const { data, children } = $props();
   const { draft, requestedAt } = $derived(data);
 </script>
@@ -11,24 +13,27 @@
   {@const startTime = format(activePeriodStart, 'pp')}
   {@const closeDate = format(registrationClosesAt, 'PPP')}
   {@const closeTime = format(registrationClosesAt, 'pp')}
-  <div class="card prose dark:prose-invert max-w-none p-4">
-    <p>
-      {#if currRound === null}
-        <strong>Draft #{draftId}</strong> (which opened last <strong>{startDate}</strong> at
-        <strong>{startTime}</strong>) has recently finished the main drafting process. It is
-        currently in the lottery rounds.
-      {:else}
-        <strong>Draft #{draftId}</strong> is currently on Round <strong>{currRound}</strong>
-        of <strong>{maxRounds}</strong>. It opened last <strong>{startDate}</strong> at
-        <strong>{startTime}</strong>.
-        {#if requestedAt < registrationClosesAt}
-          Draft registration is currently open and will close on <strong>{closeDate}</strong> at
-          <strong>{closeTime}</strong>.
+  <Card.Root>
+    <Card.Content class="prose dark:prose-invert max-w-none pt-6">
+      <p>
+        {#if currRound === null}
+          <strong>Draft #{draftId}</strong> (which opened last <strong>{startDate}</strong> at
+          <strong>{startTime}</strong>) has recently finished the main drafting process. It is
+          currently in the lottery rounds.
         {:else}
-          Draft registration closed on <strong>{closeDate}</strong> at <strong>{closeTime}</strong>.
+          <strong>Draft #{draftId}</strong> is currently on Round <strong>{currRound}</strong>
+          of <strong>{maxRounds}</strong>. It opened last <strong>{startDate}</strong> at
+          <strong>{startTime}</strong>.
+          {#if requestedAt < registrationClosesAt}
+            Draft registration is currently open and will close on <strong>{closeDate}</strong> at
+            <strong>{closeTime}</strong>.
+          {:else}
+            Draft registration closed on <strong>{closeDate}</strong> at
+            <strong>{closeTime}</strong>.
+          {/if}
         {/if}
-      {/if}
-    </p>
-  </div>
+      </p>
+    </Card.Content>
+  </Card.Root>
 {/if}
 {@render children?.()}

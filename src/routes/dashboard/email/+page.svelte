@@ -1,11 +1,12 @@
 <script lang="ts">
-  import { Icon } from '@steeze-ui/svelte-icon';
-  import { ShieldExclamation } from '@steeze-ui/heroicons';
+  import CircleAlert from '@lucide/svelte/icons/circle-alert';
+  import ShieldAlert from '@lucide/svelte/icons/shield-alert';
+  import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
 
-  import ErrorAlert from '$lib/alerts/Error.svelte';
-  import WarningAlert from '$lib/alerts/Warning.svelte';
+  import * as Alert from '$lib/components/ui/alert';
+  import { Button } from '$lib/components/ui/button';
 
-  import DesignateForm from './DesignateForm.svelte';
+  import DesignateForm from './designate-form.svelte';
 
   const { data } = $props();
   const {
@@ -38,10 +39,10 @@
     </p>
     <form method="get" action="/dashboard/oauth/login">
       <input type="hidden" name="extended" value="1" />
-      <button type="submit" {disabled} class="not-prose preset-filled-primary-500 btn w-full">
-        <span><Icon src={ShieldExclamation} class="h-8" /></span>
+      <Button type="submit" {disabled} class="not-prose w-full">
+        <ShieldAlert class="size-5" />
         <span>Volunteer as a Candidate Sender</span>
-      </button>
+      </Button>
     </form>
     <p>
       Consenting candidate senders are listed on this page. Using the <strong>"Promote"</strong>
@@ -51,23 +52,32 @@
       Lastly, an administrator may press the <strong>"Remove"</strong> to revoke their consent.
     </p>
     <div class="not-prose space-y-4">
-      <WarningAlert
-        >Note that consent is user-specific. Nevertheless, <em>any</em> draft administrator may
-        promote, demote, and remove <em>any</em> of the candidate senders.</WarningAlert
-      >
-      <WarningAlert
-        >Google sets <a
-          target="_blank"
-          href="https://support.google.com/a/answer/166852#limits"
-          class="anchor">limits</a
-        > on the number of automated emails that can be sent within a rolling 24-hour period. As such,
-        some email notifications may not timely arrive.</WarningAlert
-      >
+      <Alert.Root variant="warning">
+        <TriangleAlert />
+        <Alert.Description>
+          Note that consent is user-specific. Nevertheless, <em>any</em> draft administrator may
+          promote, demote, and remove <em>any</em> of the candidate senders.
+        </Alert.Description>
+      </Alert.Root>
+      <Alert.Root variant="warning">
+        <TriangleAlert />
+        <Alert.Description>
+          Google sets <a
+            target="_blank"
+            href="https://support.google.com/a/answer/166852#limits"
+            class="text-primary underline-offset-4 hover:underline">limits</a
+          > on the number of automated emails that can be sent within a rolling 24-hour period. As such,
+          some email notifications may not timely arrive.
+        </Alert.Description>
+      </Alert.Root>
     </div>
   </div>
   {#if senders.length > 0}
     <DesignateForm {senders} />
   {:else}
-    <ErrorAlert>There are no candidate senders yet.</ErrorAlert>
+    <Alert.Root variant="destructive">
+      <CircleAlert />
+      <Alert.Description>There are no candidate senders yet.</Alert.Description>
+    </Alert.Root>
   {/if}
 </div>

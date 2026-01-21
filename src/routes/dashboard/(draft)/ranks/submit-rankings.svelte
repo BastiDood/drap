@@ -3,17 +3,21 @@
 </script>
 
 <script lang="ts">
-  import { ArrowDown, ArrowUp, XMark } from '@steeze-ui/heroicons';
+  import ArrowDown from '@lucide/svelte/icons/arrow-down';
+  import ArrowUp from '@lucide/svelte/icons/arrow-up';
+  import CircleAlert from '@lucide/svelte/icons/circle-alert';
+  import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
+  import X from '@lucide/svelte/icons/x';
   import { crossfade } from 'svelte/transition';
   import { flip } from 'svelte/animate';
-  import { Icon } from '@steeze-ui/svelte-icon';
+  import { toast } from 'svelte-sonner';
 
-  import ErrorAlert from '$lib/alerts/Error.svelte';
-  import WarningAlert from '$lib/alerts/Warning.svelte';
+  import * as Alert from '$lib/components/ui/alert';
   import { assert } from '$lib/assert';
+  import { Button } from '$lib/components/ui/button';
+  import { cn } from '$lib/components/ui/utils';
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';
-  import { useToaster } from '$lib/toast';
 
   type Lab = Pick<schema.Lab, 'id' | 'name'>;
   interface Props {
@@ -24,15 +28,12 @@
 
   let { draftId, maxRounds, availableLabs = $bindable() }: Props = $props();
 
-  const toaster = useToaster();
   let selectedLabs = $state<typeof availableLabs>([]);
 
   const remaining = $derived(maxRounds - selectedLabs.length);
   const hasRemaining = $derived(remaining > 0);
   const cardVariant = $derived(
-    hasRemaining
-      ? 'preset-tonal-primary border border-primary-500'
-      : 'preset-tonal-secondary border border-secondary-500',
+    hasRemaining ? 'border-primary bg-primary/10' : 'border-secondary bg-secondary/10',
   );
 
   function selectLab(index: number) {
@@ -94,15 +95,15 @@
       await update({ reset: false });
       switch (result.type) {
         case 'success':
-          toaster.success({ title: 'Uploaded your lab preferences.' });
+          toast.success('Uploaded your lab preferences.');
           break;
         case 'failure':
           switch (result.status) {
             case 400:
-              toaster.error({ title: 'Empty submissions are not allowed.' });
+              toast.error('Empty submissions are not allowed.');
               break;
             case 403:
-              toaster.error({ title: 'You have already set your lab preferences before.' });
+              toast.error('You have already set your lab preferences before.');
               break;
             default:
               break;
@@ -115,7 +116,12 @@
   }}
 >
   <input type="hidden" name="draft" value={draftId} />
-  <div class="card {cardVariant} prose dark:prose-invert max-w-none p-4 transition duration-150">
+  <div
+    class={cn(
+      'prose dark:prose-invert max-w-none rounded-lg border p-4 transition duration-150',
+      cardVariant,
+    )}
+  >
     <p>
       Lab preferences are ordered by preference from top (most preferred) to bottom (least
       preferred).
@@ -131,53 +137,58 @@
         You may no longer select any more labs.
       {/if}
     </p>
-    <button type="submit" class="preset-filled-primary-500 btn">Submit Lab Preferences</button>
+    <Button type="submit">Submit Lab Preferences</Button>
   </div>
-  <hr class="!border-surface-500 !border-t-4" />
+  <hr class="border-border border-t-4" />
   {#if selectedLabs.length > 0}
     <ol class="space-y-2">
       {#each selectedLabs as { id, name }, idx (id)}
         {@const config = { key: id }}
         <li
-          class="card preset-tonal-surface border-surface-500 card-hover flex flex-col gap-4 border p-4"
+          class="border-border bg-muted flex flex-col gap-4 rounded-lg border p-4 transition-shadow hover:shadow-md"
           in:receive={config}
           out:send={config}
           animate:flip={DURATION}
         >
           <input type="hidden" name="labs" value={id} />
           <div class="flex items-center gap-3">
-            <div class="text-md preset-filled-secondary-500 badge-icon p-4 text-lg font-bold">
+            <div
+              class="bg-secondary text-secondary-foreground flex size-10 items-center justify-center rounded-full text-lg font-bold"
+            >
               {idx + 1}
             </div>
             <div class="grow">{name}</div>
             <div class="flex gap-2">
-              <button
+              <Button
                 type="button"
-                class="preset-filled-success-500 btn-icon btn-icon-sm"
+                size="icon"
+                class="bg-success text-success-foreground hover:bg-success/80"
                 onclick={moveLabUp.bind(null, idx)}
                 disabled={idx <= 0}
               >
-                <Icon src={ArrowUp} class="size-6" />
-              </button>
-              <button
+                <ArrowUp class="size-5" />
+              </Button>
+              <Button
                 type="button"
-                class="preset-filled-warning-500 btn-icon btn-icon-sm"
+                size="icon"
+                class="bg-warning text-warning-foreground hover:bg-warning/80"
                 onclick={moveLabDown.bind(null, idx)}
                 disabled={idx >= selectedLabs.length - 1}
               >
-                <Icon src={ArrowDown} class="size-6" />
-              </button>
-              <button
+                <ArrowDown class="size-5" />
+              </Button>
+              <Button
                 type="button"
-                class="preset-filled-error-500 btn-icon btn-icon-sm"
+                size="icon"
+                variant="destructive"
                 onclick={resetSelection.bind(null, idx)}
               >
-                <Icon src={XMark} class="size-6" />
-              </button>
+                <X class="size-5" />
+              </Button>
             </div>
           </div>
           <textarea
-            class="card preset-filled-surface-200-800 border-surface-500 h-16 min-h-16 w-full"
+            class="border-input bg-background h-16 min-h-16 w-full rounded-md border p-2"
             name="remarks"
             placeholder="Hi, my name is... I would like to do more research on..."
             maxlength="1028"
@@ -186,10 +197,13 @@
       {/each}
     </ol>
   {:else}
-    <WarningAlert>No labs selected yet.</WarningAlert>
+    <Alert.Root variant="warning">
+      <TriangleAlert />
+      <Alert.Description>No labs selected yet.</Alert.Description>
+    </Alert.Root>
   {/if}
 </form>
-<hr class="!border-surface-500 !border-t-4" />
+<hr class="border-border border-t-4" />
 {#if availableLabs.length > 0}
   <ul
     inert={selectedLabs.length >= maxRounds}
@@ -198,7 +212,7 @@
     {#each availableLabs as { id, name }, idx (id)}
       <li>
         <button
-          class="preset-filled-surface-200-800 hover:preset-filled-surface-100-900 w-full flex-auto p-4 transition duration-150"
+          class="bg-muted hover:bg-muted/80 w-full flex-auto p-4 transition duration-150"
           onclick={selectLab.bind(null, idx)}
         >
           {name}
@@ -207,5 +221,8 @@
     {/each}
   </ul>
 {:else}
-  <ErrorAlert>No more labs with remaining slots left.</ErrorAlert>
+  <Alert.Root variant="destructive">
+    <CircleAlert />
+    <Alert.Description>No more labs with remaining slots left.</Alert.Description>
+  </Alert.Root>
 {/if}

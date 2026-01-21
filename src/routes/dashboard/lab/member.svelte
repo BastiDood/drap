@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { Avatar } from '@skeletonlabs/skeleton-svelte';
-  import { Icon } from '@steeze-ui/svelte-icon';
-  import { UserCircle } from '@steeze-ui/heroicons';
+  import UserCircle from '@lucide/svelte/icons/circle-user';
 
+  import * as Avatar from '$lib/components/ui/avatar';
   import type { schema } from '$lib/server/database';
 
   type User = Pick<schema.User, 'email' | 'givenName' | 'familyName' | 'avatarUrl'>;
@@ -15,9 +14,12 @@
 </script>
 
 <a href="mailto:{email}" class="flex items-center gap-3">
-  <Avatar src={avatarUrl} name="{givenName} {familyName}" size="size-14">
-    <Icon src={UserCircle} class="size-14" />
-  </Avatar>
+  <Avatar.Root class="size-14">
+    <Avatar.Image src={avatarUrl} alt="{givenName} {familyName}" />
+    <Avatar.Fallback>
+      <UserCircle class="size-14" />
+    </Avatar.Fallback>
+  </Avatar.Root>
   <span class="flex flex-col">
     {#if givenName.length > 0 && familyName.length > 0}
       <strong><span class="uppercase">{familyName}</span>, {givenName}</strong>

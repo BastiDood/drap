@@ -1,19 +1,17 @@
 <script lang="ts">
-  import { ArrowRight } from '@steeze-ui/heroicons';
-  import { Icon } from '@steeze-ui/svelte-icon';
+  import ArrowRight from '@lucide/svelte/icons/arrow-right';
+  import { toast } from 'svelte-sonner';
 
   import { assert } from '$lib/assert';
+  import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';
-  import { useToaster } from '$lib/toast';
 
   interface Props {
     draft: schema.Draft['id'];
   }
 
   const { draft }: Props = $props();
-
-  const toaster = useToaster();
 </script>
 
 <form
@@ -34,17 +32,16 @@
       await update();
       if (result.type === 'failure') {
         assert(result.status === 403);
-        toaster.error({
-          title:
-            'The total of all lab quota does not match the number of eligible students in the lottery.',
-        });
+        toast.error(
+          'The total of all lab quota does not match the number of eligible students in the lottery.',
+        );
       }
     };
   }}
 >
   <input type="hidden" name="draft" value={draft} />
-  <button type="submit" class="preset-filled-primary-500 btn btn-lg w-full">
-    <Icon src={ArrowRight} class="size-8" />
+  <Button type="submit" size="lg" class="w-full">
+    <ArrowRight class="size-6" />
     <span>Conclude Draft</span>
-  </button>
+  </Button>
 </form>

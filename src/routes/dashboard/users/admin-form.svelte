@@ -1,11 +1,12 @@
 <script>
-  import { Icon } from '@steeze-ui/svelte-icon';
-  import { PaperAirplane } from '@steeze-ui/heroicons';
+  import Send from '@lucide/svelte/icons/send';
+  import { toast } from 'svelte-sonner';
 
   import { assert } from '$lib/assert';
+  import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
-  import { useToaster } from '$lib/toast';
-  const toaster = useToaster();
+  import { Input } from '$lib/components/ui/input';
+  import { Label } from '$lib/components/ui/label';
 </script>
 
 <form
@@ -21,11 +22,11 @@
       await update();
       switch (result.type) {
         case 'success':
-          toaster.success({ title: 'Successfully invited a new draft administrator.' });
+          toast.success('Successfully invited a new draft administrator.');
           break;
         case 'failure':
           assert(result.status === 409);
-          toaster.error({ title: 'User or invite already exists.' });
+          toast.error('User or invite already exists.');
           break;
         default:
           break;
@@ -33,18 +34,19 @@
     };
   }}
 >
-  <label class="label">
-    <span>Email</span>
-    <div class="input-group grid-cols-[auto_1fr_auto]">
-      <div class="ig-cell preset-tonal"><Icon src={PaperAirplane} class="size-6" /></div>
-      <input
+  <div class="space-y-2">
+    <Label for="admin-email">Email</Label>
+    <div class="border-input flex overflow-hidden rounded-md border">
+      <div class="bg-muted flex items-center px-3"><Send class="size-5" /></div>
+      <Input
         type="email"
         required
         name="email"
+        id="admin-email"
         placeholder="example@up.edu.ph"
-        class="ig-input px-4 py-2"
+        class="flex-1 rounded-none border-0"
       />
-      <button class="ig-btn preset-filled-primary-500">Invite</button>
+      <Button type="submit" class="rounded-l-none">Invite</Button>
     </div>
-  </label>
+  </div>
 </form>

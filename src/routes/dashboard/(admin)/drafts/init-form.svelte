@@ -1,10 +1,12 @@
 <script>
-  import { CalendarDays } from '@steeze-ui/heroicons';
+  import CalendarDays from '@lucide/svelte/icons/calendar-days';
   import { format } from 'date-fns';
-  import { Icon } from '@steeze-ui/svelte-icon';
 
   import { assert } from '$lib/assert';
+  import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
+  import { Input } from '$lib/components/ui/input';
+  import { Label } from '$lib/components/ui/label';
   import { validateString } from '$lib/forms';
 </script>
 
@@ -33,26 +35,33 @@
     };
   }}
 >
-  <label class="label">
-    <span>Registration Closing Date</span>
-    <div class="input-group grid-cols-[auto_1fr_auto]">
-      <div class="ig-cell preset-tonal"><Icon src={CalendarDays} class="size-6" /></div>
-      <input type="datetime-local" required name="closes-at" class="ig-input px-4 py-2" />
+  <div class="space-y-1">
+    <Label for="closes-at">Registration Closing Date</Label>
+    <div class="border-input flex overflow-hidden rounded-md border">
+      <div class="bg-muted flex items-center px-3"><CalendarDays class="size-5" /></div>
+      <Input
+        type="datetime-local"
+        required
+        name="closes-at"
+        id="closes-at"
+        class="rounded-none border-0"
+      />
     </div>
-  </label>
-  <label class="label">
-    <span>Number of Rounds</span>
-    <div class="input-group grid-cols-[auto_1fr_auto]">
-      <div class="ig-cell preset-tonal"><Icon src={CalendarDays} class="size-6" /></div>
-      <input
+  </div>
+  <div class="space-y-1">
+    <Label for="rounds">Number of Rounds</Label>
+    <div class="border-input flex overflow-hidden rounded-md border">
+      <div class="bg-muted flex items-center px-3"><CalendarDays class="size-5" /></div>
+      <Input
         type="number"
         min="1"
         required
         name="rounds"
+        id="rounds"
         placeholder="5"
-        class="ig-input px-4 py-2"
+        class="flex-1 rounded-none border-0"
       />
-      <button class="ig-btn preset-filled-primary-500">Start</button>
+      <Button type="submit" class="rounded-l-none">Start</Button>
     </div>
-  </label>
+  </div>
 </form>

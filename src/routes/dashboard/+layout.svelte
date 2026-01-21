@@ -1,18 +1,17 @@
 <script lang="ts">
-  import { Toaster } from '@skeletonlabs/skeleton-svelte';
+  import { SidebarProvider } from '$lib/components/ui/sidebar';
+  import { Toaster } from '$lib/components/ui/sonner';
 
-  import { initToaster } from '$lib/toast';
-
-  import SideBar from './SideBar.svelte';
+  import SideBar from './side-bar.svelte';
 
   const { data, children } = $props();
   const { user } = $derived(data);
-
-  const toaster = initToaster();
 </script>
 
-<Toaster {toaster} />
-<div class="flex h-dvh overflow-hidden">
-  <SideBar {user} />
-  <div class="grow space-y-4 overflow-y-auto p-4">{@render children?.()}</div>
-</div>
+<Toaster />
+<SidebarProvider>
+  <div class="flex h-dvh w-full overflow-hidden">
+    <SideBar {user} />
+    <main class="grow space-y-4 overflow-y-auto p-4">{@render children?.()}</main>
+  </div>
+</SidebarProvider>

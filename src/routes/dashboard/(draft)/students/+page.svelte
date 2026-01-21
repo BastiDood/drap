@@ -1,11 +1,12 @@
 <script lang="ts">
-  import { Avatar } from '@skeletonlabs/skeleton-svelte';
+  import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
   import { SvelteSet } from 'svelte/reactivity';
 
-  import WarningAlert from '$lib/alerts/Warning.svelte';
+  import * as Alert from '$lib/components/ui/alert';
+  import * as Avatar from '$lib/components/ui/avatar';
   import { getOrdinalSuffix } from '$lib/ordinal';
 
-  import RankingsForm from './RankingsForm.svelte';
+  import RankingsForm from './rankings-form.svelte';
 
   const { data } = $props();
   const {
@@ -22,20 +23,29 @@
 </script>
 
 {#if currRound === null}
-  <WarningAlert
-    >The draft is now in the lottery stage. Kindly contact the draft administrators on how to
-    proceed.</WarningAlert
-  >
+  <Alert.Root variant="warning">
+    <TriangleAlert />
+    <Alert.Description>
+      The draft is now in the lottery stage. Kindly contact the draft administrators on how to
+      proceed.
+    </Alert.Description>
+  </Alert.Root>
 {:else if currRound === 0}
-  <WarningAlert
-    >Students are still registering for this draft. Kindly wait for the draft administrators to
-    officially open the draft.</WarningAlert
-  >
+  <Alert.Root variant="warning">
+    <TriangleAlert />
+    <Alert.Description>
+      Students are still registering for this draft. Kindly wait for the draft administrators to
+      officially open the draft.
+    </Alert.Description>
+  </Alert.Root>
 {:else if isDone}
-  <WarningAlert
-    >This lab either has no draft slots remaining or has already submitted their picks for this
-    round. No action is required until the next one.</WarningAlert
-  >
+  <Alert.Root variant="warning">
+    <TriangleAlert />
+    <Alert.Description>
+      This lab either has no draft slots remaining or has already submitted their picks for this
+      round. No action is required until the next one.
+    </Alert.Description>
+  </Alert.Root>
 {:else if students.length > 0}
   {@const suffix = getOrdinalSuffix(currRound)}
   <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
@@ -61,20 +71,28 @@
     <RankingsForm draft={id} {students} drafteeIds={draftees} disabled={remainingDraftees < 0} />
   </div>
 {:else}
-  <WarningAlert
-    >No students have selected this lab in this round. No action is required until the next round.</WarningAlert
-  >
+  <Alert.Root variant="warning">
+    <TriangleAlert />
+    <Alert.Description>
+      No students have selected this lab in this round. No action is required until the next round.
+    </Alert.Description>
+  </Alert.Root>
 {/if}
 {#if researchers.length > 0}
-  <h3 class="h3">Drafted Students from Previous Rounds</h3>
-  <nav class="list-nav">
+  <h3 class="scroll-m-20 text-2xl font-semibold tracking-tight">
+    Drafted Students from Previous Rounds
+  </h3>
+  <nav class="space-y-1">
     <ul class="space-y-1">
       {#each researchers as { email, givenName, familyName, avatarUrl, studentNumber } (email)}
         <a
           href="mailto:{email}"
-          class="preset-filled-surface-100-900 hover:preset-filled-surface-200-800 flex items-center gap-3 rounded-md p-2 transition-colors duration-150"
+          class="bg-muted hover:bg-muted/80 flex items-center gap-3 rounded-md p-2 transition-colors duration-150"
         >
-          <Avatar src={avatarUrl} name="{givenName} {familyName}" />
+          <Avatar.Root class="size-10">
+            <Avatar.Image src={avatarUrl} alt="{givenName} {familyName}" />
+            <Avatar.Fallback>{givenName[0]}{familyName[0]}</Avatar.Fallback>
+          </Avatar.Root>
           <div class="flex grow flex-col">
             <strong><span class="uppercase">{familyName}</span>, {givenName}</strong>
             {#if studentNumber !== null}

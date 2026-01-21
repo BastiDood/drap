@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { AcademicCap, Beaker, ShieldExclamation } from '@steeze-ui/heroicons';
-  import { Icon } from '@steeze-ui/svelte-icon';
+  import FlaskConical from '@lucide/svelte/icons/flask-conical';
+  import GraduationCap from '@lucide/svelte/icons/graduation-cap';
+  import ShieldAlert from '@lucide/svelte/icons/shield-alert';
 
+  import * as Accordion from '$lib/components/ui/accordion';
   import banner from '$lib/banner.png?url';
   import Hero from '$lib/components/hero.svelte';
   import Link from '$lib/components/link.svelte';
   import { asset, resolve } from '$app/paths';
-
-  let activeTab = $state<'student' | 'lab-head' | 'admin'>('student');
 </script>
 
 <Hero />
@@ -25,16 +25,16 @@
   </section>
 
   <section class="prose dark:prose-invert prose-h3:mt-0 prose-h3:mb-2 prose-li:m-0 my-8 max-w-none">
-    <h2 class="border-surface-800 border-b pb-2">How It Works</h2>
+    <h2 class="border-border border-b pb-2">How It Works</h2>
     <ol class="mx-auto max-w-prose pl-0">
       <li class="grid grid-cols-[auto_1fr] gap-4">
         <div class="flex flex-col items-center">
           <div
-            class="bg-primary-500 text-primary-contrast-dark flex size-9 items-center justify-center rounded-full font-bold"
+            class="bg-primary text-primary-foreground flex size-9 items-center justify-center rounded-full font-bold"
           >
             1
           </div>
-          <div aria-hidden="true" class="bg-surface-700 w-1 flex-1"></div>
+          <div aria-hidden="true" class="bg-muted w-1 flex-1"></div>
         </div>
         <div class="pb-8">
           <h3 class="text-xl font-bold">Registration</h3>
@@ -48,11 +48,11 @@
       <li class="grid grid-cols-[auto_1fr] gap-4">
         <div class="flex flex-col items-center">
           <div
-            class="bg-primary-500 text-primary-contrast-dark flex size-9 items-center justify-center rounded-full font-bold"
+            class="bg-primary text-primary-foreground flex size-9 items-center justify-center rounded-full font-bold"
           >
             2
           </div>
-          <div aria-hidden="true" class="bg-surface-700 w-1 flex-1"></div>
+          <div aria-hidden="true" class="bg-muted w-1 flex-1"></div>
         </div>
         <div class="pb-8">
           <h3 class="text-xl font-bold">Regular Draft</h3>
@@ -80,11 +80,11 @@
       <li class="grid grid-cols-[auto_1fr] gap-4">
         <div class="flex flex-col items-center">
           <div
-            class="bg-primary-500 text-primary-contrast-dark flex size-9 items-center justify-center rounded-full font-bold"
+            class="bg-primary text-primary-foreground flex size-9 items-center justify-center rounded-full font-bold"
           >
             3
           </div>
-          <div aria-hidden="true" class="bg-surface-700 w-1 flex-1"></div>
+          <div aria-hidden="true" class="bg-muted w-1 flex-1"></div>
         </div>
         <div class="pb-8">
           <h3 class="text-xl font-bold">Lottery Round</h3>
@@ -108,7 +108,7 @@
       <li class="grid grid-cols-[auto_1fr] gap-4">
         <div class="flex flex-col items-center">
           <div
-            class="bg-primary-500 text-primary-contrast-dark flex size-9 items-center justify-center rounded-full font-bold"
+            class="bg-primary text-primary-foreground flex size-9 items-center justify-center rounded-full font-bold"
           >
             4
           </div>
@@ -123,54 +123,21 @@
 
   <section class="my-8">
     <div class="prose dark:prose-invert my-6 max-w-none">
-      <h2 class="border-surface-800 border-b pb-2">Getting Started</h2>
+      <h2 class="border-border border-b pb-2">Getting Started</h2>
       <p>
         All interactions with the application require UP Mail authentication. The next steps depend
         on your role in the draft.
       </p>
     </div>
-    <div class="border-surface-700 overflow-hidden rounded-lg border">
-      <div class="border-surface-700 grid grid-cols-3 border-b">
-        <button
-          class="px-4 py-3 text-center font-medium transition duration-150 {activeTab === 'student'
-            ? 'bg-primary-500'
-            : 'hover:bg-surface-800'}"
-          onclick={() => (activeTab = 'student')}
-        >
-          <span class="flex items-center justify-center gap-2">
-            <Icon src={AcademicCap} class="size-5" />
-            <span class="hidden md:block"> For Students </span>
+    <Accordion.Root type="single" class="border-border rounded-lg border">
+      <Accordion.Item value="student">
+        <Accordion.Trigger class="px-4">
+          <span class="flex items-center gap-2">
+            <GraduationCap class="size-5" />
+            <span>For Students</span>
           </span>
-        </button>
-        <button
-          class="border-surface-700 border-l px-4 py-3 text-center font-medium transition duration-150 {activeTab ===
-          'lab-head'
-            ? 'bg-primary-500'
-            : 'hover:bg-surface-800'}"
-          onclick={() => (activeTab = 'lab-head')}
-        >
-          <span class="flex items-center justify-center gap-2">
-            <Icon src={Beaker} class="size-5" />
-            <span class="hidden md:block"> For Lab Heads </span>
-          </span>
-        </button>
-        <button
-          class="border-surface-700 border-l px-4 py-3 text-center font-medium transition duration-150 {activeTab ===
-          'admin'
-            ? 'bg-primary-500'
-            : 'hover:bg-surface-800'}"
-          onclick={() => (activeTab = 'admin')}
-        >
-          <span class="flex items-center justify-center gap-2">
-            <Icon src={ShieldExclamation} class="size-5" />
-            <span class="hidden md:block"> For Administrators </span>
-          </span>
-        </button>
-      </div>
-
-      <div class="prose dark:prose-invert mx-auto max-w-3xl p-6">
-        {#if activeTab === 'student'}
-          <h3 class="block md:hidden">For students:</h3>
+        </Accordion.Trigger>
+        <Accordion.Content class="prose dark:prose-invert px-4">
           <ol>
             <li>
               Go to your <Link href={resolve('/dashboard/profile/')}>profile</Link> and set your student
@@ -187,8 +154,16 @@
             </li>
             <li>Wait until the draft is finished.</li>
           </ol>
-        {:else if activeTab === 'lab-head'}
-          <h3 class="block md:hidden">For lab heads:</h3>
+        </Accordion.Content>
+      </Accordion.Item>
+      <Accordion.Item value="lab-head">
+        <Accordion.Trigger class="px-4">
+          <span class="flex items-center gap-2">
+            <FlaskConical class="size-5" />
+            <span>For Lab Heads</span>
+          </span>
+        </Accordion.Trigger>
+        <Accordion.Content class="prose dark:prose-invert px-4">
           <ol>
             <li>Wait for the administrators to open a draft.</li>
             <li>
@@ -209,8 +184,16 @@
               round-robin lottery (if there are any undrafted students).
             </li>
           </ol>
-        {:else if activeTab === 'admin'}
-          <h3 class="block md:hidden">For administrators:</h3>
+        </Accordion.Content>
+      </Accordion.Item>
+      <Accordion.Item value="admin">
+        <Accordion.Trigger class="px-4">
+          <span class="flex items-center gap-2">
+            <ShieldAlert class="size-5" />
+            <span>For Administrators</span>
+          </span>
+        </Accordion.Trigger>
+        <Accordion.Content class="prose dark:prose-invert px-4">
           <ol>
             <li>Set the <Link href={resolve('/dashboard/labs/')}>lab quota</Link>.</li>
             <li>Initialize a <Link href={resolve('/dashboard/drafts/')}>new draft</Link>.</li>
@@ -238,13 +221,13 @@
               round-robin stage.
             </li>
           </ol>
-        {/if}
-      </div>
-    </div>
+        </Accordion.Content>
+      </Accordion.Item>
+    </Accordion.Root>
   </section>
 
   <section class="prose dark:prose-invert max-w-none">
-    <h2 class="border-surface-800 border-b pb-2">Acknowledgements</h2>
+    <h2 class="border-border border-b pb-2">Acknowledgements</h2>
     <p>
       The <Link target="_blank" href="https://github.com/BastiDood/drap">DRAP project</Link>,
       licensed under the free and open-source

@@ -1,6 +1,9 @@
 <script lang="ts">
   import { assert } from '$lib/assert';
+  import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
+  import { Input } from '$lib/components/ui/input';
+  import { Label } from '$lib/components/ui/label';
   import type { schema } from '$lib/server/database';
 
   type Props = Pick<schema.User, 'studentNumber' | 'givenName' | 'familyName'>;
@@ -21,53 +24,53 @@
     };
   }}
 >
-  <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
-    <label class="label">
-      <span>Student Number</span>
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <div class="space-y-2">
+      <Label for="student-number">Student Number</Label>
       {#if studentNumber === null}
-        <input
+        <Input
           type="number"
           min="100000000"
           max="1000000000"
           name="student-number"
+          id="student-number"
           placeholder="2020XXXXX"
-          class="input variant-form-material px-2 py-1"
         />
       {:else}
         {@const placeholder = studentNumber.toString()}
-        <input
+        <Input
           type="number"
           min="100000000"
           max="1000000000"
           name="student-number"
+          id="student-number"
           {placeholder}
           disabled
-          class="input variant-form-material px-2 py-1"
         />
       {/if}
-    </label>
-    <label class="label">
-      <span>Given Name</span>
-      <input
+    </div>
+    <div class="space-y-2">
+      <Label for="given">Given Name</Label>
+      <Input
         required
         type="text"
         name="given"
+        id="given"
         placeholder={givenName}
         value={givenName}
-        class="input variant-form-material px-2 py-1"
       />
-    </label>
-    <label class="label">
-      <span>Family Name</span>
-      <input
+    </div>
+    <div class="space-y-2">
+      <Label for="family">Family Name</Label>
+      <Input
         required
         type="text"
         name="family"
+        id="family"
         placeholder={familyName}
         value={familyName}
-        class="input variant-form-material px-2 py-1"
       />
-    </label>
+    </div>
   </div>
-  <button type="submit" class="preset-filled-primary-500 btn">Update</button>
+  <Button type="submit">Update</Button>
 </form>

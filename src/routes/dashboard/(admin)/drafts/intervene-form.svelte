@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { Icon } from '@steeze-ui/svelte-icon';
-  import { ShieldExclamation } from '@steeze-ui/heroicons';
+  import ShieldAlert from '@lucide/svelte/icons/shield-alert';
+  import { toast } from 'svelte-sonner';
 
   import { assert } from '$lib/assert';
+  import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';
-  import { useToaster } from '$lib/toast';
 
-  import LotteryStudent from './LotteryStudent.svelte';
+  import LotteryStudent from './lottery-student.svelte';
 
   type Lab = Pick<schema.Lab, 'id' | 'name'>;
   type User = Pick<
@@ -22,8 +22,6 @@
   }
 
   const { draft, labs, students }: Props = $props();
-
-  const toaster = useToaster();
 </script>
 
 <form
@@ -42,8 +40,7 @@
     return async ({ update, result }) => {
       submitter.disabled = false;
       await update();
-      if (result.type === 'success')
-        toaster.success({ title: 'Successfully applied the interventions.' });
+      if (result.type === 'success') toast.success('Successfully applied the interventions.');
     };
   }}
 >
@@ -53,11 +50,13 @@
     {/each}
   </ul>
   <input type="hidden" name="draft" value={draft} />
-  <button
+  <Button
     type="submit"
-    class="!preset-tonal-warning preset-outlined-warning-300-700 btn btn-lg w-full border-1 shadow-lg"
+    variant="outline"
+    size="lg"
+    class="border-warning bg-warning/10 text-warning hover:bg-warning/20 w-full shadow-lg"
   >
-    <Icon src={ShieldExclamation} class="size-8" />
+    <ShieldAlert class="size-6" />
     <span>Apply Interventions</span>
-  </button>
+  </Button>
 </form>

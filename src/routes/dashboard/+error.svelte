@@ -1,13 +1,27 @@
 <script>
-  import ErrorAlert from '$lib/alerts/Error.svelte';
+  import CircleAlert from '@lucide/svelte/icons/circle-alert';
+
+  import * as Alert from '$lib/components/ui/alert';
   import { page } from '$app/state';
+
   const { status, error } = $derived(page);
 </script>
 
 {#if status === 499}
-  <ErrorAlert>There is no active draft at the moment. Please check again later.</ErrorAlert>
+  <Alert.Root variant="destructive">
+    <CircleAlert />
+    <Alert.Description
+      >There is no active draft at the moment. Please check again later.</Alert.Description
+    >
+  </Alert.Root>
 {:else if error !== null}
-  <ErrorAlert><strong>{status}:</strong> {error.message}</ErrorAlert>
+  <Alert.Root variant="destructive">
+    <CircleAlert />
+    <Alert.Description><strong>{status}:</strong> {error.message}</Alert.Description>
+  </Alert.Root>
 {:else}
-  <ErrorAlert><strong>{status}</strong></ErrorAlert>
+  <Alert.Root variant="destructive">
+    <CircleAlert />
+    <Alert.Description><strong>{status}</strong></Alert.Description>
+  </Alert.Root>
 {/if}

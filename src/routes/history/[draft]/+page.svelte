@@ -1,21 +1,19 @@
 <script lang="ts">
-  import {
-    ArrowPath,
-    CalendarDays,
-    Clock,
-    Cog,
-    ExclamationTriangle,
-    Scale,
-    Sparkles,
-    UserGroup,
-  } from '@steeze-ui/heroicons';
+  import CalendarDays from '@lucide/svelte/icons/calendar-days';
+  import CheckCircle from '@lucide/svelte/icons/check-circle';
+  import Clock from '@lucide/svelte/icons/clock';
+  import Cog from '@lucide/svelte/icons/cog';
+  import RefreshCw from '@lucide/svelte/icons/refresh-cw';
+  import Scale from '@lucide/svelte/icons/scale';
+  import Sparkles from '@lucide/svelte/icons/sparkles';
+  import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
+  import Users from '@lucide/svelte/icons/users';
   import { format, fromUnixTime, getUnixTime } from 'date-fns';
   import { groupby } from 'itertools';
-  import { Icon } from '@steeze-ui/svelte-icon';
-  import { Progress } from '@skeletonlabs/skeleton-svelte';
 
-  import Success from '$lib/alerts/Success.svelte';
+  import * as Alert from '$lib/components/ui/alert';
   import { getOrdinalSuffix } from '$lib/ordinal';
+  import { Progress } from '$lib/components/ui/progress';
 
   const { data } = $props();
   const {
@@ -44,21 +42,24 @@
   );
 </script>
 
-<h2 class="h2">Draft #{did}</h2>
+<h2 class="scroll-m-20 text-3xl font-semibold tracking-tight">Draft #{did}</h2>
 {#if end !== null}
   {@const { endIsoString, endDateTime } = end}
   <!-- Concluded Draft -->
-  <Success>
-    This draft was held from <strong><time datetime={startIsoString}>{startDateTime}</time></strong>
-    – <strong><time datetime={endIsoString}>{endDateTime}</time></strong> over {maxRounds} rounds.
-  </Success>
+  <Alert.Root variant="success">
+    <CheckCircle />
+    <Alert.Description>
+      This draft was held from <strong
+        ><time datetime={startIsoString}>{startDateTime}</time></strong
+      >
+      – <strong><time datetime={endIsoString}>{endDateTime}</time></strong> over {maxRounds} rounds.
+    </Alert.Description>
+  </Alert.Root>
 {:else if currRound === null}
   <!-- Lottery Stage -->
-  <Progress meterBg="bg-primary-700-300" />
-  <div
-    class="preset-tonal-secondary border-secondary-500 flex items-center gap-3 rounded-lg border px-2 py-1"
-  >
-    <Icon src={Sparkles} class="size-8" />
+  <Progress value={100} />
+  <div class="border-secondary bg-secondary/10 flex items-center gap-3 rounded-lg border px-2 py-1">
+    <Sparkles class="size-8" />
     <div>
       This draft started last <strong><time datetime={startIsoString}>{startDateTime}</time></strong
       > and is currently in the lottery stage.
@@ -66,10 +67,8 @@
   </div>
 {:else if currRound === 0}
   <!-- Registration Stage -->
-  <div
-    class="preset-tonal-tertiary border-tertiary-500 flex items-center gap-3 rounded-lg border px-2 py-1"
-  >
-    <Icon src={Clock} class="size-8" />
+  <div class="border-accent bg-accent/10 flex items-center gap-3 rounded-lg border px-2 py-1">
+    <Clock class="size-8" />
     <div>
       This draft started last <strong><time datetime={startIsoString}>{startDateTime}</time></strong
       > and is currently in the registration stage.
@@ -77,9 +76,9 @@
   </div>
 {:else}
   <!-- Regular Draft Process -->
-  <Progress max={maxRounds} value={currRound} meterBg="bg-primary-700-300" />
-  <div class="preset-tonal-secondary flex items-center gap-3 rounded-lg px-2 py-1">
-    <Icon src={Scale} class="size-8" />
+  <Progress max={maxRounds} value={currRound} />
+  <div class="bg-secondary/10 flex items-center gap-3 rounded-lg px-2 py-1">
+    <Scale class="size-8" />
     <div>
       This draft started last <strong><time datetime={startIsoString}>{startDateTime}</time></strong
       >
@@ -88,17 +87,19 @@
   </div>
 {/if}
 <section class="p-4">
-  <ol class="border-surface-600-400 relative border-s">
+  <ol class="border-border relative border-s">
     {#if end !== null}
       {@const { endIsoString, endDateTime } = end}
       <li class="ms-6 mb-10">
         <span
-          class="bg-primary-300-700 ring-primary-950-50 absolute -start-3 flex size-6 items-center justify-center rounded-full ring-2"
-          ><Icon src={CalendarDays} class="size-4" theme="micro" /></span
+          class="bg-primary ring-background absolute -start-3 flex size-6 items-center justify-center rounded-full ring-2"
+          ><CalendarDays class="text-primary-foreground size-4" /></span
         >
-        <h4 class="h4 mb-2"><time datetime={endIsoString}>{endDateTime}</time></h4>
-        <ol class="list">
-          <li class="card preset-tonal-success border-success-500 border px-3 py-1.5">
+        <h4 class="mb-2 scroll-m-20 text-xl font-semibold tracking-tight">
+          <time datetime={endIsoString}>{endDateTime}</time>
+        </h4>
+        <ol class="space-y-1">
+          <li class="border-success bg-success/10 rounded-lg border px-3 py-1.5">
             <span class="flex-auto">Draft #{did} was concluded.</span>
           </li>
         </ol>
@@ -109,18 +110,20 @@
       {@const heading = format(date, 'PPPpp')}
       <li class="ms-6 mb-10">
         <span
-          class="bg-primary-300-700 ring-primary-950-50 absolute -start-3 flex size-6 items-center justify-center rounded-full ring-2"
-          ><Icon src={CalendarDays} class="size-4" theme="micro" /></span
+          class="bg-primary ring-background absolute -start-3 flex size-6 items-center justify-center rounded-full ring-2"
+          ><CalendarDays class="text-primary-foreground size-4" /></span
         >
-        <h4 class="h4 mb-2"><time datetime={date.toISOString()}>{heading}</time></h4>
+        <h4 class="mb-2 scroll-m-20 text-xl font-semibold tracking-tight">
+          <time datetime={date.toISOString()}>{heading}</time>
+        </h4>
         <ol class="space-y-1">
           {#each events as { isSystem, labId, round }, index (index)}
             {#if round !== null}
               {@const ordinal = round + getOrdinalSuffix(round)}
               {#if isSystem}
-                <li class="card preset-tonal-warning border-warning-500 border px-3 py-1.5">
+                <li class="border-warning bg-warning/10 rounded-lg border px-3 py-1.5">
                   <div class="flex items-center gap-3">
-                    <Icon src={Cog} class="size-4" theme="micro" />
+                    <Cog class="size-4" />
                     <span>
                       The system has skipped the <strong class="uppercase">{labId}</strong> for the {ordinal}
                       round due to insufficient quota and/or zero demand.
@@ -128,9 +131,9 @@
                   </div>
                 </li>
               {:else}
-                <li class="card preset-tonal-secondary border-secondary-500 border px-3 py-1.5">
+                <li class="border-secondary bg-secondary/10 rounded-lg border px-3 py-1.5">
                   <div class="flex items-center gap-3">
-                    <Icon src={UserGroup} class="size-4" theme="micro" />
+                    <Users class="size-4" />
                     <span>
                       The <strong class="uppercase">{labId}</strong> has selected their {ordinal} batch
                       of draftees.
@@ -139,22 +142,23 @@
                 </li>
               {/if}
             {:else if isSystem}
-              <li class="card preset-tonal-error border-error-500 border px-3 py-1.5">
+              <li class="border-destructive bg-destructive/10 rounded-lg border px-3 py-1.5">
                 <div class="flex items-center gap-3">
-                  <Icon src={ExclamationTriangle} class="size-4" theme="micro" />
+                  <TriangleAlert class="size-4" />
                   <span>
                     A system-automated event for the <strong class="uppercase">{labId}</strong>
                     occurred during a lottery. This should be impossible. Kindly
-                    <a href="https://github.com/BastiDood/drap/issues/new" class="anchor"
-                      >file an issue</a
+                    <a
+                      href="https://github.com/BastiDood/drap/issues/new"
+                      class="text-primary underline-offset-4 hover:underline">file an issue</a
                     > and report this bug there.
                   </span>
                 </div>
               </li>
             {:else}
-              <li class="card preset-tonal-tertiary border-tertiary-500 border px-3 py-1.5">
+              <li class="border-accent bg-accent/10 rounded-lg border px-3 py-1.5">
                 <div class="flex items-center gap-3">
-                  <Icon src={ArrowPath} class="size-4" theme="micro" />
+                  <RefreshCw class="size-4" />
                   <span>
                     The <strong class="uppercase">{labId}</strong> has obtained a batch of draftees from
                     the lottery round.
@@ -168,12 +172,14 @@
     {/each}
     <li class="ms-6 mb-10">
       <span
-        class="bg-primary-300-700 ring-primary-950-50 absolute -start-3 flex size-6 items-center justify-center rounded-full ring-2"
-        ><Icon src={CalendarDays} class="size-4" theme="micro" /></span
+        class="bg-primary ring-background absolute -start-3 flex size-6 items-center justify-center rounded-full ring-2"
+        ><CalendarDays class="text-primary-foreground size-4" /></span
       >
-      <h4 class="h4 mb-2"><time datetime={startIsoString}>{startDateTime}</time></h4>
-      <ol class="list">
-        <li class="card preset-tonal-success border-success-500 border px-3 py-1.5">
+      <h4 class="mb-2 scroll-m-20 text-xl font-semibold tracking-tight">
+        <time datetime={startIsoString}>{startDateTime}</time>
+      </h4>
+      <ol class="space-y-1">
+        <li class="border-success bg-success/10 rounded-lg border px-3 py-1.5">
           Draft #{did} was created.
         </li>
       </ol>

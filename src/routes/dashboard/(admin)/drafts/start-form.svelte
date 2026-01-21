@@ -1,16 +1,16 @@
 <script lang="ts">
+  import { toast } from 'svelte-sonner';
+
   import { assert } from '$lib/assert';
+  import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';
-  import { useToaster } from '$lib/toast';
 
   interface Props {
     draft: schema.Draft['id'];
   }
 
   const { draft }: Props = $props();
-
-  const toaster = useToaster();
 </script>
 
 <form
@@ -31,15 +31,15 @@
       if (result.type === 'failure')
         switch (result.status) {
           case 497:
-            toaster.error({
-              title: 'Cannot start the draft when there are not enough participants.',
+            toast.error('Cannot start the draft when there are not enough participants.', {
               duration: Infinity,
+              dismissable: true,
             });
             break;
           case 498:
-            toaster.error({
-              title: 'Cannot start the draft when the total lab quota is zero.',
+            toast.error('Cannot start the draft when the total lab quota is zero.', {
               duration: Infinity,
+              dismissable: true,
             });
             break;
           default:
@@ -49,7 +49,11 @@
   }}
 >
   <input type="hidden" name="draft" value={draft} />
-  <button type="submit" class="preset-tonal-warning border-warning-500 btn w-full border"
-    >Start Draft</button
+  <Button
+    type="submit"
+    variant="outline"
+    class="border-warning bg-warning/10 text-warning hover:bg-warning/20 w-full"
   >
+    Start Draft
+  </Button>
 </form>

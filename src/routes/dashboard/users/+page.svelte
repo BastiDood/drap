@@ -1,9 +1,11 @@
 <script lang="ts">
   import groupBy from 'just-group-by';
 
-  import AdminForm from './AdminForm.svelte';
-  import FacultyForm from './FacultyForm.svelte';
-  import InvitedVersusRegistered from './InvitedVersusRegistered.svelte';
+  import * as Card from '$lib/components/ui/card';
+
+  import AdminForm from './admin-form.svelte';
+  import FacultyForm from './faculty-form.svelte';
+  import InvitedVersusRegistered from './invited-versus-registered.svelte';
 
   const { data } = $props();
   const { labs, faculty } = $derived(data);
@@ -20,14 +22,22 @@
   const registeredHeads = $derived(users.registeredHeads ?? []);
 </script>
 
-<h2 class="h2">Users</h2>
-<div class="card space-y-4 p-4">
-  <h3 class="h3">Lab Heads</h3>
-  <FacultyForm {labs} />
-  <InvitedVersusRegistered invited={invitedHeads} registered={registeredHeads} />
-</div>
-<div class="card space-y-4 p-4">
-  <h3 class="h3">Draft Administrators</h3>
-  <AdminForm />
-  <InvitedVersusRegistered invited={invitedAdmins} registered={registeredAdmins} />
-</div>
+<h2 class="scroll-m-20 text-3xl font-semibold tracking-tight">Users</h2>
+<Card.Root>
+  <Card.Header>
+    <Card.Title>Lab Heads</Card.Title>
+  </Card.Header>
+  <Card.Content class="space-y-4">
+    <FacultyForm {labs} />
+    <InvitedVersusRegistered invited={invitedHeads} registered={registeredHeads} />
+  </Card.Content>
+</Card.Root>
+<Card.Root>
+  <Card.Header>
+    <Card.Title>Draft Administrators</Card.Title>
+  </Card.Header>
+  <Card.Content class="space-y-4">
+    <AdminForm />
+    <InvitedVersusRegistered invited={invitedAdmins} registered={registeredAdmins} />
+  </Card.Content>
+</Card.Root>

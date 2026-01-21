@@ -1,16 +1,18 @@
 <script lang="ts">
-  import { ArrowUpTray } from '@steeze-ui/heroicons';
-  import { Icon } from '@steeze-ui/svelte-icon';
+  import ArrowUpFromLine from '@lucide/svelte/icons/arrow-up-from-line';
+  import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
 
-  import Student from '$lib/users/Student.svelte';
-  import WarningAlert from '$lib/alerts/Warning.svelte';
+  import * as Alert from '$lib/components/ui/alert';
+  import * as Card from '$lib/components/ui/card';
+  import Student from '$lib/users/student.svelte';
+  import { Button } from '$lib/components/ui/button';
   import { resolve } from '$app/paths';
 
-  import ConcludeForm from './ConcludeForm.svelte';
-  import Dashboard from './Dashboard.svelte';
-  import InitForm from './InitForm.svelte';
-  import InterveneForm from './InterveneForm.svelte';
-  import StartForm from './StartForm.svelte';
+  import ConcludeForm from './conclude-form.svelte';
+  import Dashboard from './dashboard.svelte';
+  import InitForm from './init-form.svelte';
+  import InterveneForm from './intervene-form.svelte';
+  import StartForm from './start-form.svelte';
 
   const { data } = $props();
   const { draft, labs, records, available, selected } = $derived(data);
@@ -18,22 +20,14 @@
 
 {#if draft !== null}
   <div class="flex flex-row gap-2">
-    <a
-      href={resolve(`/dashboard/drafts/${draft.id}/students.csv`)}
-      class="not-prose preset-filled-primary-500 btn"
-      download
-    >
-      <span><Icon src={ArrowUpTray} class="h-8" /></span>
+    <Button href={resolve(`/dashboard/drafts/${draft.id}/students.csv`)} download>
+      <ArrowUpFromLine class="size-5" />
       <span>Export Student Ranks</span>
-    </a>
-    <a
-      href={resolve(`/dashboard/drafts/${draft.id}/results.csv`)}
-      class="not-prose preset-filled-primary-500 btn"
-      download
-    >
-      <span><Icon src={ArrowUpTray} class="h-8" /></span>
+    </Button>
+    <Button href={resolve(`/dashboard/drafts/${draft.id}/results.csv`)} download>
+      <ArrowUpFromLine class="size-5" />
       <span>Export Ongoing Draft Results</span>
-    </a>
+    </Button>
   </div>
 {/if}
 
@@ -50,12 +44,15 @@
         To begin, simply provide the the maximum number of rounds for the upcoming draft. This has
         historically been set to <strong>5</strong>.
       </p>
-      <WarningAlert>
-        Please be aware that once the draft starts and students are allowed to register,
-        <strong>no labs can be deleted or restored</strong>. Further, once student registration is
-        closed and control handed off to lab heads,
-        <strong>lab quotas can no longer be adjusted.</strong>
-      </WarningAlert>
+      <Alert.Root variant="warning">
+        <TriangleAlert />
+        <Alert.Description>
+          Please be aware that once the draft starts and students are allowed to register,
+          <strong>no labs can be deleted or restored</strong>. Further, once student registration is
+          closed and control handed off to lab heads,
+          <strong>lab quotas can no longer be adjusted.</strong>
+        </Alert.Description>
+      </Alert.Root>
     </div>
     <InitForm />
   </div>
@@ -93,28 +90,34 @@
       <ConcludeForm draft={draft.id} />
     </div>
     <div class="min-w-max space-y-2">
-      <nav class="card preset-tonal-warning border-warning-500 space-y-4 border p-4">
-        <h3 class="h3">Eligible for Lottery ({available.length})</h3>
-        {#if available.length > 0}
-          <InterveneForm draft={draft.id} {labs} students={available} />
-        {:else}
-          <p class="prose dark:prose-invert max-w-none">
-            Congratulations! All participants have been drafted. No action is needed here.
-          </p>
-        {/if}
-      </nav>
-      <nav class="card preset-tonal-success border-success-500 space-y-4 border p-4">
-        <h3 class="h3">Already Drafted ({selected.length})</h3>
-        <ul class="space-y-1">
-          {#each selected as { id, ...user } (id)}
-            <li
-              class="preset-filled-surface-100-900 hover:preset-filled-surface-200-800 rounded-md p-2 transition-colors duration-150"
-            >
-              <Student {user} />
-            </li>
-          {/each}
-        </ul>
-      </nav>
+      <Card.Root class="border-warning bg-warning/10">
+        <Card.Header>
+          <Card.Title>Eligible for Lottery ({available.length})</Card.Title>
+        </Card.Header>
+        <Card.Content class="space-y-4">
+          {#if available.length > 0}
+            <InterveneForm draft={draft.id} {labs} students={available} />
+          {:else}
+            <p class="prose dark:prose-invert max-w-none">
+              Congratulations! All participants have been drafted. No action is needed here.
+            </p>
+          {/if}
+        </Card.Content>
+      </Card.Root>
+      <Card.Root class="border-success bg-success/10">
+        <Card.Header>
+          <Card.Title>Already Drafted ({selected.length})</Card.Title>
+        </Card.Header>
+        <Card.Content>
+          <ul class="space-y-1">
+            {#each selected as { id, ...user } (id)}
+              <li class="bg-muted hover:bg-muted/80 rounded-md p-2 transition-colors duration-150">
+                <Student {user} />
+              </li>
+            {/each}
+          </ul>
+        </Card.Content>
+      </Card.Root>
     </div>
   </div>
 {:else if draft.currRound > 0}
@@ -148,8 +151,11 @@
     </nav>
   </div>
 {:else}
-  <WarningAlert
-    >No students have registered for this draft yet. The draft cannot proceed until at least one
-    student participates.</WarningAlert
-  >
+  <Alert.Root variant="warning">
+    <TriangleAlert />
+    <Alert.Description>
+      No students have registered for this draft yet. The draft cannot proceed until at least one
+      student participates.
+    </Alert.Description>
+  </Alert.Root>
 {/if}

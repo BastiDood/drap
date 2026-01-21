@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { Avatar } from '@skeletonlabs/skeleton-svelte';
   import { SvelteSet } from 'svelte/reactivity';
 
+  import * as Avatar from '$lib/components/ui/avatar';
   import { assert } from '$lib/assert';
+  import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';
 
@@ -47,14 +48,14 @@
   {#each drafteeIds as id (id)}
     <input type="hidden" name="students" value={id} />
   {/each}
-  <button type="submit" class="preset-filled-primary-500 btn w-full" {disabled}>Submit</button>
+  <Button type="submit" class="w-full" {disabled}>Submit</Button>
   <ul class="space-y-1">
     {#each students as { id, email, givenName, familyName, avatarUrl, studentNumber, remark } (id)}
       {@const selected = drafteeIds.has(id)}
       {@const action: (value: string) => void = selected ? drafteeIds.delete : drafteeIds.add}
       <li
         data-selected={selected}
-        class="preset-filled-surface-100-900 hover:preset-filled-surface-200-800 data-[selected=true]:preset-filled-surface-500 cursor-pointer rounded-md transition-colors duration-150"
+        class="bg-muted hover:bg-muted/80 data-[selected=true]:bg-primary/20 cursor-pointer rounded-md transition-colors duration-150"
       >
         <button
           type="button"
@@ -62,7 +63,10 @@
           onclick={action.bind(drafteeIds, id)}
         >
           <div class="flex items-center gap-3 p-2">
-            <Avatar src={avatarUrl} name="{givenName} {familyName}" />
+            <Avatar.Root class="size-10">
+              <Avatar.Image src={avatarUrl} alt="{givenName} {familyName}" />
+              <Avatar.Fallback>{givenName[0]}{familyName[0]}</Avatar.Fallback>
+            </Avatar.Root>
             <div class="flex flex-col">
               <strong class="text-start"
                 ><span class="uppercase">{familyName}</span>, {givenName}</strong

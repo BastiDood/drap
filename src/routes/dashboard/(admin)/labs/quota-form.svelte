@@ -1,11 +1,12 @@
 <script lang="ts">
-  import { Icon } from '@steeze-ui/svelte-icon';
-  import { PencilSquare } from '@steeze-ui/heroicons';
+  import PencilSquare from '@lucide/svelte/icons/pencil';
+  import { toast } from 'svelte-sonner';
 
   import { assert } from '$lib/assert';
+  import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
+  import { Input } from '$lib/components/ui/input';
   import type { schema } from '$lib/server/database';
-  import { useToaster } from '$lib/toast';
 
   type Lab = Pick<schema.Lab, 'id' | 'name' | 'quota' | 'deletedAt'>;
   interface Props {
@@ -17,8 +18,6 @@
   const total = $derived(
     activeLabs.reduce((total, { quota, deletedAt }) => total + (deletedAt ? 0 : quota), 0),
   );
-
-  const toaster = useToaster();
 </script>
 
 <form
@@ -44,10 +43,10 @@
       await update();
       switch (result.type) {
         case 'success':
-          toaster.success({ title: successMessage });
+          toast.success(successMessage);
           break;
         case 'failure':
-          toaster.error({ title: errorMessage });
+          toast.error(errorMessage);
           break;
         default:
           break;
@@ -55,45 +54,49 @@
     };
   }}
 >
-  <div class="table-container">
-    <table class=" table-comfortable table">
-      <thead>
+  <div class="overflow-x-auto rounded-md border">
+    <table class="w-full text-sm">
+      <thead class="bg-muted/50 border-b">
         <tr>
-          <th>Laboratory</th>
-          <th class="table-cell-fit">Quota ({total})</th>
+          <th class="px-4 py-3 text-left font-medium">Laboratory</th>
+          <th class="w-32 px-4 py-3 text-left font-medium">Quota ({total})</th>
           {#if isDeleteAllowed}
-            <th class="table-cell-fit">Delete</th>
+            <th class="w-24 px-4 py-3 text-left font-medium">Delete</th>
           {/if}
         </tr>
       </thead>
       <tbody>
         {#each activeLabs as { id, name, quota, deletedAt } (id)}
           {@const placeholder = quota.toString()}
-          <tr>
-            <td class="!align-middle">
+          <tr class="border-b">
+            <td class="px-4 py-3 align-middle">
               {#if deletedAt === null}
                 {name}
               {:else}
-                <strike>{name}</strike>
+                <strike class="text-muted-foreground">{name}</strike>
               {/if}
             </td>
-            <td class="table-cell-fit"
-              ><input
+            <td class="w-32 px-4 py-3">
+              <Input
                 type="number"
                 min="0"
                 name={id}
                 {placeholder}
                 disabled={deletedAt !== null}
-                class="input variant-form-material px-2 py-1"
-              /></td
-            >
+                class="h-8"
+              />
+            </td>
             {#if isDeleteAllowed}
-              <td class="table-cell-fit">
-                <button
+              <td class="w-24 px-4 py-3">
+                <Button
                   formaction="/dashboard/labs/?/delete"
-                  class="preset-filled-error-500 btn w-full"
-                  id="delete:{id}">Delete</button
+                  variant="destructive"
+                  size="sm"
+                  class="w-full"
+                  id="delete:{id}"
                 >
+                  Delete
+                </Button>
               </td>
             {/if}
           </tr>
@@ -101,8 +104,8 @@
       </tbody>
     </table>
   </div>
-  <button type="submit" class="preset-filled-primary-500 btn w-full">
-    <span><Icon src={PencilSquare} class="h-6" /></span>
+  <Button type="submit" class="w-full">
+    <PencilSquare class="size-5" />
     <span>Update Lab Quota</span>
-  </button>
+  </Button>
 </form>

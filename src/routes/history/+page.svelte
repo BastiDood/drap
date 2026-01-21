@@ -1,27 +1,30 @@
 <script lang="ts">
-  import { CheckCircle, Clock, Scale, Sparkles } from '@steeze-ui/heroicons';
+  import CheckCircle from '@lucide/svelte/icons/check-circle';
+  import Clock from '@lucide/svelte/icons/clock';
+  import Scale from '@lucide/svelte/icons/scale';
+  import Sparkles from '@lucide/svelte/icons/sparkles';
+  import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
   import { format } from 'date-fns';
-  import { Icon } from '@steeze-ui/svelte-icon';
 
-  import WarningAlert from '$lib/alerts/Warning.svelte';
+  import * as Alert from '$lib/components/ui/alert';
   import { resolve } from '$app/paths';
 
   const { data } = $props();
   const { drafts } = $derived(data);
 </script>
 
-<h2 class="h2">Draft History</h2>
+<h2 class="scroll-m-20 text-3xl font-semibold tracking-tight">Draft History</h2>
 {#if drafts.length > 0}
-  <nav class="list-nav">
+  <nav class="space-y-1">
     <ul>
       {#each drafts as { id: draftId, activePeriodStart, activePeriodEnd, currRound, maxRounds } (draftId)}
         {@const start = format(activePeriodStart, 'PPPpp')}
         {#if activePeriodEnd !== null}
           <!-- Concluded Draft -->
           {@const end = format(activePeriodEnd, 'PPPpp')}
-          <li class="card preset-tonal-surface">
+          <li class="bg-muted rounded-lg">
             <a href={resolve(`/history/${draftId}/`)} class="flex items-center gap-3 px-2 py-1">
-              <Icon src={CheckCircle} class="size-8" />
+              <CheckCircle class="size-8" />
               <span
                 ><strong>Draft #{draftId}</strong> was held from
                 <time datetime={activePeriodStart.toISOString()}>{start}</time> –
@@ -31,9 +34,9 @@
           </li>
         {:else if currRound === null}
           <!-- Lottery Stage -->
-          <li class="card preset-tonal-secondary border-secondary-500 border">
+          <li class="border-secondary bg-secondary/10 rounded-lg border">
             <a href={resolve(`/history/${draftId}/`)} class="flex items-center gap-3 px-2 py-1">
-              <Icon src={Sparkles} class="size-8" />
+              <Sparkles class="size-8" />
               <span
                 ><strong>Draft #{draftId}</strong> started on
                 <time datetime={activePeriodStart.toISOString()}>{start}</time> and is now in the
@@ -43,9 +46,9 @@
           </li>
         {:else if currRound === 0}
           <!-- Registration Stage -->
-          <li class="card preset-tonal-tertiary border-tertiary-500 border">
+          <li class="border-accent bg-accent/10 rounded-lg border">
             <a href={resolve(`/history/${draftId}/`)} class="flex items-center gap-3 px-2 py-1">
-              <Icon src={Clock} class="size-8" />
+              <Clock class="size-8" />
               <span
                 ><strong>Draft #{draftId}</strong> started on
                 <time datetime={activePeriodStart.toISOString()}>{start}</time> and is currently waiting
@@ -55,9 +58,9 @@
           </li>
         {:else}
           <!-- Regular Draft Process -->
-          <li class="card preset-tonal-secondary">
+          <li class="bg-secondary/10 rounded-lg">
             <a href={resolve(`/history/${draftId}/`)} class="flex items-center gap-3 px-2 py-1">
-              <Icon src={Scale} class="size-8" />
+              <Scale class="size-8" />
               <span
                 ><strong>Draft #{draftId}</strong> started on
                 <time datetime={activePeriodStart.toISOString()}>{start}</time>
@@ -70,5 +73,10 @@
     </ul>
   </nav>
 {:else}
-  <WarningAlert>No drafts have been recorded yet. Please check again later.</WarningAlert>
+  <Alert.Root variant="warning">
+    <TriangleAlert />
+    <Alert.Description
+      >No drafts have been recorded yet. Please check again later.</Alert.Description
+    >
+  </Alert.Root>
 {/if}

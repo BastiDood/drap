@@ -1,7 +1,9 @@
 <script lang="ts">
-  import WarningAlert from '$lib/alerts/Warning.svelte';
+  import TriangleAlert from '@lucide/svelte/icons/triangle-alert';
 
-  import ProfileForm from './ProfileForm.svelte';
+  import * as Alert from '$lib/components/ui/alert';
+
+  import ProfileForm from './profile-form.svelte';
 
   const { data } = $props();
   const {
@@ -9,8 +11,13 @@
   } = $derived(data);
 </script>
 
-<h1 class="h1">User Profile</h1>
+<h1 class="scroll-m-20 text-4xl font-extrabold tracking-tight">User Profile</h1>
 {#if studentNumber === null}
-  <WarningAlert>The student number must be set. Note that this can only be done once.</WarningAlert>
+  <Alert.Root variant="warning">
+    <TriangleAlert />
+    <Alert.Description
+      >The student number must be set. Note that this can only be done once.</Alert.Description
+    >
+  </Alert.Root>
 {/if}
 <ProfileForm {studentNumber} {givenName} {familyName} />

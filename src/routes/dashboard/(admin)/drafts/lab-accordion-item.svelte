@@ -1,9 +1,10 @@
 <script lang="ts">
-  import { Accordion } from '@skeletonlabs/skeleton-svelte';
   import type { ComponentProps } from 'svelte';
   import { run } from 'svelte/legacy';
 
-  import Student from '$lib/users/Student.svelte';
+  import * as Accordion from '$lib/components/ui/accordion';
+  import Student from '$lib/users/student.svelte';
+  import { Badge } from '$lib/components/ui/badge';
   import type { schema } from '$lib/server/database';
 
   type Lab = Pick<schema.Lab, 'id' | 'name' | 'quota'>;
@@ -30,32 +31,29 @@
 </script>
 
 <Accordion.Item value={lab.id}>
-  {#snippet control()}
-    <div class="flex justify-between">
+  <Accordion.Trigger>
+    <div class="flex w-full justify-between">
       {#if lab.quota === 0}
-        <h5 class="h5 text-gray-400">{lab.name}</h5>
+        <h5 class="text-muted-foreground text-lg font-medium">{lab.name}</h5>
       {:else if selected.length < lab.quota}
-        <h5 class="h5">{lab.name}</h5>
+        <h5 class="text-lg font-medium">{lab.name}</h5>
       {:else}
-        <h5 class="h5 text-warning-500">{lab.name}</h5>
+        <h5 class="text-warning text-lg font-medium">{lab.name}</h5>
       {/if}
-      <span>
-        <span
-          class="preset-tonal-primary border-primary-500 badge border font-mono text-xs uppercase"
-          >{selected.length} Members</span
+      <span class="flex gap-1">
+        <Badge variant="outline" class="border-primary bg-primary/10 font-mono text-xs uppercase"
+          >{selected.length} Members</Badge
         >
-        <span
-          class="preset-tonal-tertiary border-tertiary-500 badge border font-mono text-xs uppercase"
-          >{preferred.length} preferred</span
+        <Badge variant="outline" class="border-accent bg-accent/10 font-mono text-xs uppercase"
+          >{preferred.length} preferred</Badge
         >
-        <span
-          class="preset-tonal-warning border-warning-500 badge border font-mono text-xs uppercase"
-          >{lab.quota} maximum</span
+        <Badge variant="outline" class="border-warning bg-warning/10 font-mono text-xs uppercase"
+          >{lab.quota} maximum</Badge
         >
       </span>
     </div>
-  {/snippet}
-  {#snippet panel()}
+  </Accordion.Trigger>
+  <Accordion.Content>
     <div>
       <hr class="p-2" />
       <div class="grid lg:grid-cols-3">
@@ -87,5 +85,5 @@
         </div>
       </div>
     </div>
-  {/snippet}
+  </Accordion.Content>
 </Accordion.Item>
