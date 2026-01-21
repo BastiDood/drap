@@ -1,4 +1,8 @@
-<section class="prose dark:prose-invert max-w-none">
+<script>
+  import Link from '$lib/components/link.svelte';
+</script>
+
+<section class="prose dark:prose-invert mx-auto max-w-2xl p-10">
   <h1>Privacy Policy</h1>
   <section>
     <h2>Introduction</h2>
@@ -84,15 +88,15 @@
       <br />
       <span>Diliman, Quezon City, National Capital Region</span>
       <br />
-      <span><a href="tel:+89818500">(02) 8981 8500</a> loc. 3231</span>
+      <span><Link href="tel:+89818500">(02) 8981 8500</Link> loc. 3231</span>
       <br />
-      <a href="mailto:info@dcs.upd.edu.ph">info@dcs.upd.edu.ph</a>
+      <Link href="mailto:info@dcs.upd.edu.ph">info@dcs.upd.edu.ph</Link>
       <br />
     </p>
     <p>
       Report a privacy security incident or personal data breach using email subject
-      “Incident/Breach – Name of the Unit” at <a href="mailto:dpo.updiliman@up.edu.ph"
-        >dpo.updiliman@up.edu.ph</a
+      “Incident/Breach – Name of the Unit” at <Link href="mailto:dpo.updiliman@up.edu.ph"
+        >dpo.updiliman@up.edu.ph</Link
       >.
     </p>
     <p>
@@ -104,25 +108,27 @@
       <br />
       <span>Diliman, Quezon City 1101</span>
       <br />
-      <span>Landline: <a href="tel:+82553561">8255-3561</a></span>
+      <span>Landline: <Link href="tel:+82553561">8255-3561</Link></span>
       <br />
-      <span>Email: <a href="mailto:dpo.updiliman@up.edu.ph">dpo.updiliman@up.edu.ph</a></span>
+      <span>Email: <Link href="mailto:dpo.updiliman@up.edu.ph">dpo.updiliman@up.edu.ph</Link></span>
     </p>
     <p>
       <span>Links to UP Diliman Data Privacy</span>
       <br />
-      <a target="_blank" href="https://privacy.upd.edu.ph/privacy-policies/">Privacy Policies</a>
-      <br />
-      <a
-        target="_blank"
-        href="https://privacy.upd.edu.ph/data-subject-rights-and-responsibilities-2/"
-        >Data Subject Rights and Responsibilities</a
+      <Link target="_blank" href="https://privacy.upd.edu.ph/privacy-policies/"
+        >Privacy Policies</Link
       >
       <br />
-      <a
+      <Link
+        target="_blank"
+        href="https://privacy.upd.edu.ph/data-subject-rights-and-responsibilities-2/"
+        >Data Subject Rights and Responsibilities</Link
+      >
+      <br />
+      <Link
         target="_blank"
         href="https://privacy.upd.edu.ph/privacy-policy-for-students-parents-and-guardians-2/"
-        >Privacy Policy for Students, Parents, and Guardians</a
+        >Privacy Policy for Students, Parents, and Guardians</Link
       >
     </p>
   </section>
