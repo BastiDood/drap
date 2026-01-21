@@ -20,6 +20,33 @@ Welcome to DRAP: the Draft Ranking Automated Processor for the [University of th
 
 The [main web application](./src) is powered by SvelteKit. Data persistence is backed by PostgreSQL.
 
+### Production Architecture
+
+```mermaid
+flowchart TD
+    subgraph External
+        User[Browser]
+        Google[Google OAuth]
+    end
+
+    subgraph Production
+        App[DRAP :3000]
+        Inngest[Inngest :8288]
+        Postgres[(PostgreSQL :5432)]
+        Redis[(Redis :6379)]
+        O2[OpenObserve :5080]
+        Drizzle[Drizzle Gateway :4983]
+    end
+
+    User --> App
+    App --> Google
+    App --> Postgres
+    App <--> Inngest
+    App -.->|OTEL| O2
+    Inngest --> Redis
+    Drizzle --> Postgres
+```
+
 ### Server Environment Variables
 
 At runtime, the server requires the following environment variables to be present.
@@ -94,7 +121,7 @@ pnpm lint
 
 ```bash
 # Run all database and queue services in the background.
-docker compose --profile dev up --detach
+pnpm docker:dev
 
 # Run the Vite dev server for SvelteKit.
 pnpm dev
@@ -115,7 +142,7 @@ node --env-file=.env build/index.js
 
 ```bash
 # Or, just use Docker for everything.
-docker compose --profile prod up --detach
+pnpm docker:prod
 ```
 
 ### Local Telemetry with OpenObserve
@@ -124,7 +151,7 @@ To enable full observability in local development:
 
 1. Start the local services (including OpenObserve):
    ```bash
-   docker compose up --detach
+   pnpm docker:dev
    ```
 2. Export the OTEL environment variables before running the dev server:
    ```bash

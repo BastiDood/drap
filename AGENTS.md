@@ -17,10 +17,9 @@ pnpm lint:svelte          # Svelte checker only
 pnpm db:generate          # Generate Drizzle migrations
 pnpm db:migrate           # Apply migrations
 pnpm db:studio            # Drizzle Studio UI
+pnpm docker:dev           # Start dev services: postgres, inngest dev, o2
+pnpm docker:prod          # Start prod services: + redis, app, drizzle-gateway
 ```
-
-Docker (dev): `docker compose --profile dev up --detach`
-Docker (prod): `docker compose --profile prod up --detach`
 
 ## Tech Stack
 
