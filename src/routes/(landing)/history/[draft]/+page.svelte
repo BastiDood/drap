@@ -12,7 +12,6 @@
   import { format, fromUnixTime, getUnixTime } from 'date-fns';
   import { groupby } from 'itertools';
 
-  import Callout from '$lib/components/callout.svelte';
   import Link from '$lib/components/link.svelte';
   import { getOrdinalSuffix } from '$lib/ordinal';
   import { Progress } from '$lib/components/ui/progress';
@@ -108,7 +107,7 @@
       {@const { endIsoString, endDateTime } = end}
       <li class="ms-6 mb-10">
         <span
-          class="bg-background ring-muted-foreground ring-2 mt-0.5 absolute -start-3 flex size-6 items-center justify-center rounded-full"
+          class="bg-background ring-muted-foreground absolute -start-3 mt-0.5 flex size-6 items-center justify-center rounded-full ring-2"
           ><CalendarDaysIcon class="text-foreground size-4" /></span
         >
         <h4 class="mb-2 scroll-m-20 text-xl font-semibold tracking-tight">
@@ -126,7 +125,7 @@
       {@const heading = format(date, 'PPPpp')}
       <li class="ms-6 mb-10">
         <span
-          class="bg-background ring-muted-foreground ring-2 mt-0.5 absolute -start-3 flex size-6 items-center justify-center rounded-full"
+          class="bg-background ring-muted-foreground absolute -start-3 mt-0.5 flex size-6 items-center justify-center rounded-full ring-2"
           ><CalendarDaysIcon class="text-foreground size-4" /></span
         >
         <h4 class="mb-2 scroll-m-20 text-xl font-semibold tracking-tight">
@@ -188,7 +187,7 @@
     {/each}
     <li class="ms-6 mb-10">
       <span
-        class="bg-background ring-muted-foreground ring-2 mt-0.5 absolute -start-3 flex size-6 items-center justify-center rounded-full"
+        class="bg-background ring-muted-foreground absolute -start-3 mt-0.5 flex size-6 items-center justify-center rounded-full ring-2"
         ><CalendarDaysIcon class="text-foreground size-4" /></span
       >
       <h4 class="mb-2 scroll-m-20 text-xl font-semibold tracking-tight">
