@@ -89,6 +89,16 @@ Inngest-based event-driven notifications.
 - **Runtime assertions** over TypeScript non-null assertions (`!`)
 - **Valibot schemas** double as runtime validation + type definitions
 
+### Svelte Components
+
+- **Props typing:** Use `Pick<schema.*, 'field1' | 'field2'>` from `$lib/server/database` instead of inlining object type definitions
+- **No `data` wrapper:** Pass props directly to components (`{...data}`) rather than wrapping in a `data` object
+- **Avoid `undefined`:** Use truthiness checks (`if (value)`) instead of `typeof value !== 'undefined'`
+- **Import paths:**
+  - Child-relative imports (`./component.svelte`) are fine
+  - Parent-relative imports (`../component.svelte`) should use `$lib` paths instead
+- **Form actions:** Use absolute paths (e.g., `/dashboard/?/profile`) instead of relative (e.g., `?/profile`) for reusable components
+
 ## Environment Variables
 
 | Variable                     | Description                             |
