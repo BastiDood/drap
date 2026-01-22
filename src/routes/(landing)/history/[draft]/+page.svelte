@@ -108,8 +108,8 @@
       {@const { endIsoString, endDateTime } = end}
       <li class="ms-6 mb-10">
         <span
-          class="bg-primary ring-background absolute -start-3 flex size-6 items-center justify-center rounded-full ring-2"
-          ><CalendarDaysIcon class="text-primary-foreground size-4" /></span
+          class="bg-background ring-muted-foreground ring-2 mt-0.5 absolute -start-3 flex size-6 items-center justify-center rounded-full"
+          ><CalendarDaysIcon class="text-foreground size-4" /></span
         >
         <h4 class="mb-2 scroll-m-20 text-xl font-semibold tracking-tight">
           <time datetime={endIsoString}>{endDateTime}</time>
@@ -126,8 +126,8 @@
       {@const heading = format(date, 'PPPpp')}
       <li class="ms-6 mb-10">
         <span
-          class="bg-primary ring-background absolute -start-3 flex size-6 items-center justify-center rounded-full ring-2"
-          ><CalendarDaysIcon class="text-primary-foreground size-4" /></span
+          class="bg-background ring-muted-foreground ring-2 mt-0.5 absolute -start-3 flex size-6 items-center justify-center rounded-full"
+          ><CalendarDaysIcon class="text-foreground size-4" /></span
         >
         <h4 class="mb-2 scroll-m-20 text-xl font-semibold tracking-tight">
           <time datetime={date.toISOString()}>{heading}</time>
@@ -188,8 +188,8 @@
     {/each}
     <li class="ms-6 mb-10">
       <span
-        class="bg-primary ring-background absolute -start-3 flex size-6 items-center justify-center rounded-full ring-2"
-        ><CalendarDaysIcon class="text-primary-foreground size-4" /></span
+        class="bg-background ring-muted-foreground ring-2 mt-0.5 absolute -start-3 flex size-6 items-center justify-center rounded-full"
+        ><CalendarDaysIcon class="text-foreground size-4" /></span
       >
       <h4 class="mb-2 scroll-m-20 text-xl font-semibold tracking-tight">
         <time datetime={startIsoString}>{startDateTime}</time>
