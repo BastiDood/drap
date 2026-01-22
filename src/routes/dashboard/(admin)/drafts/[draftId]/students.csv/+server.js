@@ -3,7 +3,7 @@ import { error, redirect } from '@sveltejs/kit';
 
 import { db, getDraftById, getStudentRanksExport } from '$lib/server/database';
 import { Logger } from '$lib/server/telemetry/logger';
-import { validateBigInt } from '$lib/validators.js';
+import { validateBigInt } from '$lib/validators';
 
 const SERVICE_NAME = 'routes.dashboard.admin.drafts.students-csv';
 const logger = Logger.byName(SERVICE_NAME);

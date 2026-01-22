@@ -21,7 +21,7 @@ import Rail from './sidebar-rail.svelte';
 import Root from './sidebar.svelte';
 import Separator from './sidebar-separator.svelte';
 import Trigger from './sidebar-trigger.svelte';
-import { useSidebar } from './context.svelte.js';
+import { useSidebar } from './context.svelte';
 
 export {
   Content,
