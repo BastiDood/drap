@@ -10,11 +10,12 @@
   let {
     variant,
     border,
+    class: className,
     children,
-  }: { variant: AlertVariant; border?: AlertBorder; children: Snippet } = $props();
+  }: { variant: AlertVariant; border?: AlertBorder; class?: string; children: Snippet } = $props();
 </script>
 
-<Alert.Root {variant} {border}>
+<Alert.Root {variant} {border} class={className}>
   {#if variant === 'destructive'}
     <CircleAlertIcon />
   {:else if variant === 'success'}
