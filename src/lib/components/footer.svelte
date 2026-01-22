@@ -3,6 +3,8 @@
 
   import Logo from '$lib/assets/logo-DRAP-icon-colored.svg';
   import { resolve } from '$app/paths';
+
+  import Link from './link.svelte';
 </script>
 
 <footer class="border-border space-y-4 border-t p-6">
@@ -13,13 +15,7 @@
         <span>
           <strong>DRAP</strong>: Draft Ranking Automated Processor
         </span>
-        <a
-          target="_blank"
-          href="https://dcs.upd.edu.ph/"
-          class="hover:text-secondary-foreground decoration-muted-foreground underline underline-offset-3 transition"
-        >
-          Department of Computer Science
-        </a>
+        <Link href="https://dcs.upd.edu.ph/" target="_blank">Department of Computer Science</Link>
         <span>University of the Philippines - Diliman</span>
       </div>
     </div>
@@ -28,14 +24,14 @@
         <h6 class="text-muted-foreground font-semibold">Navigation</h6>
         <a
           href={resolve('/history/')}
-          class="hover:text-secondary-foreground inline-flex w-fit items-center gap-1 transition duration-150"
+          class="dark:hover:text-secondary hover:text-muted-foreground/80 inline-flex w-fit items-center gap-1 transition duration-150"
         >
           <History size="16" />
           <span>History</span>
         </a>
         <a
           href={resolve('/privacy/')}
-          class="hover:text-secondary-foreground inline-flex w-fit items-center gap-1 transition duration-150"
+          class="dark:hover:text-secondary hover:text-muted-foreground/80 inline-flex w-fit items-center gap-1 transition duration-150"
         >
           <Lock size="16" />
           <span>Privacy Policy</span>
@@ -47,7 +43,7 @@
           href="https://github.com/BastiDood/drap"
           target="_blank"
           rel="noopener noreferrer"
-          class="hover:text-secondary-foreground inline-flex w-fit items-center gap-1 transition duration-150"
+          class="dark:hover:text-secondary hover:text-muted-foreground/80 inline-flex w-fit items-center gap-1 transition duration-150"
         >
           <Github size="16" />
           <span>View Source</span>
@@ -56,7 +52,7 @@
           href="https://github.com/BastiDood/drap/fork"
           target="_blank"
           rel="noopener noreferrer"
-          class="hover:text-secondary-foreground inline-flex w-fit items-center gap-1 transition duration-150"
+          class="dark:hover:text-secondary hover:text-muted-foreground/80 inline-flex w-fit items-center gap-1 transition duration-150"
         >
           <GitFork size="16" />
           <span>Fork the Repository</span>
@@ -65,7 +61,7 @@
           href="https://github.com/BastiDood/drap/issues/new"
           target="_blank"
           rel="noopener noreferrer"
-          class="hover:text-secondary-foreground inline-flex w-fit items-center gap-1 transition duration-150"
+          class="dark:hover:text-secondary hover:text-muted-foreground/80 inline-flex w-fit items-center gap-1 transition duration-150"
         >
           <Bug size="16" />
           <span>Report a Bug</span>

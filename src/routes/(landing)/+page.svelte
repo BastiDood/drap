@@ -129,9 +129,11 @@
         on your role in the draft.
       </p>
     </div>
-    <Accordion.Root type="single" class="border-border rounded-lg border">
+    <Accordion.Root type="single" class="border-border overflow-hidden rounded-lg border">
       <Accordion.Item value="student">
-        <Accordion.Trigger class="px-4">
+        <Accordion.Trigger
+          class="data-[state=open]:bg-secondary data-[state=open]:text-secondary-foreground data-[state=open]:*:text-secondary-foreground px-4 transition-none data-[state=open]:rounded-none data-[state=open]:font-semibold"
+        >
           <span class="flex items-center gap-2">
             <GraduationCapIcon class="size-5" />
             <span>For Students</span>
@@ -156,7 +158,9 @@
         </Accordion.Content>
       </Accordion.Item>
       <Accordion.Item value="lab-head">
-        <Accordion.Trigger class="px-4">
+        <Accordion.Trigger
+          class="data-[state=open]:bg-secondary data-[state=open]:text-secondary-foreground data-[state=open]:*:text-secondary-foreground px-4 transition-none data-[state=open]:rounded-none data-[state=open]:font-semibold"
+        >
           <span class="flex items-center gap-2">
             <FlaskConicalIcon class="size-5" />
             <span>For Lab Heads</span>
@@ -186,7 +190,9 @@
         </Accordion.Content>
       </Accordion.Item>
       <Accordion.Item value="admin">
-        <Accordion.Trigger class="px-4">
+        <Accordion.Trigger
+          class="data-[state=open]:bg-secondary data-[state=open]:text-secondary-foreground data-[state=open]:*:text-secondary-foreground px-4 transition-none data-[state=open]:rounded-none data-[state=open]:font-semibold"
+        >
           <span class="flex items-center gap-2">
             <ShieldAlertIcon class="size-5" />
             <span>For Administrators</span>

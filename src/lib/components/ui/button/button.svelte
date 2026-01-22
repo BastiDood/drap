@@ -5,16 +5,18 @@
   import { cn, type WithElementRef } from '$lib/components/ui/utils';
 
   export const buttonVariants = tv({
-    base: "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-sm font-medium whitespace-nowrap transition-all outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+    base: "focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive inline-flex shrink-0 items-center justify-center gap-2 rounded-md text-base font-medium whitespace-nowrap transition-all outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
     variants: {
       variant: {
         default: 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-xs',
         destructive:
-          'bg-destructive hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60 text-white shadow-xs',
+          'bg-destructive hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive dark:hover:bg-destructive/80 text-white shadow-xs',
         outline:
-          'bg-background hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50 border shadow-xs',
-        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80 shadow-xs',
-        ghost: 'hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50',
+          'bg-background hover:bg-accent/80 hover:text-accent-foreground dark:bg-input/30 dark:hover:bg-input/50 dark:hover:text-foreground/80 border shadow-xs',
+        secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/90 shadow-xs',
+        accent:
+          'bg-accent text-accent-foreground hover:bg-accent/90 focus-visible:ring-accent/20 dark:focus-visible:ring-accent/40 shadow-xs',
+        ghost: 'hover:bg-muted-foreground/30',
         link: 'text-primary underline-offset-4 hover:underline',
       },
       size: {

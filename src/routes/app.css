@@ -12,35 +12,36 @@
   /* Surface → Background/Card/Popover */
   --background: oklch(92.88% 0.01 255.51deg);
   --foreground: oklch(20.16% 0.01 163.61deg);
-  --card: oklch(92.88% 0.01 255.51deg);
-  --card-foreground: oklch(20.16% 0.01 163.61deg);
-  --popover: oklch(100% 0 0);
-  --popover-foreground: oklch(20.16% 0.01 163.61deg);
+  --card: oklch(94.873% 0.00848 236.982);
+  --card-foreground: oklch(36.292% 0.01873 157.536);
+  --popover: oklch(94.873% 0.00848 236.982);
+  --popover-foreground: oklch(36.292% 0.01873 157.536);
 
   /* Primary (green) */
   --primary: oklch(49.51% 0.12 154.86deg);
   --primary-foreground: oklch(98.23% 0.02 140.81deg);
 
   /* Secondary (teal) */
-  --secondary: oklch(90.87% 0.0325 161.23deg);
-  --secondary-foreground: oklch(38.64% 0.0634 176.44deg);
+  --secondary: oklch(80.379% 0.07361 159.214);
+  --secondary-foreground: oklch(29.161% 0.04508 176.474);
 
   /* Muted (surface grays) */
   --muted: oklch(83.19% 0.01 238.49deg);
   --muted-foreground: oklch(41.52% 0.02 153.87deg);
 
-  /* Accent (tertiary blue) */
-  --accent: oklch(86.15% 0.04 241.49deg);
+  /* Accent (blue) */
+  --accent: oklch(72.68% 0.07 248.1deg);
   --accent-foreground: oklch(33.62% 0.08 252.16deg);
 
-  /* Destructive (error red) */
+  /* Destructive */
   --destructive: oklch(56.23% 0.18 24.89deg);
+  --destructive-foreground: oklch(86.45% 0.07 37.09deg);
 
-  /* Success (bright green) */
+  /* Success */
   --success: oklch(65.6% 0.18 149.18deg);
   --success-foreground: oklch(30.86% 0.11 142.5deg);
 
-  /* Warning (yellow) */
+  /* Warning */
   --warning: oklch(82.33% 0.14 76.57deg);
   --warning-foreground: oklch(43.77% 0.1 65.44deg);
 
@@ -61,7 +62,7 @@
   --sidebar-foreground: oklch(20.16% 0.01 163.61deg);
   --sidebar-primary: oklch(49.51% 0.12 154.86deg);
   --sidebar-primary-foreground: oklch(98.23% 0.02 140.81deg);
-  --sidebar-accent: oklch(86.15% 0.04 241.49deg);
+  --sidebar-accent: oklch(72.68% 0.07 248.1deg);
   --sidebar-accent-foreground: oklch(33.62% 0.08 252.16deg);
   --sidebar-border: oklch(73.51% 0.01 205.74deg);
   --sidebar-ring: oklch(49.51% 0.12 154.86deg);
@@ -77,23 +78,24 @@
   --popover-foreground: oklch(92.88% 0.01 255.51deg);
 
   /* Primary (green) */
-  --primary: oklch(58.83% 0.11 159deg);
-  --primary-foreground: oklch(27.51% 0.07 151.81deg);
+  --primary: oklch(49.51% 0.12 154.86deg);
+  --primary-foreground: oklch(98.23% 0.02 140.81deg);
 
   /* Secondary (teal) */
-  --secondary: oklch(46.84% 0.0693 172.2deg);
-  --secondary-foreground: oklch(100% 0 0);
+  --secondary: oklch(0.7715 0.0813 159.02);
+  --secondary-foreground: oklch(38.64% 0.0634 176.44deg);
 
   /* Muted (surface grays) */
   --muted: oklch(29.17% 0.01 157.93deg);
   --muted-foreground: oklch(63.24% 0.01 188.78deg);
 
-  /* Accent (tertiary blue) */
-  --accent: oklch(40.43% 0.08 250.62deg);
-  --accent-foreground: oklch(99.48% 0.01 196.79deg);
+  /* Accent (blue) */
+  --accent: oklch(62.869% 0.10379 249.809);
+  --accent-foreground: oklch(33.62% 0.08 252.16deg);
 
   /* Destructive (error red) */
-  --destructive: oklch(67.47% 0.14 25.69deg);
+  --destructive: oklch(56.23% 0.18 24.89deg);
+  --destructive-foreground: oklch(88.309% 0.0498 38.246);
 
   /* Success (bright green) */
   --success: oklch(69.81% 0.17 150.75deg);
@@ -106,7 +108,7 @@
   /* Borders/Input/Ring */
   --border: oklch(33.41% 0.02 156.21deg);
   --input: oklch(33.41% 0.02 156.21deg);
-  --ring: oklch(58.83% 0.11 159deg);
+  --ring: oklch(49.51% 0.12 154.86deg);
 
   /* Charts */
   --chart-1: oklch(58.83% 0.11 159deg);
@@ -118,12 +120,12 @@
   /* Sidebar */
   --sidebar: oklch(24.77% 0.01 160.26deg);
   --sidebar-foreground: oklch(92.88% 0.01 255.51deg);
-  --sidebar-primary: oklch(58.83% 0.11 159deg);
-  --sidebar-primary-foreground: oklch(27.51% 0.07 151.81deg);
-  --sidebar-accent: oklch(40.43% 0.08 250.62deg);
-  --sidebar-accent-foreground: oklch(99.48% 0.01 196.79deg);
+  --sidebar-primary: oklch(49.51% 0.12 154.86deg);
+  --sidebar-primary-foreground: oklch(98.23% 0.02 140.81deg);
+  --sidebar-accent: oklch(62.869% 0.10379 249.809);
+  --sidebar-accent-foreground: oklch(33.62% 0.08 252.16deg);
   --sidebar-border: oklch(33.41% 0.02 156.21deg);
-  --sidebar-ring: oklch(58.83% 0.11 159deg);
+  --sidebar-ring: oklch(49.51% 0.12 154.86deg);
 }
 
 @theme inline {
@@ -148,6 +150,7 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -176,5 +179,56 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  address {
+    @apply not-italic;
+  }
+}
+
+@layer components {
+  .preset-tonal-primary {
+    @apply bg-primary/40 dark:bg-primary/50 dark:border-primary border-current/90;
+    color: hsl(from var(--primary) h 90% 15%);
+  }
+  .dark .preset-tonal-primary {
+    color: hsl(from var(--primary) h 90% 80%);
+  }
+  .preset-tonal-secondary {
+    @apply bg-secondary/30 dark:bg-secondary/30 dark:border-secondary/60 border-current/80;
+    color: hsl(from var(--secondary) h 30% 30%);
+  }
+  .dark .preset-tonal-secondary {
+    color: hsl(from var(--secondary) h 70% 90%);
+  }
+  .preset-tonal-accent {
+    @apply bg-accent/40 dark:bg-accent/60 dark:border-accent border-current/60;
+    color: hsl(from var(--accent) h 50% 50%);
+  }
+  .dark .preset-tonal-accent {
+    color: hsl(from var(--accent) h 100% 85%);
+  }
+  .preset-tonal-muted {
+    @apply bg-muted/30 text-foreground/60 dark:text-foreground/80 border-border/60;
+  }
+  .preset-tonal-success {
+    @apply bg-success/40 dark:bg-success/40 border-current/50;
+    color: hsl(from var(--success) h 30% 20%);
+  }
+  .dark .preset-tonal-success {
+    color: hsl(from var(--success) h 90% 80%);
+  }
+  .preset-tonal-destructive {
+    @apply bg-destructive/35 border-destructive/70 dark:bg-destructive/40 dark:border-destructive/90;
+    color: hsl(from var(--destructive) h 90% 35%);
+  }
+  .dark .preset-tonal-destructive {
+    color: hsl(from var(--destructive) h 100% 90%);
+  }
+  .preset-tonal-warning {
+    @apply bg-warning/60 dark:bg-warning/40 border-current/40;
+    color: hsl(from var(--warning) h 60% 20%);
+  }
+  .dark .preset-tonal-warning {
+    color: hsl(from var(--warning) h 100% 75%);
   }
 }
