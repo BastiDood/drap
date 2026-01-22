@@ -1,6 +1,7 @@
 <script lang="ts">
-  import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
   import CalendarDaysIcon from '@lucide/svelte/icons/calendar-days';
+  import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
+  import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
   import ClockIcon from '@lucide/svelte/icons/clock';
   import CogIcon from '@lucide/svelte/icons/cog';
   import RefreshCwIcon from '@lucide/svelte/icons/refresh-cw';
@@ -44,15 +45,11 @@
   );
 </script>
 
-<div class="mb-4">
-  <Link href={resolve('/history/')}>
-    <span class="border-muted-foreground inline-flex items-center gap-2 border-b">
-      <ArrowLeftIcon class="size-4" />
-      Back to Draft History
-    </span>
-  </Link>
+<div class="mb-4 flex items-center gap-2 text-xl">
+  <Link href={resolve('/history/')} class="no-underline">Draft History</Link>
+  <ChevronRightIcon class="size-4" />
+  <span class="font-semibold">Draft #{did}</span>
 </div>
-<h2 class="mb-8 scroll-m-20 text-3xl font-semibold tracking-tight">Draft #{did}</h2>
 {#if end !== null}
   {@const { endIsoString, endDateTime } = end}
   <!-- Concluded Draft -->
