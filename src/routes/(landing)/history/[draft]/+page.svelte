@@ -1,4 +1,5 @@
 <script lang="ts">
+  import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
   import CalendarDaysIcon from '@lucide/svelte/icons/calendar-days';
   import ClockIcon from '@lucide/svelte/icons/clock';
   import CogIcon from '@lucide/svelte/icons/cog';
@@ -11,8 +12,10 @@
   import { groupby } from 'itertools';
 
   import Callout from '$lib/components/callout.svelte';
+  import Link from '$lib/components/link.svelte';
   import { getOrdinalSuffix } from '$lib/ordinal';
   import { Progress } from '$lib/components/ui/progress';
+  import { resolve } from '$app/paths';
 
   const { data } = $props();
   const {
@@ -41,6 +44,14 @@
   );
 </script>
 
+<div class="mb-4">
+  <Link href={resolve('/history/')}>
+    <span class="border-muted-foreground inline-flex items-center gap-2 border-b">
+      <ArrowLeftIcon class="size-4" />
+      Back to Draft History
+    </span>
+  </Link>
+</div>
 <h2 class="mb-8 scroll-m-20 text-3xl font-semibold tracking-tight">Draft #{did}</h2>
 {#if end !== null}
   {@const { endIsoString, endDateTime } = end}
