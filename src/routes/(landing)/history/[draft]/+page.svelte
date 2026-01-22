@@ -53,42 +53,56 @@
 {#if end !== null}
   {@const { endIsoString, endDateTime } = end}
   <!-- Concluded Draft -->
-  <Callout variant="success">
-    This draft was held from <strong><time datetime={startIsoString}>{startDateTime}</time></strong
-    >–<strong><time datetime={endIsoString}>{endDateTime}</time></strong> over {maxRounds} rounds.
-  </Callout>
+  <div
+    class="preset-tonal-success mb-2 flex items-center gap-3 rounded-lg border-2 px-4 py-3 text-sm"
+  >
+    <CheckCircleIcon class="size-6" />
+    <p>
+      This draft was held from <strong
+        ><time datetime={startIsoString}>{startDateTime}</time></strong
+      >–<strong><time datetime={endIsoString}>{endDateTime}</time></strong> over {maxRounds} rounds.
+    </p>
+  </div>
+  <Progress value={100} />
 {:else if currRound === null}
   <!-- Lottery Stage -->
-  <Progress value={100} />
-  <div class="border-secondary bg-secondary/10 flex items-center gap-3 rounded-lg border px-2 py-1">
-    <SparklesIcon class="size-8" />
+  <div
+    class="preset-tonal-accent mb-2 flex items-center gap-3 rounded-lg border-2 px-4 py-3 text-sm"
+  >
+    <SparklesIcon class="size-6" />
     <div>
       This draft started last <strong><time datetime={startIsoString}>{startDateTime}</time></strong
       > and is currently in the lottery stage.
     </div>
   </div>
+  <Progress class="animate-pulse" value={100} />
 {:else if currRound === 0}
   <!-- Registration Stage -->
-  <div class="border-accent bg-accent/10 flex items-center gap-3 rounded-lg border px-2 py-1">
-    <ClockIcon class="size-8" />
+  <div
+    class="preset-tonal-secondary mb-2 flex items-center gap-3 rounded-lg border-2 px-4 py-3 text-sm"
+  >
+    <ClockIcon class="size-6" />
     <div>
       This draft started last <strong><time datetime={startIsoString}>{startDateTime}</time></strong
       > and is currently in the registration stage.
     </div>
   </div>
+  <Progress class="border-muted-foreground/40 bg-muted border" value={0} />
 {:else}
   <!-- Regular Draft Process -->
-  <Progress max={maxRounds} value={currRound} />
-  <div class="bg-secondary/10 flex items-center gap-3 rounded-lg px-2 py-1">
-    <ScaleIcon class="size-8" />
+  <div
+    class="preset-tonal-primary mb-2 flex items-center gap-3 rounded-lg border-2 px-4 py-3 text-sm"
+  >
+    <ScaleIcon class="size-6" />
     <div>
       This draft started last <strong><time datetime={startIsoString}>{startDateTime}</time></strong
       >
       and is currently in Round {currRound} of {maxRounds} in the regular draft process.
     </div>
   </div>
+  <Progress max={maxRounds} value={currRound} />
 {/if}
-<section class="p-4">
+<section class="mt-10 p-4">
   <ol class="border-border relative border-s">
     {#if end !== null}
       {@const { endIsoString, endDateTime } = end}
@@ -101,7 +115,7 @@
           <time datetime={endIsoString}>{endDateTime}</time>
         </h4>
         <ol class="space-y-1">
-          <li class="border-success bg-success/10 rounded-lg border px-3 py-1.5">
+          <li class="preset-tonal-primary rounded-lg border px-3 py-1.5">
             <span class="flex-auto">Draft #{did} was concluded.</span>
           </li>
         </ol>
@@ -123,7 +137,7 @@
             {#if round !== null}
               {@const ordinal = round + getOrdinalSuffix(round)}
               {#if isSystem}
-                <li class="border-warning bg-warning/10 rounded-lg border px-3 py-1.5">
+                <li class="preset-tonal-warning rounded-lg border px-3 py-1.5">
                   <div class="flex items-center gap-3">
                     <CogIcon class="size-4" />
                     <span>
@@ -133,7 +147,7 @@
                   </div>
                 </li>
               {:else}
-                <li class="border-secondary bg-secondary/10 rounded-lg border px-3 py-1.5">
+                <li class="preset-tonal-secondary rounded-lg border px-3 py-1.5">
                   <div class="flex items-center gap-3">
                     <UsersIcon class="size-4" />
                     <span>
@@ -144,7 +158,7 @@
                 </li>
               {/if}
             {:else if isSystem}
-              <li class="border-destructive bg-destructive/10 rounded-lg border px-3 py-1.5">
+              <li class="preset-tonal-destructive rounded-lg border px-3 py-1.5">
                 <div class="flex items-center gap-3">
                   <TriangleAlertIcon class="size-4" />
                   <span>
@@ -158,7 +172,7 @@
                 </div>
               </li>
             {:else}
-              <li class="border-accent bg-accent/10 rounded-lg border px-3 py-1.5">
+              <li class="preset-tonal-accent rounded-lg border px-3 py-1.5">
                 <div class="flex items-center gap-3">
                   <RefreshCwIcon class="size-4" />
                   <span>
@@ -181,7 +195,7 @@
         <time datetime={startIsoString}>{startDateTime}</time>
       </h4>
       <ol class="space-y-1">
-        <li class="border-success bg-success/10 rounded-lg border px-3 py-1.5">
+        <li class="preset-tonal-success rounded-lg border px-3 py-1.5">
           Draft #{did} was created.
         </li>
       </ol>
