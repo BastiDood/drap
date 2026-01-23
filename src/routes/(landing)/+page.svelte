@@ -146,8 +146,7 @@
               <em>Note that this can only be done once.</em>
             </li>
             <li>
-              Set your <Link href={resolve('/dashboard/ranks/')}>lab rankings and preferences</Link
-              >.
+              Set your <Link href={resolve('/dashboard/')}>lab rankings and preferences</Link>.
             </li>
             <li>
               Track the progress of the draft in the <Link href={resolve('/history/')}>history</Link

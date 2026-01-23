@@ -19,11 +19,10 @@
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';
 
-  type Lab = Pick<schema.Lab, 'id' | 'name'>;
   interface Props {
-    draftId: schema.Draft['id'];
-    maxRounds: schema.Draft['maxRounds'];
-    availableLabs: Lab[];
+    draftId: bigint;
+    maxRounds: number;
+    availableLabs: Pick<schema.Lab, 'id' | 'name'>[];
   }
 
   let { draftId, maxRounds, availableLabs = $bindable() }: Props = $props();
@@ -80,6 +79,7 @@
 
 <form
   method="post"
+  action="/dashboard/?/submit"
   class="space-y-4"
   use:enhance={({ submitter, cancel }) => {
     // eslint-disable-next-line no-alert

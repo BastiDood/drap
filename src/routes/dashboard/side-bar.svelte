@@ -4,7 +4,7 @@
   import FlaskConicalIcon from '@lucide/svelte/icons/flask-conical';
   import GraduationCapIcon from '@lucide/svelte/icons/graduation-cap';
   import HomeIcon from '@lucide/svelte/icons/home';
-  import ListIcon from '@lucide/svelte/icons/list';
+  import LayoutDashboardIcon from '@lucide/svelte/icons/layout-dashboard';
   import LockKeyholeIcon from '@lucide/svelte/icons/lock-keyhole';
   import LogInIcon from '@lucide/svelte/icons/log-in';
   import LogOutIcon from '@lucide/svelte/icons/log-out';
@@ -54,30 +54,47 @@
             </Sidebar.MenuItem>
 
             {#if typeof user !== 'undefined' && user.googleUserId !== null}
-              <Sidebar.MenuItem>
-                <Sidebar.MenuButton
-                  isActive={pathname === '/dashboard/profile/'}
-                  tooltipContent="Profile"
-                >
-                  {#snippet child({ props })}
-                    <a href={resolve('/dashboard/profile/')} {...props}>
-                      <Avatar.Root class="size-5">
-                        <Avatar.Image
-                          src={user.avatarUrl}
-                          alt="{user.givenName} {user.familyName}"
-                        />
-                        <Avatar.Fallback class="text-xs"
-                          >{user.givenName[0]}{user.familyName[0]}</Avatar.Fallback
-                        >
-                      </Avatar.Root>
-                      <span>Profile</span>
-                    </a>
-                  {/snippet}
-                </Sidebar.MenuButton>
-              </Sidebar.MenuItem>
+              {#if !user.isAdmin && user.labId === null}
+                <!-- Student: single Dashboard entry -->
+                <Sidebar.MenuItem>
+                  <Sidebar.MenuButton
+                    isActive={pathname === '/dashboard/'}
+                    tooltipContent="Dashboard"
+                  >
+                    {#snippet child({ props })}
+                      <a href={resolve('/dashboard/')} {...props}>
+                        <LayoutDashboardIcon class="size-5" />
+                        <span>Dashboard</span>
+                      </a>
+                    {/snippet}
+                  </Sidebar.MenuButton>
+                </Sidebar.MenuItem>
+              {:else}
+                <!-- Admin/Faculty: Profile entry -->
+                <Sidebar.MenuItem>
+                  <Sidebar.MenuButton
+                    isActive={pathname === '/dashboard/profile/'}
+                    tooltipContent="Profile"
+                  >
+                    {#snippet child({ props })}
+                      <a href={resolve('/dashboard/profile/')} {...props}>
+                        <Avatar.Root class="size-5">
+                          <Avatar.Image
+                            src={user.avatarUrl}
+                            alt="{user.givenName} {user.familyName}"
+                          />
+                          <Avatar.Fallback class="text-xs"
+                            >{user.givenName[0]}{user.familyName[0]}</Avatar.Fallback
+                          >
+                        </Avatar.Root>
+                        <span>Profile</span>
+                      </a>
+                    {/snippet}
+                  </Sidebar.MenuButton>
+                </Sidebar.MenuItem>
 
-              {#if user.labId === null}
-                {#if user.isAdmin}
+                {#if user.labId === null}
+                  <!-- Admin (no lab): Admin links -->
                   <Sidebar.MenuItem>
                     <Sidebar.MenuButton
                       isActive={pathname === '/dashboard/labs/'}
@@ -130,36 +147,21 @@
                       {/snippet}
                     </Sidebar.MenuButton>
                   </Sidebar.MenuItem>
-                {:else if user.studentNumber !== null}
+                {:else}
+                  <!-- Faculty (has lab): Lab + Students links -->
                   <Sidebar.MenuItem>
                     <Sidebar.MenuButton
-                      isActive={pathname === '/dashboard/ranks/'}
-                      tooltipContent="Ranks"
+                      isActive={pathname === '/dashboard/lab/'}
+                      tooltipContent="Lab"
                     >
                       {#snippet child({ props })}
-                        <a href={resolve('/dashboard/ranks/')} {...props}>
-                          <ListIcon class="size-5" />
-                          <span>Ranks</span>
+                        <a href={resolve('/dashboard/lab/')} {...props}>
+                          <FlaskConicalIcon class="size-5" />
+                          <span>Lab</span>
                         </a>
                       {/snippet}
                     </Sidebar.MenuButton>
                   </Sidebar.MenuItem>
-                {/if}
-              {:else}
-                <Sidebar.MenuItem>
-                  <Sidebar.MenuButton
-                    isActive={pathname === '/dashboard/lab/'}
-                    tooltipContent="Lab"
-                  >
-                    {#snippet child({ props })}
-                      <a href={resolve('/dashboard/lab/')} {...props}>
-                        <FlaskConicalIcon class="size-5" />
-                        <span>Lab</span>
-                      </a>
-                    {/snippet}
-                  </Sidebar.MenuButton>
-                </Sidebar.MenuItem>
-                {#if user.isAdmin}
                   <Sidebar.MenuItem>
                     <Sidebar.MenuButton
                       isActive={pathname === '/dashboard/students/'}
