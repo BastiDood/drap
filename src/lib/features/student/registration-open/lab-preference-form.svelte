@@ -79,7 +79,7 @@
 
 <form
   method="post"
-  action="/dashboard/?/submit"
+  action="/dashboard/student/?/submit"
   class="space-y-4"
   use:enhance={({ submitter, cancel }) => {
     // eslint-disable-next-line no-alert
