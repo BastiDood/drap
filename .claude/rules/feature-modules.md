@@ -149,3 +149,34 @@ Always use absolute paths with explicit IDs:
   <input type="hidden" name="draft" value={draftId} />
 </form>
 ```
+
+## Directory Namespacing
+
+Prefer directory-based namespacing over filename prefixes:
+
+**Prefer:**
+
+```
+table/
+  active/
+    index.svelte        # Table UI
+    update-form.svelte  # Submit form (descriptive name)
+    archive-form.svelte # Per-row action form
+```
+
+**Avoid:**
+
+```
+table/
+  active.svelte
+  active-update-form.svelte
+  active-archive-form.svelte
+```
+
+## Import Paths
+
+Within `$lib/features/*/`, always use:
+
+- `./sibling.svelte` for same-directory imports
+- `$lib/features/<feature>/path` for cross-directory imports
+- **Never** use `../` parent traversal

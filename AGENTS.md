@@ -57,6 +57,7 @@ Domain models with Valibot schemas and discriminated unions:
 Feature-scoped UI components with state-driven orchestrators:
 
 - `drafts/` - Admin draft management (timeline, phases, init dialog)
+- `labs/` - Lab management (tabbed table with active/archived, create dialog)
 - `student/` - Student hub with phase-based subfeatures
 
 Each feature exports components and custom type interfaces via barrel `index.ts`.
@@ -122,6 +123,7 @@ Inngest-based event-driven notifications.
 - **Import paths:**
   - Child-relative imports (`./component.svelte`) are fine
   - Parent-relative imports (`../component.svelte`) should use `$lib` paths instead
+  - **No parent traversal in feature modules:** Within `$lib/features/*/`, never use `../` imports. Use `$lib/features/<feature>/` paths instead.
 - **Form actions:** Use absolute paths (e.g., `/dashboard/?/profile`) instead of relative (e.g., `?/profile`) for reusable components
 
 ## Environment Variables
