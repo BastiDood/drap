@@ -22,22 +22,22 @@
   <Table.Root>
     <Table.Header>
       <Table.Row>
-        <Table.Head>Laboratory</Table.Head>
-        <Table.Head>Archived Date</Table.Head>
+        <Table.Head class="w-full">Laboratory</Table.Head>
+        <Table.Head class="w-0 text-right">Archived Date</Table.Head>
         {#if isRestoreAllowed}
-          <Table.Head>Restore?</Table.Head>
+          <Table.Head class="w-0 text-right">Restore?</Table.Head>
         {/if}
       </Table.Row>
     </Table.Header>
     <Table.Body>
       {#each labs as { id, name, deletedAt } (id)}
         <Table.Row>
-          <Table.Cell>{name}</Table.Cell>
-          <Table.Cell>
+          <Table.Cell class="w-full">{name}</Table.Cell>
+          <Table.Cell class="w-0 text-right">
             <span class="text-sm">{format(deletedAt, 'PPP')}</span>
           </Table.Cell>
           {#if isRestoreAllowed}
-            <Table.Cell>
+            <Table.Cell class="w-0 text-right">
               <RestoreForm labId={id} labName={name} />
             </Table.Cell>
           {/if}

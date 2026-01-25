@@ -27,18 +27,20 @@
     <Table.Root>
       <Table.Header>
         <Table.Row>
-          <Table.Head>Laboratory</Table.Head>
-          <Table.Head>Quota <Badge variant="outline">{total}</Badge></Table.Head>
+          <Table.Head class="w-full">Laboratory</Table.Head>
+          <Table.Head class="w-0 text-right"
+            >Quota <Badge variant="outline">{total}</Badge></Table.Head
+          >
           {#if isEditable}
-            <Table.Head>Archive?</Table.Head>
+            <Table.Head class="w-0 text-right">Archive?</Table.Head>
           {/if}
         </Table.Row>
       </Table.Header>
       <Table.Body>
         {#each labs as { id, name, quota } (id)}
           <Table.Row>
-            <Table.Cell>{name}</Table.Cell>
-            <Table.Cell>
+            <Table.Cell class="w-full">{name}</Table.Cell>
+            <Table.Cell class="w-0 text-right">
               {#if isEditable}
                 <Input
                   type="number"
@@ -53,7 +55,7 @@
               {/if}
             </Table.Cell>
             {#if isEditable}
-              <Table.Cell>
+              <Table.Cell class="w-0 text-right">
                 <ArchiveForm labId={id} />
               </Table.Cell>
             {/if}
