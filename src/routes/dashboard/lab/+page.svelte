@@ -55,7 +55,6 @@
           {@const draft = drafts.find(draft => Number(draft.id) === draftId)}
           {#if typeof draft !== 'undefined'}
             {@const start = format(draft.activePeriodStart, 'PPPpp')}
-            {@const end = format(draft.activePeriodEnd, 'PPPpp')}
             <Accordion.Item value="draft-{draftId}">
               <Accordion.Trigger>
                 <div class="flex flex-col items-start text-left">
@@ -66,6 +65,7 @@
                         >{start}</time
                       >
                     {:else}
+                      {@const end = format(draft.activePeriodEnd, 'PPPpp')}
                       <time datetime={draft.activePeriodStart.toISOString()}>{start}</time>
                       to
                       <time datetime={draft.activePeriodEnd.toISOString()}>{end}</time>

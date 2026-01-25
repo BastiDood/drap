@@ -3,6 +3,7 @@
 
   const { data } = $props();
   const { drafts } = $derived(data);
+  const [latestDraft] = $derived(drafts);
 </script>
 
 <div class="space-y-6">
@@ -11,8 +12,10 @@
       <h2 class="text-2xl font-bold">Drafts</h2>
       <p class="text-muted-foreground">Manage all draft sessions</p>
     </div>
-    <InitDialog />
+    {#if typeof latestDraft === 'undefined' || latestDraft.activePeriodEnd !== null}
+      <!-- There should only ever be one active draft at a time. -->
+      <InitDialog />
+    {/if}
   </div>
-
   <DraftTable {drafts} />
 </div>

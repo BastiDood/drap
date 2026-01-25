@@ -1,6 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 
-import { db, getDrafts, getLabRegistry, initDraft } from '$lib/server/database';
+import { db, getDrafts, getLabRegistry, hasActiveDraft, initDraft } from '$lib/server/database';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 import { validateString } from '$lib/forms';
@@ -53,8 +53,13 @@ export const actions = {
     }
 
     return await tracer.asyncSpan('action.init', async () => {
+      if (await hasActiveDraft(db)) {
+        logger.warn('attempt to init draft while active draft exists');
+        error(409, 'An active draft already exists');
+      }
+
       const data = await request.formData();
-      const rounds = parseInt(validateString(data.get('rounds')), 10);
+      const rounds = Number.parseInt(validateString(data.get('rounds')), 10);
       const closesAt = new Date(validateString(data.get('closes-at')));
       logger.debug('initializing draft', {
         'draft.round.max': rounds,
