@@ -1,16 +1,11 @@
 <script lang="ts">
   import * as Avatar from '$lib/components/ui/avatar';
-  import type { schema } from '$lib/server/database';
 
-  type Lab = Pick<schema.Lab, 'id' | 'name'>;
-  type User = Pick<
-    schema.User,
-    'id' | 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
-  >;
+  import type { Lab, Student } from '$lib/features/drafts/types';
 
   interface Props {
-    labs: Lab[];
-    user: User;
+    labs: Pick<Lab, 'id' | 'name'>[];
+    user: Student;
   }
 
   const { labs, user }: Props = $props();

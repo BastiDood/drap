@@ -4,68 +4,57 @@
   import FlaskConicalIcon from '@lucide/svelte/icons/flask-conical';
   import GraduationCapIcon from '@lucide/svelte/icons/graduation-cap';
   import PaperclipIcon from '@lucide/svelte/icons/paperclip';
-  import type { ComponentProps } from 'svelte';
 
   import * as Accordion from '$lib/components/ui/accordion';
   import * as Tabs from '$lib/components/ui/tabs';
   import Student from '$lib/users/student.svelte';
-  import type { schema } from '$lib/server/database';
+
+  import type {
+    FacultyChoiceRecord,
+    Lab,
+    Student as StudentType,
+  } from '$lib/features/drafts/types';
 
   import LabAccordionItem from './lab-accordion-item.svelte';
   import SystemLogsTab from './system-logs-tab.svelte';
-  import { TabType } from './tab-type';
 
-  type Lab = Pick<schema.Lab, 'id' | 'name' | 'quota'>;
-  type SystemLogsProps = ComponentProps<typeof SystemLogsTab>;
-  type StudentPropsUser = ComponentProps<typeof Student>['user'];
-
-  interface StudentUser extends StudentPropsUser {
-    id: schema.User['id'];
-  }
+  type TabType = 'students' | 'labs' | 'logs';
 
   interface Props {
     round: number;
     labs: Lab[];
-    records: SystemLogsProps['records'];
-    available: StudentUser[];
-    selected: StudentUser[];
+    records: FacultyChoiceRecord[];
+    available: StudentType[];
+    selected: StudentType[];
   }
 
   const { round, labs, records, available, selected }: Props = $props();
   const total = $derived(available.length + selected.length);
 
-  let group = $state(TabType.Students);
+  let group: TabType = $state('students');
 </script>
 
 <Tabs.Root
   value={group}
   onValueChange={value => {
-    switch (value) {
-      case TabType.Students:
-      case TabType.Labs:
-      case TabType.Logs:
-        group = value;
-        break;
-      default:
-        break;
-    }
+    if (value === 'students' || value === 'labs' || value === 'logs') group = value;
   }}
 >
   <Tabs.List>
-    <Tabs.Trigger value={TabType.Students}>
+    <Tabs.Trigger value="students">
       <GraduationCapIcon class="size-5" />
       <span>Registered Students</span>
     </Tabs.Trigger>
-    <Tabs.Trigger value={TabType.Labs}>
+    <Tabs.Trigger value="labs">
       <FlaskConicalIcon class="size-5" />
       <span>Laboratories</span>
     </Tabs.Trigger>
-    <Tabs.Trigger value={TabType.Logs}>
+    <Tabs.Trigger value="logs">
       <PaperclipIcon class="size-5" />
       <span>System Logs</span>
     </Tabs.Trigger>
   </Tabs.List>
-  <Tabs.Content value={TabType.Students}>
+  <Tabs.Content value="students">
     <Accordion.Root type="multiple">
       <Accordion.Item value="pending-selection">
         <Accordion.Trigger>
@@ -95,14 +84,14 @@
       </Accordion.Item>
     </Accordion.Root>
   </Tabs.Content>
-  <Tabs.Content value={TabType.Labs}>
+  <Tabs.Content value="labs">
     <Accordion.Root type="multiple">
       {#each labs as lab (lab.id)}
         <LabAccordionItem {lab} {round} {available} {selected} />
       {/each}
     </Accordion.Root>
   </Tabs.Content>
-  <Tabs.Content value={TabType.Logs}>
+  <Tabs.Content value="logs">
     <SystemLogsTab {records} />
   </Tabs.Content>
 </Tabs.Root>

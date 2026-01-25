@@ -5,18 +5,17 @@
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
-  import type { schema } from '$lib/server/database';
 
   interface Props {
-    draft: schema.Draft['id'];
+    draftId: bigint;
   }
 
-  const { draft }: Props = $props();
+  const { draftId }: Props = $props();
 </script>
 
 <form
   method="post"
-  action="/dashboard/drafts/?/conclude"
+  action="/dashboard/drafts/{draftId}/?/conclude"
   class="not-prose"
   use:enhance={({ submitter, cancel }) => {
     // eslint-disable-next-line no-alert
@@ -39,7 +38,7 @@
     };
   }}
 >
-  <input type="hidden" name="draft" value={draft} />
+  <input type="hidden" name="draft" value={draftId} />
   <Button type="submit" size="lg" class="w-full">
     <ArrowRightIcon class="size-6" />
     <span>Conclude Draft</span>

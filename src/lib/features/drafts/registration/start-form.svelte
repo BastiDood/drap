@@ -4,18 +4,17 @@
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
-  import type { schema } from '$lib/server/database';
 
   interface Props {
-    draft: schema.Draft['id'];
+    draftId: bigint;
   }
 
-  const { draft }: Props = $props();
+  const { draftId }: Props = $props();
 </script>
 
 <form
   method="post"
-  action="/dashboard/drafts/?/start"
+  action="/dashboard/drafts/{draftId}/?/start"
   use:enhance={({ submitter, cancel }) => {
     // eslint-disable-next-line no-alert
     if (!confirm('Are you sure you want to start the draft?')) {
@@ -48,7 +47,7 @@
     };
   }}
 >
-  <input type="hidden" name="draft" value={draft} />
+  <input type="hidden" name="draft" value={draftId} />
   <Button
     type="submit"
     variant="outline"

@@ -5,18 +5,11 @@
   import * as Card from '$lib/components/ui/card';
   import { assert } from '$lib/assert';
   import { Badge } from '$lib/components/ui/badge';
-  import type { schema } from '$lib/server/database';
 
-  interface ChoiceRecord extends Pick<
-    schema.FacultyChoice,
-    'draftId' | 'round' | 'labId' | 'createdAt' | 'userId'
-  > {
-    userEmail: schema.User['email'] | null;
-    studentEmail: schema.User['email'] | null;
-  }
+  import type { FacultyChoiceRecord } from '$lib/features/drafts/types';
 
   interface Props {
-    records: ChoiceRecord[];
+    records: FacultyChoiceRecord[];
   }
 
   const { records }: Props = $props();
@@ -31,8 +24,6 @@
           timestamp,
           Array.from(events.filter(({ userEmail }) => userEmail !== null || showAutomated)),
         ] as const,
-      // this last filter is necessary to remove cases where an automation log does not coincide with a selection log
-      // i.e. the start of the draft
     ).filter(([_, events]) => events.length > 0),
   );
 </script>
@@ -87,7 +78,7 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
             <strong class="uppercase">{labId}</strong> (Round {choice.round ?? 'Lottery'}):
             {#if choice.userEmail === null || choice.studentEmail === null}
               {#if choice.userEmail === null}
-                <!-- If the system auto-skipped, TODO: if due to quota or non-interest -->
+                <!-- If the system auto-skipped -->
                 <span>This selection was automated by the system</span>
               {:else}
                 <!-- If a faculty member selected no students -->
@@ -105,7 +96,7 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
                 </span>
               {/if}
             {:else}
-              <!-- If a facutly member selected students -->
+              <!-- If a faculty member selected students -->
               <span>
                 This selection of
                 {#each labChoices as { studentEmail } (studentEmail)}
