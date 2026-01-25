@@ -43,7 +43,7 @@
     "multipart-ts": "^1.4.1",
     "papaparse": "^5.5.3",
     "pg": "^8.17.2",
-    "svelte": "^5.48.0",
+    "svelte": "^5.48.2",
     "svelte-sonner": "^1.0.7",
     "tailwind-merge": "^3.4.0",
     "tailwind-variants": "^3.2.2",
