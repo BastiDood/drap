@@ -7,14 +7,9 @@
 
   const { data } = $props();
   const { draft, labs } = $derived(data);
-
-  const hasActiveDraft = $derived(typeof draft !== 'undefined');
-  const isRegularRounds = $derived(
-    typeof draft !== 'undefined' && draft.currRound !== null && draft.currRound > 0,
-  );
 </script>
 
-{#if isRegularRounds && draft}
+{#if typeof draft !== 'undefined' && draft.currRound !== null && draft.currRound > 0}
   {@const { id: draftId, activePeriodStart, currRound, maxRounds } = draft}
   {@const startDate = format(activePeriodStart, 'PPP')}
   {@const startTime = format(activePeriodStart, 'pp')}
@@ -26,6 +21,7 @@
       <strong>{maxRounds}</strong>. Lab quotas are read-only while a draft is in progress.
     </Alert.Description>
   </Alert.Root>
+  <LabTable {labs} hasActiveDraft />
+{:else}
+  <LabTable {labs} hasActiveDraft={false} />
 {/if}
-
-<LabTable {labs} {hasActiveDraft} />
