@@ -30,8 +30,6 @@
         until the closing date.
       </Dialog.Description>
     </Dialog.Header>
-    {#if open}
-      <InitForm onSuccess={handleSuccess} />
-    {/if}
+    <InitForm onSuccess={handleSuccess} />
   </Dialog.Content>
 </Dialog.Root>
