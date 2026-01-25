@@ -11,6 +11,7 @@
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
+  import { Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui/tooltip';
 
   const { labId }: Props = $props();
 </script>
@@ -39,8 +40,14 @@
   }}
 >
   <input type="hidden" name="archive" value={labId} />
-  <Button type="submit" variant="destructive" size="icon-sm">
-    <ArchiveIcon class="size-4" />
-    <span class="sr-only">Archive {labId.toUpperCase()}</span>
-  </Button>
+  <Tooltip>
+    <TooltipTrigger>
+      {#snippet child({ props })}
+        <Button {...props} type="submit" variant="destructive" size="icon-sm">
+          <ArchiveIcon class="size-4" />
+        </Button>
+      {/snippet}
+    </TooltipTrigger>
+    <TooltipContent side="left">Archive {labId.toUpperCase()}</TooltipContent>
+  </Tooltip>
 </form>

@@ -12,6 +12,7 @@
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
+  import { Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui/tooltip';
 
   const { labId, labName }: Props = $props();
 </script>
@@ -40,8 +41,14 @@
   }}
 >
   <input type="hidden" name="restore" value={labId} />
-  <Button type="submit" variant="secondary" size="icon-sm">
-    <ArchiveRestoreIcon class="size-4" />
-    <span class="sr-only">Restore {labId.toUpperCase()}</span>
-  </Button>
+  <Tooltip>
+    <TooltipTrigger>
+      {#snippet child({ props })}
+        <Button {...props} type="submit" variant="secondary" size="icon-sm">
+          <ArchiveRestoreIcon class="size-4" />
+        </Button>
+      {/snippet}
+    </TooltipTrigger>
+    <TooltipContent side="left">Restore {labId.toUpperCase()}</TooltipContent>
+  </Tooltip>
 </form>
