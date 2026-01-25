@@ -123,7 +123,7 @@
                   </Sidebar.MenuItem>
                   <Sidebar.MenuItem>
                     <Sidebar.MenuButton
-                      isActive={pathname === '/dashboard/drafts/'}
+                      isActive={pathname.startsWith('/dashboard/drafts/')}
                       tooltipContent="Drafts"
                     >
                       {#snippet child({ props })}
