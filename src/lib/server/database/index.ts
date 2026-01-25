@@ -450,6 +450,18 @@ export async function getActiveDraft(db: DbConnection) {
   });
 }
 
+export async function hasActiveDraft(db: DbConnection) {
+  return await tracer.asyncSpan('has-active-draft', async () => {
+    const result = await db
+      .select({ one: sql.raw('1') })
+      .from(schema.draft)
+      .where(isNull(sql`upper(${schema.draft.activePeriod})`))
+      .limit(1)
+      .then(assertOptional);
+    return typeof result !== 'undefined';
+  });
+}
+
 export async function getMaxRoundInDraft(db: DbConnection, draftId: bigint) {
   return await tracer.asyncSpan('get-max-round-in-draft', async span => {
     span.setAttribute('database.draft.id', draftId.toString());
