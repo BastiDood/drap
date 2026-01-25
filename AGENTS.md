@@ -43,6 +43,30 @@ pnpm docker:prod          # Start prod services: + redis, app, drizzle-gateway
 - Transactions via `begin(db, fn)` function
 - Three schemas: `drap` (main data), `auth` (sessions), `email` (sender credentials)
 
+### Models Layer (`src/lib/server/models/`)
+
+Domain models with Valibot schemas and discriminated unions:
+
+- `notification.ts` - Draft and user notification types
+- `oauth.ts` - Google OAuth token schemas (`@up.edu.ph` domain validation)
+- `email.ts` - Gmail API response types
+- `openid.ts` - OpenID utilities
+
+### Feature Modules (`src/lib/features/`)
+
+Feature-scoped UI components with state-driven orchestrators:
+
+- `drafts/` - Admin draft management (timeline, phases, init dialog)
+- `student/` - Student hub with phase-based subfeatures
+
+Each feature exports components and custom type interfaces via barrel `index.ts`.
+
+### Shared Components
+
+- `src/lib/components/ui/` - shadcn-svelte primitives (dialog, button, etc.)
+- `src/lib/users/` - Reusable user display components (faculty, student, invited)
+- `src/lib/hooks/` - Svelte stores (`is-mobile.svelte.ts`)
+
 ### Event System (`src/lib/server/inngest/`)
 
 Inngest-based event-driven notifications.
@@ -60,16 +84,17 @@ Inngest-based event-driven notifications.
 ### Route Structure
 
 - `/` - Landing page
-- `/history/` - Draft history index
-- `/history/[draft]` - Past draft results
-- `/privacy/` - Privacy policy
-- `/dashboard/` - Main app
-  - `(admin)/` - Admin routes: `/labs`, `/drafts`
-  - `(draft)/` - Student routes: `/ranks`, `/students`
+- `(landing)/history/` - Draft history index and past results
+- `(landing)/privacy/` - Privacy policy
+- `/dashboard/` - Main app (authenticated)
+  - `(admin)/drafts/` - Draft lifecycle management + `[draftId]/` detail views
+  - `(admin)/labs/` - Lab quota management
+  - `(draft)/students/` - Lab heads view/select students each round
   - `/email` - Email sender config
   - `/lab` - Lab management (faculty)
   - `/oauth` - Google OAuth flow
   - `/profile` - User profile
+  - `/student` - Student hub (rankings, status)
   - `/users` - User management (admin)
 
 ### Draft Process Flow
@@ -113,6 +138,8 @@ Inngest-based event-driven notifications.
 | `DRIZZLE_DEBUG`              | Enable verbose Drizzle logs                   |
 | `DRAP_ENABLE_EMAILS`         | Enable real email sending (default: disabled) |
 
+Environment loading organized in `src/lib/server/env/` with hierarchical modules (e.g., `inngest/api.js`, `inngest/signing.js`).
+
 ## Development Notes
 
 - **Dummy user:** `?/dummy` form action creates test user (dev only)
@@ -128,3 +155,7 @@ If errors appear:
 1. Run `pnpm lint:eslint --fix` first to address low-hanging fruit (may not be necessary).
 2. Analyze remaining errors with `pnpm lint:eslint` and `pnpm lint:svelte` individually.
 3. Only run the linter that reports errors.
+
+## Additional Guidelines
+
+- **Avoid `npx`:** Strongly prefer using package scripts defined in `package.json` (e.g., `pnpm lint`, `pnpm db:generate`) over invoking tools directly via `npx`. The project scripts are pre-configured with correct options and ensure consistent behavior.
