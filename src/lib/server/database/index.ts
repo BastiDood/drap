@@ -389,8 +389,7 @@ export async function getLabMembers(db: DbConnection, labId: string, draftId?: b
  */
 export async function getUserLabAssignmentDraftId(db: DbConnection, userId: string, labId: string) {
   return await tracer.asyncSpan('get-user-lab-assignment-draft-id', async span => {
-    span.setAttribute('database.user.id', userId);
-    span.setAttribute('database.lab.id', labId);
+    span.setAttributes({ 'database.user.id': userId, 'database.lab.id': labId });
     return await db
       .select({ draftId: schema.labMemberView.draftId })
       .from(schema.labMemberView)
