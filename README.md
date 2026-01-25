@@ -59,6 +59,7 @@ At runtime, the server requires the following environment variables to be presen
 | `INNGEST_EVENT_KEY`          | Inngest event signing key.                                       |
 | `INNGEST_SIGNING_KEY`        | Inngest webhook signing key.                                     |
 | `POSTGRES_URL`               | The connection string to the PostgreSQL instance.                |
+| `DRAP_ENABLE_EMAILS`         | Enable real email sending (default: disabled).                   |
 
 [Google Cloud Console]: https://console.cloud.google.com/
 

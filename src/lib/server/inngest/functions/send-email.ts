@@ -8,6 +8,7 @@ import {
   type schema,
   updateCandidateSender,
 } from '$lib/server/database';
+import { ENABLE_EMAILS } from '$lib/server/env/email';
 import { GmailScopeError, GoogleOAuthClient } from '$lib/server/google';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
@@ -28,9 +29,9 @@ export const sendEmail = inngest.createFunction(
   ],
   async ({ events, step }) =>
     await step.run(
-      'refresh-sender-credentials',
+      'send-emails',
       async () =>
-        await tracer.asyncSpan('refresh-sender-credentials', async () => {
+        await tracer.asyncSpan('send-emails', async () => {
           // Always obtain the freshest credentials per retry.
           const { client, sender } = await db.transaction(
             async db => await RefreshedCredentials.fromTransaction(db),
@@ -99,13 +100,17 @@ export const sendEmail = inngest.createFunction(
             return mime;
           });
 
-          logger.debug('sending email...');
-          try {
-            await client.sendEmails(messages);
-          } catch (cause) {
-            if (cause instanceof GmailScopeError)
-              throw new NonRetriableError('missing gmail scopes', { cause });
-            throw cause;
+          if (ENABLE_EMAILS) {
+            logger.debug('sending email...');
+            try {
+              await client.sendEmails(messages);
+            } catch (cause) {
+              if (cause instanceof GmailScopeError)
+                throw new NonRetriableError('missing gmail scopes', { cause });
+              throw cause;
+            }
+          } else {
+            logger.warn('emails disabled during dry run');
           }
 
           // TODO: Log the result of the bulk operation.
@@ -120,34 +125,36 @@ class RefreshedCredentials {
   ) {}
 
   static async fromTransaction(db: DrizzleTransaction) {
-    logger.trace('getting designated sender credentials...');
-    const sender = await getDesignatedSenderCredentialsForUpdate(db);
-    if (typeof sender === 'undefined') {
-      const error = new NonRetriableError('no designated sender configured');
-      logger.error('no designated sender configured', error);
-      throw error;
-    }
+    return await tracer.asyncSpan('refresh-sender-credentials', async () => {
+      logger.trace('getting designated sender credentials...');
+      const sender = await getDesignatedSenderCredentialsForUpdate(db);
+      if (typeof sender === 'undefined') {
+        const error = new NonRetriableError('no designated sender configured');
+        logger.error('no designated sender configured', error);
+        throw error;
+      }
 
-    // eslint-disable-next-line @typescript-eslint/init-declarations
-    let client: GoogleOAuthClient;
-    if (sender.isValid) {
-      client = new GoogleOAuthClient(sender.accessToken, sender.scopes);
-    } else {
-      logger.debug('refreshing OAuth token...');
-      const refreshed = await GoogleOAuthClient.fromRefreshToken(sender.refreshToken);
-      ({ client } = refreshed);
+      // eslint-disable-next-line @typescript-eslint/init-declarations
+      let client: GoogleOAuthClient;
+      if (sender.isValid) {
+        client = new GoogleOAuthClient(sender.accessToken, sender.scopes);
+      } else {
+        logger.debug('refreshing OAuth token...');
+        const refreshed = await GoogleOAuthClient.fromRefreshToken(sender.refreshToken);
+        ({ client } = refreshed);
 
-      logger.debug('updating candidate sender...');
-      await updateCandidateSender(
-        db,
-        sender.id,
-        refreshed.token.expiresIn,
-        client.scopes,
-        client.accessToken,
-        sender.refreshToken,
-      );
-    }
+        logger.debug('updating candidate sender...');
+        await updateCandidateSender(
+          db,
+          sender.id,
+          refreshed.token.expiresIn,
+          client.scopes,
+          client.accessToken,
+          sender.refreshToken,
+        );
+      }
 
-    return new RefreshedCredentials(client, sender);
+      return new RefreshedCredentials(client, sender);
+    });
   }
 }

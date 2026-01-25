@@ -101,16 +101,17 @@ Inngest-based event-driven notifications.
 
 ## Environment Variables
 
-| Variable                     | Description                             |
-| ---------------------------- | --------------------------------------- |
-| `ORIGIN`                     | Server origin (computes OAuth redirect) |
-| `PUBLIC_ORIGIN`              | Public origin (meta tags)               |
-| `POSTGRES_URL`               | PostgreSQL connection string            |
-| `GOOGLE_OAUTH_CLIENT_ID`     | Google OAuth credentials                |
-| `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth credentials                |
-| `INNGEST_EVENT_KEY`          | Inngest event signing key               |
-| `INNGEST_SIGNING_KEY`        | Inngest webhook signing key             |
-| `DRIZZLE_DEBUG`              | Enable verbose Drizzle logs             |
+| Variable                     | Description                                   |
+| ---------------------------- | --------------------------------------------- |
+| `ORIGIN`                     | Server origin (computes OAuth redirect)       |
+| `PUBLIC_ORIGIN`              | Public origin (meta tags)                     |
+| `POSTGRES_URL`               | PostgreSQL connection string                  |
+| `GOOGLE_OAUTH_CLIENT_ID`     | Google OAuth credentials                      |
+| `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth credentials                      |
+| `INNGEST_EVENT_KEY`          | Inngest event signing key                     |
+| `INNGEST_SIGNING_KEY`        | Inngest webhook signing key                   |
+| `DRIZZLE_DEBUG`              | Enable verbose Drizzle logs                   |
+| `DRAP_ENABLE_EMAILS`         | Enable real email sending (default: disabled) |
 
 ## Development Notes
 

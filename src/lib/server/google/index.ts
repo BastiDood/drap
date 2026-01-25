@@ -103,46 +103,50 @@ export class GoogleOAuthClient {
 
   /** Bulk version of {@linkcode sendEmail}. */
   async sendEmails(messages: MIMEMessage[]) {
-    if (!this.scopes.includes(GMAIL_SEND_SCOPE)) GmailScopeError.throwNew(this.scopes);
-    if (messages.length > 100) BatchError.throwNew(messages.length);
+    return await tracer.asyncSpan('google-oauth-client-send-emails', async span => {
+      if (!this.scopes.includes(GMAIL_SEND_SCOPE)) GmailScopeError.throwNew(this.scopes);
+      if (messages.length > 100) BatchError.throwNew(messages.length);
 
-    const multipart = new Multipart(
-      messages.map(message => {
-        const encoder = new TextEncoder();
-        const body = encoder.encode(
-          HttpRawRequest.toString(
-            {
-              httpVersion: '1.1',
-              method: 'POST',
-              url: '/gmail/v1/users/me/messages/send',
-            },
-            { 'Content-Type': 'application/json' },
-            JSON.stringify({ raw: message.asEncoded() }),
-          ),
-        );
-        return new Component({ 'Content-Type': 'application/http' }, body);
-      }),
-    );
+      span.setAttribute('messages.count', messages.length);
 
-    const response = await fetch('https://www.googleapis.com/batch/gmail/v1', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${this.accessToken}`,
-        'Content-Type': multipart.mediaType,
-      },
-      body: multipart.bytes(),
+      const multipart = new Multipart(
+        messages.map(message => {
+          const encoder = new TextEncoder();
+          const body = encoder.encode(
+            HttpRawRequest.toString(
+              {
+                httpVersion: '1.1',
+                method: 'POST',
+                url: '/gmail/v1/users/me/messages/send',
+              },
+              { 'Content-Type': 'application/json' },
+              JSON.stringify({ raw: message.asEncoded() }),
+            ),
+          );
+          return new Component({ 'Content-Type': 'application/http' }, body);
+        }),
+      );
+
+      const response = await fetch('https://www.googleapis.com/batch/gmail/v1', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          'Content-Type': multipart.mediaType,
+        },
+        body: multipart.bytes(),
+      });
+
+      switch (response.status) {
+        case 200:
+        // TODO: Parse each HTTP response.
+        // falls through
+        case 429:
+          // TODO: Handle rate limits.
+          break;
+        default:
+          throw GmailError.throwNew(response.status, await response.text());
+      }
     });
-
-    switch (response.status) {
-      case 200:
-      // TODO: Parse each HTTP response.
-      // falls through
-      case 429:
-        // TODO: Handle rate limits.
-        break;
-      default:
-        throw GmailError.throwNew(response.status, await response.text());
-    }
   }
 }
 
