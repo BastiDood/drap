@@ -1,13 +1,14 @@
 import assert from 'node:assert/strict';
 
 import groupBy from 'just-group-by';
-import { error, fail, redirect } from '@sveltejs/kit';
+import { error, fail } from '@sveltejs/kit';
 import { repeat, roundrobin, zip } from 'itertools';
 
 import {
   autoAcknowledgeLabsWithoutPreferences,
   concludeDraft,
   db,
+  getDraftById,
   getFacultyAndStaff,
   getFacultyChoiceRecords,
   getLabById,
@@ -18,7 +19,6 @@ import {
   getStudentsInDraftTaggedByLab,
   getUserById,
   incrementDraftRound,
-  initDraft,
   insertLotteryChoices,
   isValidTotalLabQuota,
   randomizeRemainingStudents,
@@ -29,19 +29,19 @@ import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 import { validateEmail, validateString } from '$lib/forms';
 
-const SERVICE_NAME = 'routes.dashboard.admin.drafts';
+const SERVICE_NAME = 'routes.dashboard.admin.drafts.detail';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
-export async function load({ locals: { session }, parent }) {
+export async function load({ params, locals: { session } }) {
   if (typeof session?.user === 'undefined') {
-    logger.warn('attempt to access drafts page without session');
-    redirect(307, '/dashboard/oauth/login');
+    logger.warn('attempt to access draft detail page without session');
+    error(401);
   }
 
   const { user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-    logger.warn('insufficient permissions to access drafts page', {
+    logger.warn('insufficient permissions to access draft detail page', {
       'auth.user.is_admin': user.isAdmin,
       'auth.user.google_id': user.googleUserId,
       'user.lab_id': user.labId,
@@ -49,37 +49,40 @@ export async function load({ locals: { session }, parent }) {
     error(403);
   }
 
-  const labs = await getLabRegistry(db);
-  logger.debug('labs fetched', { 'lab.count': labs.length });
+  const draftId = BigInt(params.draftId);
+  const draft = await getDraftById(db, draftId);
 
-  const { draft } = await parent();
   if (typeof draft === 'undefined') {
-    logger.debug('no active draft found');
-    return { draft: null, labs, available: [], selected: [], records: [] };
+    logger.warn('draft not found', { 'draft.id': draftId.toString() });
+    error(404);
   }
 
-  logger.debug('active draft found', {
-    'draft.id': draft.id.toString(),
-    'draft.round.current': draft.currRound,
-    'draft.round.max': draft.maxRounds,
-  });
-
-  const [students, records] = await Promise.all([
-    getStudentsInDraftTaggedByLab(db, draft.id),
-    getFacultyChoiceRecords(db, draft.id),
+  const [students, records, labs] = await Promise.all([
+    getStudentsInDraftTaggedByLab(db, draftId),
+    getFacultyChoiceRecords(db, draftId),
+    getLabRegistry(db),
   ]);
 
   const { available = [], selected = [] } = groupBy(students, ({ labId }) =>
     labId === null ? 'available' : 'selected',
   );
 
-  logger.debug('draft records fetched', {
-    'draft.record_count': records.length,
+  logger.debug('draft detail loaded', {
+    'draft.id': draftId.toString(),
+    'draft.round.current': draft.currRound,
+    'draft.round.max': draft.maxRounds,
     'draft.student.available_count': available.length,
     'draft.student.selected_count': selected.length,
   });
 
-  return { draft, labs, available, selected, records };
+  return {
+    draftId,
+    draft: { id: draftId, ...draft },
+    labs,
+    available,
+    selected,
+    records,
+  };
 }
 
 function* mapRowTuples(data: FormData) {
@@ -92,39 +95,7 @@ function* mapRowTuples(data: FormData) {
 const ZIP_NOT_EQUAL = Symbol('ZIP_NOT_EQUAL');
 
 export const actions = {
-  async init({ locals: { session }, request }) {
-    if (typeof session?.user === 'undefined') {
-      logger.warn('attempt to init draft without session');
-      error(401);
-    }
-
-    const { user } = session;
-    if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.warn('insufficient permissions to init draft', {
-        'auth.user.is_admin': user.isAdmin,
-        'auth.user.google_id': user.googleUserId,
-        'user.lab_id': user.labId,
-      });
-      error(403);
-    }
-
-    return await tracer.asyncSpan('action.init', async () => {
-      const data = await request.formData();
-      const rounds = parseInt(validateString(data.get('rounds')), 10);
-      const closesAt = new Date(validateString(data.get('closes-at')));
-      logger.debug('initializing draft', {
-        'draft.round.max': rounds,
-        'draft.registration.closes_at': closesAt.toISOString(),
-      });
-
-      const draft = await initDraft(db, rounds, closesAt);
-      logger.info('draft initialized', {
-        'draft.id': draft.id.toString(),
-        'draft.active_period_start': draft.activePeriodStart.toISOString(),
-      });
-    });
-  },
-  async start({ locals: { session }, request }) {
+  async start({ params, locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
       logger.warn('attempt to start draft without session');
       error(401);
@@ -149,6 +120,16 @@ export const actions = {
     return await tracer.asyncSpan('action.start', async () => {
       const data = await request.formData();
       const draftId = BigInt(validateString(data.get('draft')));
+
+      // Validate draftId matches URL param
+      if (draftId.toString() !== params.draftId) {
+        logger.warn('draft id mismatch', {
+          'draft.form_id': draftId.toString(),
+          'draft.param_id': params.draftId,
+        });
+        error(400);
+      }
+
       logger.debug('starting draft', { 'draft.id': draftId.toString() });
 
       const labCount = await getLabCount(db);
@@ -207,7 +188,8 @@ export const actions = {
       logger.info('draft officially started');
     });
   },
-  async intervene({ locals: { session }, request }) {
+
+  async intervene({ params, locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
       logger.warn('attempt to intervene draft without session');
       error(401);
@@ -223,11 +205,19 @@ export const actions = {
       error(403);
     }
 
-    // TODO: Assert that we are indeed in the lottery phase.
-
     return await tracer.asyncSpan('action.intervene', async () => {
       const data = await request.formData();
       const draftId = BigInt(validateString(data.get('draft')));
+
+      // Validate draftId matches URL param
+      if (draftId.toString() !== params.draftId) {
+        logger.warn('draft id mismatch', {
+          'draft.form_id': draftId.toString(),
+          'draft.param_id': params.draftId,
+        });
+        error(400);
+      }
+
       logger.debug('intervening draft', { 'draft.id': draftId.toString() });
       data.delete('draft');
 
@@ -270,7 +260,8 @@ export const actions = {
       logger.info('draft intervened');
     });
   },
-  async conclude({ locals: { session }, request }) {
+
+  async conclude({ params, locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
       logger.warn('attempt to conclude draft without session');
       error(401);
@@ -289,9 +280,17 @@ export const actions = {
     return await tracer.asyncSpan('action.conclude', async () => {
       const data = await request.formData();
       const draftId = BigInt(validateString(data.get('draft')));
-      logger.debug('concluding draft', { 'draft.id': draftId.toString() });
 
-      // TODO: Assert that we are indeed in the lottery phase.
+      // Validate draftId matches URL param
+      if (draftId.toString() !== params.draftId) {
+        logger.warn('draft id mismatch', {
+          'draft.form_id': draftId.toString(),
+          'draft.param_id': params.draftId,
+        });
+        error(400);
+      }
+
+      logger.debug('concluding draft', { 'draft.id': draftId.toString() });
 
       // Track data needed for notifications after transaction
       let lotteryPairs: (readonly [string, string])[] = [];
@@ -402,8 +401,6 @@ export const actions = {
         if (err === ZIP_NOT_EQUAL) return fail(403);
         throw err;
       }
-
-      redirect(303, `/history/${draftId}/`);
     });
   },
 };

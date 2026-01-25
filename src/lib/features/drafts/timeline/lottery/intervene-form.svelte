@@ -5,28 +5,23 @@
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
-  import type { schema } from '$lib/server/database';
+
+  import type { Lab, Student } from '$lib/features/drafts/types';
 
   import LotteryStudent from './lottery-student.svelte';
 
-  type Lab = Pick<schema.Lab, 'id' | 'name'>;
-  type User = Pick<
-    schema.User,
-    'id' | 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
-  >;
-
   interface Props {
-    draft: schema.Draft['id'];
-    labs: Lab[];
-    students: User[];
+    draftId: bigint;
+    labs: Pick<Lab, 'id' | 'name'>[];
+    students: Student[];
   }
 
-  const { draft, labs, students }: Props = $props();
+  const { draftId, labs, students }: Props = $props();
 </script>
 
 <form
   method="post"
-  action="/dashboard/drafts/?/intervene"
+  action="/dashboard/drafts/{draftId}/?/intervene"
   class="space-y-4"
   use:enhance={({ submitter, cancel }) => {
     // eslint-disable-next-line no-alert
@@ -49,7 +44,7 @@
       <li class="flex gap-2"><LotteryStudent {labs} {user} /></li>
     {/each}
   </ul>
-  <input type="hidden" name="draft" value={draft} />
+  <input type="hidden" name="draft" value={draftId} />
   <Button
     type="submit"
     variant="outline"

@@ -12,6 +12,9 @@ engineStrict: true
 
 minimumReleaseAge: 1440 # 1 day
 
+minimumReleaseAgeExclude:
+  - svelte@5.48.2
+
 strictDepBuilds: true
 
 trustPolicy: no-downgrade
