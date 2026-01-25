@@ -83,9 +83,7 @@ This component manages the open state of the dialog, and also provides closer me
       <Dialog.Title>Create New Draft</Dialog.Title>
     </Dialog.Header>
     <!-- Only mount form when dialog is open -->
-    {#if open}
-      <InitForm {...props} />
-    {/if}
+    <InitForm {...props} />
   </Dialog.Content>
 </Dialog.Root>
 ```
