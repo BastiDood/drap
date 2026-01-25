@@ -41,13 +41,12 @@
   function getStatusVariant(status: Status) {
     switch (status) {
       case 'registration':
+      case 'concluded':
         return 'secondary';
       case 'regular':
         return 'default';
       case 'lottery':
         return 'outline';
-      case 'concluded':
-        return 'secondary';
       default:
         throw new Error('unreachable');
     }
@@ -98,7 +97,7 @@
           <span class="font-mono text-sm">{draft.maxRounds}</span>
         </Table.Cell>
         <Table.Cell class="text-right">
-          <Button href="/dashboard/drafts/{draft.id}" variant="ghost" size="sm">
+          <Button href="/dashboard/drafts/{draft.id}/" variant="accent" size="sm">
             <ExternalLinkIcon class="size-4" />
             <span>View</span>
           </Button>
