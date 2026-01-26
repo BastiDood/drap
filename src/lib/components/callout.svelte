@@ -1,6 +1,7 @@
 <script lang="ts">
   import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
-  import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
+  import CircleX from '@lucide/svelte/icons/circle-x';
+  import InfoIcon from '@lucide/svelte/icons/info';
   import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
   import type { Snippet } from 'svelte';
 
@@ -24,11 +25,13 @@
 
 <Alert.Root {variant} {border} class={className}>
   {#if variant === 'destructive'}
-    <CircleAlertIcon />
+    <CircleX />
   {:else if variant === 'success'}
     <CheckCircleIcon />
   {:else if variant === 'warning'}
     <TriangleAlertIcon />
+  {:else if variant === 'info'}
+    <InfoIcon />
   {/if}
   {#if title}
     <Alert.Title class="font-semibold">

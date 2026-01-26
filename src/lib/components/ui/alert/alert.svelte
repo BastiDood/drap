@@ -9,6 +9,7 @@
         destructive: 'preset-tonal-destructive',
         success: 'preset-tonal-success',
         warning: 'preset-tonal-warning',
+        info: 'preset-tonal-accent',
       },
       border: {
         sm: 'border-1',
