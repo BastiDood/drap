@@ -1,5 +1,6 @@
 <script lang="ts">
   import BugIcon from '@lucide/svelte/icons/bug';
+  import UserCogIcon from '@lucide/svelte/icons/user-cog';
 
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
   import { Button } from '$lib/components/ui/button';
@@ -26,7 +27,10 @@
       {/snippet}
     </DropdownMenu.Trigger>
     <DropdownMenu.Content align="end">
-      <DropdownMenu.Item onclick={() => (roleDialogOpen = true)}>Change Role</DropdownMenu.Item>
+      <DropdownMenu.Item onclick={() => (roleDialogOpen = true)}>
+        <UserCogIcon class="size-4 text-current" />
+        <span>Change Role</span>
+      </DropdownMenu.Item>
     </DropdownMenu.Content>
   </DropdownMenu.Root>
 </div>
