@@ -1,8 +1,7 @@
 <script lang="ts">
-  import ClockIcon from '@lucide/svelte/icons/clock';
   import { format } from 'date-fns';
 
-  import * as Alert from '$lib/components/ui/alert';
+  import Callout from '$lib/components/callout.svelte';
   import type { schema } from '$lib/server/database';
 
   import LabPreferenceForm from './lab-preference-form.svelte';
@@ -19,13 +18,11 @@
 </script>
 
 <div class="space-y-6">
-  <Alert.Root>
-    <ClockIcon class="size-4" />
-    <Alert.Title>Registration Open</Alert.Title>
-    <Alert.Description>
+  <Callout variant="info" title="Registration Open">
+    <p>
       Registration closes on <strong>{closeDate}</strong> at <strong>{closeTime}</strong>. Submit
       your lab preferences before the deadline.
-    </Alert.Description>
-  </Alert.Root>
+    </p>
+  </Callout>
   <LabPreferenceForm draftId={draft.id} maxRounds={draft.maxRounds} bind:availableLabs />
 </div>

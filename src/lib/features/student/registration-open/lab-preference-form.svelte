@@ -5,14 +5,12 @@
 <script lang="ts">
   import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
   import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
-  import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
-  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
   import XIcon from '@lucide/svelte/icons/x';
   import { crossfade } from 'svelte/transition';
   import { flip } from 'svelte/animate';
   import { toast } from 'svelte-sonner';
 
-  import * as Alert from '$lib/components/ui/alert';
+  import Callout from '$lib/components/callout.svelte';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import { cn } from '$lib/components/ui/utils';
@@ -197,10 +195,9 @@
       {/each}
     </ol>
   {:else}
-    <Alert.Root variant="warning">
-      <TriangleAlertIcon />
-      <Alert.Description>No labs selected yet.</Alert.Description>
-    </Alert.Root>
+    <Callout variant="warning">
+      <p>No labs selected yet.</p>
+    </Callout>
   {/if}
 </form>
 <hr class="border-border border-t-4" />
@@ -221,8 +218,7 @@
     {/each}
   </ul>
 {:else}
-  <Alert.Root variant="destructive">
-    <CircleAlertIcon />
-    <Alert.Description>No more labs with remaining slots left.</Alert.Description>
-  </Alert.Root>
+  <Callout variant="destructive">
+    <p>No more labs with remaining slots left.</p>
+  </Callout>
 {/if}
