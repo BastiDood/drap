@@ -17,7 +17,7 @@
   const closeTime = $derived(format(draft.registrationClosesAt, 'pp'));
 </script>
 
-<div class="space-y-6">
+<div class="space-y-6 pb-12">
   <Callout variant="info" title="Registration Open">
     <p>
       Registration closes on <strong>{closeDate}</strong> at <strong>{closeTime}</strong>. Submit

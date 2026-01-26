@@ -30,9 +30,7 @@
 
   const remaining = $derived(maxRounds - selectedLabs.length);
   const hasRemaining = $derived(remaining > 0);
-  const cardVariant = $derived(
-    hasRemaining ? 'border-primary bg-primary/10' : 'border-secondary bg-secondary/10',
-  );
+  const cardVariant = $derived(hasRemaining ? 'preset-tonal-secondary' : 'preset-tonal-muted');
 
   function selectLab(index: number) {
     if (selectedLabs.length >= maxRounds) return;
@@ -115,15 +113,16 @@
   }}
 >
   <input type="hidden" name="draft" value={draftId} />
+  <h1 class="text-3xl font-semibold">Select preferred labs</h1>
   <div
     class={cn(
-      'prose dark:prose-invert max-w-none rounded-lg border p-4 transition duration-150',
+      'prose dark:prose-invert mx-auto max-w-3xl rounded-lg border p-4 transition duration-150',
       cardVariant,
     )}
   >
     <p>
-      Lab preferences are ordered by preference from top (most preferred) to bottom (least
-      preferred).
+      Select labs from the choices below to add them to your ranking. Lab preferences are ordered by
+      preference from top (most preferred) to bottom (least preferred).
     </p>
     <p>
       You may also include remarks alongside your lab rankings. These remarks will only be visible
@@ -131,20 +130,24 @@
     </p>
     <p>
       {#if hasRemaining}
-        You may select up to <strong>{remaining}</strong> labs left.
+        <strong
+          >You may select up to <span class="underline">{remaining}</span>
+          {#if remaining === 1}lab{:else}labs{/if} left.</strong
+        >
       {:else}
         You may no longer select any more labs.
       {/if}
     </p>
     <Button type="submit">Submit Lab Preferences</Button>
   </div>
-  <hr class="border-border border-t-4" />
+  <hr class="border-border border-t" />
+  <h2 class="text-2xl font-semibold">Ranking</h2>
   {#if selectedLabs.length > 0}
     <ol class="space-y-2">
       {#each selectedLabs as { id, name }, idx (id)}
         {@const config = { key: id }}
         <li
-          class="border-border bg-muted flex flex-col gap-4 rounded-lg border p-4 transition-shadow hover:shadow-md"
+          class="border-border dark:bg-muted bg-muted/20 flex flex-col gap-4 rounded-lg border p-4 transition-shadow hover:shadow-md"
           in:receive={config}
           out:send={config}
           animate:flip={DURATION}
@@ -152,7 +155,7 @@
           <input type="hidden" name="labs" value={id} />
           <div class="flex items-center gap-3">
             <div
-              class="bg-secondary text-secondary-foreground flex size-10 items-center justify-center rounded-full text-lg font-bold"
+              class="bg-secondary text-secondary-foreground flex size-10 items-center justify-center rounded-full pb-0.5 text-lg font-semibold"
             >
               {idx + 1}
             </div>
@@ -225,16 +228,13 @@
     </Callout>
   {/if}
 </form>
-<hr class="border-border border-t-4" />
+<hr class="border-border border-t" />
 {#if availableLabs.length > 0}
-  <ul
-    inert={selectedLabs.length >= maxRounds}
-    class="space-y-1 overflow-hidden rounded-xl inert:opacity-20"
-  >
+  <ul inert={selectedLabs.length >= maxRounds} class="space-y-1 inert:opacity-20">
     {#each availableLabs as { id, name }, idx (id)}
       <li>
         <button
-          class="bg-muted hover:bg-muted/80 w-full flex-auto p-4 transition duration-150"
+          class="bg-muted hover:bg-muted/80 w-full flex-auto rounded-md p-4 transition duration-150"
           onclick={selectLab.bind(null, idx)}
         >
           {name}
