@@ -14,6 +14,7 @@
 
   import * as Avatar from '$lib/components/ui/avatar';
   import * as Sidebar from '$lib/components/ui/sidebar';
+  import Logo from '$lib/assets/logo-DRAP-icon-colored.svg';
   import { assert } from '$lib/assert';
   import { buttonVariants } from '$lib/components/ui/button';
   import { dev } from '$app/environment';
@@ -21,12 +22,7 @@
   import { page } from '$app/state';
   import { resolve } from '$app/paths';
   import type { schema } from '$lib/server/database';
-  import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-  } from '$lib/components/ui/tooltip';
+  import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '$lib/components/ui/tooltip';
 
   interface Props {
     user?: schema.User;
@@ -38,6 +34,12 @@
 
 <TooltipProvider>
   <Sidebar.Root collapsible="icon" class="border-border border-r">
+    <Sidebar.Header>
+      <div class="flex items-center gap-2 p-2">
+        <img src={Logo} alt="DRAP Logo" class="size-8" />
+        <span class="text-lg font-semibold">DRAP</span>
+      </div>
+    </Sidebar.Header>
     <Sidebar.Content>
       <Sidebar.Group>
         <Sidebar.GroupContent>
