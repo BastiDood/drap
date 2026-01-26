@@ -10,9 +10,16 @@
   let {
     variant,
     border,
+    title,
     class: className,
     children,
-  }: { variant: AlertVariant; border?: AlertBorder; class?: string; children: Snippet } = $props();
+  }: {
+    variant: AlertVariant;
+    border?: AlertBorder;
+    title?: string;
+    class?: string;
+    children: Snippet;
+  } = $props();
 </script>
 
 <Alert.Root {variant} {border} class={className}>
@@ -22,6 +29,11 @@
     <CheckCircleIcon />
   {:else if variant === 'warning'}
     <TriangleAlertIcon />
+  {/if}
+  {#if title}
+    <Alert.Title class="font-semibold">
+      {title}
+    </Alert.Title>
   {/if}
   <Alert.Description>
     <p>{@render children()}</p>
