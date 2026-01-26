@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { dev } from '$app/environment';
+  import { DevTools } from '$lib/features/dev-tools';
   import { SidebarProvider } from '$lib/components/ui/sidebar';
   import { Toaster } from '$lib/components/ui/sonner';
 
@@ -15,3 +17,6 @@
     <main class="grow space-y-4 overflow-y-auto p-4">{@render children?.()}</main>
   </div>
 </SidebarProvider>
+{#if dev && typeof user !== 'undefined'}
+  <DevTools {user} />
+{/if}
