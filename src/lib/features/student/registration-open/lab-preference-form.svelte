@@ -16,6 +16,7 @@
   import { cn } from '$lib/components/ui/utils';
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database';
+  import { Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui/tooltip';
 
   interface Props {
     draftId: bigint;
@@ -157,32 +158,56 @@
             </div>
             <div class="grow">{name}</div>
             <div class="flex gap-2">
-              <Button
-                type="button"
-                size="icon"
-                class="bg-success text-success-foreground hover:bg-success/80"
-                onclick={moveLabUp.bind(null, idx)}
-                disabled={idx <= 0}
-              >
-                <ArrowUpIcon class="size-5" />
-              </Button>
-              <Button
-                type="button"
-                size="icon"
-                class="bg-warning text-warning-foreground hover:bg-warning/80"
-                onclick={moveLabDown.bind(null, idx)}
-                disabled={idx >= selectedLabs.length - 1}
-              >
-                <ArrowDownIcon class="size-5" />
-              </Button>
-              <Button
-                type="button"
-                size="icon"
-                variant="destructive"
-                onclick={resetSelection.bind(null, idx)}
-              >
-                <XIcon class="size-5" />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger>
+                  {#snippet child({ props })}
+                    <Button
+                      {...props}
+                      type="button"
+                      size="icon"
+                      class="bg-success text-success-foreground hover:bg-success/80"
+                      onclick={moveLabUp.bind(null, idx)}
+                      disabled={idx <= 0}
+                    >
+                      <ArrowUpIcon class="size-5" />
+                    </Button>
+                  {/snippet}
+                </TooltipTrigger>
+                <TooltipContent>Move up</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger>
+                  {#snippet child({ props })}
+                    <Button
+                      {...props}
+                      type="button"
+                      size="icon"
+                      class="bg-warning text-warning-foreground hover:bg-warning/80"
+                      onclick={moveLabDown.bind(null, idx)}
+                      disabled={idx >= selectedLabs.length - 1}
+                    >
+                      <ArrowDownIcon class="size-5" />
+                    </Button>
+                  {/snippet}
+                </TooltipTrigger>
+                <TooltipContent>Move down</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger>
+                  {#snippet child({ props })}
+                    <Button
+                      {...props}
+                      type="button"
+                      size="icon"
+                      variant="destructive"
+                      onclick={resetSelection.bind(null, idx)}
+                    >
+                      <XIcon class="size-5" />
+                    </Button>
+                  {/snippet}
+                </TooltipTrigger>
+                <TooltipContent>Remove selection</TooltipContent>
+              </Tooltip>
             </div>
           </div>
           <textarea
