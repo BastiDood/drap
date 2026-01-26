@@ -15,6 +15,7 @@
   import * as Avatar from '$lib/components/ui/avatar';
   import * as Sidebar from '$lib/components/ui/sidebar';
   import Logo from '$lib/assets/logo-DRAP-icon-colored.svg';
+  import ModeSwitcher from '$lib/components/mode-switcher.svelte';
   import { assert } from '$lib/assert';
   import { buttonVariants } from '$lib/components/ui/button';
   import { dev } from '$app/environment';
@@ -35,9 +36,12 @@
 <TooltipProvider>
   <Sidebar.Root collapsible="icon" class="border-border border-r">
     <Sidebar.Header>
-      <div class="flex items-center gap-2 p-2">
-        <img src={Logo} alt="DRAP Logo" class="size-8" />
-        <span class="text-lg font-semibold">DRAP</span>
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2 p-2">
+          <img src={Logo} alt="DRAP Logo" class="size-8" />
+          <span class="text-lg font-semibold">DRAP</span>
+        </div>
+        <ModeSwitcher />
       </div>
     </Sidebar.Header>
     <Sidebar.Content>
