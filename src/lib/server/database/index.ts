@@ -1333,3 +1333,20 @@ export async function syncResultsToUsers(db: DbConnection, draftId: bigint) {
       .returning({ userId: schema.user.id, labId: schema.facultyChoiceUser.labId });
   });
 }
+
+/** Dev-only: Updates the user's admin status and lab assignment. */
+export async function updateUserRole(
+  db: DbConnection,
+  userId: string,
+  isAdmin: boolean,
+  labId: string | null,
+) {
+  return await tracer.asyncSpan('update-user-role', async span => {
+    span.setAttributes({
+      'database.user.id': userId,
+      'database.user.is_admin': isAdmin,
+    });
+    if (labId !== null) span.setAttribute('database.lab.id', labId);
+    await db.update(schema.user).set({ isAdmin, labId }).where(eq(schema.user.id, userId));
+  });
+}

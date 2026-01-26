@@ -31,6 +31,7 @@
     "bits-ui": "^2.15.4",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "decode-formdata": "^0.9.0",
     "drizzle-orm": "^0.45.1",
     "http-parser-js": "^0.5.10",
     "http-raw-request": "^2.0.2",
