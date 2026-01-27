@@ -14,6 +14,7 @@
 </script>
 
 <div class="space-y-2">
+  <p class="text-xl font-semibold">The draft is in progress.</p>
   <div class="text-muted-foreground flex justify-between text-sm">
     <span>Round {draft.currRound} of {draft.maxRounds}</span>
     <span>{Math.round((draft.currRound / draft.maxRounds) * 100)}%</span>
