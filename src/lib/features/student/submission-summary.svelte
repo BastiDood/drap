@@ -1,6 +1,7 @@
 <script lang="ts">
   import AlertCircle from '@lucide/svelte/icons/alert-circle';
   import Calendar from '@lucide/svelte/icons/calendar';
+  import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
   import ClipboardList from '@lucide/svelte/icons/clipboard-list';
   import Clock from '@lucide/svelte/icons/clock';
   import MessageSquare from '@lucide/svelte/icons/message-square';
@@ -35,16 +36,13 @@
       <Card.Title class="text-lg">Your Lab Preferences</Card.Title>
     </div>
     <Card.Description>
-      <div class="inline-flex items-center gap-2">
-        <span>Submitted on</span>
-        <div class="flex items-center gap-1.5">
-          <Calendar class="size-4" />
-          <span>{creationDate}</span>
-        </div>
-        <div class="flex items-center gap-1.5">
-          <Clock class="size-4" />
-          <span>{creationTime}</span>
-        </div>
+      <div>
+        <span class="inline-flex items-center gap-1"
+          ><CheckCircleIcon class="size-4 opacity-50" />Submitted on</span
+        >
+        <span class="inline-flex items-center gap-1"><Calendar class="size-4" />{creationDate}</span
+        >
+        <span class="inline-flex items-center gap-1"><Clock class="size-4" />{creationTime}</span>
       </div>
     </Card.Description>
   </Card.Header>
