@@ -2,6 +2,7 @@
   import type { schema } from '$lib/server/database';
 
   import HubHeader from './hub-header.svelte';
+  import SubmissionSummary from './submission-summary.svelte';
 
   import Assigned from './assigned/index.svelte';
   import DraftInProgress from './draft-in-progress/index.svelte';
@@ -10,7 +11,6 @@
   import ProfileSetup from './profile-setup/index.svelte';
   import RegistrationClosed from './registration-closed/index.svelte';
   import RegistrationOpen from './registration-open/index.svelte';
-  import SubmissionSummary from './submission-summary.svelte';
   import Submitted from './submitted/index.svelte';
 
   export interface Lab extends Pick<schema.Lab, 'id' | 'name'> {
