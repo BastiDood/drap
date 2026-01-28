@@ -74,5 +74,5 @@
         <RegistrationClosed registrationClosesAt={draft.registrationClosesAt} />
       {/if}
     </div>
-    {/if}
+  {/if}
 </div>
