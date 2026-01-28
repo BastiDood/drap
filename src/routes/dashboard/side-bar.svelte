@@ -218,12 +218,65 @@
     <Sidebar.Footer>
       {#if typeof user === 'undefined'}
         {#if dev}
+          <Sidebar.Menu>
+            <Sidebar.MenuItem>
+              <Sidebar.MenuButton tooltipContent="Create Dummy User">
+                {#snippet child({ props })}
+                  <form
+                    method="post"
+                    action="/dashboard/oauth/?/dummy"
+                    use:enhance={({ submitter }) => {
+                      assert(submitter !== null);
+                      assert(submitter instanceof HTMLButtonElement);
+                      submitter.disabled = true;
+                      return async ({ update }) => {
+                        submitter.disabled = false;
+                        await update();
+                      };
+                    }}
+                  >
+                    <Button
+                      {...props}
+                      type="submit"
+                      variant="ghost"
+                      class="size-full cursor-pointer justify-start rounded-md p-2 text-sm"
+                    >
+                      <UserPlusIcon class="size-5" />
+                      <span>Create Dummy User</span>
+                    </Button>
+                  </form>
+                {/snippet}
+              </Sidebar.MenuButton>
+            </Sidebar.MenuItem>
+          </Sidebar.Menu>
+        {/if}
+        <Sidebar.Menu>
           <Sidebar.MenuItem>
-            <Sidebar.MenuButton tooltipContent="Create Dummy User">
+            <Sidebar.MenuButton tooltipContent="Login">
+              {#snippet child({ props })}
+                <a
+                  {...props}
+                  href={resolve('/dashboard/oauth/login')}
+                  class={buttonVariants({
+                    variant: 'ghost',
+                    class: 'size-full cursor-pointer justify-start rounded-md p-2 text-sm',
+                  })}
+                >
+                  <LogInIcon class="size-4" />
+                  <span>Login</span>
+                </a>
+              {/snippet}
+            </Sidebar.MenuButton>
+          </Sidebar.MenuItem>
+        </Sidebar.Menu>
+      {:else}
+        <Sidebar.Menu>
+          <Sidebar.MenuItem>
+            <Sidebar.MenuButton tooltipContent="Logout">
               {#snippet child({ props })}
                 <form
                   method="post"
-                  action="/dashboard/oauth/?/dummy"
+                  action="/dashboard/oauth/?/logout"
                   use:enhance={({ submitter }) => {
                     assert(submitter !== null);
                     assert(submitter instanceof HTMLButtonElement);
@@ -240,61 +293,14 @@
                     variant="ghost"
                     class="size-full cursor-pointer justify-start rounded-md p-2 text-sm"
                   >
-                    <UserPlusIcon class="size-5" />
-                    <span>Create Dummy User</span>
+                    <LogOutIcon class="size-4" />
+                    <span>Logout</span>
                   </Button>
                 </form>
               {/snippet}
             </Sidebar.MenuButton>
           </Sidebar.MenuItem>
-        {/if}
-        <Sidebar.MenuItem>
-          <Sidebar.MenuButton tooltipContent="Login">
-            {#snippet child({ props })}
-              <a
-                {...props}
-                href={resolve('/dashboard/oauth/login')}
-                class={buttonVariants({
-                  variant: 'ghost',
-                  class: 'size-full cursor-pointer justify-start rounded-md p-2 text-sm',
-                })}
-              >
-                <LogInIcon class="size-4" />
-                <span>Login</span>
-              </a>
-            {/snippet}
-          </Sidebar.MenuButton>
-        </Sidebar.MenuItem>
-      {:else}
-        <Sidebar.MenuItem>
-          <Sidebar.MenuButton tooltipContent="Logout">
-            {#snippet child({ props })}
-              <form
-                method="post"
-                action="/dashboard/oauth/?/logout"
-                use:enhance={({ submitter }) => {
-                  assert(submitter !== null);
-                  assert(submitter instanceof HTMLButtonElement);
-                  submitter.disabled = true;
-                  return async ({ update }) => {
-                    submitter.disabled = false;
-                    await update();
-                  };
-                }}
-              >
-                <Button
-                  {...props}
-                  type="submit"
-                  variant="ghost"
-                  class="size-full cursor-pointer justify-start rounded-md p-2 text-sm"
-                >
-                  <LogOutIcon class="size-4" />
-                  <span>Logout</span>
-                </Button>
-              </form>
-            {/snippet}
-          </Sidebar.MenuButton>
-        </Sidebar.MenuItem>
+        </Sidebar.Menu>
       {/if}
     </Sidebar.Footer>
   </Sidebar.Root>
