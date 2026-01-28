@@ -8,19 +8,15 @@
   import * as Alert from '$lib/components/ui/alert';
   import type { AlertBorder, AlertVariant } from '$lib/components/ui/alert';
 
-  let {
-    variant,
-    border,
-    title,
-    class: className,
-    children,
-  }: {
+  interface Props {
     variant: AlertVariant;
     border?: AlertBorder;
     title?: string;
     class?: string;
     children: Snippet;
-  } = $props();
+  }
+
+  let { variant, border, title, class: className, children }: Props = $props();
 </script>
 
 <Alert.Root {variant} {border} class={className}>
