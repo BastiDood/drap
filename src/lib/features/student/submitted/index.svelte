@@ -1,7 +1,5 @@
 <script lang="ts">
-  import ClockIcon from '@lucide/svelte/icons/clock';
-
-  import * as Alert from '$lib/components/ui/alert';
+  import Callout from '$lib/components/callout.svelte';
   import SubmissionSummary from '$lib/features/student/submission-summary.svelte';
   import type { schema } from '$lib/server/database';
 
@@ -20,13 +18,9 @@
 </script>
 
 <div class="space-y-6">
-  <Alert.Root>
-    <ClockIcon class="size-4" />
-    <Alert.Title>Registration Complete</Alert.Title>
-    <Alert.Description>
-      Your lab preferences have been submitted. The draft will begin soon. You will be notified when
-      results are available.
-    </Alert.Description>
-  </Alert.Root>
+  <Callout variant="success" title="Registration Complete">
+    Your lab preferences have been submitted. The draft will begin soon. You will be notified when
+    results are available.
+  </Callout>
   <SubmissionSummary {submission} />
 </div>

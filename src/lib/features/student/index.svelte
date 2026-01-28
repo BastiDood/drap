@@ -2,6 +2,7 @@
   import type { schema } from '$lib/server/database';
 
   import HubHeader from './hub-header.svelte';
+  import SubmissionSummary from './submission-summary.svelte';
 
   import Assigned from './assigned/index.svelte';
   import DraftInProgress from './draft-in-progress/index.svelte';
@@ -35,35 +36,43 @@
   let { user, draft, availableLabs, submission, lab }: Props = $props();
 </script>
 
-<div class="space-y-6">
+<div class="flex h-full items-center">
   <!-- Profile setup: no student number -->
   {#if user.studentNumber === null}
     <ProfileSetup {user} />
   {:else}
     <!-- Registered user: show header -->
-    <HubHeader user={{ ...user, studentNumber: user.studentNumber }} />
-    <hr class="border-border" />
-    {#if typeof lab !== 'undefined'}
-      <Assigned {lab} />
-    {:else if typeof draft === 'undefined'}
-      <NoDraft />
-    {:else if draft.currRound === null}
-      <Lottery />
-    {:else if draft.currRound === 0}
-      {#if submission}
-        <Submitted {submission} />
-      {:else if availableLabs && new Date() < draft.registrationClosesAt}
-        <RegistrationOpen {draft} {availableLabs} />
+    <div class="size-full space-y-6">
+      <HubHeader user={{ ...user, studentNumber: user.studentNumber }} />
+      <hr class="border-border" />
+      {#if typeof lab !== 'undefined'}
+        <Assigned {lab} />
+        {#if submission}
+          <SubmissionSummary {submission} />
+        {/if}
+      {:else if typeof draft === 'undefined'}
+        <NoDraft />
+      {:else if draft.currRound === null}
+        <Lottery />
+        {#if submission}
+          <SubmissionSummary {submission} />
+        {/if}
+      {:else if draft.currRound === 0}
+        {#if submission}
+          <Submitted {submission} />
+        {:else if availableLabs && new Date() < draft.registrationClosesAt}
+          <RegistrationOpen {draft} {availableLabs} />
+        {:else}
+          <RegistrationClosed registrationClosesAt={draft.registrationClosesAt} />
+        {/if}
+      {:else if submission}
+        <DraftInProgress
+          draft={{ currRound: draft.currRound, maxRounds: draft.maxRounds }}
+          {submission}
+        />
       {:else}
         <RegistrationClosed registrationClosesAt={draft.registrationClosesAt} />
       {/if}
-    {:else if submission}
-      <DraftInProgress
-        draft={{ currRound: draft.currRound, maxRounds: draft.maxRounds }}
-        {submission}
-      />
-    {:else}
-      <RegistrationClosed registrationClosesAt={draft.registrationClosesAt} />
-    {/if}
+    </div>
   {/if}
 </div>
