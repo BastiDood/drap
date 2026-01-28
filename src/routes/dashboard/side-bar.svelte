@@ -14,6 +14,7 @@
 
   import * as Avatar from '$lib/components/ui/avatar';
   import * as Sidebar from '$lib/components/ui/sidebar';
+  import Button from '$lib/components/ui/button/button.svelte';
   import Logo from '$lib/assets/logo-DRAP-icon-colored.svg';
   import ModeSwitcher from '$lib/components/mode-switcher.svelte';
   import { assert } from '$lib/assert';
@@ -233,17 +234,15 @@
                     };
                   }}
                 >
-                  <button
+                  <Button
                     {...props}
                     type="submit"
-                    class={buttonVariants({
-                      variant: 'ghost',
-                      class: 'size-full cursor-pointer justify-start rounded-md p-2 text-sm',
-                    })}
+                    variant="ghost"
+                    class="size-full cursor-pointer justify-start rounded-md p-2 text-sm"
                   >
                     <UserPlusIcon class="size-5" />
                     <span>Create Dummy User</span>
-                  </button>
+                  </Button>
                 </form>
               {/snippet}
             </Sidebar.MenuButton>
@@ -283,17 +282,15 @@
                   };
                 }}
               >
-                <button
+                <Button
                   {...props}
                   type="submit"
-                  class={buttonVariants({
-                    variant: 'ghost',
-                    class: 'size-full cursor-pointer justify-start rounded-md p-2 text-sm',
-                  })}
+                  variant="ghost"
+                  class="size-full cursor-pointer justify-start rounded-md p-2 text-sm"
                 >
                   <LogOutIcon class="size-4" />
                   <span>Logout</span>
-                </button>
+                </Button>
               </form>
             {/snippet}
           </Sidebar.MenuButton>
