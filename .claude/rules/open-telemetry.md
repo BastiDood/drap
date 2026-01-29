@@ -80,32 +80,30 @@ Examples:
 - `database.user.id`
 - `queue.notification.count`
 
-## Database Function Pattern
+## Span Attribute Guidelines
 
-All database functions take `db: DbConnection` as first parameter:
+Capture all closure inputs at the start of each span:
 
 ```ts
-import type { DbConnection } from '$lib/server/database';
-
-export async function getUserById(db: DbConnection, userId: string) {
-  return tracer.asyncSpan('get-user-by-id', async span => {
-    span.setAttribute('database.user.id', userId);
-    // Query implementation unchanged
+return tracer.asyncSpan('load-lab-page', async span => {
+  // Bulk set non-nullable attributes immediately
+  span.setAttributes({
+    'session.id': sessionId,
+    'session.user.id': userId,
+    'session.user.is_admin': isAdmin,
   });
-}
-```
 
-Transaction usage:
+  // Conditionally set nullable attributes
+  if (labId !== null) span.setAttribute('session.user.lab_id', labId);
+  if (googleUserId !== null) span.setAttribute('session.user.google_id', googleUserId);
 
-```ts
-import { db, begin } from '$lib/server/database';
-
-// Shadow the `db` variable here so the outer one is inaccessible.
-await begin(db, async db => {
-  await insertUser(db, userData);
-  await insertProfile(db, profileData);
+  // ... implementation
 });
 ```
+
+- Use `span.setAttributes({...})` for bulk setting multiple (possibly `undefined`) attributes
+- Use `span.setAttribute(key, value)` for single attributes
+- Use `if` conditions for nullable values (never set `null` as attribute value)
 
 ## Route File Pattern
 
