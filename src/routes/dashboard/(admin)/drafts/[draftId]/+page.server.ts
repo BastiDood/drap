@@ -47,8 +47,8 @@ export async function load({ params, locals: { session } }) {
   const { user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
     logger.error('insufficient permissions to access draft detail page', void 0, {
-      'auth.user.is_admin': user.isAdmin,
-      'auth.user.google_id': user.googleUserId,
+      'user.is_admin': user.isAdmin,
+      'user.google_id': user.googleUserId,
       'user.lab_id': user.labId,
     });
     error(403);
@@ -125,8 +125,8 @@ export const actions = {
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
       logger.error('insufficient permissions to start draft', void 0, {
-        'auth.user.is_admin': user.isAdmin,
-        'auth.user.google_id': user.googleUserId,
+        'user.is_admin': user.isAdmin,
+        'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
       });
       error(403);
@@ -220,8 +220,8 @@ export const actions = {
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
       logger.error('insufficient permissions to intervene draft', void 0, {
-        'auth.user.is_admin': user.isAdmin,
-        'auth.user.google_id': user.googleUserId,
+        'user.is_admin': user.isAdmin,
+        'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
       });
       error(403);
@@ -294,8 +294,8 @@ export const actions = {
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
       logger.error('insufficient permissions to conclude draft', void 0, {
-        'auth.user.is_admin': user.isAdmin,
-        'auth.user.google_id': user.googleUserId,
+        'user.is_admin': user.isAdmin,
+        'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
       });
       error(403);

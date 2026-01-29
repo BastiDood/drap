@@ -28,8 +28,8 @@ export async function load({ locals: { session } }) {
 
   if (!session.user.isAdmin || session.user.googleUserId === null || session.user.labId !== null) {
     logger.error('insufficient permissions to access email page', void 0, {
-      'auth.user.is_admin': session.user.isAdmin,
-      'auth.user.google_id': session.user.googleUserId,
+      'user.is_admin': session.user.isAdmin,
+      'user.google_id': session.user.googleUserId,
       'user.lab_id': session.user.labId,
     });
     error(403);
@@ -64,8 +64,8 @@ export const actions = {
       session.user.labId !== null
     ) {
       logger.error('insufficient permissions to demote sender', void 0, {
-        'auth.user.is_admin': session.user.isAdmin,
-        'auth.user.google_id': session.user.googleUserId,
+        'user.is_admin': session.user.isAdmin,
+        'user.google_id': session.user.googleUserId,
         'user.lab_id': session.user.labId,
       });
       error(403);
@@ -97,8 +97,8 @@ export const actions = {
       session.user.labId !== null
     ) {
       logger.error('insufficient permissions to promote sender', void 0, {
-        'auth.user.is_admin': session.user.isAdmin,
-        'auth.user.google_id': session.user.googleUserId,
+        'user.is_admin': session.user.isAdmin,
+        'user.google_id': session.user.googleUserId,
         'user.lab_id': session.user.labId,
       });
       error(403);
@@ -129,8 +129,8 @@ export const actions = {
       session.user.labId !== null
     ) {
       logger.error('insufficient permissions to remove sender', void 0, {
-        'auth.user.is_admin': session.user.isAdmin,
-        'auth.user.google_id': session.user.googleUserId,
+        'user.is_admin': session.user.isAdmin,
+        'user.google_id': session.user.googleUserId,
         'user.lab_id': session.user.labId,
       });
       error(403);

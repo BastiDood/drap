@@ -106,14 +106,14 @@ export async function GET({ fetch, cookies, setHeaders, url: { searchParams } })
           );
           logger.debug('user upserted', {
             'user.id': userId,
-            'auth.user.is_admin': isAdmin,
+            'user.is_admin': isAdmin,
             'user.lab_id': labId,
           });
 
           const sid = await insertValidSession(db, userId, token.exp);
           logger.debug('valid session inserted', {
-            'auth.session.id': sid,
-            'auth.session.expiration': token.exp.toISOString(),
+            'session.id': sid,
+            'session.expiration': token.exp.toISOString(),
           });
 
           if (

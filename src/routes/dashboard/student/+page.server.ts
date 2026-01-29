@@ -92,8 +92,8 @@ export async function load({ locals: { session } }: PageServerLoadEvent) {
     const { id: draftId, currRound, maxRounds, registrationClosesAt } = draft;
     logger.debug('active draft found', {
       'draft.id': draftId.toString(),
-      'draft.curr_round': currRound,
-      'draft.max_rounds': maxRounds,
+      'draft.round.current': currRound,
+      'draft.round.max': maxRounds,
     });
 
     // LOTTERY: currRound is null (lottery phase)
@@ -221,8 +221,8 @@ export const actions = {
       user.studentNumber === null
     ) {
       logger.error('insufficient permissions to submit lab rankings', void 0, {
-        'auth.user.is_admin': user.isAdmin,
-        'auth.user.google_id': user.googleUserId,
+        'user.is_admin': user.isAdmin,
+        'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
         'user.student_number': user.studentNumber?.toString(),
       });

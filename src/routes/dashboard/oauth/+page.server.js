@@ -25,8 +25,8 @@ export const actions = {
         logger.warn('attempt to delete non-existent/expired session');
       else
         logger.info('session deleted', {
-          'auth.session.user_id': deleted.userId,
-          'auth.session.expiration': deleted.expiration.toISOString(),
+          'session.user_id': deleted.userId,
+          'session.expiration': deleted.expiration.toISOString(),
         });
 
       cookies.delete('sid', { path: '/dashboard', httpOnly: true, sameSite: 'lax' });

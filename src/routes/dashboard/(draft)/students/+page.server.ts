@@ -38,8 +38,8 @@ export async function load({ locals: { session }, parent }) {
   const { id: sessionId, user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId === null) {
     logger.error('insufficient permissions to access students page', void 0, {
-      'auth.user.is_admin': user.isAdmin,
-      'auth.user.google_id': user.googleUserId,
+      'user.is_admin': user.isAdmin,
+      'user.google_id': user.googleUserId,
       'user.lab_id': user.labId,
     });
     error(403);
@@ -92,8 +92,8 @@ export const actions = {
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId === null) {
       logger.error('insufficient permissions to submit rankings', void 0, {
-        'auth.user.is_admin': user.isAdmin,
-        'auth.user.google_id': user.googleUserId,
+        'user.is_admin': user.isAdmin,
+        'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
       });
       error(403);

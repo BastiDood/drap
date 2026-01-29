@@ -25,8 +25,8 @@ export function GET({ locals: { session }, cookies, setHeaders, url: { searchPar
       session.user.labId !== null
     ) {
       logger.error('attempt to login with extended scope without admin privileges', void 0, {
-        'auth.user.is_admin': session.user.isAdmin,
-        'auth.user.google_id': session.user.googleUserId,
+        'user.is_admin': session.user.isAdmin,
+        'user.google_id': session.user.googleUserId,
         'user.lab_id': session.user.labId,
       });
       error(403);

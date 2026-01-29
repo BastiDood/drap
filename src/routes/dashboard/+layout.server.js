@@ -9,6 +9,6 @@ export function load({ locals: { session } }) {
     return;
   }
 
-  logger.info('dashboard access', { 'auth.session.id': session.id, 'user.id': session.user?.id });
+  logger.info('dashboard access', { 'session.id': session.id, 'user.id': session.user?.id });
   return { user: session.user };
 }
