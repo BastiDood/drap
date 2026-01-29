@@ -340,45 +340,36 @@ export async function getLabMembers(db: DbConnection, labId: string, draftId?: b
         ),
       );
 
-    // eslint-disable-next-line @typescript-eslint/init-declarations
-    let members: {
-      draftId: bigint;
-      email: string | null;
-      givenName: string | null;
-      familyName: string | null;
-      avatarUrl: string | null;
-    }[];
-
-    // if no draft id is specified
-    if (typeof draftId === 'undefined')
-      members = await db
-        .select({
-          draftId: schema.labMemberView.draftId,
-          email: schema.labMemberView.email,
-          givenName: schema.labMemberView.givenName,
-          familyName: schema.labMemberView.familyName,
-          avatarUrl: schema.labMemberView.avatarUrl,
-        })
-        .from(schema.labMemberView)
-        .where(eq(schema.labMemberView.draftLab, labId))
-        .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName));
-    // if a draft id is specified
-    else
-      members = await db
-        .select({
-          draftId: schema.labMemberView.draftId,
-          email: schema.labMemberView.email,
-          givenName: schema.labMemberView.givenName,
-          familyName: schema.labMemberView.familyName,
-          avatarUrl: schema.labMemberView.avatarUrl,
-        })
-        .from(schema.labMemberView)
-        .where(
-          and(eq(schema.labMemberView.draftLab, labId), eq(schema.labMemberView.draftId, draftId)),
-        )
-        .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName));
-
-    return { lab: labInfo?.name, heads, members, faculty };
+    const membersQuery =
+      typeof draftId === 'undefined'
+        ? db
+            .select({
+              draftId: schema.labMemberView.draftId,
+              email: schema.labMemberView.email,
+              givenName: schema.labMemberView.givenName,
+              familyName: schema.labMemberView.familyName,
+              avatarUrl: schema.labMemberView.avatarUrl,
+            })
+            .from(schema.labMemberView)
+            .where(eq(schema.labMemberView.draftLab, labId))
+            .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName))
+        : db
+            .select({
+              draftId: schema.labMemberView.draftId,
+              email: schema.labMemberView.email,
+              givenName: schema.labMemberView.givenName,
+              familyName: schema.labMemberView.familyName,
+              avatarUrl: schema.labMemberView.avatarUrl,
+            })
+            .from(schema.labMemberView)
+            .where(
+              and(
+                eq(schema.labMemberView.draftLab, labId),
+                eq(schema.labMemberView.draftId, draftId),
+              ),
+            )
+            .orderBy(asc(schema.labMemberView.draftId), asc(schema.labMemberView.familyName));
+    return { lab: labInfo?.name, heads, members: await membersQuery, faculty };
   });
 }
 

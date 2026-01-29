@@ -34,14 +34,13 @@ export async function load({ locals: { session } }) {
       session.user.labId,
     );
     if (typeof userLatestDraft === 'undefined') {
-      logger.warn(
-        "attempt to get draft id for student-user's assignment to this lab returned undefined",
-        {
-          userId: session.user.id,
-          labId: session.user.labId,
-        },
-      );
-      error(400);
+      // This is a required check to ensure that the user can only see lab members of their own
+      // draft class. Otherwise, every student can see all lab members, which poor privacy practice.
+      logger.error('student without prior draft results attempted to access lab', void 0, {
+        userId: session.user.id,
+        labId: session.user.labId,
+      });
+      error(403);
     }
     const { draftId: userLatestDraftId } = userLatestDraft;
     info = await getLabMembers(db, session.user.labId, userLatestDraftId);
