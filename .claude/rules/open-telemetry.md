@@ -71,14 +71,59 @@ return tracer.syncSpan('validate-input', span => {
 
 ## Attribute Naming
 
-Use dot-separated namespace: `namespace.resource.property`
+Use dot-separated namespace with `snake_case` properties: `namespace.resource.property`
 
-Examples:
+### Namespace Prefixes
 
-- `http.request.method`
-- `http.response.status`
-- `database.user.id`
-- `queue.notification.count`
+| Prefix       | Context         | Use Case                                       |
+| ------------ | --------------- | ---------------------------------------------- |
+| `session.*`  | Request context | Span attributes for authenticated request info |
+| `user.*`     | User entity     | Log attributes for user data                   |
+| `draft.*`    | Draft entity    | Log attributes for draft data                  |
+| `lab.*`      | Lab entity      | Log attributes for lab data                    |
+| `email.*`    | Email entity    | Log attributes for email sender data           |
+| `http.*`     | HTTP layer      | Request/response metadata                      |
+| `database.*` | Database layer  | Query context                                  |
+
+### Session Attributes (Spans)
+
+Use in `span.setAttributes()` to capture request context:
+
+| Attribute                | Type    | Description                  |
+| ------------------------ | ------- | ---------------------------- |
+| `session.id`             | string  | Session ID                   |
+| `session.user.id`        | string  | User ID                      |
+| `session.user.email`     | string  | User email                   |
+| `session.user.is_admin`  | boolean | Admin flag                   |
+| `session.user.lab_id`    | string  | Lab assignment (nullable)    |
+| `session.user.google_id` | string  | Google account ID (nullable) |
+
+### Entity Attributes (Logs)
+
+Use in logger calls to describe entity state:
+
+<user-attributes>
+
+- `user.id`, `user.email`, `user.is_admin`, `user.lab_id`
+- `user.google_id`, `user.student_number`
+- `user.given_name`, `user.family_name`
+
+</user-attributes>
+
+<draft-attributest>
+
+- `draft.id`, `draft.round.current`, `draft.round.max`
+- `draft.registration.closes_at`, `draft.is_done`
+- `draft.student.count`, `draft.event_count`
+
+</draft-attributes>
+
+<lab-attributes>
+
+- `lab.id`, `lab.name`, `lab.count`
+- `lab.researcher_count`
+
+</lab-attributes>
 
 ## Span Attribute Guidelines
 
@@ -104,6 +149,20 @@ return tracer.asyncSpan('load-lab-page', async span => {
 - Use `span.setAttributes({...})` for bulk setting multiple (possibly `undefined`) attributes
 - Use `span.setAttribute(key, value)` for single attributes
 - Use `if` conditions for nullable values (never set `null` as attribute value)
+
+### Permission Failure Logging
+
+For `logger.error` on permission failures, use `user.*` prefix (not `auth.*`):
+
+```ts
+logger.error('insufficient permissions to access page', void 0, {
+  'user.is_admin': user.isAdmin,
+  'user.google_id': user.googleUserId,
+  'user.lab_id': user.labId,
+});
+```
+
+Note: `logger.error` signature is `(body, error?, attributes?)` — pass `void 0` when no exception.
 
 ## Route File Pattern
 
