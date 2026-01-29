@@ -8,7 +8,7 @@ import {
   type schema,
   updateCandidateSender,
 } from '$lib/server/database';
-import { ENABLE_EMAILS } from '$lib/server/env/email';
+import { ENABLE_EMAILS } from '$lib/server/env/drap';
 import { GmailScopeError, GoogleOAuthClient } from '$lib/server/google';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
