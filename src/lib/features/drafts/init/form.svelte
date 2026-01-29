@@ -13,7 +13,6 @@
   import { enhance } from '$app/forms';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
-  import { validateString } from '$lib/forms';
 
   const { onSuccess }: Props = $props();
 </script>
@@ -23,8 +22,15 @@
   action="/dashboard/drafts/?/init"
   class="w-full space-y-4"
   use:enhance={({ formData, submitter, cancel }) => {
-    const rounds = parseInt(validateString(formData.get('rounds')), 10);
-    const closesAt = new Date(validateString(formData.get('closes-at')));
+    const closesAtRaw = formData.get('closesAt');
+    assert(typeof closesAtRaw === 'string');
+
+    // Transform to ISO string for correct timezone handling
+    const closesAt = new Date(closesAtRaw);
+    formData.set('closesAt', closesAt.toISOString());
+
+    const rounds = formData.get('rounds');
+    assert(typeof rounds === 'string');
     if (
       // eslint-disable-next-line no-alert
       !confirm(
@@ -45,14 +51,14 @@
   }}
 >
   <div class="space-y-2">
-    <Label for="closes-at">Registration Closing Date</Label>
+    <Label for="closesAt">Registration Closing Date</Label>
     <div class="border-input flex overflow-hidden rounded-md border">
       <div class="bg-muted flex items-center px-3"><CalendarDaysIcon class="size-5" /></div>
       <Input
         type="datetime-local"
         required
-        name="closes-at"
-        id="closes-at"
+        name="closesAt"
+        id="closesAt"
         class="rounded-none border-0"
       />
     </div>

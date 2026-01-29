@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 
+import * as v from 'valibot';
 import groupBy from 'just-group-by';
+import { decode } from 'decode-formdata';
 import { error, fail } from '@sveltejs/kit';
 import { repeat, roundrobin, zip } from 'itertools';
 
@@ -27,7 +29,10 @@ import {
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
-import { validateEmail, validateString } from '$lib/forms';
+
+const DraftActionFormData = v.object({
+  draft: v.pipe(v.string(), v.minLength(1)),
+});
 
 const SERVICE_NAME = 'routes.dashboard.admin.drafts.detail';
 const logger = Logger.byName(SERVICE_NAME);
@@ -85,10 +90,13 @@ export async function load({ params, locals: { session } }) {
   };
 }
 
+const Email = v.pipe(v.string(), v.email());
+type Email = v.InferOutput<typeof Email>;
+
 function* mapRowTuples(data: FormData) {
   for (const [email, lab] of data.entries()) {
     if (lab instanceof File || lab.length === 0) continue;
-    yield [validateEmail(email), lab] as const;
+    yield [v.parse(Email, email), lab] as [Email, string];
   }
 }
 
@@ -119,22 +127,23 @@ export const actions = {
 
     return await tracer.asyncSpan('action.start', async () => {
       const data = await request.formData();
-      const draftId = BigInt(validateString(data.get('draft')));
+      const { draft } = v.parse(DraftActionFormData, decode(data));
 
       // Validate draftId matches URL param
-      if (draftId.toString() !== params.draftId) {
+      if (draft !== params.draftId) {
         logger.warn('draft id mismatch', {
-          'draft.form_id': draftId.toString(),
+          'draft.form_id': draft,
           'draft.param_id': params.draftId,
         });
         error(400);
       }
 
-      logger.debug('starting draft', { 'draft.id': draftId.toString() });
+      logger.debug('starting draft', { 'draft.id': draft });
 
       const labCount = await getLabCount(db);
       assert(labCount > 0);
 
+      const draftId = BigInt(draft);
       const studentCount = await getStudentCountInDraft(db, draftId);
       if (studentCount <= 0) {
         logger.warn('no students in draft');
@@ -207,18 +216,18 @@ export const actions = {
 
     return await tracer.asyncSpan('action.intervene', async () => {
       const data = await request.formData();
-      const draftId = BigInt(validateString(data.get('draft')));
+      const { draft } = v.parse(DraftActionFormData, decode(data));
 
       // Validate draftId matches URL param
-      if (draftId.toString() !== params.draftId) {
+      if (draft !== params.draftId) {
         logger.warn('draft id mismatch', {
-          'draft.form_id': draftId.toString(),
+          'draft.form_id': draft,
           'draft.param_id': params.draftId,
         });
         error(400);
       }
 
-      logger.debug('intervening draft', { 'draft.id': draftId.toString() });
+      logger.debug('intervening draft', { 'draft.id': draft });
       data.delete('draft');
 
       const pairs = Array.from(mapRowTuples(data));
@@ -226,6 +235,8 @@ export const actions = {
         logger.debug('no pairs to intervene');
         return;
       }
+
+      const draftId = BigInt(draft);
 
       logger.debug('intervening draft with pairs', { 'draft.pair_count': pairs.length });
       const result = await insertLotteryChoices(db, draftId, user.id, pairs);
@@ -279,23 +290,24 @@ export const actions = {
 
     return await tracer.asyncSpan('action.conclude', async () => {
       const data = await request.formData();
-      const draftId = BigInt(validateString(data.get('draft')));
+      const { draft } = v.parse(DraftActionFormData, decode(data));
 
       // Validate draftId matches URL param
-      if (draftId.toString() !== params.draftId) {
+      if (draft !== params.draftId) {
         logger.warn('draft id mismatch', {
-          'draft.form_id': draftId.toString(),
+          'draft.form_id': draft,
           'draft.param_id': params.draftId,
         });
         error(400);
       }
 
-      logger.debug('concluding draft', { 'draft.id': draftId.toString() });
+      logger.debug('concluding draft', { 'draft.id': draft });
 
       // Track data needed for notifications after transaction
       let lotteryPairs: (readonly [string, string])[] = [];
       let userAssignments: { userId: string; labId: string }[] = [];
 
+      const draftId = BigInt(draft);
       try {
         await db.transaction(
           async db => {

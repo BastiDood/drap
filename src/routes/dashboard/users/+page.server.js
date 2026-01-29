@@ -1,3 +1,5 @@
+import * as v from 'valibot';
+import { decode } from 'decode-formdata';
 import { error, fail, redirect } from '@sveltejs/kit';
 
 import {
@@ -8,7 +10,15 @@ import {
 } from '$lib/server/database';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
-import { validateEmail, validateString } from '$lib/forms';
+
+const AdminFormData = v.object({
+  email: v.pipe(v.string(), v.email()),
+});
+
+const FacultyFormData = v.object({
+  email: v.pipe(v.string(), v.email()),
+  invite: v.pipe(v.string(), v.minLength(1)),
+});
 
 const SERVICE_NAME = 'routes.dashboard.users';
 const logger = Logger.byName(SERVICE_NAME);
@@ -59,7 +69,7 @@ export const actions = {
 
     return await tracer.asyncSpan('action.admin', async () => {
       const data = await request.formData();
-      const email = validateEmail(data.get('email'));
+      const { email } = v.parse(AdminFormData, decode(data));
       logger.debug('inviting new admin', { email });
 
       if (await inviteNewFacultyOrStaff(db, email, null)) {
@@ -92,8 +102,7 @@ export const actions = {
 
     return await tracer.asyncSpan('action.faculty', async () => {
       const data = await request.formData();
-      const email = validateEmail(data.get('email'));
-      const lab = validateString(data.get('invite'));
+      const { email, invite: lab } = v.parse(FacultyFormData, decode(data));
       logger.debug('inviting new faculty', { email, lab });
 
       if (await inviteNewFacultyOrStaff(db, email, lab)) {

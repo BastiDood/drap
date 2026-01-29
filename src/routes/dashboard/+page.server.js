@@ -12,7 +12,7 @@ const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
 export function load({ locals: { session } }) {
-  if (!session?.user) {
+  if (typeof session?.user === 'undefined') {
     logger.warn('attempt to access dashboard without session');
     redirect(307, '/dashboard/oauth/login');
   }
@@ -43,7 +43,7 @@ export const actions = {
     ? {
         async role({ locals: { session }, request }) {
           return await tracer.asyncSpan('action.role', async () => {
-            if (!session?.user) {
+            if (typeof session?.user === 'undefined') {
               logger.warn('attempt to change role without session');
               error(401);
             }

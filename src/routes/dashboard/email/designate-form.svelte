@@ -75,7 +75,7 @@
           };
         }}
       >
-        <input type="hidden" name="user-id" value={id} />
+        <input type="hidden" name="userId" value={id} />
         <Button
           type="submit"
           size="sm"

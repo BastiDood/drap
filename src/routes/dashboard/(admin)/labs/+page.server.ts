@@ -1,3 +1,5 @@
+import * as v from 'valibot';
+import { decode } from 'decode-formdata';
 import { error, redirect } from '@sveltejs/kit';
 
 import {
@@ -11,7 +13,19 @@ import {
 } from '$lib/server/database';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
-import { validateString } from '$lib/forms';
+
+const LabFormData = v.object({
+  labId: v.pipe(v.string(), v.minLength(1)),
+  name: v.pipe(v.string(), v.minLength(1)),
+});
+
+const ArchiveFormData = v.object({
+  archive: v.pipe(v.string(), v.minLength(1)),
+});
+
+const RestoreFormData = v.object({
+  restore: v.pipe(v.string(), v.minLength(1)),
+});
 
 const SERVICE_NAME = 'routes.dashboard.admin.labs';
 const logger = Logger.byName(SERVICE_NAME);
@@ -58,12 +72,11 @@ export const actions = {
 
     return await tracer.asyncSpan('action.lab', async () => {
       const data = await request.formData();
-      const id = validateString(data.get('id'));
-      const lab = validateString(data.get('name'));
-      logger.debug('creating lab', { id, lab });
+      const { labId, name } = v.parse(LabFormData, decode(data));
+      logger.debug('creating lab', { labId, name });
 
-      await insertNewLab(db, id, lab);
-      logger.info('lab created', { id, lab });
+      await insertNewLab(db, labId, name);
+      logger.info('lab created', { labId, name });
     });
   },
   async quota({ locals: { session }, request }) {
@@ -120,10 +133,10 @@ export const actions = {
 
     return await tracer.asyncSpan('action.archive', async () => {
       const data = await request.formData();
-      const id = validateString(data.get('archive'));
-      logger.debug('archiving lab', { id });
+      const { archive: labId } = v.parse(ArchiveFormData, decode(data));
+      logger.debug('archiving lab', { labId });
 
-      await deleteLab(db, id);
+      await deleteLab(db, labId);
       logger.info('lab archived');
     });
   },
@@ -151,10 +164,10 @@ export const actions = {
 
     return await tracer.asyncSpan('action.restore', async () => {
       const data = await request.formData();
-      const id = validateString(data.get('restore'));
-      logger.debug('restoring lab', { id });
+      const { restore: labId } = v.parse(RestoreFormData, decode(data));
+      logger.debug('restoring lab', { labId });
 
-      await restoreLab(db, id);
+      await restoreLab(db, labId);
       logger.info('lab restored');
     });
   },

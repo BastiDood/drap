@@ -1,9 +1,10 @@
+import * as v from 'valibot';
+import { decode } from 'decode-formdata';
 import { error, redirect } from '@sveltejs/kit';
 
 import { db, getDrafts, getLabRegistry, hasActiveDraft, initDraft } from '$lib/server/database';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
-import { validateString } from '$lib/forms';
 
 const SERVICE_NAME = 'routes.dashboard.admin.drafts';
 const logger = Logger.byName(SERVICE_NAME);
@@ -35,6 +36,11 @@ export async function load({ locals: { session } }) {
   return { drafts, labs };
 }
 
+const InitFormData = v.object({
+  rounds: v.number(),
+  closesAt: v.date(),
+});
+
 export const actions = {
   async init({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
@@ -59,8 +65,10 @@ export const actions = {
       }
 
       const data = await request.formData();
-      const rounds = Number.parseInt(validateString(data.get('rounds')), 10);
-      const closesAt = new Date(validateString(data.get('closes-at')));
+      const { rounds, closesAt } = v.parse(
+        InitFormData,
+        decode(data, { numbers: ['rounds'], dates: ['closesAt'] }),
+      );
       logger.debug('initializing draft', {
         'draft.round.max': rounds,
         'draft.registration.closes_at': closesAt.toISOString(),

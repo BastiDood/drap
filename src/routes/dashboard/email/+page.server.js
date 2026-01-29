@@ -1,3 +1,5 @@
+import * as v from 'valibot';
+import { decode } from 'decode-formdata';
 import { error, redirect } from '@sveltejs/kit';
 
 import {
@@ -9,7 +11,10 @@ import {
 } from '$lib/server/database';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
-import { validateString } from '$lib/forms';
+
+const SenderFormData = v.object({
+  userId: v.pipe(v.string(), v.minLength(1)),
+});
 
 const SERVICE_NAME = 'routes.dashboard.email';
 const logger = Logger.byName(SERVICE_NAME);
@@ -58,7 +63,7 @@ export const actions = {
 
     return await tracer.asyncSpan('action.demote', async () => {
       const data = await request.formData();
-      const userId = validateString(data.get('user-id'));
+      const { userId } = v.parse(SenderFormData, decode(data));
       logger.debug('demoting sender', { 'email.sender.user_id': userId });
 
       if (await deleteDesignatedSender(db, userId)) {
@@ -91,7 +96,7 @@ export const actions = {
 
     return await tracer.asyncSpan('action.promote', async () => {
       const data = await request.formData();
-      const userId = validateString(data.get('user-id'));
+      const { userId } = v.parse(SenderFormData, decode(data));
       logger.debug('promoting sender', { 'email.sender.user_id': userId });
 
       if (await upsertDesignatedSender(db, userId)) {
@@ -123,7 +128,7 @@ export const actions = {
 
     return await tracer.asyncSpan('action.remove', async () => {
       const data = await request.formData();
-      const userId = validateString(data.get('user-id'));
+      const { userId } = v.parse(SenderFormData, decode(data));
       logger.debug('removing sender', { 'email.sender.user_id': userId });
 
       if (await deleteCandidateSender(db, userId)) {

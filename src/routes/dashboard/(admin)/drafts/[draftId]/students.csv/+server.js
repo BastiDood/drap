@@ -8,10 +8,9 @@ import { validateBigInt } from '$lib/validators';
 const SERVICE_NAME = 'routes.dashboard.admin.drafts.students-csv';
 const logger = Logger.byName(SERVICE_NAME);
 
-export async function GET({ params: { draftId }, locals: { session } }) {
-  const did = validateBigInt(draftId);
-
-  if (did === null) {
+export async function GET({ params: { draftId: draftIdParam }, locals: { session } }) {
+  const draftId = validateBigInt(draftIdParam);
+  if (draftId === null) {
     logger.error('invalid draft id');
     error(404, 'Invalid draft ID.');
   }
@@ -31,14 +30,14 @@ export async function GET({ params: { draftId }, locals: { session } }) {
     error(403);
   }
 
-  const draft = await getDraftById(db, did);
+  const draft = await getDraftById(db, draftId);
   if (typeof draft === 'undefined') {
     logger.error('cannot find the target draft');
     error(404);
   }
 
   logger.info('exporting student ranks');
-  const studentRanks = await getStudentRanksExport(db, did);
+  const studentRanks = await getStudentRanksExport(db, draftId);
 
   return new Response(Papa.unparse(studentRanks), {
     headers: {

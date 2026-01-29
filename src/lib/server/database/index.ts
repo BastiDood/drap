@@ -90,24 +90,24 @@ export async function getUserById(db: DbConnection, userId: string) {
   });
 }
 
-export async function getUserFromValidSession(db: DbConnection, sid: string) {
+export async function getUserFromValidSession(db: DbConnection, sessionId: string) {
   return await tracer.asyncSpan('get-user-from-valid-session', async span => {
-    span.setAttribute('database.session.id', sid);
+    span.setAttribute('database.session.id', sessionId);
     const result = await db.query.session.findFirst({
       columns: {},
       with: { user: true },
-      where: ({ id }, { eq }) => eq(id, sid),
+      where: ({ id }, { eq }) => eq(id, sessionId),
     });
     return result?.user;
   });
 }
 
-export async function deleteValidSession(db: DbConnection, sid: string) {
+export async function deleteValidSession(db: DbConnection, sessionId: string) {
   return await tracer.asyncSpan('delete-valid-session', async span => {
-    span.setAttribute('database.session.id', sid);
+    span.setAttribute('database.session.id', sessionId);
     return await db
       .delete(schema.session)
-      .where(eq(schema.session.id, sid))
+      .where(eq(schema.session.id, sessionId))
       .returning({
         userId: schema.session.userId,
         expiration: schema.session.expiration,
@@ -119,7 +119,7 @@ export async function deleteValidSession(db: DbConnection, sid: string) {
 export async function upsertOpenIdUser(
   db: DbConnection,
   email: string,
-  uid: string | null,
+  googleUserId: string | null,
   given: string,
   family: string,
   avatar: string,
@@ -128,7 +128,7 @@ export async function upsertOpenIdUser(
     span.setAttribute('database.user.email', email);
     return await db
       .insert(schema.user)
-      .values({ email, googleUserId: uid, givenName: given, familyName: family, avatarUrl: avatar })
+      .values({ email, googleUserId, givenName: given, familyName: family, avatarUrl: avatar })
       .onConflictDoUpdate({
         target: schema.user.email,
         set: {
@@ -145,13 +145,13 @@ export async function upsertOpenIdUser(
 
 export async function updateProfileByUserId(
   db: DbConnection,
-  uid: string,
+  userId: string,
   studentNumber: bigint | null,
   given: string,
   family: string,
 ) {
   return await tracer.asyncSpan('update-profile-by-user-id', async span => {
-    span.setAttribute('database.user.id', uid);
+    span.setAttribute('database.user.id', userId);
     await db
       .update(schema.user)
       .set({
@@ -159,7 +159,7 @@ export async function updateProfileByUserId(
         givenName: given,
         familyName: family,
       })
-      .where(and(eq(schema.user.id, uid)));
+      .where(and(eq(schema.user.id, userId)));
   });
 }
 
@@ -707,22 +707,25 @@ export async function autoAcknowledgeLabsWithoutPreferences(db: DbConnection, dr
 
 export async function getLabQuotaAndSelectedStudentCountInDraft(
   db: DbConnection,
-  did: bigint,
-  lid: string,
+  draftId: bigint,
+  labId: string,
 ) {
   return await tracer.asyncSpan('get-lab-quota-and-selected-student-count-in-draft', async span => {
-    span.setAttribute('database.draft.id', did.toString());
-    span.setAttribute('database.lab.id', lid);
+    span.setAttribute('database.draft.id', draftId.toString());
+    span.setAttribute('database.lab.id', labId);
     const labInfo = await db.query.lab.findFirst({
       columns: { quota: true },
-      where: ({ id }, { eq }) => eq(id, lid),
+      where: ({ id }, { eq }) => eq(id, labId),
     });
 
     const draftCount = await db
       .select({ studentCount: count(schema.facultyChoiceUser.studentUserId) })
       .from(schema.facultyChoiceUser)
       .where(
-        and(eq(schema.facultyChoiceUser.draftId, did), eq(schema.facultyChoiceUser.labId, lid)),
+        and(
+          eq(schema.facultyChoiceUser.draftId, draftId),
+          eq(schema.facultyChoiceUser.labId, labId),
+        ),
       )
       .then(assertSingle);
 

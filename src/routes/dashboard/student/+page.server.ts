@@ -1,3 +1,5 @@
+import * as v from 'valibot';
+import { decode } from 'decode-formdata';
 import { error, fail, redirect } from '@sveltejs/kit';
 
 import {
@@ -10,17 +12,28 @@ import {
   updateProfileByUserId,
 } from '$lib/server/database';
 import { Logger } from '$lib/server/telemetry/logger';
-import { maybeValidateBigInt, validateMaybeEmptyString, validateString } from '$lib/forms';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 import type { PageServerLoadEvent, RequestEvent } from './$types';
+
+const ProfileFormData = v.object({
+  studentNumber: v.optional(v.pipe(v.string(), v.minLength(1))),
+  given: v.pipe(v.string(), v.minLength(1)),
+  family: v.pipe(v.string(), v.minLength(1)),
+});
+
+const SubmitFormData = v.object({
+  draft: v.pipe(v.string(), v.minLength(1)),
+  labs: v.array(v.pipe(v.string(), v.minLength(1))),
+  remarks: v.array(v.string()),
+});
 
 const SERVICE_NAME = 'routes.dashboard.student';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
 export async function load({ locals: { session } }: PageServerLoadEvent) {
-  if (!session?.user) {
+  if (typeof session?.user === 'undefined') {
     logger.warn('attempt to access student dashboard without session');
     redirect(307, '/dashboard/oauth/login');
   }
@@ -153,7 +166,7 @@ export async function load({ locals: { session } }: PageServerLoadEvent) {
 
 export const actions = {
   async profile({ locals: { session }, request }: RequestEvent) {
-    if (!session?.user) {
+    if (typeof session?.user === 'undefined') {
       logger.warn('attempt to update profile without session');
       error(401);
     }
@@ -166,22 +179,26 @@ export const actions = {
       });
 
       const data = await request.formData();
-      const studentNumber = maybeValidateBigInt(data.get('student-number'));
-      const given = validateString(data.get('given'));
-      const family = validateString(data.get('family'));
+      const { studentNumber, given, family } = v.parse(ProfileFormData, decode(data));
       logger.debug('updating profile', {
-        'user.student_number': studentNumber?.toString(),
+        'user.student_number': studentNumber,
         'user.given_name': given,
         'user.family_name': family,
       });
 
-      await updateProfileByUserId(db, user.id, studentNumber, given, family);
+      await updateProfileByUserId(
+        db,
+        user.id,
+        typeof studentNumber === 'undefined' ? null : BigInt(studentNumber),
+        given,
+        family,
+      );
       logger.info('profile updated');
     });
   },
 
   async submit({ locals: { session }, request }: RequestEvent) {
-    if (!session?.user) {
+    if (typeof session?.user === 'undefined') {
       logger.warn('attempt to submit lab rankings without session');
       error(401);
     }
@@ -204,11 +221,14 @@ export const actions = {
 
     return await tracer.asyncSpan('action.submit', async () => {
       const data = await request.formData();
-      const draftId = BigInt(validateString(data.get('draft')));
-      const labs = data.getAll('labs').map(validateString);
-      const remarks = data.getAll('remarks').map(validateMaybeEmptyString);
+      const {
+        draft: draftIdField,
+        labs,
+        remarks,
+      } = v.parse(SubmitFormData, decode(data, { arrays: ['labs', 'remarks'] }));
+
       logger.debug('lab rankings submitted', {
-        'draft.id': draftId.toString(),
+        'draft.id': draftIdField,
         'ranking.lab_count': labs.length,
         'ranking.remarks_count': remarks.length,
       });
@@ -218,8 +238,9 @@ export const actions = {
         return fail(400);
       }
 
+      const draftId = BigInt(draftIdField);
       const draft = await getDraftById(db, draftId);
-      if (!draft) {
+      if (typeof draft === 'undefined') {
         logger.warn('cannot find the target draft');
         error(404);
       }

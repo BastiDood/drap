@@ -26,14 +26,14 @@
 >
   <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
     <div class="space-y-2">
-      <Label for="student-number">Student Number</Label>
+      <Label for="studentNumber">Student Number</Label>
       {#if studentNumber === null}
         <Input
           type="number"
           min="100000000"
           max="1000000000"
-          name="student-number"
-          id="student-number"
+          name="studentNumber"
+          id="studentNumber"
           placeholder="2020XXXXX"
         />
       {:else}
@@ -42,8 +42,8 @@
           type="number"
           min="100000000"
           max="1000000000"
-          name="student-number"
-          id="student-number"
+          name="studentNumber"
+          id="studentNumber"
           {placeholder}
           disabled
         />

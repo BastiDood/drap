@@ -44,7 +44,7 @@
 >
   <div class="space-y-2">
     <Label for="lab-id">Lab ID</Label>
-    <Input type="text" required name="id" id="lab-id" placeholder="dcs" pattern="[a-z0-9]+" />
+    <Input type="text" required name="labId" id="lab-id" placeholder="dcs" pattern="[a-z0-9]+" />
   </div>
   <div class="space-y-2">
     <Label for="lab-name">Lab Name</Label>

@@ -19,7 +19,7 @@
 
   const { data } = $props();
   const {
-    did,
+    draftId,
     draft: { currRound, maxRounds, activePeriodStart, activePeriodEnd },
     events,
   } = $derived(data);
@@ -47,7 +47,7 @@
 <div class="mb-4 flex items-center gap-2 text-xl">
   <Link href={resolve('/history/')} class="no-underline">Draft History</Link>
   <ChevronRightIcon class="size-4" />
-  <span class="font-semibold">Draft #{did}</span>
+  <span class="font-semibold">Draft #{draftId}</span>
 </div>
 {#if end !== null}
   {@const { endIsoString, endDateTime } = end}
@@ -115,7 +115,7 @@
         </h4>
         <ol class="space-y-1">
           <li class="preset-tonal-primary rounded-lg border px-3 py-1.5">
-            <span class="flex-auto">Draft #{did} was concluded.</span>
+            <span class="flex-auto">Draft #{draftId} was concluded.</span>
           </li>
         </ol>
       </li>
@@ -195,7 +195,7 @@
       </h4>
       <ol class="space-y-1">
         <li class="preset-tonal-success rounded-lg border px-3 py-1.5">
-          Draft #{did} was created.
+          Draft #{draftId} was created.
         </li>
       </ol>
     </li>

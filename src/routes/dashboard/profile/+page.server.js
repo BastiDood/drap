@@ -1,9 +1,16 @@
+import * as v from 'valibot';
+import { decode } from 'decode-formdata';
 import { error, redirect } from '@sveltejs/kit';
 
 import { db, updateProfileByUserId } from '$lib/server/database';
 import { Logger } from '$lib/server/telemetry/logger';
-import { maybeValidateBigInt, validateString } from '$lib/forms';
 import { Tracer } from '$lib/server/telemetry/tracer';
+
+const ProfileFormData = v.object({
+  studentNumber: v.optional(v.pipe(v.string(), v.minLength(1))),
+  given: v.pipe(v.string(), v.minLength(1)),
+  family: v.pipe(v.string(), v.minLength(1)),
+});
 
 const SERVICE_NAME = 'routes.profile';
 const logger = Logger.byName(SERVICE_NAME);
@@ -37,16 +44,20 @@ export const actions = {
       });
 
       const data = await request.formData();
-      const studentNumber = maybeValidateBigInt(data.get('student-number'));
-      const given = validateString(data.get('given'));
-      const family = validateString(data.get('family'));
+      const { studentNumber, given, family } = v.parse(ProfileFormData, decode(data));
       logger.debug('updating profile', {
-        'user.student_number': studentNumber?.toString(),
+        'user.student_number': studentNumber,
         'user.given_name': given,
         'user.family_name': family,
       });
 
-      await updateProfileByUserId(db, user.id, studentNumber, given, family);
+      await updateProfileByUserId(
+        db,
+        user.id,
+        typeof studentNumber === 'undefined' ? null : BigInt(studentNumber),
+        given,
+        family,
+      );
       logger.info('profile updated');
     });
   },

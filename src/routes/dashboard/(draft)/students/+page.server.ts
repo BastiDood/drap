@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 
+import * as v from 'valibot';
+import { decode } from 'decode-formdata';
 import { error, redirect } from '@sveltejs/kit';
 
 import {
@@ -17,7 +19,11 @@ import {
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
-import { validateString } from '$lib/forms';
+
+const RankingsFormData = v.object({
+  draft: v.pipe(v.string(), v.minLength(1)),
+  students: v.array(v.pipe(v.string(), v.minLength(1))),
+});
 
 const SERVICE_NAME = 'routes.dashboard.draft.students';
 const logger = Logger.byName(SERVICE_NAME);
@@ -90,12 +96,11 @@ export const actions = {
       logger.debug('submitting rankings on behalf of lab head', { lab, faculty });
 
       const data = await request.formData();
-      const draftId = BigInt(validateString(data.get('draft')));
-      logger.debug('draft submitted', { 'draft.id': draftId.toString() });
-
-      const students = data.getAll('students').map(validateString);
+      const { draft, students } = v.parse(RankingsFormData, decode(data, { arrays: ['students'] }));
+      logger.debug('draft submitted', { 'draft.id': draft });
       logger.debug('students submitted', { students });
 
+      const draftId = BigInt(draft);
       const { quota, selected } = await getLabQuotaAndSelectedStudentCountInDraft(db, draftId, lab);
       assert(typeof quota !== 'undefined');
 

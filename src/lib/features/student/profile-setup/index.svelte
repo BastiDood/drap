@@ -37,14 +37,14 @@
       }}
     >
       <div class="space-y-2">
-        <Label for="student-number">Student Number</Label>
+        <Label for="studentNumber">Student Number</Label>
         <Input
           required
           type="number"
           min="100000000"
           max="1000000000"
-          name="student-number"
-          id="student-number"
+          name="studentNumber"
+          id="studentNumber"
           placeholder="2020XXXXX"
         />
       </div>
