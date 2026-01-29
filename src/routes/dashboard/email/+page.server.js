@@ -22,12 +22,12 @@ const tracer = Tracer.byName(SERVICE_NAME);
 
 export async function load({ locals: { session } }) {
   if (typeof session?.user === 'undefined') {
-    logger.warn('attempt to access email page without session');
+    logger.error('attempt to access email page without session');
     redirect(307, '/dashboard/oauth/login');
   }
 
   if (!session.user.isAdmin || session.user.googleUserId === null || session.user.labId !== null) {
-    logger.warn('insufficient permissions to access email page', {
+    logger.error('insufficient permissions to access email page', void 0, {
       'auth.user.is_admin': session.user.isAdmin,
       'auth.user.google_id': session.user.googleUserId,
       'user.lab_id': session.user.labId,
@@ -35,16 +35,26 @@ export async function load({ locals: { session } }) {
     error(403);
   }
 
-  const senders = await getCandidateSenders(db);
-  logger.debug('candidate senders fetched', { 'email.sender.count': senders.length });
+  const { id: sessionId, user } = session;
+  const { id: userId } = user;
 
-  return { user: session.user, senders };
+  return await tracer.asyncSpan('load-email-page', async span => {
+    span.setAttributes({
+      'session.id': sessionId,
+      'session.user.id': userId,
+    });
+
+    const senders = await getCandidateSenders(db);
+    logger.debug('candidate senders fetched', { 'email.sender.count': senders.length });
+
+    return { user, senders };
+  });
 }
 
 export const actions = {
   async demote({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.warn('attempt to demote sender without session');
+      logger.error('attempt to demote sender without session');
       error(401);
     }
 
@@ -53,7 +63,7 @@ export const actions = {
       session.user.googleUserId === null ||
       session.user.labId !== null
     ) {
-      logger.warn('insufficient permissions to demote sender', {
+      logger.error('insufficient permissions to demote sender', void 0, {
         'auth.user.is_admin': session.user.isAdmin,
         'auth.user.google_id': session.user.googleUserId,
         'user.lab_id': session.user.labId,
@@ -77,7 +87,7 @@ export const actions = {
   },
   async promote({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.warn('attempt to promote sender without session');
+      logger.error('attempt to promote sender without session');
       error(401);
     }
 
@@ -86,7 +96,7 @@ export const actions = {
       session.user.googleUserId === null ||
       session.user.labId !== null
     ) {
-      logger.warn('insufficient permissions to promote sender', {
+      logger.error('insufficient permissions to promote sender', void 0, {
         'auth.user.is_admin': session.user.isAdmin,
         'auth.user.google_id': session.user.googleUserId,
         'user.lab_id': session.user.labId,
@@ -109,7 +119,7 @@ export const actions = {
   },
   async remove({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.warn('attempt to remove sender without session');
+      logger.error('attempt to remove sender without session');
       error(401);
     }
 
@@ -118,7 +128,7 @@ export const actions = {
       session.user.googleUserId === null ||
       session.user.labId !== null
     ) {
-      logger.warn('insufficient permissions to remove sender', {
+      logger.error('insufficient permissions to remove sender', void 0, {
         'auth.user.is_admin': session.user.isAdmin,
         'auth.user.google_id': session.user.googleUserId,
         'user.lab_id': session.user.labId,

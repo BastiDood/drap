@@ -12,13 +12,13 @@ const tracer = Tracer.byName(SERVICE_NAME);
 
 export async function load({ locals: { session } }) {
   if (typeof session?.user === 'undefined') {
-    logger.warn('attempt to access drafts page without session');
+    logger.error('attempt to access drafts page without session');
     redirect(307, '/dashboard/oauth/login');
   }
 
   const { user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-    logger.warn('insufficient permissions to access drafts page', {
+    logger.error('insufficient permissions to access drafts page', void 0, {
       'auth.user.is_admin': user.isAdmin,
       'auth.user.google_id': user.googleUserId,
       'user.lab_id': user.labId,
@@ -26,14 +26,26 @@ export async function load({ locals: { session } }) {
     error(403);
   }
 
-  const [drafts, labs] = await Promise.all([getDrafts(db), getLabRegistry(db)]);
+  const {
+    id: sessionId,
+    user: { id: userId },
+  } = session;
 
-  logger.debug('drafts page loaded', {
-    'draft.count': drafts.length,
-    'lab.count': labs.length,
+  return await tracer.asyncSpan('load-drafts-page', async span => {
+    span.setAttributes({
+      'session.id': sessionId,
+      'session.user.id': userId,
+    });
+
+    const [drafts, labs] = await Promise.all([getDrafts(db), getLabRegistry(db)]);
+
+    logger.debug('drafts page loaded', {
+      'draft.count': drafts.length,
+      'lab.count': labs.length,
+    });
+
+    return { drafts, labs };
   });
-
-  return { drafts, labs };
 }
 
 const InitFormData = v.object({
@@ -44,13 +56,13 @@ const InitFormData = v.object({
 export const actions = {
   async init({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.warn('attempt to init draft without session');
+      logger.error('attempt to init draft without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.warn('insufficient permissions to init draft', {
+      logger.error('insufficient permissions to init draft', void 0, {
         'auth.user.is_admin': user.isAdmin,
         'auth.user.google_id': user.googleUserId,
         'user.lab_id': user.labId,

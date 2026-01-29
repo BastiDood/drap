@@ -18,7 +18,7 @@ const tracer = Tracer.byName(SERVICE_NAME);
 
 export function load({ locals: { session } }) {
   if (typeof session?.user === 'undefined') {
-    logger.warn('attempt to access profile page without session');
+    logger.error('attempt to access profile page without session');
     redirect(307, '/dashboard/oauth/login');
   }
 
@@ -32,7 +32,7 @@ export function load({ locals: { session } }) {
 export const actions = {
   async profile({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.warn('attempt to update profile without session');
+      logger.error('attempt to update profile without session');
       error(401);
     }
 

@@ -40,13 +40,13 @@ const tracer = Tracer.byName(SERVICE_NAME);
 
 export async function load({ params, locals: { session } }) {
   if (typeof session?.user === 'undefined') {
-    logger.warn('attempt to access draft detail page without session');
+    logger.error('attempt to access draft detail page without session');
     error(401);
   }
 
   const { user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-    logger.warn('insufficient permissions to access draft detail page', {
+    logger.error('insufficient permissions to access draft detail page', void 0, {
       'auth.user.is_admin': user.isAdmin,
       'auth.user.google_id': user.googleUserId,
       'user.lab_id': user.labId,
@@ -54,40 +54,53 @@ export async function load({ params, locals: { session } }) {
     error(403);
   }
 
-  const draftId = BigInt(params.draftId);
-  const draft = await getDraftById(db, draftId);
+  const {
+    id: sessionId,
+    user: { id: userId },
+  } = session;
 
-  if (typeof draft === 'undefined') {
-    logger.warn('draft not found', { 'draft.id': draftId.toString() });
-    error(404);
-  }
+  return await tracer.asyncSpan('load-draft-detail-page', async span => {
+    span.setAttributes({
+      'session.id': sessionId,
+      'session.user.id': userId,
+      'draft.id': params.draftId,
+    });
 
-  const [students, records, labs] = await Promise.all([
-    getStudentsInDraftTaggedByLab(db, draftId),
-    getFacultyChoiceRecords(db, draftId),
-    getLabRegistry(db),
-  ]);
+    const draftId = BigInt(params.draftId);
+    const draft = await getDraftById(db, draftId);
 
-  const { available = [], selected = [] } = groupBy(students, ({ labId }) =>
-    labId === null ? 'available' : 'selected',
-  );
+    if (typeof draft === 'undefined') {
+      logger.warn('draft not found', { 'draft.id': params.draftId });
+      error(404);
+    }
 
-  logger.debug('draft detail loaded', {
-    'draft.id': draftId.toString(),
-    'draft.round.current': draft.currRound,
-    'draft.round.max': draft.maxRounds,
-    'draft.student.available_count': available.length,
-    'draft.student.selected_count': selected.length,
+    const [students, records, labs] = await Promise.all([
+      getStudentsInDraftTaggedByLab(db, draftId),
+      getFacultyChoiceRecords(db, draftId),
+      getLabRegistry(db),
+    ]);
+
+    const { available = [], selected = [] } = groupBy(students, ({ labId }) =>
+      labId === null ? 'available' : 'selected',
+    );
+
+    logger.debug('draft detail loaded', {
+      'draft.id': draftId.toString(),
+      'draft.round.current': draft.currRound,
+      'draft.round.max': draft.maxRounds,
+      'draft.student.available_count': available.length,
+      'draft.student.selected_count': selected.length,
+    });
+
+    return {
+      draftId,
+      draft: { id: draftId, ...draft },
+      labs,
+      available,
+      selected,
+      records,
+    };
   });
-
-  return {
-    draftId,
-    draft: { id: draftId, ...draft },
-    labs,
-    available,
-    selected,
-    records,
-  };
 }
 
 const Email = v.pipe(v.string(), v.email());
@@ -105,13 +118,13 @@ const ZIP_NOT_EQUAL = Symbol('ZIP_NOT_EQUAL');
 export const actions = {
   async start({ params, locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.warn('attempt to start draft without session');
+      logger.error('attempt to start draft without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.warn('insufficient permissions to start draft', {
+      logger.error('insufficient permissions to start draft', void 0, {
         'auth.user.is_admin': user.isAdmin,
         'auth.user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -200,13 +213,13 @@ export const actions = {
 
   async intervene({ params, locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.warn('attempt to intervene draft without session');
+      logger.error('attempt to intervene draft without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.warn('insufficient permissions to intervene draft', {
+      logger.error('insufficient permissions to intervene draft', void 0, {
         'auth.user.is_admin': user.isAdmin,
         'auth.user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -274,13 +287,13 @@ export const actions = {
 
   async conclude({ params, locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.warn('attempt to conclude draft without session');
+      logger.error('attempt to conclude draft without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.warn('insufficient permissions to conclude draft', {
+      logger.error('insufficient permissions to conclude draft', void 0, {
         'auth.user.is_admin': user.isAdmin,
         'auth.user.google_id': user.googleUserId,
         'user.lab_id': user.labId,

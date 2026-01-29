@@ -13,7 +13,7 @@ const tracer = Tracer.byName(SERVICE_NAME);
 
 export function load({ locals: { session } }) {
   if (typeof session?.user === 'undefined') {
-    logger.warn('attempt to access dashboard without session');
+    logger.error('attempt to access dashboard without session');
     redirect(307, '/dashboard/oauth/login');
   }
 

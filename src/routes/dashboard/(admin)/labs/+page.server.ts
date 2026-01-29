@@ -32,12 +32,36 @@ const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
 export async function load({ locals: { session } }) {
-  if (typeof session?.user === 'undefined') redirect(307, '/dashboard/oauth/login');
+  if (typeof session?.user === 'undefined') {
+    logger.error('attempt to access labs page without session');
+    redirect(307, '/dashboard/oauth/login');
+  }
 
   const { user } = session;
-  if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
+  if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
+    logger.error('insufficient permissions to access labs page', void 0, {
+      'auth.user.is_admin': user.isAdmin,
+      'auth.user.google_id': user.googleUserId,
+      'user.lab_id': user.labId,
+    });
+    error(403);
+  }
 
-  return { labs: await getLabRegistry(db, false) };
+  const {
+    id: sessionId,
+    user: { id: userId },
+  } = session;
+
+  return await tracer.asyncSpan('load-labs-page', async span => {
+    span.setAttributes({
+      'session.id': sessionId,
+      'session.user.id': userId,
+    });
+
+    const labs = await getLabRegistry(db, false);
+    logger.debug('labs page loaded', { 'lab.count': labs.length });
+    return { labs };
+  });
 }
 
 function* mapRowTuples(data: FormData) {
@@ -50,13 +74,13 @@ function* mapRowTuples(data: FormData) {
 export const actions = {
   async lab({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.warn('attempt to create lab without session');
+      logger.error('attempt to create lab without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.warn('insufficient permissions to create lab', {
+      logger.error('insufficient permissions to create lab', void 0, {
         'auth.user.is_admin': user.isAdmin,
         'auth.user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -81,13 +105,13 @@ export const actions = {
   },
   async quota({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.warn('attempt to update lab quota without session');
+      logger.error('attempt to update lab quota without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.warn('insufficient permissions to update lab quota', {
+      logger.error('insufficient permissions to update lab quota', void 0, {
         'auth.user.is_admin': user.isAdmin,
         'auth.user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -111,13 +135,13 @@ export const actions = {
   },
   async archive({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.warn('attempt to archive lab without session');
+      logger.error('attempt to archive lab without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.warn('insufficient permissions to archive lab', {
+      logger.error('insufficient permissions to archive lab', void 0, {
         'auth.user.is_admin': user.isAdmin,
         'auth.user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -142,13 +166,13 @@ export const actions = {
   },
   async restore({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.warn('attempt to restore lab without session');
+      logger.error('attempt to restore lab without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.warn('insufficient permissions to restore lab', {
+      logger.error('insufficient permissions to restore lab', void 0, {
         'auth.user.is_admin': user.isAdmin,
         'auth.user.google_id': user.googleUserId,
         'user.lab_id': user.labId,

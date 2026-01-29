@@ -31,13 +31,13 @@ const tracer = Tracer.byName(SERVICE_NAME);
 
 export async function load({ locals: { session }, parent }) {
   if (typeof session?.user === 'undefined') {
-    logger.warn('attempt to access students page without session');
+    logger.error('attempt to access students page without session');
     redirect(307, '/dashboard/oauth/login');
   }
 
-  const { user } = session;
+  const { id: sessionId, user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId === null) {
-    logger.warn('insufficient permissions to access students page', {
+    logger.error('insufficient permissions to access students page', void 0, {
       'auth.user.is_admin': user.isAdmin,
       'auth.user.google_id': user.googleUserId,
       'user.lab_id': user.labId,
@@ -45,44 +45,53 @@ export async function load({ locals: { session }, parent }) {
     error(403);
   }
 
-  const { draft } = await parent();
-  if (typeof draft === 'undefined') {
-    logger.warn('no active draft found');
-    error(404);
-  }
+  const { id: userId, labId } = user;
+  return await tracer.asyncSpan('load-students-page', async span => {
+    span.setAttributes({
+      'session.id': sessionId,
+      'session.user.id': userId,
+    });
+    if (labId !== null) span.setAttribute('session.user.lab_id', labId);
 
-  logger.debug('active draft found', {
-    'draft.id': draft.id.toString(),
-    'draft.round.current': draft.currRound,
-    'draft.round.max': draft.maxRounds,
+    const { draft } = await parent();
+    if (typeof draft === 'undefined') {
+      logger.warn('no active draft found');
+      error(404);
+    }
+
+    logger.debug('active draft found', {
+      'draft.id': draft.id.toString(),
+      'draft.round.current': draft.currRound,
+      'draft.round.max': draft.maxRounds,
+    });
+
+    const { lab, students, researchers, isDone } =
+      await getLabAndRemainingStudentsInDraftWithLabPreference(db, draft.id, labId);
+    if (typeof lab === 'undefined') {
+      logger.error('lab not found');
+      error(404);
+    }
+
+    logger.debug('lab and students fetched', {
+      'lab.name': lab.name,
+      'student.count': students.length,
+      'lab.researcher_count': researchers.length,
+      'draft.is_done': isDone,
+    });
+    return { draft, lab, students, researchers, isDone };
   });
-
-  const { lab, students, researchers, isDone } =
-    await getLabAndRemainingStudentsInDraftWithLabPreference(db, draft.id, user.labId);
-  if (typeof lab === 'undefined') {
-    logger.error('lab not found');
-    error(404);
-  }
-
-  logger.debug('lab and students fetched', {
-    'lab.name': lab.name,
-    'student.count': students.length,
-    'lab.researcher_count': researchers.length,
-    'draft.is_done': isDone,
-  });
-  return { draft, lab, students, researchers, isDone };
 }
 
 export const actions = {
   async rankings({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.warn('attempt to submit rankings without session');
+      logger.error('attempt to submit rankings without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId === null) {
-      logger.warn('insufficient permissions to submit rankings', {
+      logger.error('insufficient permissions to submit rankings', void 0, {
         'auth.user.is_admin': user.isAdmin,
         'auth.user.google_id': user.googleUserId,
         'user.lab_id': user.labId,

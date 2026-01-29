@@ -26,12 +26,12 @@ const tracer = Tracer.byName(SERVICE_NAME);
 
 export async function load({ locals: { session } }) {
   if (typeof session?.user === 'undefined') {
-    logger.warn('attempt to access users page without session');
+    logger.error('attempt to access users page without session');
     redirect(307, '/dashboard/oauth/login');
   }
 
   if (!session.user.isAdmin || session.user.googleUserId === null || session.user.labId !== null) {
-    logger.warn('insufficient permissions to access users page', {
+    logger.error('insufficient permissions to access users page', void 0, {
       'auth.user.is_admin': session.user.isAdmin,
       'auth.user.google_id': session.user.googleUserId,
       'user.lab_id': session.user.labId,
@@ -39,18 +39,30 @@ export async function load({ locals: { session } }) {
     error(403);
   }
 
-  const [labs, faculty] = await Promise.all([getLabRegistry(db), getFacultyAndStaff(db)]);
-  logger.debug('users page loaded', {
-    'lab.count': labs.length,
-    'user.faculty_count': faculty.length,
+  const {
+    id: sessionId,
+    user: { id: userId },
+  } = session;
+
+  return await tracer.asyncSpan('load-users-page', async span => {
+    span.setAttributes({
+      'session.id': sessionId,
+      'session.user.id': userId,
+    });
+
+    const [labs, faculty] = await Promise.all([getLabRegistry(db), getFacultyAndStaff(db)]);
+    logger.debug('users page loaded', {
+      'lab.count': labs.length,
+      'user.faculty_count': faculty.length,
+    });
+    return { labs, faculty };
   });
-  return { labs, faculty };
 }
 
 export const actions = {
   async admin({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.warn('attempt to invite user without session');
+      logger.error('attempt to invite user without session');
       error(401);
     }
 
@@ -59,7 +71,7 @@ export const actions = {
       session.user.googleUserId === null ||
       session.user.labId !== null
     ) {
-      logger.warn('insufficient permissions to invite user', {
+      logger.error('insufficient permissions to invite user', void 0, {
         'auth.user.is_admin': session.user.isAdmin,
         'auth.user.google_id': session.user.googleUserId,
         'user.lab_id': session.user.labId,
@@ -83,7 +95,7 @@ export const actions = {
   },
   async faculty({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.warn('attempt to invite faculty without session');
+      logger.error('attempt to invite faculty without session');
       error(401);
     }
 
@@ -92,7 +104,7 @@ export const actions = {
       session.user.googleUserId === null ||
       session.user.labId !== null
     ) {
-      logger.warn('insufficient permissions to invite faculty', {
+      logger.error('insufficient permissions to invite faculty', void 0, {
         'auth.user.is_admin': session.user.isAdmin,
         'auth.user.google_id': session.user.googleUserId,
         'user.lab_id': session.user.labId,

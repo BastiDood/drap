@@ -34,15 +34,15 @@ const tracer = Tracer.byName(SERVICE_NAME);
 
 export async function load({ locals: { session } }: PageServerLoadEvent) {
   if (typeof session?.user === 'undefined') {
-    logger.warn('attempt to access student dashboard without session');
+    logger.error('attempt to access student dashboard without session');
     redirect(307, '/dashboard/oauth/login');
   }
 
-  const { user } = session;
+  const { id: sessionId, user } = session;
 
   // Only students allowed (not admin, no lab assignment)
   if (user.isAdmin || user.labId !== null) {
-    logger.warn('non-student attempting to access student dashboard', {
+    logger.error('non-student attempting to access student dashboard', void 0, {
       'user.id': user.id,
       'user.is_admin': user.isAdmin,
       'user.lab_id': user.labId,
@@ -50,73 +50,114 @@ export async function load({ locals: { session } }: PageServerLoadEvent) {
     error(403);
   }
 
-  logger.debug('student dashboard loaded', {
-    'user.id': user.id,
-    'user.email': user.email,
-  });
+  const { id: userId, email: userEmail, givenName, familyName, avatarUrl, studentNumber } = user;
 
-  // Build base user object
-  const baseUser = {
-    id: user.id,
-    email: user.email,
-    givenName: user.givenName,
-    familyName: user.familyName,
-    avatarUrl: user.avatarUrl,
-    studentNumber: user.studentNumber,
-  };
+  return await tracer.asyncSpan('load-student-page', async span => {
+    span.setAttributes({
+      'session.id': sessionId,
+      'session.user.id': userId,
+      'session.user.email': userEmail,
+    });
 
-  // PROFILE_SETUP: studentNumber is null
-  if (user.studentNumber === null) {
-    logger.debug('user needs profile setup');
-    return { user: baseUser };
-  }
+    logger.debug('student dashboard loaded', {
+      'user.id': userId,
+      'user.email': userEmail,
+    });
 
-  // Check for active draft
-  const draft = await getActiveDraft(db);
-
-  // NO_DRAFT: no active draft
-  if (!draft) {
-    logger.debug('no active draft');
-    return { user: baseUser };
-  }
-
-  const { id: draftId, currRound, maxRounds, registrationClosesAt } = draft;
-  logger.debug('active draft found', {
-    'draft.id': draftId.toString(),
-    'draft.curr_round': currRound,
-    'draft.max_rounds': maxRounds,
-  });
-
-  // LOTTERY: currRound is null (lottery phase)
-  if (currRound === null) {
-    logger.debug('draft in lottery phase');
-    return {
-      user: baseUser,
-      draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
+    // Build base user object
+    const baseUser = {
+      id: userId,
+      email: userEmail,
+      givenName,
+      familyName,
+      avatarUrl,
+      studentNumber,
     };
-  }
 
-  // Check if user has submitted rankings
-  const rankings = await getStudentRankings(db, draftId, user.id);
+    // PROFILE_SETUP: studentNumber is null
+    if (studentNumber === null) {
+      logger.debug('user needs profile setup');
+      return { user: baseUser };
+    }
 
-  const requestedAt = new Date();
+    // Check for active draft
+    const draft = await getActiveDraft(db);
 
-  function buildSubmission(r: NonNullable<typeof rankings>) {
-    return {
-      createdAt: r.createdAt,
-      labs: r.labRemarks.map(({ lab, remark }) => ({
-        id: lab,
-        name: lab,
-        remark,
-      })),
-    };
-  }
+    // NO_DRAFT: no active draft
+    if (!draft) {
+      logger.debug('no active draft');
+      return { user: baseUser };
+    }
 
-  // Registration phase (currRound === 0)
-  if (currRound === 0) {
+    const { id: draftId, currRound, maxRounds, registrationClosesAt } = draft;
+    logger.debug('active draft found', {
+      'draft.id': draftId.toString(),
+      'draft.curr_round': currRound,
+      'draft.max_rounds': maxRounds,
+    });
+
+    // LOTTERY: currRound is null (lottery phase)
+    if (currRound === null) {
+      logger.debug('draft in lottery phase');
+      return {
+        user: baseUser,
+        draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
+      };
+    }
+
+    // Check if user has submitted rankings
+    const rankings = await getStudentRankings(db, draftId, userId);
+
+    const requestedAt = new Date();
+
+    function buildSubmission(r: NonNullable<typeof rankings>) {
+      return {
+        createdAt: r.createdAt,
+        labs: r.labRemarks.map(({ lab, remark }) => ({
+          id: lab,
+          name: lab,
+          remark,
+        })),
+      };
+    }
+
+    // Registration phase (currRound === 0)
+    if (currRound === 0) {
+      if (rankings) {
+        // SUBMITTED: user already submitted during registration
+        logger.debug('user already submitted rankings');
+        return {
+          user: baseUser,
+          draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
+          submission: buildSubmission(rankings),
+        };
+      }
+
+      // Check if registration is still open
+      if (requestedAt < registrationClosesAt) {
+        // REGISTRATION_OPEN: registration still open
+        logger.debug('registration open');
+        const availableLabs = await getLabRegistry(db, true);
+        return {
+          user: baseUser,
+          draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
+          availableLabs: availableLabs.map(({ id, name }) => ({ id, name })),
+        };
+      }
+
+      // Registration closed but currRound still 0 (waiting for draft to start)
+      // REGISTRATION_CLOSED: user missed registration
+      logger.debug('registration closed, user missed registration');
+      return {
+        user: baseUser,
+        draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
+      };
+    }
+
+    // Draft in progress (currRound > 0)
     if (rankings) {
-      // SUBMITTED: user already submitted during registration
-      logger.debug('user already submitted rankings');
+      // DRAFT_IN_PROGRESS: user submitted and draft is ongoing
+      logger.debug('draft in progress, user submitted');
       return {
         user: baseUser,
         draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
@@ -124,50 +165,19 @@ export async function load({ locals: { session } }: PageServerLoadEvent) {
       };
     }
 
-    // Check if registration is still open
-    if (requestedAt < registrationClosesAt) {
-      // REGISTRATION_OPEN: registration still open
-      logger.debug('registration open');
-      const availableLabs = await getLabRegistry(db, true);
-      return {
-        user: baseUser,
-        draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
-        availableLabs: availableLabs.map(({ id, name }) => ({ id, name })),
-      };
-    }
-
-    // Registration closed but currRound still 0 (waiting for draft to start)
-    // REGISTRATION_CLOSED: user missed registration
-    logger.debug('registration closed, user missed registration');
+    // REGISTRATION_CLOSED: user didn't submit and draft already started
+    logger.debug('draft in progress, user missed registration');
     return {
       user: baseUser,
       draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
     };
-  }
-
-  // Draft in progress (currRound > 0)
-  if (rankings) {
-    // DRAFT_IN_PROGRESS: user submitted and draft is ongoing
-    logger.debug('draft in progress, user submitted');
-    return {
-      user: baseUser,
-      draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
-      submission: buildSubmission(rankings),
-    };
-  }
-
-  // REGISTRATION_CLOSED: user didn't submit and draft already started
-  logger.debug('draft in progress, user missed registration');
-  return {
-    user: baseUser,
-    draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
-  };
+  });
 }
 
 export const actions = {
   async profile({ locals: { session }, request }: RequestEvent) {
     if (typeof session?.user === 'undefined') {
-      logger.warn('attempt to update profile without session');
+      logger.error('attempt to update profile without session');
       error(401);
     }
 
@@ -199,7 +209,7 @@ export const actions = {
 
   async submit({ locals: { session }, request }: RequestEvent) {
     if (typeof session?.user === 'undefined') {
-      logger.warn('attempt to submit lab rankings without session');
+      logger.error('attempt to submit lab rankings without session');
       error(401);
     }
 
@@ -210,7 +220,7 @@ export const actions = {
       user.labId !== null ||
       user.studentNumber === null
     ) {
-      logger.warn('insufficient permissions to submit lab rankings', {
+      logger.error('insufficient permissions to submit lab rankings', void 0, {
         'auth.user.is_admin': user.isAdmin,
         'auth.user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
