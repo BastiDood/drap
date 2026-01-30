@@ -2,7 +2,7 @@ import * as v from 'valibot';
 import { decode } from 'decode-formdata';
 import { error, redirect } from '@sveltejs/kit';
 
-import { db, updateUserRole } from '$lib/server/database';
+import { db, updateProfileByUserId, updateUserRole } from '$lib/server/database';
 import { dev } from '$app/environment';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
@@ -33,12 +33,49 @@ export function load({ locals: { session } }) {
   redirect(307, '/dashboard/lab/'); // researcher
 }
 
+const ProfileFormData = v.object({
+  studentNumber: v.optional(v.pipe(v.string(), v.minLength(1))),
+  given: v.pipe(v.string(), v.minLength(1)),
+  family: v.pipe(v.string(), v.minLength(1)),
+});
+
 const DevRoleFormData = v.object({
   isAdmin: v.boolean(),
   labId: v.optional(v.string()),
 });
 
 export const actions = {
+  async profile({ locals: { session }, request }) {
+    if (typeof session?.user === 'undefined') {
+      logger.error('attempt to update profile without session');
+      error(401);
+    }
+
+    const { user } = session;
+    return await tracer.asyncSpan('action.profile', async () => {
+      logger.debug('updating profile request', {
+        'user.id': user.id,
+        'user.email': user.email,
+      });
+
+      const data = await request.formData();
+      const { studentNumber, given, family } = v.parse(ProfileFormData, decode(data));
+      logger.debug('updating profile', {
+        'user.student_number': studentNumber,
+        'user.given_name': given,
+        'user.family_name': family,
+      });
+
+      await updateProfileByUserId(
+        db,
+        user.id,
+        typeof studentNumber === 'undefined' ? null : BigInt(studentNumber),
+        given,
+        family,
+      );
+      logger.info('profile updated');
+    });
+  },
   ...(dev
     ? {
         async role({ locals: { session }, request }) {

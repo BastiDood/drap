@@ -58,32 +58,16 @@
                 {/snippet}
               </Sidebar.MenuButton>
             </Sidebar.MenuItem>
-
             {#if typeof user !== 'undefined' && user.googleUserId !== null}
-              {#if !user.isAdmin}
-                <!-- Student: single Student entry -->
+              {#if user.isAdmin}
+                <!-- Admin/Faculty: Admin entry -->
                 <Sidebar.MenuItem>
                   <Sidebar.MenuButton
-                    isActive={pathname === '/dashboard/student/'}
-                    tooltipContent="Student"
+                    isActive={pathname === '/dashboard/admin/'}
+                    tooltipContent="Admin"
                   >
                     {#snippet child({ props })}
-                      <a href={resolve('/dashboard/student/')} {...props}>
-                        <GraduationCapIcon class="size-5" />
-                        <span>Student</span>
-                      </a>
-                    {/snippet}
-                  </Sidebar.MenuButton>
-                </Sidebar.MenuItem>
-              {:else}
-                <!-- Admin/Faculty: Profile entry -->
-                <Sidebar.MenuItem>
-                  <Sidebar.MenuButton
-                    isActive={pathname === '/dashboard/profile/'}
-                    tooltipContent="Profile"
-                  >
-                    {#snippet child({ props })}
-                      <a href={resolve('/dashboard/profile/')} {...props}>
+                      <a href={resolve('/dashboard/admin/')} {...props}>
                         <Avatar.Root class="size-5">
                           <Avatar.Image
                             src={user.avatarUrl}
@@ -93,12 +77,11 @@
                             >{user.givenName[0]}{user.familyName[0]}</Avatar.Fallback
                           >
                         </Avatar.Root>
-                        <span>Profile</span>
+                        <span>Admin</span>
                       </a>
                     {/snippet}
                   </Sidebar.MenuButton>
                 </Sidebar.MenuItem>
-
                 {#if user.labId === null}
                   <!-- Admin (no lab): Admin links -->
                   <Sidebar.MenuItem>
@@ -182,9 +165,39 @@
                     </Sidebar.MenuButton>
                   </Sidebar.MenuItem>
                 {/if}
+              {:else}
+                <!-- Student: Student entry -->
+                <Sidebar.MenuItem>
+                  <Sidebar.MenuButton
+                    isActive={pathname === '/dashboard/student/'}
+                    tooltipContent="Student"
+                  >
+                    {#snippet child({ props })}
+                      <a href={resolve('/dashboard/student/')} {...props}>
+                        <GraduationCapIcon class="size-5" />
+                        <span>Student</span>
+                      </a>
+                    {/snippet}
+                  </Sidebar.MenuButton>
+                </Sidebar.MenuItem>
+                {#if user.labId !== null}
+                  <!-- Assigned student: Lab link -->
+                  <Sidebar.MenuItem>
+                    <Sidebar.MenuButton
+                      isActive={pathname === '/dashboard/lab/'}
+                      tooltipContent="Lab"
+                    >
+                      {#snippet child({ props })}
+                        <a href={resolve('/dashboard/lab/')} {...props}>
+                          <FlaskConicalIcon class="size-5" />
+                          <span>Lab</span>
+                        </a>
+                      {/snippet}
+                    </Sidebar.MenuButton>
+                  </Sidebar.MenuItem>
+                {/if}
               {/if}
             {/if}
-
             <Sidebar.MenuItem>
               <Sidebar.MenuButton
                 isActive={pathname.startsWith('/history/')}
@@ -198,7 +211,6 @@
                 {/snippet}
               </Sidebar.MenuButton>
             </Sidebar.MenuItem>
-
             <Sidebar.MenuItem>
               <Sidebar.MenuButton isActive={pathname === '/privacy/'} tooltipContent="Privacy">
                 {#snippet child({ props })}

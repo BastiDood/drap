@@ -24,7 +24,7 @@
   <Card.Content>
     <form
       method="post"
-      action="/dashboard/student/?/profile"
+      action="/dashboard/?/profile"
       class="space-y-4"
       use:enhance={({ submitter }) => {
         assert(submitter !== null);
