@@ -184,6 +184,16 @@ export default defineConfig(
         svelteConfig,
       },
     },
-    rules: { 'svelte/prefer-const': 'error' },
+    rules: {
+      'svelte/prefer-const': 'error',
+      'no-restricted-globals': [
+        'error',
+        {
+          name: '$effect',
+          message:
+            'Refactor the code so that side effects are performed in the event handlers themselves, not in effect synchronization. This is incorrect and poor practice that leads to buggy reactivity patterns. Avoid `$effect` at all costs!',
+        },
+      ],
+    },
   },
 );
