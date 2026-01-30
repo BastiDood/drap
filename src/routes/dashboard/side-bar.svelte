@@ -45,7 +45,9 @@
       </div>
     </Sidebar.Header>
     <Sidebar.Content>
+      <!-- About Group -->
       <Sidebar.Group>
+        <Sidebar.GroupLabel class="uppercase">About</Sidebar.GroupLabel>
         <Sidebar.GroupContent>
           <Sidebar.Menu>
             <Sidebar.MenuItem>
@@ -58,7 +60,38 @@
                 {/snippet}
               </Sidebar.MenuButton>
             </Sidebar.MenuItem>
-            {#if typeof user !== 'undefined' && user.googleUserId !== null}
+            <Sidebar.MenuItem>
+              <Sidebar.MenuButton
+                isActive={pathname.startsWith('/history/')}
+                tooltipContent="History"
+              >
+                {#snippet child({ props })}
+                  <a href={resolve('/history/')} {...props}>
+                    <ClockIcon class="size-5" />
+                    <span>History</span>
+                  </a>
+                {/snippet}
+              </Sidebar.MenuButton>
+            </Sidebar.MenuItem>
+            <Sidebar.MenuItem>
+              <Sidebar.MenuButton isActive={pathname === '/privacy/'} tooltipContent="Privacy">
+                {#snippet child({ props })}
+                  <a href={resolve('/privacy/')} {...props}>
+                    <LockKeyholeIcon class="size-5" />
+                    <span>Privacy</span>
+                  </a>
+                {/snippet}
+              </Sidebar.MenuButton>
+            </Sidebar.MenuItem>
+          </Sidebar.Menu>
+        </Sidebar.GroupContent>
+      </Sidebar.Group>
+      <!-- Dashboard Group (only if user is logged in) -->
+      {#if typeof user !== 'undefined' && user.googleUserId !== null}
+        <Sidebar.Group>
+          <Sidebar.GroupLabel class="uppercase">Dashboard</Sidebar.GroupLabel>
+          <Sidebar.GroupContent>
+            <Sidebar.Menu>
               {#if user.isAdmin}
                 <!-- Admin/Faculty: Admin entry -->
                 <Sidebar.MenuItem>
@@ -197,33 +230,10 @@
                   </Sidebar.MenuItem>
                 {/if}
               {/if}
-            {/if}
-            <Sidebar.MenuItem>
-              <Sidebar.MenuButton
-                isActive={pathname.startsWith('/history/')}
-                tooltipContent="History"
-              >
-                {#snippet child({ props })}
-                  <a href={resolve('/history/')} {...props}>
-                    <ClockIcon class="size-5" />
-                    <span>History</span>
-                  </a>
-                {/snippet}
-              </Sidebar.MenuButton>
-            </Sidebar.MenuItem>
-            <Sidebar.MenuItem>
-              <Sidebar.MenuButton isActive={pathname === '/privacy/'} tooltipContent="Privacy">
-                {#snippet child({ props })}
-                  <a href={resolve('/privacy/')} {...props}>
-                    <LockKeyholeIcon class="size-5" />
-                    <span>Privacy</span>
-                  </a>
-                {/snippet}
-              </Sidebar.MenuButton>
-            </Sidebar.MenuItem>
-          </Sidebar.Menu>
-        </Sidebar.GroupContent>
-      </Sidebar.Group>
+            </Sidebar.Menu>
+          </Sidebar.GroupContent>
+        </Sidebar.Group>
+      {/if}
     </Sidebar.Content>
 
     <Sidebar.Footer>
