@@ -45,13 +45,13 @@ Key directories:
 - `(landing)/history/` - Draft history index and past results
 - `(landing)/privacy/` - Privacy policy
 - `/dashboard/` - Main app (authenticated)
-  - `(admin)/drafts/` - Draft lifecycle management + `[draftId]/` detail views
-  - `(admin)/labs/` - Lab quota management
-  - `(draft)/students/` - Lab heads view/select students each round
+  - `admin/` - Admin hub
+  - `(draft)/drafts/` - Draft lifecycle management + `[draftId]/` detail views
+  - `(draft)/labs/` - Lab quota management
+  - `(faculty)/students/` - Faculty view/select students each round
   - `/email` - Email sender config
   - `/lab` - Lab management (faculty)
   - `/oauth` - Google OAuth flow
-  - `/profile` - User profile
   - `/student` - Student hub (rankings, status)
   - `/users` - User management (admin)
 

@@ -33,8 +33,9 @@
 
 - `(landing)/` - Public pages (home, history, privacy)
 - `dashboard/` - Authenticated app
-  - `(admin)/` - Admin-only routes (drafts, labs management)
-  - `(draft)/` - Draft-scoped routes (students selection)
+  - `admin/` - Admin hub page
+  - `(draft)/` - Draft-scoped routes (drafts, labs management)
+  - `(faculty)/` - Faculty routes requiring active draft (students selection)
 
 ## Code Style References
 
