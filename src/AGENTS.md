@@ -1,4 +1,12 @@
-# src/ Codebase Map
+# Codebase Map
+
+## Agent Instructions
+
+**Before modifying source code:**
+
+1. **Explore first.** Read relevant files, trace code paths, understand existing patterns.
+2. **Follow conventions.** Adhere to guidelines in this file and subdirectory `AGENTS.md` files.
+3. **Update docs.** Keep `AGENTS.md` and `*.md` files in `src/` synchronized with changes.
 
 ## Entry Points
 
