@@ -1,10 +1,3 @@
----
-paths:
-  - 'src/routes/dashboard/**/*'
-  - 'src/lib/server/database/**/*'
-  - 'src/lib/server/models/**/*'
----
-
 # Draft Process Domain Knowledge
 
 ## Terminology

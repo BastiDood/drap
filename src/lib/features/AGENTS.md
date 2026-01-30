@@ -10,7 +10,7 @@ Feature modules live in `$lib/features/<feature>/`. The main pattern is to wrap 
 - Imports child components and forwards props
 - **Prefer nested conditionals** when deriving UI from state machine conditions
 
-<example title="draft state machine uses nested conditionals">
+Example (draft state machine uses nested conditionals):
 
 ```svelte
 {#if draft.activePeriodEnd !== null}
@@ -27,8 +27,6 @@ Feature modules live in `$lib/features/<feature>/`. The main pattern is to wrap 
   <RegularPhase {draft} />
 {/if}
 ```
-
-</example>
 
 ### 2. Form (`*-form.svelte`)
 

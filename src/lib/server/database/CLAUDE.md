@@ -1,0 +1,1 @@
+src/lib/server/database/AGENTS.md

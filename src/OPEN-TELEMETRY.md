@@ -102,28 +102,22 @@ Use in `span.setAttributes()` to capture request context:
 
 Use in logger calls to describe entity state:
 
-<user-attributes>
+**User attributes:**
 
 - `user.id`, `user.email`, `user.is_admin`, `user.lab_id`
 - `user.google_id`, `user.student_number`
 - `user.given_name`, `user.family_name`
 
-</user-attributes>
-
-<draft-attributest>
+**Draft attributes:**
 
 - `draft.id`, `draft.round.current`, `draft.round.max`
 - `draft.registration.closes_at`, `draft.is_done`
 - `draft.student.count`, `draft.event_count`
 
-</draft-attributes>
-
-<lab-attributes>
+**Lab attributes:**
 
 - `lab.id`, `lab.name`, `lab.count`
 - `lab.researcher_count`
-
-</lab-attributes>
 
 ## Span Attribute Guidelines
 
@@ -162,7 +156,7 @@ logger.error('insufficient permissions to access page', void 0, {
 });
 ```
 
-Note: `logger.error` signature is `(body, error?, attributes?)` — pass `void 0` when no exception.
+Note: `logger.error` signature is `(body, error?, attributes?)` - pass `void 0` when no exception.
 
 ## Route File Pattern
 

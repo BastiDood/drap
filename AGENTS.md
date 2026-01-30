@@ -1,14 +1,27 @@
+## Agent Instructions
+
+**MANDATORY:** Before writing ANY code, you MUST:
+
+1. **EXPLORE THE CODEBASE FIRST.** Do not assume you know the structure. Read relevant files, trace code paths, and understand existing patterns before proposing changes.
+
+2. **APPLY PROJECT CONVENTIONS TO YOUR REASONING.** After exploring, internalize the conventions documented here and in subdirectory `AGENTS.md` files. Your implementation decisions MUST align with established patterns.
+
+3. **KEEP DOCUMENTATION CURRENT.** All `AGENTS.md` files and related documentation (`*.md` in `src/`, `docs/`) MUST stay synchronized with the codebase:
+   - If documentation is **outdated** (missing features, incorrect paths, stale conventions), **update it immediately** before proceeding.
+   - When **adding new features**, update relevant documentation as part of the implementation.
+   - When **modifying existing features**, verify documentation accuracy and correct any drift.
+
+This applies to all documentation files throughout the project.
+
 ## Project Overview
 
 DRAP (Draft Ranking Automated Processor) automates the University of the Philippines Diliman - Department of Computer Science's yearly research lab assignment draft. Students submit ranked lab preferences; faculty review and accept students round-by-round; unassigned students enter a lottery.
 
+For detailed domain knowledge (terminology, lifecycle, role workflows), see [docs/draft-process.md](docs/draft-process.md).
+
 ## Commands
 
 ```bash
-pnpm install              # Install dependencies
-pnpm dev                  # Vite dev server
-pnpm build                # Production build
-pnpm preview              # Preview production build
 pnpm fmt                  # Check formatting
 pnpm fmt:fix              # Auto-fix formatting
 pnpm lint                 # All linters in parallel
@@ -23,7 +36,7 @@ pnpm docker:prod          # Start prod services: + redis, app, drizzle-gateway
 
 ## Tech Stack
 
-- **Framework:** SvelteKit 2 + Svelte 5, Tailwind 4 + shadcn-svelte (bits-ui)
+- **Framework:** SvelteKit 2 + Svelte 5, Tailwind 4 + `shadcn-svelte` (`bits-ui`)
 - **Database:** PostgreSQL with Drizzle ORM
 - **Jobs:** Inngest for event-driven background processing
 - **Auth:** Google OAuth 2.0 (restricted to `@up.edu.ph` emails)
@@ -31,56 +44,23 @@ pnpm docker:prod          # Start prod services: + redis, app, drizzle-gateway
 
 ## Architecture
 
-### Request Flow (`src/hooks.server.js`)
+### Request Flow
 
-1. Each request wrapped in OpenTelemetry span with unique request ID
-2. Session validated from `sid` cookie via `getUserFromValidSession(db, sid)`
+Each request in `src/hooks.server.js`:
+
+1. Wrapped in OpenTelemetry span with unique request ID
+2. Session validated from `sid` cookie
 3. User attached to `event.locals.session`
 
-### Database Layer (`src/lib/server/database/`)
+### Code Organization
 
-- Drizzle ORM with singleton `db` export
-- Transactions via `begin(db, fn)` function
-- Three schemas: `drap` (main data), `auth` (sessions), `email` (sender credentials)
+See [src/AGENTS.md](src/AGENTS.md) for detailed codebase map and convention references.
 
-### Models Layer (`src/lib/server/models/`)
+Key directories:
 
-Domain models with Valibot schemas and discriminated unions:
-
-- `notification.ts` - Draft and user notification types
-- `oauth.ts` - Google OAuth token schemas (`@up.edu.ph` domain validation)
-- `email.ts` - Gmail API response types
-- `openid.ts` - OpenID utilities
-
-### Feature Modules (`src/lib/features/`)
-
-Feature-scoped UI components with state-driven orchestrators:
-
-- `drafts/` - Admin draft management (timeline, phases, init dialog)
-- `labs/` - Lab management (tabbed table with active/archived, create dialog)
-- `student/` - Student hub with phase-based subfeatures
-
-Each feature exports components and custom type interfaces via barrel `index.ts`.
-
-### Shared Components
-
-- `src/lib/components/ui/` - shadcn-svelte primitives (dialog, button, etc.)
-- `src/lib/users/` - Reusable user display components (faculty, student, invited)
-- `src/lib/hooks/` - Svelte stores (`is-mobile.svelte.ts`)
-
-### Event System (`src/lib/server/inngest/`)
-
-Inngest-based event-driven notifications.
-
-**Event types:**
-
-- `draft/round.started` - Notifies faculty when round begins
-- `draft/round.submitted` - Acknowledges lab submission
-- `draft/lottery.intervened` - Manual lottery assignment notification
-- `draft/draft.concluded` - Draft completion notification
-- `draft/user.assigned` - Direct notification to assigned student
-
-**Bulk email:** Up to 100 events batched per Inngest function invocation, sent via Gmail API batch endpoint.
+- `src/lib/server/database/` - Drizzle ORM ([AGENTS.md](src/lib/server/database/AGENTS.md))
+- `src/lib/server/inngest/` - Event-driven jobs ([AGENTS.md](src/lib/server/inngest/AGENTS.md))
+- `src/lib/features/` - Feature modules ([AGENTS.md](src/lib/features/AGENTS.md))
 
 ### Route Structure
 
@@ -104,27 +84,6 @@ Inngest-based event-driven notifications.
 2. **Regular rounds:** Each round, labs see first-choice students → accept subset → repeat with next preference
 3. **Lottery:** Remaining students shuffled, assigned round-robin to labs with slots
 4. **Conclusion:** All students assigned
-
-## Code Conventions
-
-- Strive to use **JavaScript by default** (`.js`), and only resort to TypeScript (`.ts`) when syntax requires it
-- **Discriminated unions** with explicit `interface` over inlined object types
-- **`switch`** over long `if` chains for union discrimination
-- **`const enum`** over hardcoded strings
-- **Type inference** preferred over explicit return types
-- **Runtime assertions** over TypeScript non-null assertions (`!`)
-- **Valibot schemas** double as runtime validation + type definitions
-
-### Svelte Components
-
-- **Props typing:** Use `Pick<schema.*, 'field1' | 'field2'>` from `$lib/server/database` instead of inlining object type definitions
-- **No `data` wrapper:** Pass props directly to components (`{...data}`) rather than wrapping in a `data` object
-- **Avoid `undefined`:** Use truthiness checks (`if (value)`) instead of `typeof value !== 'undefined'`
-- **Import paths:**
-  - Child-relative imports (`./component.svelte`) are fine
-  - Parent-relative imports (`../component.svelte`) should use `$lib` paths instead
-  - **No parent traversal in feature modules:** Within `$lib/features/*/`, never use `../` imports. Use `$lib/features/<feature>/` paths instead.
-- **Form actions:** Use absolute paths (e.g., `/dashboard/?/profile`) instead of relative (e.g., `?/profile`) for reusable components
 
 ## Environment Variables
 
@@ -161,3 +120,4 @@ If errors appear:
 ## Additional Guidelines
 
 - **Avoid `npx`:** Strongly prefer using package scripts defined in `package.json` (e.g., `pnpm lint`, `pnpm db:generate`) over invoking tools directly via `npx`. The project scripts are pre-configured with correct options and ensure consistent behavior.
+- **Assume CWD is correct:** When running commands, do not use directory-changing flags like `git -C` or `pnpm --filter`. The current working directory is already the project root.
