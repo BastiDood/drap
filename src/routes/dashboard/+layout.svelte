@@ -10,7 +10,7 @@
   const { user } = $derived(data);
 </script>
 
-<Toaster />
+<Toaster richColors closeButton />
 <SidebarProvider>
   <div class="flex h-dvh w-full overflow-hidden">
     <SideBar {user} />
