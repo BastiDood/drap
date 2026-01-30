@@ -6,9 +6,11 @@ import {
   db,
   getActiveDraft,
   getDraftById,
+  getLabById,
   getLabRegistry,
   getStudentRankings,
   insertStudentRanking,
+  type schema,
   updateProfileByUserId,
 } from '$lib/server/database';
 import { Logger } from '$lib/server/telemetry/logger';
@@ -40,17 +42,24 @@ export async function load({ locals: { session } }: PageServerLoadEvent) {
 
   const { id: sessionId, user } = session;
 
-  // Only students allowed (not admin, no lab assignment)
-  if (user.isAdmin || user.labId !== null) {
-    logger.error('non-student attempting to access student dashboard', void 0, {
+  // Only students allowed (not admin)
+  if (user.isAdmin) {
+    logger.error('admin attempting to access student dashboard', void 0, {
       'user.id': user.id,
       'user.is_admin': user.isAdmin,
-      'user.lab_id': user.labId,
     });
     error(403);
   }
 
-  const { id: userId, email: userEmail, givenName, familyName, avatarUrl, studentNumber } = user;
+  const {
+    id: userId,
+    email: userEmail,
+    givenName,
+    familyName,
+    avatarUrl,
+    studentNumber,
+    labId,
+  } = user;
 
   return await tracer.asyncSpan('load-student-page', async span => {
     span.setAttributes({
@@ -74,10 +83,13 @@ export async function load({ locals: { session } }: PageServerLoadEvent) {
       studentNumber,
     };
 
-    // PROFILE_SETUP: studentNumber is null
+    // eslint-disable-next-line @typescript-eslint/init-declarations
+    let lab: Pick<schema.Lab, 'name'> | undefined;
+    if (labId !== null) lab = await getLabById(db, labId);
+
     if (studentNumber === null) {
       logger.debug('user needs profile setup');
-      return { user: baseUser };
+      return { user: baseUser, lab };
     }
 
     // Check for active draft
@@ -86,7 +98,7 @@ export async function load({ locals: { session } }: PageServerLoadEvent) {
     // NO_DRAFT: no active draft
     if (!draft) {
       logger.debug('no active draft');
-      return { user: baseUser };
+      return { user: baseUser, lab };
     }
 
     const { id: draftId, currRound, maxRounds, registrationClosesAt } = draft;
@@ -102,6 +114,7 @@ export async function load({ locals: { session } }: PageServerLoadEvent) {
       return {
         user: baseUser,
         draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
+        lab,
       };
     }
 
@@ -130,6 +143,7 @@ export async function load({ locals: { session } }: PageServerLoadEvent) {
           user: baseUser,
           draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
           submission: buildSubmission(rankings),
+          lab,
         };
       }
 
@@ -142,6 +156,7 @@ export async function load({ locals: { session } }: PageServerLoadEvent) {
           user: baseUser,
           draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
           availableLabs: availableLabs.map(({ id, name }) => ({ id, name })),
+          lab,
         };
       }
 
@@ -151,6 +166,7 @@ export async function load({ locals: { session } }: PageServerLoadEvent) {
       return {
         user: baseUser,
         draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
+        lab,
       };
     }
 
@@ -162,6 +178,7 @@ export async function load({ locals: { session } }: PageServerLoadEvent) {
         user: baseUser,
         draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
         submission: buildSubmission(rankings),
+        lab,
       };
     }
 
@@ -170,6 +187,7 @@ export async function load({ locals: { session } }: PageServerLoadEvent) {
     return {
       user: baseUser,
       draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
+      lab,
     };
   });
 }

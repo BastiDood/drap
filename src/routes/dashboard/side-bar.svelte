@@ -4,7 +4,6 @@
   import FlaskConicalIcon from '@lucide/svelte/icons/flask-conical';
   import GraduationCapIcon from '@lucide/svelte/icons/graduation-cap';
   import HomeIcon from '@lucide/svelte/icons/home';
-  import LayoutDashboardIcon from '@lucide/svelte/icons/layout-dashboard';
   import LockKeyholeIcon from '@lucide/svelte/icons/lock-keyhole';
   import LogInIcon from '@lucide/svelte/icons/log-in';
   import LogOutIcon from '@lucide/svelte/icons/log-out';
@@ -61,17 +60,17 @@
             </Sidebar.MenuItem>
 
             {#if typeof user !== 'undefined' && user.googleUserId !== null}
-              {#if !user.isAdmin && user.labId === null}
-                <!-- Student: single Dashboard entry -->
+              {#if !user.isAdmin}
+                <!-- Student: single Student entry -->
                 <Sidebar.MenuItem>
                   <Sidebar.MenuButton
-                    isActive={pathname === '/dashboard/'}
-                    tooltipContent="Dashboard"
+                    isActive={pathname === '/dashboard/student/'}
+                    tooltipContent="Student"
                   >
                     {#snippet child({ props })}
-                      <a href={resolve('/dashboard/')} {...props}>
-                        <LayoutDashboardIcon class="size-5" />
-                        <span>Dashboard</span>
+                      <a href={resolve('/dashboard/student/')} {...props}>
+                        <GraduationCapIcon class="size-5" />
+                        <span>Student</span>
                       </a>
                     {/snippet}
                   </Sidebar.MenuButton>
