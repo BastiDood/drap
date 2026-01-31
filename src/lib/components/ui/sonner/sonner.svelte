@@ -13,6 +13,8 @@
 <Sonner
   theme={mode.current}
   class="toaster group"
+  richColors
+  closeButton
   --normal-bg="var(--color-popover)"
   --normal-text="var(--color-popover-foreground)"
   --normal-border="var(--color-border)"
@@ -33,3 +35,19 @@
     <TriangleAlertIcon class="size-4" />
   {/snippet}
 </Sonner>
+
+<style>
+  :global(
+    .toaster[data-sonner-toaster][data-sonner-theme='light'],
+    .toaster[data-sonner-toaster][data-sonner-theme='dark']
+  ) {
+    --success-bg: var(--color-success);
+    --success-text: var(--color-success-foreground);
+    --error-bg: var(--color-destructive);
+    --error-text: var(--color-destructive-foreground);
+    --warning-bg: var(--color-warning);
+    --warning-text: var(--color-warning-foreground);
+    --info-bg: var(--color-accent);
+    --info-text: var(--color-accent-foreground);
+  }
+</style>
