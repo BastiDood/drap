@@ -6,7 +6,9 @@ description: >
   student rankings, faculty choices, or any other database-stored information.
 user-invocable: false
 disable-model-invocation: false
-allowed-tools: Read, Bash(docker compose exec postgres psql :*)
+allowed-tools:
+  - Read
+  - Bash(docker compose exec postgres psql:*)
 ---
 
 # Debug Database Skill
