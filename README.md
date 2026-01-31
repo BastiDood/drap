@@ -56,10 +56,10 @@ At runtime, the server requires the following environment variables to be presen
 | `DRIZZLE_DEBUG`              | Enables verbose logs from Drizzle queries.                       |
 | `GOOGLE_OAUTH_CLIENT_ID`     | OAuth 2.0 credentials retrieved from the [Google Cloud Console]. |
 | `GOOGLE_OAUTH_CLIENT_SECRET` | OAuth 2.0 credentials retrieved from the [Google Cloud Console]. |
-| `INNGEST_EVENT_KEY`          | Inngest event signing key.                                       |
-| `INNGEST_SIGNING_KEY`        | Inngest webhook signing key.                                     |
+| `INNGEST_EVENT_KEY`          | Inngest event signing key. Required only in production.          |
+| `INNGEST_SIGNING_KEY`        | Inngest webhook signing key. Required only in production.        |
 | `POSTGRES_URL`               | The connection string to the PostgreSQL instance.                |
-| `DRAP_ENABLE_EMAILS`         | Enable real email sending (default: disabled).                   |
+| `DRAP_ENABLE_EMAILS`         | Enable real email sending. Disabled by default.                  |
 
 [Google Cloud Console]: https://console.cloud.google.com/
 
