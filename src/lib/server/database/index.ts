@@ -78,6 +78,14 @@ export async function insertValidSession(db: DbConnection, userId: string, expir
   });
 }
 
+/** Dev-only: Updates the session's userId for user impersonation. */
+export async function updateSessionUserId(db: DbConnection, sessionId: string, userId: string) {
+  return await tracer.asyncSpan('update-session-user-id', async span => {
+    span.setAttributes({ 'database.session.id': sessionId, 'database.user.id': userId });
+    await db.update(schema.session).set({ userId }).where(eq(schema.session.id, sessionId));
+  });
+}
+
 export async function getUserById(db: DbConnection, userId: string) {
   return await tracer.asyncSpan('get-user-by-id', async span => {
     span.setAttribute('database.user.id', userId);

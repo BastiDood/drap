@@ -2,7 +2,14 @@ import * as v from 'valibot';
 import { decode } from 'decode-formdata';
 import { error, redirect } from '@sveltejs/kit';
 
-import { db, updateProfileByUserId, updateUserRole } from '$lib/server/database';
+import {
+  db,
+  insertDummySession,
+  updateProfileByUserId,
+  updateSessionUserId,
+  updateUserRole,
+  upsertOpenIdUser,
+} from '$lib/server/database';
 import { dev } from '$app/environment';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
@@ -44,6 +51,12 @@ const DevRoleFormData = v.object({
   labId: v.optional(v.string()),
 });
 
+const DevDummyFormData = v.object({
+  email: v.pipe(v.string(), v.email()),
+  givenName: v.pipe(v.string(), v.minLength(1)),
+  familyName: v.pipe(v.string(), v.minLength(1)),
+});
+
 export const actions = {
   async profile({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
@@ -79,7 +92,7 @@ export const actions = {
   ...(dev
     ? {
         async role({ locals: { session }, request }) {
-          return await tracer.asyncSpan('action.role', async () => {
+          return await tracer.asyncSpan('action.role', async span => {
             if (typeof session?.user === 'undefined') {
               logger.warn('attempt to change role without session');
               error(401);
@@ -92,7 +105,7 @@ export const actions = {
             );
 
             const { user } = session;
-            logger.debug('updating user role', {
+            span.setAttributes({
               'user.id': user.id,
               'user.is_admin': isAdmin,
               'user.lab_id': labId,
@@ -100,6 +113,45 @@ export const actions = {
 
             await updateUserRole(db, user.id, isAdmin, labId || null);
             logger.info('user role updated');
+
+            redirect(303, '/dashboard/');
+          });
+        },
+        async dummy({ cookies, locals: { session }, request }) {
+          return await tracer.asyncSpan('action.dummy', async span => {
+            const data = await request.formData();
+            const { email, givenName, familyName } = v.parse(DevDummyFormData, decode(data));
+            const userId = crypto.randomUUID();
+            span.setAttributes({
+              'user.id': userId,
+              'user.email': email,
+              'user.given_name': givenName,
+              'user.family_name': familyName,
+            });
+
+            const dummyUser = await upsertOpenIdUser(
+              db,
+              email,
+              userId, // HACK: this is not a valid Google account identifier.
+              givenName,
+              familyName,
+              `https://avatar.vercel.sh/${userId}.svg`,
+            );
+            logger.info('dummy user inserted', dummyUser);
+
+            // Create new session if not logged in, otherwise swap session user
+            if (typeof session === 'undefined') {
+              const dummySessionId = await insertDummySession(db, dummyUser.id);
+              cookies.set('sid', dummySessionId, {
+                path: '/dashboard',
+                httpOnly: true,
+                sameSite: 'lax',
+              });
+              logger.info('dummy session created', { 'session.id': dummySessionId });
+            } else {
+              await updateSessionUserId(db, session.id, dummyUser.id);
+              logger.warn('dummy session swapped', { 'session.id': session.id });
+            }
 
             redirect(303, '/dashboard/');
           });

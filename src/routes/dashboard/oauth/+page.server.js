@@ -1,7 +1,6 @@
 import { error, redirect } from '@sveltejs/kit';
 
-import { db, deleteValidSession, insertDummySession, upsertOpenIdUser } from '$lib/server/database';
-import { dev } from '$app/environment';
+import { db, deleteValidSession } from '$lib/server/database';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
@@ -33,37 +32,4 @@ export const actions = {
       redirect(303, '/');
     });
   },
-  ...(dev
-    ? {
-        async dummy({ cookies }) {
-          return await tracer.asyncSpan('action.dummy', async span => {
-            const dummyId = crypto.randomUUID();
-            const emailLeader = dummyId.slice(0, 8);
-            const dummyEmail = `${emailLeader}@dummy.com`;
-
-            span.setAttribute('user.email', dummyEmail);
-
-            // log the dummy user in
-            logger.warn('inserting dummy user', { 'user.email': dummyEmail });
-            const dummyUser = await upsertOpenIdUser(
-              db,
-              dummyEmail,
-              crypto.randomUUID(), // HACK: this is not a valid Google account identifier.
-              'Dummy',
-              emailLeader,
-              `https://avatar.vercel.sh/${dummyId}.svg`,
-            );
-            logger.info('dummy user inserted', dummyUser);
-
-            const dummySessionId = await insertDummySession(db, dummyUser.id);
-            cookies.set('sid', dummySessionId, {
-              path: '/dashboard',
-              httpOnly: true,
-              sameSite: 'lax',
-            });
-            redirect(303, '/dashboard/');
-          });
-        },
-      }
-    : null),
 };

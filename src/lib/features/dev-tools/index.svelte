@@ -1,11 +1,13 @@
 <script lang="ts">
   import BugIcon from '@lucide/svelte/icons/bug';
   import UserCogIcon from '@lucide/svelte/icons/user-cog';
+  import UserPlusIcon from '@lucide/svelte/icons/user-plus';
 
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
   import { Button } from '$lib/components/ui/button';
   import type { schema } from '$lib/server/database';
 
+  import DummyUserDialog from './dummy-user-creator/dialog.svelte';
   import RoleSwitcherDialog from './role-switcher/dialog.svelte';
 
   interface Props {
@@ -14,6 +16,7 @@
 
   const { user }: Props = $props();
 
+  let dummyUserDialogOpen = $state(false);
   let roleDialogOpen = $state(false);
 </script>
 
@@ -27,6 +30,10 @@
       {/snippet}
     </DropdownMenu.Trigger>
     <DropdownMenu.Content align="end">
+      <DropdownMenu.Item onclick={() => (dummyUserDialogOpen = true)}>
+        <UserPlusIcon class="size-4 text-current" />
+        <span>Create User</span>
+      </DropdownMenu.Item>
       <DropdownMenu.Item onclick={() => (roleDialogOpen = true)}>
         <UserCogIcon class="size-4 text-current" />
         <span>Change Role</span>
@@ -34,4 +41,5 @@
     </DropdownMenu.Content>
   </DropdownMenu.Root>
 </div>
+<DummyUserDialog bind:open={dummyUserDialogOpen} />
 <RoleSwitcherDialog {user} bind:open={roleDialogOpen} />

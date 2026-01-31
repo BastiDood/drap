@@ -8,7 +8,6 @@
   import LogInIcon from '@lucide/svelte/icons/log-in';
   import LogOutIcon from '@lucide/svelte/icons/log-out';
   import MailIcon from '@lucide/svelte/icons/mail';
-  import UserPlusIcon from '@lucide/svelte/icons/user-plus';
   import UsersIcon from '@lucide/svelte/icons/users';
 
   import * as Avatar from '$lib/components/ui/avatar';
@@ -18,7 +17,6 @@
   import ModeSwitcher from '$lib/components/mode-switcher.svelte';
   import { assert } from '$lib/assert';
   import { buttonVariants } from '$lib/components/ui/button';
-  import { dev } from '$app/environment';
   import { enhance } from '$app/forms';
   import { page } from '$app/state';
   import { resolve } from '$app/paths';
@@ -235,42 +233,8 @@
         </Sidebar.Group>
       {/if}
     </Sidebar.Content>
-
     <Sidebar.Footer>
       {#if typeof user === 'undefined'}
-        {#if dev}
-          <Sidebar.Menu>
-            <Sidebar.MenuItem>
-              <Sidebar.MenuButton tooltipContent="Create Dummy User">
-                {#snippet child({ props })}
-                  <form
-                    method="post"
-                    action="/dashboard/oauth/?/dummy"
-                    use:enhance={({ submitter }) => {
-                      assert(submitter !== null);
-                      assert(submitter instanceof HTMLButtonElement);
-                      submitter.disabled = true;
-                      return async ({ update }) => {
-                        submitter.disabled = false;
-                        await update();
-                      };
-                    }}
-                  >
-                    <Button
-                      {...props}
-                      type="submit"
-                      variant="ghost"
-                      class="size-full cursor-pointer justify-start rounded-md p-2 text-sm"
-                    >
-                      <UserPlusIcon class="size-5" />
-                      <span>Create Dummy User</span>
-                    </Button>
-                  </form>
-                {/snippet}
-              </Sidebar.MenuButton>
-            </Sidebar.MenuItem>
-          </Sidebar.Menu>
-        {/if}
         <Sidebar.Menu>
           <Sidebar.MenuItem>
             <Sidebar.MenuButton tooltipContent="Login">
