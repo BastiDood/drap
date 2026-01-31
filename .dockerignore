@@ -1,29 +1,44 @@
+# IDE / Tooling
 .claude
-.dockerignore
-.env
-.env.*
-.eslintcache
 .git
 .github
 .gitignore
-.linthtmlrc.json
 .mcp.json
+
+# Linting / Formatting
+.eslintcache
+.linthtmlrc.json
 .prettiercache
 .prettierignore
 .prettierrc.json
-.svelte-kit
-
-Dockerfile
-LICENSE
-README.md
-compose.yaml
-compose.*.yaml
-drizzle.config.js
 eslint.config.js
-opencode.json
 
+# Build outputs (regenerated during build)
+.svelte-kit
 build
 dist
+
+# Docker (meta files)
+.dockerignore
+Dockerfile
+compose.yaml
+compose.*.yaml
 docker
+
+# Database (migrations not needed at runtime)
 drizzle
+drizzle.config.js
+
+# Secrets
+.env
+.env.*
+
+# Documentation
+*.md
+LICENSE
+
+# Dependencies (reinstalled during build)
 node_modules
+
+# Dev-only config
+components.json

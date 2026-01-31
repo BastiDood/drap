@@ -10,7 +10,7 @@ import { defineConfig } from 'eslint/config';
 import svelteConfig from './svelte.config.js';
 
 export default defineConfig(
-  { ignores: ['.svelte-kit/**/*', 'build/**/*', 'node_modules/**/*'] },
+  { ignores: ['.svelte-kit/**/*', 'build/**/*', 'drizzle/**/*', 'node_modules/**/*'] },
   { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
   {
     ...html.configs['flat/recommended'],
