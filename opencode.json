@@ -1,0 +1,50 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "default_agent": "plan",
+  "mcp": {
+    "deepwiki": {
+      "type": "remote",
+      "url": "https://mcp.deepwiki.com/mcp"
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp"
+    },
+    "svelte": {
+      "type": "remote",
+      "url": "https://mcp.svelte.dev/mcp"
+    }
+  },
+  "permission": {
+    "bash": {
+      "*": "ask",
+      "ls *": "allow",
+      "tree *": "allow",
+      "find *": "allow",
+      "grep *": "allow",
+      "git diff *": "allow",
+      "git show *": "allow",
+      "git status *": "allow",
+      "pnpm lint": "allow",
+      "pnpm lint *": "allow",
+      "pnpm fmt": "allow",
+      "pnpm fmt:fix": "allow",
+      "pnpm build": "allow",
+      "bun *": "deny",
+      "bunx *": "deny",
+      "npm *": "deny",
+      "npx *": "deny",
+      "pnpx *": "deny",
+      "yarn *": "deny",
+      "pnpm dlx *": "deny",
+      "pnpm exec *": "deny",
+      "pnpm run *": "deny"
+    },
+    "edit": {
+      "*": "ask",
+      "drizzle/*": "deny",
+      "src/*": "allow"
+    },
+    "skill": { "*": "ask", "debug-local-database": "allow", "submit-pull-request": "allow" }
+  }
+}
