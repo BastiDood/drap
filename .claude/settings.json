@@ -14,7 +14,7 @@
       "Bash(find:*)",
       "Bash(grep:*)"
     ],
-    "ask": ["Bash(pnpm db:generate)", "Bash(pnpm db:migrate)"],
+    "ask": ["Bash(gh pr create:*)", "Bash(pnpm db:generate)", "Bash(pnpm db:migrate)"],
     "deny": [
       "Bash(bun:*)",
       "Bash(bunx:*)",
