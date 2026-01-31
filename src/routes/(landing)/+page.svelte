@@ -8,6 +8,7 @@
   import Hero from '$lib/components/hero.svelte';
   import Link from '$lib/components/link.svelte';
   import { asset, resolve } from '$app/paths';
+  import { ContributorTabs } from '$lib/features/contributors';
 </script>
 
 <Hero />
@@ -230,28 +231,35 @@
     </Accordion.Root>
   </section>
 
-  <section class="prose dark:prose-invert max-w-none">
-    <h2 class="border-border border-b pb-2">Acknowledgements</h2>
-    <p>
-      The <Link target="_blank" href="https://github.com/BastiDood/drap">DRAP project</Link>,
-      licensed under the free and open-source
-      <Link
-        target="_blank"
-        href="https://github.com/BastiDood/drap/blob/bbd5be8b2b3528d2ba28643a91212c2abaa38ce7/LICENSE"
-        >GNU Affero General Public License v3</Link
-      >, was originally developed by
-      <Link target="_blank" href="https://github.com/BastiDood">Sebastian Luis S. Ortiz</Link>,
-      <Link target="_blank" href="https://github.com/VeeIsForVictor">Victor Edwin E. Reyes</Link>,
-      and
-      <Link target="_blank" href="https://github.com/ehrelevant">Ehren A. Castillo</Link> as a service
-      project under the
-      <Link target="_blank" href="https://up-csi.org/">UP Center for Student Innovations</Link>. The
-      DRAP
-      <Link target="_blank" href={asset('/favicon.ico')}>logo</Link>
-      <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- Vite ?url import is pre-resolved -->
-      and <Link target="_blank" href={banner}>banner</Link> were originally designed and created by
-      <Link target="_blank" href="https://github.com/Anjellyrika">Angelica Julianne A. Raborar</Link
-      >.
-    </p>
+  <section class="my-8">
+    <div class="prose dark:prose-invert max-w-none">
+      <h2 class="border-border border-b pb-2">Acknowledgements</h2>
+      <p>
+        The <Link target="_blank" href="https://github.com/BastiDood/drap">DRAP project</Link>,
+        licensed under the free and open-source
+        <Link
+          target="_blank"
+          href="https://github.com/BastiDood/drap/blob/bbd5be8b2b3528d2ba28643a91212c2abaa38ce7/LICENSE"
+          >GNU Affero General Public License v3</Link
+        >, was originally developed as a service project under the
+        <Link target="_blank" href="https://up-csi.org/">UP Center for Student Innovations</Link>.
+        The DRAP
+        <Link target="_blank" href={asset('/favicon.ico')}>logo</Link>
+        <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- Vite ?url import is pre-resolved -->
+        and <Link target="_blank" href={banner}>banner</Link> were originally designed and created by
+        <Link target="_blank" href="https://github.com/Anjellyrika"
+          >Angelica Julianne A. Raborar</Link
+        >.
+      </p>
+    </div>
+  </section>
+
+  <section class="my-8">
+    <div class="prose dark:prose-invert max-w-none">
+      <h2 class="border-border border-b pb-2">Contributors</h2>
+      <div class="not-prose contents">
+        <ContributorTabs />
+      </div>
+    </div>
   </section>
 </div>
