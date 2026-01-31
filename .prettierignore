@@ -2,6 +2,7 @@
 build
 drizzle
 node_modules
+scratchpad
 
 # Environment Variables
 .env
