@@ -34,15 +34,15 @@
   --accent-foreground: oklch(33.62% 0.08 252.16deg);
 
   /* Destructive */
-  --destructive: oklch(56.23% 0.18 24.89deg);
-  --destructive-foreground: oklch(86.45% 0.07 37.09deg);
+  --destructive: oklch(54.975% 0.15522 23.711);
+  --destructive-foreground: oklch(88.309% 0.0498 38.246);
 
   /* Success */
-  --success: oklch(65.6% 0.18 149.18deg);
+  --success: oklch(65.171% 0.15908 151.403);
   --success-foreground: oklch(30.86% 0.11 142.5deg);
 
   /* Warning */
-  --warning: oklch(82.33% 0.14 76.57deg);
+  --warning: oklch(82.735% 0.12776 76.898);
   --warning-foreground: oklch(43.77% 0.1 65.44deg);
 
   /* Borders/Input/Ring */
@@ -94,11 +94,11 @@
   --accent-foreground: oklch(33.62% 0.08 252.16deg);
 
   /* Destructive (error red) */
-  --destructive: oklch(56.23% 0.18 24.89deg);
+  --destructive: oklch(54.975% 0.15522 23.711);
   --destructive-foreground: oklch(88.309% 0.0498 38.246);
 
   /* Success (bright green) */
-  --success: oklch(69.81% 0.17 150.75deg);
+  --success: oklch(65.171% 0.15908 151.403);
   --success-foreground: oklch(30.86% 0.11 142.5deg);
 
   /* Warning (yellow) */
@@ -187,48 +187,61 @@
 
 @layer components {
   .preset-tonal-primary {
-    @apply bg-primary/40 dark:bg-primary/50 dark:border-primary border-current/90;
+    @apply dark:border-primary border-current;
+    background-color: color-mix(in srgb, var(--primary), var(--background));
     color: hsl(from var(--primary) h 90% 15%);
   }
   .dark .preset-tonal-primary {
     color: hsl(from var(--primary) h 90% 80%);
   }
+
   .preset-tonal-secondary {
-    @apply bg-secondary/30 dark:bg-secondary/30 dark:border-secondary/60 border-current/80;
+    @apply dark:border-secondary border-current;
+    background-color: color-mix(in srgb, var(--secondary), var(--background) 70%);
     color: hsl(from var(--secondary) h 30% 30%);
   }
   .dark .preset-tonal-secondary {
     color: hsl(from var(--secondary) h 70% 90%);
   }
+
   .preset-tonal-accent {
-    @apply bg-accent/40 dark:bg-accent/60 dark:border-accent border-current/60;
+    @apply dark:border-accent border-current;
+    background-color: color-mix(in srgb, var(--accent), var(--background) 40%);
     color: hsl(from var(--accent) h 50% 50%);
   }
   .dark .preset-tonal-accent {
-    color: hsl(from var(--accent) h 100% 85%);
+    color: hsl(from var(--accent) h s 85%);
   }
+
   .preset-tonal-muted {
-    @apply bg-muted/30 text-foreground/60 dark:text-foreground/80 border-border/60;
+    background-color: color-mix(in srgb, var(--muted), var(--background));
+    color: color-mix(in srgb, var(--muted), var(--foreground) 70%);
   }
+
   .preset-tonal-success {
-    @apply bg-success/40 dark:bg-success/40 border-current/50;
+    @apply border-success;
+    background-color: color-mix(in srgb, var(--success), var(--background));
     color: hsl(from var(--success) h 30% 20%);
   }
   .dark .preset-tonal-success {
     color: hsl(from var(--success) h 90% 80%);
   }
-  .preset-tonal-destructive {
-    @apply bg-destructive/35 border-destructive/70 dark:bg-destructive/40 dark:border-destructive/90;
-    color: hsl(from var(--destructive) h 90% 35%);
-  }
-  .dark .preset-tonal-destructive {
-    color: hsl(from var(--destructive) h 100% 90%);
-  }
+
   .preset-tonal-warning {
-    @apply bg-warning/60 dark:bg-warning/40 border-current/40;
+    @apply border-warning;
+    background-color: color-mix(in srgb, var(--warning), var(--background) 55%);
     color: hsl(from var(--warning) h 60% 20%);
   }
   .dark .preset-tonal-warning {
     color: hsl(from var(--warning) h 100% 75%);
+  }
+
+  .preset-tonal-destructive {
+    @apply border-destructive;
+    background-color: color-mix(in srgb, var(--destructive), var(--background) 65%);
+    color: hsl(from var(--destructive) h 90% 35%);
+  }
+  .dark .preset-tonal-destructive {
+    color: hsl(from var(--destructive) h s 90%);
   }
 }
