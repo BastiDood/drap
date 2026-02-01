@@ -1,6 +1,4 @@
 <script lang="ts">
-  import './sonner.css';
-
   import CircleCheckIcon from '@lucide/svelte/icons/circle-check';
   import InfoIcon from '@lucide/svelte/icons/info';
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
@@ -8,6 +6,8 @@
   import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
   import { mode } from 'mode-watcher';
   import { Toaster as Sonner, type ToasterProps as SonnerProps } from 'svelte-sonner';
+
+  import './sonner.css';
 
   const props: SonnerProps = $props();
 </script>
