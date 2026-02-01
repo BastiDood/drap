@@ -1,4 +1,6 @@
 <script lang="ts">
+  import './sonner.css';
+
   import CircleCheckIcon from '@lucide/svelte/icons/circle-check';
   import InfoIcon from '@lucide/svelte/icons/info';
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
@@ -35,19 +37,3 @@
     <TriangleAlertIcon class="size-4" />
   {/snippet}
 </Sonner>
-
-<style>
-  :global(
-    .toaster[data-sonner-toaster][data-sonner-theme='light'],
-    .toaster[data-sonner-toaster][data-sonner-theme='dark']
-  ) {
-    --success-bg: var(--color-success);
-    --success-text: var(--color-success-foreground);
-    --error-bg: var(--color-destructive);
-    --error-text: var(--color-destructive-foreground);
-    --warning-bg: var(--color-warning);
-    --warning-text: var(--color-warning-foreground);
-    --info-bg: var(--color-accent);
-    --info-text: var(--color-accent-foreground);
-  }
-</style>
