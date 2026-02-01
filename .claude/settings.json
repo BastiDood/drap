@@ -6,6 +6,7 @@
       "Bash(pnpm lint:eslint)",
       "Bash(pnpm lint:eslint --fix)",
       "Bash(pnpm lint:svelte)",
+      "Bash(pnpm test:playwright)",
       "Bash(pnpm fmt)",
       "Bash(pnpm fmt:fix)",
       "Bash(pnpm build)",
@@ -14,7 +15,12 @@
       "Bash(find:*)",
       "Bash(grep:*)"
     ],
-    "ask": ["Bash(gh pr create:*)", "Bash(pnpm db:generate)", "Bash(pnpm db:migrate)"],
+    "ask": [
+      "Bash(gh pr create:*)",
+      "Bash(pnpm db:generate)",
+      "Bash(pnpm db:migrate)",
+      "Bash(pnpm install:playwright)"
+    ],
     "deny": [
       "Bash(bun:*)",
       "Bash(bunx:*)",

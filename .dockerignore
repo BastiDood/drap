@@ -4,10 +4,10 @@
 .github
 .gitignore
 .mcp.json
+opencode.json
 
 # Linting / Formatting
 .eslintcache
-.linthtmlrc.json
 .prettiercache
 .prettierignore
 .prettierrc.json
@@ -16,7 +16,6 @@ eslint.config.js
 # Build outputs (regenerated during build)
 .svelte-kit
 build
-dist
 
 # Docker (meta files)
 .dockerignore
@@ -30,11 +29,11 @@ drizzle
 drizzle.config.js
 
 # Secrets
-.env
-.env.*
+**/.env
+**/.env.*
 
 # Documentation
-*.md
+**/*.md
 LICENSE
 
 # Dependencies (reinstalled during build)
@@ -42,6 +41,13 @@ node_modules
 
 # Dev-only config
 components.json
+output
 
 # Agentic Workflows
 scratchpad
+
+# Tests
+output
+tests
+**/*.test.js
+**/*.test.ts

@@ -39,3 +39,5 @@ jobs:
         run: pnpm lint
       - name: Build Website
         run: pnpm build
+      - name: Run End-to-End Tests
+        run: pnpm test:playwright

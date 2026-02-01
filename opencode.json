@@ -30,6 +30,7 @@
       "pnpm fmt": "allow",
       "pnpm fmt:fix": "allow",
       "pnpm build": "allow",
+      "pnpm test:playwright": "allow",
       "bun *": "deny",
       "bunx *": "deny",
       "npm *": "deny",
