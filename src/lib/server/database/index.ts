@@ -10,6 +10,7 @@ import {
   eq,
   getTableColumns,
   gte,
+  inArray,
   isNotNull,
   isNull,
   lt,
@@ -53,13 +54,12 @@ export type DrizzleDatabase = ReturnType<typeof init>;
 export type DrizzleTransaction = Parameters<Parameters<DrizzleDatabase['transaction']>[0]>[0];
 export type DbConnection = DrizzleDatabase | DrizzleTransaction;
 
-export async function insertDummySession(db: DbConnection, dummyUserId: string) {
+export async function insertDummySession(db: DbConnection, userId: string) {
   return await tracer.asyncSpan('insert-dummy-session', async span => {
-    span.setAttribute('database.user.id', dummyUserId);
-    // create a session that expires after an hour
+    span.setAttribute('database.user.id', userId);
     const { sessionId } = await db
       .insert(schema.session)
-      .values({ userId: dummyUserId, expiration: sql`now() + interval '1 hour'` })
+      .values({ userId, expiration: sql`now() + interval '1 hour'` })
       .returning({ sessionId: schema.session.id })
       .then(assertSingle);
     return sessionId;
@@ -171,6 +171,13 @@ export async function updateProfileByUserId(
   });
 }
 
+export async function deleteOpenIdUser(db: DbConnection, userId: string) {
+  return await tracer.asyncSpan('delete-user', async span => {
+    span.setAttribute('database.user.id', userId);
+    await db.delete(schema.user).where(eq(schema.user.id, userId));
+  });
+}
+
 export async function insertNewLab(db: DbConnection, id: string, name: string) {
   return await tracer.asyncSpan('insert-new-lab', async span => {
     span.setAttribute('database.lab.id', id);
@@ -178,6 +185,14 @@ export async function insertNewLab(db: DbConnection, id: string, name: string) {
   });
 }
 
+export async function insertNewLabs(db: DbConnection, labs: Pick<schema.Lab, 'id' | 'name'>[]) {
+  return await tracer.asyncSpan('insert-new-labs', async span => {
+    span.setAttribute('database.lab.count', labs.length);
+    await db.insert(schema.lab).values(labs);
+  });
+}
+
+/** Soft-deletion of the lab (a.k.a. "archiving"). */
 export async function deleteLab(db: DbConnection, id: string) {
   return await tracer.asyncSpan('delete-lab', async span => {
     span.setAttribute('database.lab.id', id);
@@ -185,6 +200,14 @@ export async function deleteLab(db: DbConnection, id: string) {
       .update(schema.lab)
       .set({ deletedAt: new Date(), quota: 0 })
       .where(eq(schema.lab.id, id));
+  });
+}
+
+/** Hard-deletion of the lab (a.k.a. "dropping"). */
+export async function dropLabs(db: DbConnection, labIds: string[]) {
+  return await tracer.asyncSpan('drop-labs', async span => {
+    span.setAttribute('database.lab.count', labIds.length);
+    await db.delete(schema.lab).where(inArray(schema.lab.id, labIds));
   });
 }
 
