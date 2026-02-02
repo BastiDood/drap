@@ -1250,20 +1250,20 @@ export async function getStudentRanksExport(db: DbConnection, draftId: bigint) {
         givenName: schema.user.givenName,
         familyName: schema.user.familyName,
         labRanks:
-          sql`array_agg(${schema.activeLabView.id} ORDER BY ${schema.studentRankLab.index})`.mapWith(
+          sql`coalesce(array_agg(${schema.activeLabView.id} ORDER BY ${schema.studentRankLab.index}) filter (where ${isNotNull(schema.activeLabView.id)}), '{}')`.mapWith(
             vals => parse(StringArray, vals),
           ),
       })
       .from(schema.studentRank)
       .innerJoin(schema.user, eq(schema.studentRank.userId, schema.user.id))
-      .innerJoin(
+      .leftJoin(
         schema.studentRankLab,
         and(
           eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
           eq(schema.studentRank.userId, schema.studentRankLab.userId),
         ),
       )
-      .innerJoin(schema.activeLabView, eq(schema.studentRankLab.labId, schema.activeLabView.id))
+      .leftJoin(schema.activeLabView, eq(schema.studentRankLab.labId, schema.activeLabView.id))
       .where(eq(schema.studentRank.draftId, draftId))
       .groupBy(schema.user.id, schema.studentRank.createdAt)
       .orderBy(schema.user.familyName);
