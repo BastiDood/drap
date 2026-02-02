@@ -92,7 +92,7 @@ This component manages all form state. It is its own component so that state is 
 
 ```svelte
 <script lang="ts" module>
-  import type { schema } from '$lib/server/database';
+  import type { schema } from '$lib/server/database/drizzle';
 
   export interface Props {
     labs: Pick<schema.Lab, 'id' | 'name'>[];
