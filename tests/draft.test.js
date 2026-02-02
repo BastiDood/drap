@@ -180,6 +180,14 @@ test.describe('Draft Lifecycle', () => {
       await expect(page.getByText('Draft #1')).toBeVisible();
       await expect(page.getByText('currently waiting for students to register')).toBeVisible();
     });
+
+    test('detail page shows registration status and creation event', async ({ page }) => {
+      await page.goto('/history/1/');
+      await expect(page.getByText('registration stage')).toBeVisible();
+      const items = page.locator('section ol.border-s li[class*="preset-tonal-"]');
+      await expect(items).toHaveCount(1);
+      await expect(items.first()).toContainText('Draft #1 was created.');
+    });
   });
 
   test.describe('Student Lab Preferences', () => {
@@ -441,10 +449,48 @@ test.describe('Draft Lifecycle', () => {
     });
   });
 
-  test.describe('History During Draft', () => {
-    test('shows Draft #1 status', async ({ page }) => {
+  test.describe('History During Lottery', () => {
+    test('shows Draft #1 in lottery phase', async ({ page }) => {
       await page.goto('/history/');
       await expect(page.getByText('Draft #1')).toBeVisible();
+      await expect(page.getByText(/lottery stage/u)).toBeVisible();
+    });
+
+    test('detail page shows ordered round events', async ({ page }) => {
+      await page.goto('/history/1/');
+      await expect(page.getByText('lottery stage')).toBeVisible();
+
+      const items = page.locator('section ol.border-s li[class*="preset-tonal-"]');
+      const texts = await items.allTextContents();
+
+      /** @param {RegExp} regex */
+      function idx(regex) {
+        return texts.findIndex(t => regex.test(t));
+      }
+
+      // No conclusion event yet
+      expect(idx(/was concluded/u)).toBe(-1);
+
+      // Known faculty selections exist
+      const ndslR3 = idx(/ndsl.*3rd batch/isu);
+      const cslR2 = idx(/csl.*2nd batch/isu);
+      const ndslR1 = idx(/ndsl.*1st batch/isu);
+      const cslR1 = idx(/csl.*1st batch/isu);
+      expect(ndslR3).toBeGreaterThanOrEqual(0);
+      expect(cslR2).toBeGreaterThanOrEqual(0);
+      expect(ndslR1).toBeGreaterThanOrEqual(0);
+      expect(cslR1).toBeGreaterThanOrEqual(0);
+
+      // Round 3 selections before Round 2 before Round 1 (DESC order)
+      expect(ndslR3).toBeLessThan(cslR2);
+      expect(cslR2).toBeLessThan(ndslR1);
+      expect(cslR2).toBeLessThan(cslR1);
+
+      // System skips exist (non-deterministic order, just check presence)
+      expect(idx(/system has skipped/isu)).toBeGreaterThanOrEqual(0);
+
+      // Creation is last
+      expect(idx(/was created/u)).toBe(texts.length - 1);
     });
   });
 
@@ -537,11 +583,44 @@ test.describe('Draft Lifecycle', () => {
       await page.goto('/history/');
       await expect(page.getByText('Draft #1')).toBeVisible();
       await expect(page.getByText(/was held from/u)).toBeVisible();
+      await expect(page.getByText(/over 3 rounds/u)).toBeVisible();
     });
 
-    test('can view concluded draft details', async ({ page }) => {
+    test('detail page shows concluded status and ordered timeline', async ({ page }) => {
       await page.goto('/history/1/');
-      await expect(page.getByText('Draft #1', { exact: true })).toBeVisible();
+
+      // Status banner
+      await expect(page.getByText(/was held from/u)).toBeVisible();
+      await expect(page.getByText(/over 3 rounds/u)).toBeVisible();
+
+      const items = page.locator('section ol.border-s li[class*="preset-tonal-"]');
+      const texts = await items.allTextContents();
+
+      /** @param {RegExp} regex */
+      function idx(regex) {
+        return texts.findIndex(t => regex.test(t));
+      }
+
+      // Concluded is first, created is last
+      expect(idx(/was concluded/u)).toBe(0);
+      expect(idx(/was created/u)).toBe(texts.length - 1);
+
+      // Lottery events exist and come before faculty round selections
+      const firstLottery = idx(/obtained a batch.*lottery/isu);
+      const ndslR3 = idx(/ndsl.*3rd batch/isu);
+      const cslR2 = idx(/csl.*2nd batch/isu);
+      const ndslR1 = idx(/ndsl.*1st batch/isu);
+      const cslR1 = idx(/csl.*1st batch/isu);
+      expect(firstLottery).toBeGreaterThan(0);
+      expect(firstLottery).toBeLessThan(ndslR3);
+
+      // Faculty selections in correct round order (R3 > R2 > R1)
+      expect(ndslR3).toBeLessThan(cslR2);
+      expect(cslR2).toBeLessThan(ndslR1);
+      expect(cslR2).toBeLessThan(cslR1);
+
+      // System skip events exist (non-deterministic order, just check presence)
+      expect(idx(/system has skipped/isu)).toBeGreaterThanOrEqual(0);
     });
   });
 
