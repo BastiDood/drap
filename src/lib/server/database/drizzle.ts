@@ -1385,7 +1385,7 @@ export async function upsertTestUser(
   family: string,
   avatar: string,
 ) {
-  const { id: userId } = await upsertOpenIdUser(db, email, null, given, family, avatar);
+  const { id: userId } = await upsertOpenIdUser(db, email, `test-${email}`, given, family, avatar);
   const isAdmin = labId !== null || (email.endsWith('@up.edu.ph') && email.startsWith('admin'));
   await updateUserRole(db, userId, isAdmin, labId);
   return { id: userId, isAdmin, labId };
