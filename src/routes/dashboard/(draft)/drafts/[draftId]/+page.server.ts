@@ -103,13 +103,13 @@ export async function load({ params, locals: { session } }) {
   });
 }
 
-const Email = v.pipe(v.string(), v.email());
-type Email = v.InferOutput<typeof Email>;
+const UserId = v.pipe(v.string(), v.ulid());
+type UserId = v.InferOutput<typeof UserId>;
 
 function* mapRowTuples(data: FormData) {
-  for (const [email, lab] of data.entries()) {
+  for (const [userId, lab] of data.entries()) {
     if (lab instanceof File || lab.length === 0) continue;
-    yield [v.parse(Email, email), lab] as [Email, string];
+    yield [v.parse(UserId, userId), lab] as [UserId, string];
   }
 }
 
