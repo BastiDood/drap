@@ -97,8 +97,8 @@ importers:
         specifier: ^9.39.2
         version: 9.39.2
       '@html-eslint/eslint-plugin':
-        specifier: ^0.54.0
-        version: 0.54.0(eslint@9.39.2(jiti@2.6.1))(jiti@2.6.1)
+        specifier: ^0.54.2
+        version: 0.54.2(eslint@9.39.2(jiti@2.6.1))(jiti@2.6.1)
       '@opentelemetry/api':
         specifier: ^1.9.0
         version: 1.9.0
@@ -177,8 +177,8 @@ importers:
 
 packages:
 
-  '@babel/runtime-corejs3@7.28.6':
-    resolution: {integrity: sha512-kz2fAQ5UzjV7X7D3ySxmj3vRq89dTpqOZWv76Z6pNPztkwb/0Yj1Mtx1xFrYj6mbIHysxtBot8J4o0JLCblcFw==}
+  '@babel/runtime-corejs3@7.29.0':
+    resolution: {integrity: sha512-TgUkdp71C9pIbBcHudc+gXZnihEDOjUAmXO1VO4HHGES7QLZcShR0stfKIxLSNIYx2fqhmJChOjm/wkF8wv4gA==}
     engines: {node: '>=6.9.0'}
 
   '@babel/runtime@7.28.6':
@@ -706,11 +706,11 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
-  '@html-eslint/eslint-plugin@0.54.0':
-    resolution: {integrity: sha512-9sXFPCiLL+PtppXUJoZZ9GjnaCck+oH+YwN4ZJZ4TC22vaMKVuuEuscxaGLwh6EdWFbKslrc9hlKiMAMJKoFdw==}
+  '@html-eslint/eslint-plugin@0.54.2':
+    resolution: {integrity: sha512-C6jhJqVGTS9AW3Z84Ni/Cs6h3XcRHUXi1YkRaAYI08MeNj6ZWIXhwKBEJgEGK2YxzOcM1TpZEvHL4d5z7aC7Eg==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
     peerDependencies:
-      eslint: ^8.0.0 || ^9.0.0
+      eslint: '>=8.0.0 || ^10.0.0-0'
 
   '@html-eslint/parser@0.54.0':
     resolution: {integrity: sha512-ia3I/6jf87679pUrhIDKSgddKbw9GLkvO86fYt7tJQHHRQu+zySErIxuI2b941oeovzOq10dTpC5Hp41qbvPgg==}
@@ -3090,7 +3090,7 @@ packages:
 
 snapshots:
 
-  '@babel/runtime-corejs3@7.28.6':
+  '@babel/runtime-corejs3@7.29.0':
     dependencies:
       core-js-pure: 3.48.0
 
@@ -3410,7 +3410,7 @@ snapshots:
       protobufjs: 7.5.4
       yargs: 17.7.2
 
-  '@html-eslint/eslint-plugin@0.54.0(eslint@9.39.2(jiti@2.6.1))(jiti@2.6.1)':
+  '@html-eslint/eslint-plugin@0.54.2(eslint@9.39.2(jiti@2.6.1))(jiti@2.6.1)':
     dependencies:
       '@eslint/plugin-kit': 0.4.1
       '@html-eslint/parser': 0.54.0(jiti@2.6.1)
@@ -5283,7 +5283,7 @@ snapshots:
   mimetext@3.0.28:
     dependencies:
       '@babel/runtime': 7.28.6
-      '@babel/runtime-corejs3': 7.28.6
+      '@babel/runtime-corejs3': 7.29.0
       js-base64: 3.7.8
       mime-types: 2.1.35
 

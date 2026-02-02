@@ -56,7 +56,7 @@
   "devDependencies": {
     "@bastidood/eslint-plugin-imsort": "^0.11.0",
     "@eslint/js": "^9.39.2",
-    "@html-eslint/eslint-plugin": "^0.54.0",
+    "@html-eslint/eslint-plugin": "^0.54.2",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/api-logs": "^0.211.0",
     "@playwright/test": "^1.58.1",
