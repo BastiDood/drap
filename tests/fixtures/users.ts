@@ -285,6 +285,45 @@ const testNoRankStudent = testLabs.extend<
   },
 });
 
+const testIdleBystander = testLabs.extend<
+  { idleBystanderPage: Page },
+  { idleBystanderUserId: string }
+>({
+  idleBystanderUserId: [
+    async ({ database, labs: _ }, use) => {
+      const { id: userId } = await upsertTestUser(database, {
+        email: 'idle.student@up.edu.ph',
+        googleUserId: 'test-idle-student',
+        givenName: 'Idle',
+        familyName: 'Bystander',
+        isAdmin: false,
+        labId: null,
+      });
+      await use(userId);
+    },
+    { scope: 'worker' },
+  ],
+  async idleBystanderPage({ database, browser, idleBystanderUserId }, use) {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    const sessionId = await insertDummySession(database, idleBystanderUserId);
+    await context.addCookies([
+      {
+        name: 'sid',
+        value: sessionId,
+        domain: 'localhost',
+        path: '/dashboard',
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+    ]);
+    await page.goto('/dashboard/');
+    await use(page);
+    await deleteValidSession(database, sessionId);
+    await context.close();
+  },
+});
+
 const testLateRegistrant = testLabs.extend<
   { lateRegistrantPage: Page },
   { lateRegistrantUserId: string }
@@ -552,6 +591,7 @@ export const test = mergeTests(
   testPersistentHopeful,
   testUnluckyFullRanker,
   testNoRankStudent,
+  testIdleBystander,
   testLateRegistrant,
   testPartialToDrafted,
   testPartialToLottery,
