@@ -507,7 +507,7 @@ export async function getStudentsInDraftTaggedByLab(db: DbConnection, draftId: b
         familyName: schema.user.familyName,
         avatarUrl: schema.user.avatarUrl,
         studentNumber: schema.user.studentNumber,
-        labs: sql`array_agg(${schema.studentRankLab.labId} ORDER BY ${schema.studentRankLab.index})`
+        labs: sql`coalesce(array_agg(${schema.studentRankLab.labId} order by ${schema.studentRankLab.index}) filter (where ${isNotNull(schema.studentRankLab.labId)}), '{}')`
           .mapWith(value => parse(StringArray, value))
           .as('labs'),
         labId: schema.facultyChoiceUser.labId,
@@ -521,7 +521,7 @@ export async function getStudentsInDraftTaggedByLab(db: DbConnection, draftId: b
           eq(schema.studentRank.userId, schema.facultyChoiceUser.studentUserId),
         ),
       )
-      .innerJoin(
+      .leftJoin(
         schema.studentRankLab,
         and(
           eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
