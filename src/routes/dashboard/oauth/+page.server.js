@@ -12,7 +12,7 @@ const tracer = Tracer.byName(SERVICE_NAME);
 export const actions = {
   async logout({ locals: { session }, cookies }) {
     if (typeof session === 'undefined') {
-      logger.error('attempt to logout without session');
+      logger.fatal('attempt to logout without session');
       error(401);
     }
 

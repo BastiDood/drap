@@ -10,7 +10,7 @@ const logger = Logger.byName(SERVICE_NAME);
 export async function load() {
   const draft = await getActiveDraft(db);
   if (typeof draft === 'undefined') {
-    logger.error('no active draft found');
+    logger.fatal('no active draft found');
     error(499);
   }
 

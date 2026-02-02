@@ -60,7 +60,7 @@ const DevDummyFormData = v.object({
 export const actions = {
   async profile({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to update profile without session');
+      logger.fatal('attempt to update profile without session');
       error(401);
     }
 
@@ -94,7 +94,7 @@ export const actions = {
         async role({ locals: { session }, request }) {
           return await tracer.asyncSpan('action.role', async span => {
             if (typeof session?.user === 'undefined') {
-              logger.warn('attempt to change role without session');
+              logger.fatal('attempt to change role without session');
               error(401);
             }
 

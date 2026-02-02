@@ -12,7 +12,7 @@ const logger = Logger.byName(SERVICE_NAME);
 export async function GET({ params: { draftId: draftIdParam }, locals: { session } }) {
   const draftId = validateBigInt(draftIdParam);
   if (draftId === null) {
-    logger.error('invalid draft id');
+    logger.fatal('invalid draft id');
     error(404, 'Invalid draft ID.');
   }
 
@@ -23,7 +23,7 @@ export async function GET({ params: { draftId: draftIdParam }, locals: { session
 
   const { user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-    logger.error('insufficient permissions to export draft results', void 0, {
+    logger.fatal('insufficient permissions to export draft results', void 0, {
       isAdmin: user.isAdmin,
       googleUserId: user.googleUserId,
       labId: user.labId,
@@ -33,7 +33,7 @@ export async function GET({ params: { draftId: draftIdParam }, locals: { session
 
   const draft = await getDraftById(db, draftId);
   if (typeof draft === 'undefined') {
-    logger.error('cannot find the target draft');
+    logger.fatal('cannot find the target draft');
     error(404);
   }
 
