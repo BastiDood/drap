@@ -4,9 +4,7 @@ export default defineConfig({
   name: 'E2E',
   testDir: './tests',
   outputDir: './output',
-  // Only a single worker so that the database fixtures are shared across all tests.
-  workers: 1,
-  fullyParallel: true,
+  fullyParallel: false,
   webServer: {
     // Assumes that `pnpm build` has already been run.
     command: 'pnpm preview',
