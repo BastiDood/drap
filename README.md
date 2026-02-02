@@ -163,6 +163,28 @@ To enable full observability in local development:
 > [!WARNING]
 > The `OTEL_*` environment variables **must** be set in the shell before running `pnpm dev` or `pnpm preview`. They cannot be loaded from `.env` files because the OpenTelemetry instrumentation initializes before SvelteKit processes environment files.
 
+### Running the End-to-End Tests with Playwright
+
+The Playwright configuration runs `pnpm preview` on port `4173` in production mode by default. A single end-to-end test features a single full draft round.
+
+```bash
+# Ensure development-only services are spun up. We _can_ use the production setup,
+# but that requires a little bit more configuration. This is done in CI, but not
+# necessary for local development.
+pnpm docker:dev
+
+# Apply local production mode overrides here.
+# INNGEST_DEV=http://localhost:8288
+# POSTGRES_URL=
+# PUBLIC_ORIGIN=http://localhost:4173
+set -a
+source .env.production
+
+# Playwright runs `pnpm preview`, so we need to build first.
+pnpm build
+pnpm test:playwright
+```
+
 ## Acknowledgements
 
 The DRAP project, licensed under the [GNU Affero General Public License v3], was originally developed by [Sebastian Luis S. Ortiz][BastiDood], [Victor Edwin E. Reyes][VeeIsForVanana], and [Ehren A. Castillo][ehrelevant] as a service project under the [UP Center for Student Innovations]. The DRAP [logo](./static/favicon.ico) and [banner](./src/lib/banner.png) were originally designed and created by [Angelica Julianne A. Raborar][Anjellyrika].

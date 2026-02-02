@@ -70,9 +70,22 @@ Key directories:
 
 Environment loading organized in `src/lib/server/env/` with hierarchical modules (e.g., `inngest/api.js`, `inngest/signing.js`).
 
-# Development Notes
+# End-to-End Testing
 
-- **Dummy user:** `?/dummy` form action creates test user (dev only)
+Run Playwright tests with environment variables loaded:
+
+```bash
+# Ensure development-only services are spun up.
+pnpm docker:dev
+
+# Apply local production mode overrides here.
+set -a
+source .env.production
+
+# Playwright runs `pnpm preview`, so we need to build first.
+pnpm build
+pnpm test:playwright
+```
 
 # Pre-commit Workflow
 
