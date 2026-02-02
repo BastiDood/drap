@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict';
 import { env } from 'node:process';
 
-import { reset } from 'drizzle-seed';
+import { sql } from 'drizzle-orm';
 import { test } from '@playwright/test';
 
-import * as schema from '$lib/server/database/schema';
+import { draft, lab } from '$lib/server/database/schema';
 import { type DrizzleDatabase, init } from '$lib/server/database/drizzle';
 
 assert(env.POSTGRES_URL, 'POSTGRES_URL must be set');
@@ -15,7 +15,7 @@ export const testDatabase = test.extend<object, { database: DrizzleDatabase }>({
     // eslint-disable-next-line no-empty-pattern -- required by Playwright to be destructured
     async ({}, use) => {
       const db = init(POSTGRES_URL);
-      await reset(db, schema);
+      await db.execute(sql`TRUNCATE ${draft}, ${lab} RESTART IDENTITY CASCADE`);
       await use(db);
       await db.$client.end();
     },
