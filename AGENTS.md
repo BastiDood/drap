@@ -66,7 +66,6 @@ Key directories:
 | `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth credentials                      |
 | `INNGEST_EVENT_KEY`          | Inngest event signing key                     |
 | `INNGEST_SIGNING_KEY`        | Inngest webhook signing key                   |
-| `DRIZZLE_DEBUG`              | Enable verbose Drizzle logs                   |
 | `DRAP_ENABLE_EMAILS`         | Enable real email sending (default: disabled) |
 
 Environment loading organized in `src/lib/server/env/` with hierarchical modules (e.g., `inngest/api.js`, `inngest/signing.js`).

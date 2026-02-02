@@ -1,6 +1,7 @@
 import { error, redirect } from '@sveltejs/kit';
 
-import { db, deleteValidSession } from '$lib/server/database';
+import { db } from '$lib/server/database';
+import { deleteValidSession } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 

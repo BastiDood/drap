@@ -17,42 +17,39 @@ import {
   or,
   sql,
 } from 'drizzle-orm';
-import { array, object, parse, string } from 'valibot';
+import { array, date, number, object, parse, string, union } from 'valibot';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { enumerate, izip } from 'itertools';
 
-import * as DRIZZLE from '$lib/server/env/drizzle';
-import * as POSTGRES from '$lib/server/env/postgres';
 import { assertOptional, assertSingle } from '$lib/server/assert';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 import * as schema from './schema';
 
-const StringArray = array(string());
-const LabRemark = array(object({ lab: string(), remark: string() }));
-
-function init(url: string) {
-  return drizzle(url, { schema, logger: DRIZZLE.DEBUG });
-}
-
-export const db = init(POSTGRES.URL);
+// Ensures that no database details are leaked at runtime.
+export type { schema };
 
 const SERVICE_NAME = 'database';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function coerceDate(value: any) {
-  return new Date(value);
-}
+const StringArray = array(string());
+const LabRemark = array(object({ lab: string(), remark: string() }));
 
-// Ensures that no database details are leaked at runtime.
-export type { schema };
+/** Creates a new database instance. */
+export function init(url: string) {
+  return drizzle(url, { schema });
+}
 
 export type DrizzleDatabase = ReturnType<typeof init>;
 export type DrizzleTransaction = Parameters<Parameters<DrizzleDatabase['transaction']>[0]>[0];
 export type DbConnection = DrizzleDatabase | DrizzleTransaction;
+
+const ParsableDate = union([string(), number(), date()]);
+function coerceDate(value: unknown) {
+  return new Date(parse(ParsableDate, value));
+}
 
 export async function insertDummySession(db: DbConnection, userId: string) {
   return await tracer.asyncSpan('insert-dummy-session', async span => {

@@ -1,13 +1,13 @@
 import { createMimeMessage } from 'mimetext/node';
 import { NonRetriableError } from 'inngest';
 
+import { db } from '$lib/server/database';
 import {
   type DrizzleTransaction,
-  db,
   getDesignatedSenderCredentialsForUpdate,
   type schema,
   updateCandidateSender,
-} from '$lib/server/database';
+} from '$lib/server/database/drizzle';
 import { ENABLE_EMAILS } from '$lib/server/env/drap';
 import { GmailScopeError, GoogleOAuthClient } from '$lib/server/google';
 import { inngest } from '$lib/server/inngest/client';

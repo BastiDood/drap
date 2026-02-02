@@ -1,6 +1,7 @@
 import { error } from '@sveltejs/kit';
 
-import { db, getActiveDraft } from '$lib/server/database';
+import { db } from '$lib/server/database';
+import { getActiveDraft } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 
 const SERVICE_NAME = 'routes.dashboard.draft.layout';

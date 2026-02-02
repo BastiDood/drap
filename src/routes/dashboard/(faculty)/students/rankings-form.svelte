@@ -5,7 +5,7 @@
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
-  import type { schema } from '$lib/server/database';
+  import type { schema } from '$lib/server/database/drizzle';
 
   interface Student extends Pick<
     schema.User,

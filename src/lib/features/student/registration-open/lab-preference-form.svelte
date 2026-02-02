@@ -15,7 +15,7 @@
   import { Button } from '$lib/components/ui/button';
   import { cn } from '$lib/components/ui/utils';
   import { enhance } from '$app/forms';
-  import type { schema } from '$lib/server/database';
+  import type { schema } from '$lib/server/database/drizzle';
   import { Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui/tooltip';
 
   interface Props {

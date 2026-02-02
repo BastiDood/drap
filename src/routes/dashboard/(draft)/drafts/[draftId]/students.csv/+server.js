@@ -1,7 +1,8 @@
 import Papa from 'papaparse';
 import { error, redirect } from '@sveltejs/kit';
 
-import { db, getDraftById, getStudentRanksExport } from '$lib/server/database';
+import { db } from '$lib/server/database';
+import { getDraftById, getStudentRanksExport } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { validateBigInt } from '$lib/validators';
 

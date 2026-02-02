@@ -9,7 +9,6 @@ import { repeat, roundrobin, zip } from 'itertools';
 import {
   autoAcknowledgeLabsWithoutPreferences,
   concludeDraft,
-  db,
   getDraftById,
   getFacultyAndStaff,
   getFacultyChoiceRecords,
@@ -25,7 +24,8 @@ import {
   isValidTotalLabQuota,
   randomizeRemainingStudents,
   syncResultsToUsers,
-} from '$lib/server/database';
+} from '$lib/server/database/drizzle';
+import { db } from '$lib/server/database';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';

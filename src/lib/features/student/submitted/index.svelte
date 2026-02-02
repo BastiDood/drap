@@ -1,7 +1,7 @@
 <script lang="ts">
   import Callout from '$lib/components/callout.svelte';
   import SubmissionSummary from '$lib/features/student/submission-summary.svelte';
-  import type { schema } from '$lib/server/database';
+  import type { schema } from '$lib/server/database/drizzle';
 
   export interface Lab extends Pick<schema.Lab, 'name'> {
     remark: string;

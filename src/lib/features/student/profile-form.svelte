@@ -5,7 +5,7 @@
   import { enhance } from '$app/forms';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
-  import type { schema } from '$lib/server/database';
+  import type { schema } from '$lib/server/database/drizzle';
 
   export interface User extends Pick<schema.User, 'givenName' | 'familyName'> {
     studentNumber: bigint;

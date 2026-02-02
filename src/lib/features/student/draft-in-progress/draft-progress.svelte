@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Progress } from '$lib/components/ui/progress';
-  import type { schema } from '$lib/server/database';
+  import type { schema } from '$lib/server/database/drizzle';
 
   export interface Draft extends Pick<schema.Draft, 'maxRounds'> {
     currRound: number;

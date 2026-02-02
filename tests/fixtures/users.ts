@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test';
 
+import { db } from '$lib/server/database';
 import {
-  db,
   deleteOpenIdUser,
   deleteValidSession,
   insertDummySession,
   upsertOpenIdUser,
-} from '$lib/server/database';
+} from '$lib/server/database/drizzle';
 
 import { testLabs } from './labs';
 

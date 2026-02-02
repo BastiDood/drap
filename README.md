@@ -53,7 +53,6 @@ At runtime, the server requires the following environment variables to be presen
 | ---------------------------- | ---------------------------------------------------------------- |
 | `ORIGIN`                     | Server origin (e.g., `https://drap.dcs.upd.edu.ph`).             |
 | `PUBLIC_ORIGIN`              | Public origin for meta tags (same as `ORIGIN`).                  |
-| `DRIZZLE_DEBUG`              | Enables verbose logs from Drizzle queries.                       |
 | `GOOGLE_OAUTH_CLIENT_ID`     | OAuth 2.0 credentials retrieved from the [Google Cloud Console]. |
 | `GOOGLE_OAUTH_CLIENT_SECRET` | OAuth 2.0 credentials retrieved from the [Google Cloud Console]. |
 | `INNGEST_EVENT_KEY`          | Inngest event signing key. Required only in production.          |

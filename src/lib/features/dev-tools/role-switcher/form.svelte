@@ -1,5 +1,5 @@
 <script lang="ts" module>
-  import type { schema } from '$lib/server/database';
+  import type { schema } from '$lib/server/database/drizzle';
 
   export interface Props {
     user: Pick<schema.User, 'isAdmin' | 'labId'>;

@@ -2,8 +2,8 @@ import * as v from 'valibot';
 import { decode } from 'decode-formdata';
 import { error, fail, redirect } from '@sveltejs/kit';
 
+import { db } from '$lib/server/database';
 import {
-  db,
   getActiveDraft,
   getDraftById,
   getLabById,
@@ -11,7 +11,7 @@ import {
   getStudentRankings,
   insertStudentRanking,
   type schema,
-} from '$lib/server/database';
+} from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 

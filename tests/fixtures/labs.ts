@@ -1,6 +1,7 @@
 import { test } from '@playwright/test';
 
-import { db, dropLabs, insertNewLabs } from '$lib/server/database';
+import { db } from '$lib/server/database';
+import { dropLabs, insertNewLabs } from '$lib/server/database/drizzle';
 
 export const testLabs = test.extend<object, { labs: void }>({
   labs: [

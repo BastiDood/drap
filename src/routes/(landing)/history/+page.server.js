@@ -1,4 +1,5 @@
-import { db, getDrafts } from '$lib/server/database';
+import { db } from '$lib/server/database';
+import { getDrafts } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 

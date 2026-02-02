@@ -2,7 +2,7 @@
   import UserCircleIcon from '@lucide/svelte/icons/circle-user';
 
   import * as Avatar from '$lib/components/ui/avatar';
-  import type { schema } from '$lib/server/database';
+  import type { schema } from '$lib/server/database/drizzle';
 
   interface User extends Pick<schema.User, 'email' | 'givenName' | 'familyName' | 'avatarUrl'> {
     labName: string | null;

@@ -6,7 +6,6 @@ import { error, redirect } from '@sveltejs/kit';
 
 import {
   autoAcknowledgeLabsWithoutPreferences,
-  db,
   getFacultyAndStaff,
   getLabAndRemainingStudentsInDraftWithLabPreference,
   getLabById,
@@ -15,7 +14,8 @@ import {
   getValidStaffEmails,
   incrementDraftRound,
   insertFacultyChoice,
-} from '$lib/server/database';
+} from '$lib/server/database/drizzle';
+import { db } from '$lib/server/database';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
