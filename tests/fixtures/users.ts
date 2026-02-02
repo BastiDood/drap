@@ -32,6 +32,7 @@ export const testStudent = testDatabase.extend<object, { studentUserId: string }
       {
         name: 'sid',
         value: sessionId,
+        domain: 'localhost',
         path: '/dashboard',
         httpOnly: true,
         sameSite: 'Lax',
@@ -65,6 +66,7 @@ export const testNdslHead = testLabs.extend<object, { ndslHeadUserId: string }>(
       {
         name: 'sid',
         value: sessionId,
+        domain: 'localhost',
         path: '/dashboard',
         httpOnly: true,
         sameSite: 'Lax',
@@ -98,6 +100,7 @@ export const testCslHead = testLabs.extend<object, { cslHeadUserId: string }>({
       {
         name: 'sid',
         value: sessionId,
+        domain: 'localhost',
         path: '/dashboard',
         httpOnly: true,
         sameSite: 'Lax',
@@ -131,6 +134,7 @@ export const testSclHead = testLabs.extend<object, { sclHeadUserId: string }>({
       {
         name: 'sid',
         value: sessionId,
+        domain: 'localhost',
         path: '/dashboard',
         httpOnly: true,
         sameSite: 'Lax',
@@ -164,6 +168,7 @@ export const testAdmin = testDatabase.extend<object, { adminUserId: string }>({
       {
         name: 'sid',
         value: sessionId,
+        domain: 'localhost',
         path: '/dashboard',
         httpOnly: true,
         sameSite: 'Lax',
