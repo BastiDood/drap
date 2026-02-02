@@ -118,7 +118,7 @@ pnpm lint
 ### Running the Development Server
 
 ```bash
-# Run all database and queue services in the background.
+# Run all database and queue services via the base config (compose.yaml).
 pnpm docker:dev
 
 # Run the Vite dev server for SvelteKit.
@@ -139,8 +139,13 @@ node --env-file=.env build/index.js
 ```
 
 ```bash
-# Or, just use Docker for everything.
+# Or, spin up the internal production services without the app.
 pnpm docker:prod
+```
+
+```bash
+# Or, spin up the full production environment (internal services + app).
+pnpm docker:app
 ```
 
 ### Local Telemetry with OpenObserve
