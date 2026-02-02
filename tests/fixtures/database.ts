@@ -15,8 +15,8 @@ export const testDatabase = test.extend<object, { database: DrizzleDatabase }>({
     // eslint-disable-next-line no-empty-pattern -- required by Playwright to be destructured
     async ({}, use) => {
       const db = init(POSTGRES_URL);
-      await use(db);
       await reset(db, schema);
+      await use(db);
       await db.$client.end();
     },
     { scope: 'worker' },
