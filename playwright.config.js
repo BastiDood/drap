@@ -4,6 +4,7 @@ export default defineConfig({
   name: 'E2E',
   testDir: './tests',
   outputDir: './output',
+  fullyParallel: true,
   // Assumes that `pnpm build` has already been run.
   webServer: { command: 'pnpm preview', port: 4173 },
 });

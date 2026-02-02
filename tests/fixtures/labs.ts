@@ -10,9 +10,11 @@ export const testLabs = testDatabase.extend<object, { labs: void }>({
         { id: 'ndsl', name: 'Networks and Distributed Systems Laboratory' },
         { id: 'csl', name: 'Computer Security Laboratory' },
         { id: 'scl', name: 'Scientific Computing Laboratory' },
+        { id: 'cvmil', name: 'Computer Vision and Machine Intelligence Laboratory' },
+        { id: 'acl', name: 'Algorithms and Complexity Laboratory' },
       ]);
       await use();
-      await dropLabs(database, ['ndsl', 'csl', 'scl']);
+      await dropLabs(database, ['ndsl', 'csl', 'scl', 'cvmil', 'acl']);
     },
     { scope: 'worker' },
   ],

@@ -1372,3 +1372,21 @@ export async function updateUserRole(
     await db.update(schema.user).set({ isAdmin, labId }).where(eq(schema.user.id, userId));
   });
 }
+
+/**
+ * Test helper: Creates a user with explicit isAdmin and labId.
+ * Combines upsertOpenIdUser + updateUserRole for test fixtures.
+ */
+export async function upsertTestUser(
+  db: DbConnection,
+  email: string,
+  labId: string | null,
+  given: string,
+  family: string,
+  avatar: string,
+) {
+  const { id: userId } = await upsertOpenIdUser(db, email, null, given, family, avatar);
+  const isAdmin = labId !== null || (email.endsWith('@up.edu.ph') && email.startsWith('admin'));
+  await updateUserRole(db, userId, isAdmin, labId);
+  return { id: userId, isAdmin, labId };
+}
