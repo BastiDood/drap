@@ -63,6 +63,6 @@ export async function handle({ event, resolve }) {
 export async function handleError({ error }) {
   const { Logger } = await import('$lib/server/telemetry/logger');
   const logger = Logger.byName('hooks.handleError');
-  if (error instanceof Error) logger.error(error.message, error);
-  else logger.error(String(error));
+  if (error instanceof Error) logger.fatal(error.message, error);
+  else logger.fatal(String(error));
 }
