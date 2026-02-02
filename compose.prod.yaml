@@ -30,13 +30,15 @@ services:
     command:
       - inngest
       - start
-      - '--dir'
+      - '--sqlite-dir'
       - '/app'
       - '--sdk-url'
       - 'http://host.docker.internal:4173/api/inngest'
     extra_hosts:
       - host.docker.internal:host-gateway
     environment:
+      INNGEST_EVENT_KEY: ${INNGEST_EVENT_KEY:?required}
+      INNGEST_SIGNING_KEY: ${INNGEST_SIGNING_KEY:?required}
       INNGEST_REDIS_URI: redis://redis:6379
     volumes:
       - inngest:/app
@@ -44,20 +46,16 @@ services:
       redis:
         condition: service_healthy
     healthcheck:
-      test: ['CMD', 'wget', '--quiet', '--spider', 'http://localhost:8288/health']
-      interval: 10s
-      timeout: 5s
+      test: ['CMD', 'curl', '--fail', 'http://localhost:8288/health']
+      interval: 30s
+      timeout: 10s
       retries: 3
+      start_period: 40s
 
   o2:
     environment:
       ZO_ROOT_USER_EMAIL: ${ZO_ROOT_USER_EMAIL:?required}
       ZO_ROOT_USER_PASSWORD: ${ZO_ROOT_USER_PASSWORD:?required}
-    healthcheck:
-      test: ['CMD', 'wget', '--quiet', '--spider', 'http://localhost:5080/healthz']
-      interval: 10s
-      timeout: 5s
-      retries: 3
 
   drizzle-gateway:
     image: ghcr.io/drizzle-team/gateway:1.2.0
