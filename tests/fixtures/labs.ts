@@ -1,4 +1,4 @@
-import { dropLabs, insertNewLabs } from '$lib/server/database/drizzle';
+import { insertNewLabs } from '$lib/server/database/drizzle';
 
 import { testDatabase } from './database';
 
@@ -14,7 +14,6 @@ export const testLabs = testDatabase.extend<object, { labs: void }>({
         { id: 'acl', name: 'Algorithms and Complexity Laboratory' },
       ]);
       await use();
-      await dropLabs(database, ['ndsl', 'csl', 'scl', 'cvmil', 'acl']);
     },
     { scope: 'worker' },
   ],

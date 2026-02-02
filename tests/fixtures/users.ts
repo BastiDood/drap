@@ -1,7 +1,6 @@
 import { mergeTests, type Page } from '@playwright/test';
 
 import {
-  deleteOpenIdUser,
   deleteValidSession,
   insertDummySession,
   upsertTestUser,
@@ -28,7 +27,6 @@ const testEagerDraftee = testLabs.extend<
         labId: null,
       });
       await use(userId);
-      await deleteOpenIdUser(database, userId);
     },
     { scope: 'worker' },
   ],
@@ -68,7 +66,6 @@ const testPatientCandidate = testLabs.extend<
         labId: null,
       });
       await use(userId);
-      await deleteOpenIdUser(database, userId);
     },
     { scope: 'worker' },
   ],
@@ -108,7 +105,6 @@ const testPersistentHopeful = testLabs.extend<
         labId: null,
       });
       await use(userId);
-      await deleteOpenIdUser(database, userId);
     },
     { scope: 'worker' },
   ],
@@ -148,7 +144,6 @@ const testUnluckyFullRanker = testLabs.extend<
         labId: null,
       });
       await use(userId);
-      await deleteOpenIdUser(database, userId);
     },
     { scope: 'worker' },
   ],
@@ -188,7 +183,6 @@ const testPartialToDrafted = testLabs.extend<
         labId: null,
       });
       await use(userId);
-      await deleteOpenIdUser(database, userId);
     },
     { scope: 'worker' },
   ],
@@ -228,7 +222,6 @@ const testPartialToLottery = testLabs.extend<
         labId: null,
       });
       await use(userId);
-      await deleteOpenIdUser(database, userId);
     },
     { scope: 'worker' },
   ],
@@ -268,7 +261,6 @@ const testNoRankStudent = testLabs.extend<
         labId: null,
       });
       await use(userId);
-      await deleteOpenIdUser(database, userId);
     },
     { scope: 'worker' },
   ],
@@ -308,7 +300,6 @@ const testLateRegistrant = testLabs.extend<
         labId: null,
       });
       await use(userId);
-      await deleteOpenIdUser(database, userId);
     },
     { scope: 'worker' },
   ],
@@ -345,7 +336,6 @@ const testNdslHead = testLabs.extend<{ ndslHeadPage: Page }, { ndslHeadUserId: s
         labId: 'ndsl',
       });
       await use(userId);
-      await deleteOpenIdUser(database, userId);
     },
     { scope: 'worker' },
   ],
@@ -382,7 +372,6 @@ const testCslHead = testLabs.extend<{ cslHeadPage: Page }, { cslHeadUserId: stri
         labId: 'csl',
       });
       await use(userId);
-      await deleteOpenIdUser(database, userId);
     },
     { scope: 'worker' },
   ],
@@ -419,7 +408,6 @@ const testSclHead = testLabs.extend<{ sclHeadPage: Page }, { sclHeadUserId: stri
         labId: 'scl',
       });
       await use(userId);
-      await deleteOpenIdUser(database, userId);
     },
     { scope: 'worker' },
   ],
@@ -456,7 +444,6 @@ const testCvmilHead = testLabs.extend<{ cvmilHeadPage: Page }, { cvmilHeadUserId
         labId: 'cvmil',
       });
       await use(userId);
-      await deleteOpenIdUser(database, userId);
     },
     { scope: 'worker' },
   ],
@@ -493,7 +480,6 @@ const testAclHead = testLabs.extend<{ aclHeadPage: Page }, { aclHeadUserId: stri
         labId: 'acl',
       });
       await use(userId);
-      await deleteOpenIdUser(database, userId);
     },
     { scope: 'worker' },
   ],
@@ -530,7 +516,6 @@ const testAdmin = testDatabase.extend<{ adminPage: Page }, { adminUserId: string
         labId: null,
       });
       await use(userId);
-      await deleteOpenIdUser(database, userId);
     },
     { scope: 'worker' },
   ],
