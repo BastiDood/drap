@@ -16,6 +16,7 @@
       "Bash(grep:*)"
     ],
     "ask": [
+      "Bash(docker compose exec postgres psql:*)",
       "Bash(gh pr create:*)",
       "Bash(pnpm db:generate)",
       "Bash(pnpm db:migrate)",
