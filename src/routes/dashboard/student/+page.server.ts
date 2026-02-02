@@ -1,6 +1,6 @@
 import * as v from 'valibot';
 import { decode } from 'decode-formdata';
-import { error, fail, redirect } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 
 import { db } from '$lib/server/database';
 import {
@@ -220,11 +220,7 @@ export const actions = {
         'ranking.remarks_count': remarks.length,
       });
 
-      if (labs.length <= 0) {
-        logger.warn('no lab rankings submitted');
-        return fail(400);
-      }
-
+      // Zero preferences allowed - student goes directly to lottery
       const draftId = BigInt(draftIdField);
       const draft = await getDraftById(db, draftId);
       if (typeof draft === 'undefined') {

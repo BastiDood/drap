@@ -79,14 +79,21 @@
   action="/dashboard/student/?/submit"
   class="space-y-4"
   use:enhance={({ submitter, cancel }) => {
+    const message =
+      selectedLabs.length === 0
+        ? 'Are you sure you want to skip lab preferences? You will go directly to the lottery.'
+        : `Are you sure you want to select ${selectedLabs.length} labs?`;
+
     // eslint-disable-next-line no-alert
-    if (!confirm(`Are you sure you want to select ${selectedLabs.length} labs?`)) {
+    if (!confirm(message)) {
       cancel();
       return;
     }
+
     assert(submitter !== null);
     assert(submitter instanceof HTMLButtonElement);
     submitter.disabled = true;
+
     return async ({ update, result }) => {
       submitter.disabled = false;
       await update({ reset: false });
@@ -96,9 +103,6 @@
           break;
         case 'failure':
           switch (result.status) {
-            case 400:
-              toast.error('Empty submissions are not allowed.');
-              break;
             case 403:
               toast.error('You have already set your lab preferences before.');
               break;
