@@ -1,4 +1,4 @@
-# The base configuration features the default development environment.
+# Base configuration for development and production services.
 name: drap
 
 services:

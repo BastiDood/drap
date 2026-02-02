@@ -1,6 +1,5 @@
-# Production overrides for compose.yaml.
-# Invocation: docker compose --file compose.yaml --file compose.prod.yaml up --detach --build
-name: drap
+# Production overrides for internal services (postgres, inngest, redis, o2, drizzle-gateway).
+# docker compose --file compose.yaml --file compose.prod.yaml up --detach --wait --build
 
 services:
   postgres:
@@ -68,31 +67,6 @@ services:
       MASTERPASS: ${DRIZZLE_MASTERPASS:?required}
     volumes:
       - drizzle-gateway:/app
-    restart: always
-
-  app:
-    build: .
-    ports:
-      - 3000:3000
-    environment:
-      ORIGIN: ${ORIGIN:?required}
-      PUBLIC_ORIGIN: ${ORIGIN:?required}
-      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD:?required}@postgres:5432/postgres
-      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:?required}
-      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:?required}
-      INNGEST_EVENT_KEY: ${INNGEST_EVENT_KEY:?required}
-      INNGEST_SIGNING_KEY: ${INNGEST_SIGNING_KEY:?required}
-      INNGEST_BASE_URL: http://inngest:8288
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://o2:5080/api/default
-      OTEL_EXPORTER_OTLP_HEADERS: ${OTEL_EXPORTER_OTLP_HEADERS:?required}
-      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
-    depends_on:
-      postgres:
-        condition: service_healthy
-      inngest:
-        condition: service_healthy
-      o2:
-        condition: service_healthy
     restart: always
 
 volumes:
