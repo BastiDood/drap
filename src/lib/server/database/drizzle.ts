@@ -51,6 +51,10 @@ function coerceDate(value: unknown) {
   return new Date(parse(ParsableDate, value));
 }
 
+function coerceNullableDate(value: unknown) {
+  return value === null ? null : coerceDate(value);
+}
+
 export async function insertDummySession(db: DbConnection, userId: string) {
   return await tracer.asyncSpan('insert-dummy-session', async span => {
     span.setAttribute('database.user.id', userId);
@@ -430,7 +434,7 @@ export async function getDrafts(db: DbConnection) {
           .mapWith(coerceDate)
           .as('_start'),
         activePeriodEnd: sql`upper(${schema.draft.activePeriod})`
-          .mapWith(value => (value === null ? null : coerceDate(value)))
+          .mapWith(coerceNullableDate)
           .as('_end'),
       })
       .from(schema.draft)
@@ -447,7 +451,7 @@ export async function getDraftById(db: DbConnection, id: bigint) {
         maxRounds: schema.draft.maxRounds,
         registrationClosesAt: schema.draft.registrationClosesAt,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
-        activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceDate),
+        activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
       })
       .from(schema.draft)
       .where(eq(schema.draft.id, id))
@@ -464,7 +468,7 @@ export async function getActiveDraft(db: DbConnection) {
         maxRounds: schema.draft.maxRounds,
         registrationClosesAt: schema.draft.registrationClosesAt,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
-        activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceDate),
+        activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
       })
       .from(schema.draft)
       .where(sql`upper_inf(${schema.draft.activePeriod})`)
