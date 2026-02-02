@@ -1,6 +1,5 @@
-import { expect, test } from '@playwright/test';
+import { expect } from '@playwright/test';
 
-import { db } from '$lib/server/database';
 import {
   deleteOpenIdUser,
   deleteValidSession,
@@ -8,26 +7,27 @@ import {
   upsertOpenIdUser,
 } from '$lib/server/database/drizzle';
 
+import { testDatabase } from './database';
 import { testLabs } from './labs';
 
-export const testStudent = test.extend<object, { studentUserId: string }>({
+export const testStudent = testDatabase.extend<object, { studentUserId: string }>({
   studentUserId: [
-    async (_, use) => {
+    async ({ database }, use) => {
       // Create dummy user
       const {
         id: userId,
         isAdmin,
         labId,
-      } = await upsertOpenIdUser(db, 'student@up.edu.ph', null, 'Student', 'User', '');
+      } = await upsertOpenIdUser(database, 'student@up.edu.ph', null, 'Student', 'User', '');
       expect(isAdmin).toBe(false);
       expect(labId).toBeNull();
       await use(userId);
-      await deleteOpenIdUser(db, userId);
+      await deleteOpenIdUser(database, userId);
     },
     { scope: 'worker' },
   ],
-  async page({ context, page, studentUserId }, use) {
-    const sessionId = await insertDummySession(db, studentUserId);
+  async page({ database, context, page, studentUserId }, use) {
+    const sessionId = await insertDummySession(database, studentUserId);
     await context.addCookies([
       {
         name: 'sid',
@@ -39,28 +39,28 @@ export const testStudent = test.extend<object, { studentUserId: string }>({
     ]);
     await page.goto('/dashboard/');
     await use(page);
-    await deleteValidSession(db, sessionId);
+    await deleteValidSession(database, sessionId);
   },
 });
 
 export const testNdslHead = testLabs.extend<object, { ndslHeadUserId: string }>({
   ndslHeadUserId: [
-    async ({ labs: _ }, use) => {
+    async ({ database, labs: _ }, use) => {
       // Create dummy user
       const {
         id: userId,
         isAdmin,
         labId,
-      } = await upsertOpenIdUser(db, 'ndsl@up.edu.ph', 'ndsl', 'NSDL', 'Head', '');
+      } = await upsertOpenIdUser(database, 'ndsl@up.edu.ph', 'ndsl', 'NSDL', 'Head', '');
       expect(isAdmin).toBe(true);
       expect(labId).toBe('ndsl');
       await use(userId);
-      await deleteOpenIdUser(db, userId);
+      await deleteOpenIdUser(database, userId);
     },
     { scope: 'worker' },
   ],
-  async page({ context, page, ndslHeadUserId }, use) {
-    const sessionId = await insertDummySession(db, ndslHeadUserId);
+  async page({ database, context, page, ndslHeadUserId }, use) {
+    const sessionId = await insertDummySession(database, ndslHeadUserId);
     await context.addCookies([
       {
         name: 'sid',
@@ -72,28 +72,28 @@ export const testNdslHead = testLabs.extend<object, { ndslHeadUserId: string }>(
     ]);
     await page.goto('/dashboard/');
     await use(page);
-    await deleteValidSession(db, sessionId);
+    await deleteValidSession(database, sessionId);
   },
 });
 
 export const testCslHead = testLabs.extend<object, { cslHeadUserId: string }>({
   cslHeadUserId: [
-    async ({ labs: _ }, use) => {
+    async ({ database, labs: _ }, use) => {
       // Create dummy user
       const {
         id: userId,
         isAdmin,
         labId,
-      } = await upsertOpenIdUser(db, 'csl@up.edu.ph', 'csl', 'CSL', 'Head', '');
+      } = await upsertOpenIdUser(database, 'csl@up.edu.ph', 'csl', 'CSL', 'Head', '');
       expect(isAdmin).toBe(true);
       expect(labId).toBe('csl');
       await use(userId);
-      await deleteOpenIdUser(db, userId);
+      await deleteOpenIdUser(database, userId);
     },
     { scope: 'worker' },
   ],
-  async page({ context, page, cslHeadUserId }, use) {
-    const sessionId = await insertDummySession(db, cslHeadUserId);
+  async page({ database, context, page, cslHeadUserId }, use) {
+    const sessionId = await insertDummySession(database, cslHeadUserId);
     await context.addCookies([
       {
         name: 'sid',
@@ -105,28 +105,28 @@ export const testCslHead = testLabs.extend<object, { cslHeadUserId: string }>({
     ]);
     await page.goto('/dashboard/');
     await use(page);
-    await deleteValidSession(db, sessionId);
+    await deleteValidSession(database, sessionId);
   },
 });
 
 export const testSclHead = testLabs.extend<object, { sclHeadUserId: string }>({
   sclHeadUserId: [
-    async ({ labs: _ }, use) => {
+    async ({ database, labs: _ }, use) => {
       // Create dummy user
       const {
         id: userId,
         isAdmin,
         labId,
-      } = await upsertOpenIdUser(db, 'scl@up.edu.ph', 'scl', 'SCL', 'Head', '');
+      } = await upsertOpenIdUser(database, 'scl@up.edu.ph', 'scl', 'SCL', 'Head', '');
       expect(isAdmin).toBe(true);
       expect(labId).toBe('scl');
       await use(userId);
-      await deleteOpenIdUser(db, userId);
+      await deleteOpenIdUser(database, userId);
     },
     { scope: 'worker' },
   ],
-  async page({ context, page, sclHeadUserId }, use) {
-    const sessionId = await insertDummySession(db, sclHeadUserId);
+  async page({ database, context, page, sclHeadUserId }, use) {
+    const sessionId = await insertDummySession(database, sclHeadUserId);
     await context.addCookies([
       {
         name: 'sid',
@@ -138,28 +138,28 @@ export const testSclHead = testLabs.extend<object, { sclHeadUserId: string }>({
     ]);
     await page.goto('/dashboard/');
     await use(page);
-    await deleteValidSession(db, sessionId);
+    await deleteValidSession(database, sessionId);
   },
 });
 
-export const testAdmin = test.extend<object, { adminUserId: string }>({
+export const testAdmin = testDatabase.extend<object, { adminUserId: string }>({
   adminUserId: [
-    async (_, use) => {
+    async ({ database }, use) => {
       // Create dummy user
       const {
         id: userId,
         isAdmin,
         labId,
-      } = await upsertOpenIdUser(db, 'admin@up.edu.ph', null, 'Draft', 'Administrator', '');
+      } = await upsertOpenIdUser(database, 'admin@up.edu.ph', null, 'Draft', 'Administrator', '');
       expect(isAdmin).toBe(true);
       expect(labId).toBeNull();
       await use(userId);
-      await deleteOpenIdUser(db, userId);
+      await deleteOpenIdUser(database, userId);
     },
     { scope: 'worker' },
   ],
-  async page({ context, page, adminUserId }, use) {
-    const sessionId = await insertDummySession(db, adminUserId);
+  async page({ database, context, page, adminUserId }, use) {
+    const sessionId = await insertDummySession(database, adminUserId);
     await context.addCookies([
       {
         name: 'sid',
@@ -171,6 +171,6 @@ export const testAdmin = test.extend<object, { adminUserId: string }>({
     ]);
     await page.goto('/dashboard/');
     await use(page);
-    await deleteValidSession(db, sessionId);
+    await deleteValidSession(database, sessionId);
   },
 });

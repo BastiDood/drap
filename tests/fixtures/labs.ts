@@ -1,19 +1,18 @@
-import { test } from '@playwright/test';
-
-import { db } from '$lib/server/database';
 import { dropLabs, insertNewLabs } from '$lib/server/database/drizzle';
 
-export const testLabs = test.extend<object, { labs: void }>({
+import { testDatabase } from './database';
+
+export const testLabs = testDatabase.extend<object, { labs: void }>({
   labs: [
-    async (_, use) => {
+    async ({ database }, use) => {
       // Totally random labs with zero bias whatsoever...
-      await insertNewLabs(db, [
+      await insertNewLabs(database, [
         { id: 'ndsl', name: 'Networks and Distributed Systems Laboratory' },
         { id: 'csl', name: 'Computer Security Laboratory' },
         { id: 'scl', name: 'Scientific Computing Laboratory' },
       ]);
       await use();
-      await dropLabs(db, ['ndsl', 'csl', 'scl']);
+      await dropLabs(database, ['ndsl', 'csl', 'scl']);
     },
     { scope: 'worker' },
   ],
