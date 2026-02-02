@@ -2,6 +2,16 @@
 # docker compose --file compose.yaml --file compose.prod.yaml --file compose.app.yaml up --detach --wait --build
 
 services:
+  inngest:
+    command:
+      - inngest
+      - start
+      - '--dir'
+      - '/app'
+      - '--sdk-url'
+      - 'http://app:3000/api/inngest'
+    extra_hosts: []
+
   app:
     build: .
     ports:

@@ -11,12 +11,23 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      # Development-only variables!
+      # Backing service credentials (CI-only values)
+      POSTGRES_PASSWORD: password
+      ZO_ROOT_USER_EMAIL: admin@example.com
+      ZO_ROOT_USER_PASSWORD: password
+      DRIZZLE_MASTERPASS: password
+
+      # SvelteKit app env vars
       POSTGRES_URL: postgresql://postgres:password@localhost:5432/postgres
       ORIGIN: http://localhost:4173
       PUBLIC_ORIGIN: http://localhost:4173
       GOOGLE_OAUTH_CLIENT_ID: stub
       GOOGLE_OAUTH_CLIENT_SECRET: stub
+
+      # Inngest
+      INNGEST_BASE_URL: http://localhost:8288
+      INNGEST_EVENT_KEY: ci-event-key-${{ github.run_id }}
+      INNGEST_SIGNING_KEY: signkey-test-${{ github.sha }}
 
     steps:
       - name: Checkout
@@ -54,7 +65,7 @@ jobs:
         run: pnpm build
 
       - name: Start Docker Services
-        run: POSTGRES_PASSWORD=password pnpm docker:dev
+        run: pnpm docker:prod
 
       - name: Run Database Migrations
         run: pnpm db:migrate
@@ -67,4 +78,4 @@ jobs:
 
       - name: Stop Docker Services
         if: always()
-        run: pnpm docker:down
+        run: docker compose --file compose.yaml --file compose.prod.yaml down

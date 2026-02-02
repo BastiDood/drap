@@ -22,7 +22,7 @@
       "Bash(pnpm db:migrate)",
       "Bash(pnpm docker:dev)",
       "Bash(pnpm docker:prod)",
-      "Bash(pnpm docker:down)",
+      "Bash(pnpm docker:app)",
       "Bash(pnpm install:playwright)"
     ],
     "deny": [
