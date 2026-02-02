@@ -88,3 +88,4 @@ If errors appear:
 
 - **Avoid `npx`:** Strongly prefer using package scripts defined in `package.json` (e.g., `pnpm lint`, `pnpm db:generate`) over invoking tools directly via `npx`. The project scripts are pre-configured with correct options and ensure consistent behavior.
 - **Assume CWD is correct:** When running commands, do not use directory-changing flags like `git -C` or `pnpm --filter`. The current working directory is already the project root.
+- **Learn from mistakes:** if the user corrects you on conventions or workflows, update your memory files accordingly so you will not make the same mistake ever again
