@@ -65,6 +65,7 @@
         return 'active';
       case 'registration':
         return 'pending';
+      case 'lottery':
       case 'concluded':
         return 'completed';
       default:
@@ -74,6 +75,9 @@
 
   const lotteryStatus: Status = $derived.by(() => {
     switch (currentPhase) {
+      case 'registration':
+      case 'regular':
+        return 'pending';
       case 'lottery':
         return 'active';
       case 'concluded':
