@@ -311,6 +311,12 @@ test.describe('Draft Lifecycle', () => {
       await expect(noRankStudentPage.getByText('Uploaded your lab preferences')).toBeVisible();
     });
 
+    test('NoRank sees submitted state after reload', async ({ noRankStudentPage }) => {
+      await noRankStudentPage.goto('/dashboard/student/');
+      await expect(noRankStudentPage.getByText('Registration Complete')).toBeVisible();
+      await expect(noRankStudentPage.getByText('No Labs Selected')).toBeVisible();
+    });
+
     test('Idle submits 0 prefs (goes directly to lottery)', async ({ idleBystanderPage }) => {
       await idleBystanderPage.goto('/dashboard/student/');
       await expect(idleBystanderPage.getByText('Select preferred labs')).toBeVisible();
@@ -346,6 +352,20 @@ test.describe('Draft Lifecycle', () => {
     test('sees registration closed message', async ({ lateRegistrantPage }) => {
       await lateRegistrantPage.goto('/dashboard/student/');
       await expect(lateRegistrantPage.getByText('Registration Closed')).toBeVisible();
+    });
+  });
+
+  test.describe('Students During Draft In Progress', () => {
+    test('NoRank sees draft progress with empty submission', async ({ noRankStudentPage }) => {
+      await noRankStudentPage.goto('/dashboard/student/');
+      await expect(noRankStudentPage.getByText('The draft is in progress.')).toBeVisible();
+      await expect(noRankStudentPage.getByText('No Labs Selected')).toBeVisible();
+    });
+
+    test('Eager sees draft progress with lab preferences', async ({ eagerDrafteePage }) => {
+      await eagerDrafteePage.goto('/dashboard/student/');
+      await expect(eagerDrafteePage.getByText('The draft is in progress.')).toBeVisible();
+      await expect(eagerDrafteePage.getByText('Your Lab Preferences')).toBeVisible();
     });
   });
 

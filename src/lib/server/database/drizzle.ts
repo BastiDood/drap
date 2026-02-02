@@ -861,7 +861,7 @@ export async function getStudentRankings(db: DbConnection, draftId: bigint, user
         remark: schema.studentRankLab.remark,
       })
       .from(schema.studentRank)
-      .innerJoin(
+      .leftJoin(
         schema.studentRankLab,
         and(
           eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
@@ -875,12 +875,12 @@ export async function getStudentRankings(db: DbConnection, draftId: bigint, user
       .select({
         createdAt: sub.createdAt,
         labRemarks:
-          sql`jsonb_agg(jsonb_build_object('lab', ${schema.activeLabView.name}, 'remark', ${sub.remark}) ORDER BY ${sub.index})`.mapWith(
+          sql`coalesce(jsonb_agg(jsonb_build_object('lab', ${schema.activeLabView.name}, 'remark', ${sub.remark}) ORDER BY ${sub.index}) filter (where ${isNotNull(sub.labId)}), '[]'::jsonb)`.mapWith(
             vals => parse(LabRemark, vals),
           ),
       })
       .from(sub)
-      .innerJoin(schema.activeLabView, eq(sub.labId, schema.activeLabView.id))
+      .leftJoin(schema.activeLabView, eq(sub.labId, schema.activeLabView.id))
       .groupBy(sub.createdAt)
       .then(assertOptional);
   });
