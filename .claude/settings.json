@@ -6,7 +6,7 @@
       "Bash(pnpm lint:eslint)",
       "Bash(pnpm lint:eslint --fix)",
       "Bash(pnpm lint:svelte)",
-      "Bash(pnpm test:playwright)",
+      "Bash(pnpm test:playwright:*)",
       "Bash(pnpm fmt)",
       "Bash(pnpm fmt:fix)",
       "Bash(pnpm build)",
