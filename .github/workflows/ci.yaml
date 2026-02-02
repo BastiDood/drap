@@ -7,23 +7,33 @@ on:
     branches: main
 
 jobs:
-  build:
+  e2e:
     runs-on: ubuntu-latest
+
     env:
-      ORIGIN: http://drap.dcs.upd.edu.ph
-      PUBLIC_ORIGIN: http://drap.dcs.upd.edu.ph
+      # Development-only variables!
+      POSTGRES_URL: postgresql://postgres:password@localhost:5432/postgres
+      ORIGIN: http://localhost:4173
+      PUBLIC_ORIGIN: http://localhost:4173
+      GOOGLE_OAUTH_CLIENT_ID: stub
+      GOOGLE_OAUTH_CLIENT_SECRET: stub
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
       - name: Install pnpm
         uses: pnpm/action-setup@v4
+
       - name: Install Node.js
         uses: actions/setup-node@v6
         with:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
+
       - name: Install Dependencies
         run: pnpm install
+
       - name: Cache ESLint and Prettier Runs
         uses: actions/cache@v5
         with:
@@ -33,11 +43,28 @@ jobs:
           key: ${{ runner.os }}-lint-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.js', '.prettierrc.json') }}
           restore-keys: |
             ${{ runner.os }}-lint-
+
       - name: Check Formatters
         run: pnpm fmt
+
       - name: Run All Lints in Parallel
         run: pnpm lint
+
       - name: Build Website
         run: pnpm build
+
+      - name: Start Docker Services
+        run: POSTGRES_PASSWORD=password pnpm docker:dev
+
+      - name: Run Database Migrations
+        run: pnpm db:migrate
+
+      - name: Install Playwright Browser
+        run: pnpm install:playwright
+
       - name: Run End-to-End Tests
         run: pnpm test:playwright
+
+      - name: Stop Docker Services
+        if: always()
+        run: pnpm docker:down
