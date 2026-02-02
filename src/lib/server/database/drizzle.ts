@@ -1373,20 +1373,32 @@ export async function updateUserRole(
   });
 }
 
+interface TestUserOptions {
+  email: string;
+  googleUserId: string;
+  givenName: string;
+  familyName: string;
+  avatarUrl?: string;
+  isAdmin: boolean;
+  labId: string | null;
+}
+
 /**
- * Test helper: Creates a user with explicit isAdmin and labId.
+ * Test helper: Creates a user with explicit Google user ID, isAdmin, and labId.
  * Combines upsertOpenIdUser + updateUserRole for test fixtures.
  */
 export async function upsertTestUser(
   db: DbConnection,
-  email: string,
-  labId: string | null,
-  given: string,
-  family: string,
-  avatar: string,
+  { email, googleUserId, givenName, familyName, avatarUrl = '', isAdmin, labId }: TestUserOptions,
 ) {
-  const { id: userId } = await upsertOpenIdUser(db, email, `test-${email}`, given, family, avatar);
-  const isAdmin = labId !== null || (email.endsWith('@up.edu.ph') && email.startsWith('admin'));
+  const { id: userId } = await upsertOpenIdUser(
+    db,
+    email,
+    googleUserId,
+    givenName,
+    familyName,
+    avatarUrl,
+  );
   await updateUserRole(db, userId, isAdmin, labId);
   return { id: userId, isAdmin, labId };
 }

@@ -1,10 +1,9 @@
-import { expect, mergeTests, type Page } from '@playwright/test';
+import { mergeTests, type Page } from '@playwright/test';
 
 import {
   deleteOpenIdUser,
   deleteValidSession,
   insertDummySession,
-  upsertOpenIdUser,
   upsertTestUser,
 } from '$lib/server/database/drizzle';
 
@@ -20,13 +19,14 @@ const testEagerDraftee = testLabs.extend<
 >({
   eagerDrafteeUserId: [
     async ({ database, labs: _ }, use) => {
-      const {
-        id: userId,
-        isAdmin,
-        labId,
-      } = await upsertOpenIdUser(database, 'eager.student@up.edu.ph', null, 'Eager', 'Draftee', '');
-      expect(isAdmin).toBe(false);
-      expect(labId).toBeNull();
+      const { id: userId } = await upsertTestUser(database, {
+        email: 'eager.student@up.edu.ph',
+        googleUserId: 'test-eager-student',
+        givenName: 'Eager',
+        familyName: 'Draftee',
+        isAdmin: false,
+        labId: null,
+      });
       await use(userId);
       await deleteOpenIdUser(database, userId);
     },
@@ -59,20 +59,14 @@ const testPatientCandidate = testLabs.extend<
 >({
   patientCandidateUserId: [
     async ({ database, labs: _ }, use) => {
-      const {
-        id: userId,
-        isAdmin,
-        labId,
-      } = await upsertOpenIdUser(
-        database,
-        'patient.student@up.edu.ph',
-        null,
-        'Patient',
-        'Candidate',
-        '',
-      );
-      expect(isAdmin).toBe(false);
-      expect(labId).toBeNull();
+      const { id: userId } = await upsertTestUser(database, {
+        email: 'patient.student@up.edu.ph',
+        googleUserId: 'test-patient-student',
+        givenName: 'Patient',
+        familyName: 'Candidate',
+        isAdmin: false,
+        labId: null,
+      });
       await use(userId);
       await deleteOpenIdUser(database, userId);
     },
@@ -105,20 +99,14 @@ const testPersistentHopeful = testLabs.extend<
 >({
   persistentHopefulUserId: [
     async ({ database, labs: _ }, use) => {
-      const {
-        id: userId,
-        isAdmin,
-        labId,
-      } = await upsertOpenIdUser(
-        database,
-        'persistent.student@up.edu.ph',
-        null,
-        'Persistent',
-        'Hopeful',
-        '',
-      );
-      expect(isAdmin).toBe(false);
-      expect(labId).toBeNull();
+      const { id: userId } = await upsertTestUser(database, {
+        email: 'persistent.student@up.edu.ph',
+        googleUserId: 'test-persistent-student',
+        givenName: 'Persistent',
+        familyName: 'Hopeful',
+        isAdmin: false,
+        labId: null,
+      });
       await use(userId);
       await deleteOpenIdUser(database, userId);
     },
@@ -151,20 +139,14 @@ const testUnluckyFullRanker = testLabs.extend<
 >({
   unluckyFullRankerUserId: [
     async ({ database, labs: _ }, use) => {
-      const {
-        id: userId,
-        isAdmin,
-        labId,
-      } = await upsertOpenIdUser(
-        database,
-        'unlucky.student@up.edu.ph',
-        null,
-        'Unlucky',
-        'FullRanker',
-        '',
-      );
-      expect(isAdmin).toBe(false);
-      expect(labId).toBeNull();
+      const { id: userId } = await upsertTestUser(database, {
+        email: 'unlucky.student@up.edu.ph',
+        googleUserId: 'test-unlucky-student',
+        givenName: 'Unlucky',
+        familyName: 'FullRanker',
+        isAdmin: false,
+        labId: null,
+      });
       await use(userId);
       await deleteOpenIdUser(database, userId);
     },
@@ -197,20 +179,14 @@ const testPartialToDrafted = testLabs.extend<
 >({
   partialToDraftedUserId: [
     async ({ database, labs: _ }, use) => {
-      const {
-        id: userId,
-        isAdmin,
-        labId,
-      } = await upsertOpenIdUser(
-        database,
-        'partial-drafted.student@up.edu.ph',
-        null,
-        'Partial',
-        'ToDrafted',
-        '',
-      );
-      expect(isAdmin).toBe(false);
-      expect(labId).toBeNull();
+      const { id: userId } = await upsertTestUser(database, {
+        email: 'partial-drafted.student@up.edu.ph',
+        googleUserId: 'test-partial-drafted-student',
+        givenName: 'Partial',
+        familyName: 'ToDrafted',
+        isAdmin: false,
+        labId: null,
+      });
       await use(userId);
       await deleteOpenIdUser(database, userId);
     },
@@ -243,20 +219,14 @@ const testPartialToLottery = testLabs.extend<
 >({
   partialToLotteryUserId: [
     async ({ database, labs: _ }, use) => {
-      const {
-        id: userId,
-        isAdmin,
-        labId,
-      } = await upsertOpenIdUser(
-        database,
-        'partial-lottery.student@up.edu.ph',
-        null,
-        'Partial',
-        'ToLottery',
-        '',
-      );
-      expect(isAdmin).toBe(false);
-      expect(labId).toBeNull();
+      const { id: userId } = await upsertTestUser(database, {
+        email: 'partial-lottery.student@up.edu.ph',
+        googleUserId: 'test-partial-lottery-student',
+        givenName: 'Partial',
+        familyName: 'ToLottery',
+        isAdmin: false,
+        labId: null,
+      });
       await use(userId);
       await deleteOpenIdUser(database, userId);
     },
@@ -289,20 +259,14 @@ const testNoRankStudent = testLabs.extend<
 >({
   noRankStudentUserId: [
     async ({ database, labs: _ }, use) => {
-      const {
-        id: userId,
-        isAdmin,
-        labId,
-      } = await upsertOpenIdUser(
-        database,
-        'no-rank.student@up.edu.ph',
-        null,
-        'NoRank',
-        'Student',
-        '',
-      );
-      expect(isAdmin).toBe(false);
-      expect(labId).toBeNull();
+      const { id: userId } = await upsertTestUser(database, {
+        email: 'no-rank.student@up.edu.ph',
+        googleUserId: 'test-no-rank-student',
+        givenName: 'NoRank',
+        familyName: 'Student',
+        isAdmin: false,
+        labId: null,
+      });
       await use(userId);
       await deleteOpenIdUser(database, userId);
     },
@@ -335,20 +299,14 @@ const testLateRegistrant = testLabs.extend<
 >({
   lateRegistrantUserId: [
     async ({ database, labs: _ }, use) => {
-      const {
-        id: userId,
-        isAdmin,
-        labId,
-      } = await upsertOpenIdUser(
-        database,
-        'late.student@up.edu.ph',
-        null,
-        'Late',
-        'Registrant',
-        '',
-      );
-      expect(isAdmin).toBe(false);
-      expect(labId).toBeNull();
+      const { id: userId } = await upsertTestUser(database, {
+        email: 'late.student@up.edu.ph',
+        googleUserId: 'test-late-student',
+        givenName: 'Late',
+        familyName: 'Registrant',
+        isAdmin: false,
+        labId: null,
+      });
       await use(userId);
       await deleteOpenIdUser(database, userId);
     },
@@ -378,13 +336,14 @@ const testLateRegistrant = testLabs.extend<
 const testNdslHead = testLabs.extend<{ ndslHeadPage: Page }, { ndslHeadUserId: string }>({
   ndslHeadUserId: [
     async ({ database, labs: _ }, use) => {
-      const {
-        id: userId,
-        isAdmin,
-        labId,
-      } = await upsertTestUser(database, 'ndsl@up.edu.ph', 'ndsl', 'NDSL', 'Head', '');
-      expect(isAdmin).toBe(true);
-      expect(labId).toBe('ndsl');
+      const { id: userId } = await upsertTestUser(database, {
+        email: 'ndsl@up.edu.ph',
+        googleUserId: 'test-ndsl-head',
+        givenName: 'NDSL',
+        familyName: 'Head',
+        isAdmin: true,
+        labId: 'ndsl',
+      });
       await use(userId);
       await deleteOpenIdUser(database, userId);
     },
@@ -414,13 +373,14 @@ const testNdslHead = testLabs.extend<{ ndslHeadPage: Page }, { ndslHeadUserId: s
 const testCslHead = testLabs.extend<{ cslHeadPage: Page }, { cslHeadUserId: string }>({
   cslHeadUserId: [
     async ({ database, labs: _ }, use) => {
-      const {
-        id: userId,
-        isAdmin,
-        labId,
-      } = await upsertTestUser(database, 'csl@up.edu.ph', 'csl', 'CSL', 'Head', '');
-      expect(isAdmin).toBe(true);
-      expect(labId).toBe('csl');
+      const { id: userId } = await upsertTestUser(database, {
+        email: 'csl@up.edu.ph',
+        googleUserId: 'test-csl-head',
+        givenName: 'CSL',
+        familyName: 'Head',
+        isAdmin: true,
+        labId: 'csl',
+      });
       await use(userId);
       await deleteOpenIdUser(database, userId);
     },
@@ -450,13 +410,14 @@ const testCslHead = testLabs.extend<{ cslHeadPage: Page }, { cslHeadUserId: stri
 const testSclHead = testLabs.extend<{ sclHeadPage: Page }, { sclHeadUserId: string }>({
   sclHeadUserId: [
     async ({ database, labs: _ }, use) => {
-      const {
-        id: userId,
-        isAdmin,
-        labId,
-      } = await upsertTestUser(database, 'scl@up.edu.ph', 'scl', 'SCL', 'Head', '');
-      expect(isAdmin).toBe(true);
-      expect(labId).toBe('scl');
+      const { id: userId } = await upsertTestUser(database, {
+        email: 'scl@up.edu.ph',
+        googleUserId: 'test-scl-head',
+        givenName: 'SCL',
+        familyName: 'Head',
+        isAdmin: true,
+        labId: 'scl',
+      });
       await use(userId);
       await deleteOpenIdUser(database, userId);
     },
@@ -486,13 +447,14 @@ const testSclHead = testLabs.extend<{ sclHeadPage: Page }, { sclHeadUserId: stri
 const testCvmilHead = testLabs.extend<{ cvmilHeadPage: Page }, { cvmilHeadUserId: string }>({
   cvmilHeadUserId: [
     async ({ database, labs: _ }, use) => {
-      const {
-        id: userId,
-        isAdmin,
-        labId,
-      } = await upsertTestUser(database, 'cvmil@up.edu.ph', 'cvmil', 'CVMIL', 'Head', '');
-      expect(isAdmin).toBe(true);
-      expect(labId).toBe('cvmil');
+      const { id: userId } = await upsertTestUser(database, {
+        email: 'cvmil@up.edu.ph',
+        googleUserId: 'test-cvmil-head',
+        givenName: 'CVMIL',
+        familyName: 'Head',
+        isAdmin: true,
+        labId: 'cvmil',
+      });
       await use(userId);
       await deleteOpenIdUser(database, userId);
     },
@@ -522,13 +484,14 @@ const testCvmilHead = testLabs.extend<{ cvmilHeadPage: Page }, { cvmilHeadUserId
 const testAclHead = testLabs.extend<{ aclHeadPage: Page }, { aclHeadUserId: string }>({
   aclHeadUserId: [
     async ({ database, labs: _ }, use) => {
-      const {
-        id: userId,
-        isAdmin,
-        labId,
-      } = await upsertTestUser(database, 'acl@up.edu.ph', 'acl', 'ACL', 'Head', '');
-      expect(isAdmin).toBe(true);
-      expect(labId).toBe('acl');
+      const { id: userId } = await upsertTestUser(database, {
+        email: 'acl@up.edu.ph',
+        googleUserId: 'test-acl-head',
+        givenName: 'ACL',
+        familyName: 'Head',
+        isAdmin: true,
+        labId: 'acl',
+      });
       await use(userId);
       await deleteOpenIdUser(database, userId);
     },
@@ -558,13 +521,14 @@ const testAclHead = testLabs.extend<{ aclHeadPage: Page }, { aclHeadUserId: stri
 const testAdmin = testDatabase.extend<{ adminPage: Page }, { adminUserId: string }>({
   adminUserId: [
     async ({ database }, use) => {
-      const {
-        id: userId,
-        isAdmin,
-        labId,
-      } = await upsertTestUser(database, 'admin@up.edu.ph', null, 'Draft', 'Administrator', '');
-      expect(isAdmin).toBe(true);
-      expect(labId).toBeNull();
+      const { id: userId } = await upsertTestUser(database, {
+        email: 'admin@up.edu.ph',
+        googleUserId: 'test-admin',
+        givenName: 'Draft',
+        familyName: 'Administrator',
+        isAdmin: true,
+        labId: null,
+      });
       await use(userId);
       await deleteOpenIdUser(database, userId);
     },
