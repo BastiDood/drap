@@ -20,6 +20,9 @@
       "Bash(gh pr create:*)",
       "Bash(pnpm db:generate)",
       "Bash(pnpm db:migrate)",
+      "Bash(pnpm docker:dev)",
+      "Bash(pnpm docker:prod)",
+      "Bash(pnpm docker:down)",
       "Bash(pnpm install:playwright)"
     ],
     "deny": [

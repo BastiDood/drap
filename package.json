@@ -17,8 +17,9 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
-    "docker:dev": "docker compose up --detach",
-    "docker:prod": "docker compose --file compose.yaml --file compose.prod.yaml up --detach --build",
+    "docker:dev": "docker compose up --detach --wait",
+    "docker:prod": "docker compose --file compose.yaml --file compose.prod.yaml up --detach --wait --build",
+    "docker:down": "docker compose down",
     "install:playwright": "playwright install chromium",
     "test:playwright": "playwright test",
     "ui": "shadcn-svelte add --yes"
