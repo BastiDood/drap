@@ -118,7 +118,8 @@ pnpm lint
 ### Running the Development Server
 
 ```bash
-# Run all database and queue services via the base config (compose.yaml).
+# Run all database and queue services via the base config (compose.yaml):
+# postgres, inngest (dev mode), o2
 pnpm docker:dev
 
 # Run the Vite dev server for SvelteKit.
@@ -139,12 +140,21 @@ node --env-file=.env build/index.js
 ```
 
 ```bash
-# Or, spin up the internal production services without the app.
+# Or, spin up minimal CI services (compose.yaml + compose.ci.yaml):
+# postgres, inngest (prod mode), redis
+pnpm docker:ci
+```
+
+```bash
+# Or, spin up the internal production services without the app
+# (compose.yaml + compose.ci.yaml + compose.prod.yaml):
+# postgres, inngest, redis, o2, drizzle-gateway
 pnpm docker:prod
 ```
 
 ```bash
-# Or, spin up the full production environment (internal services + app).
+# Or, spin up the full production environment (internal services + app)
+# (compose.yaml + compose.ci.yaml + compose.prod.yaml + compose.app.yaml):
 pnpm docker:app
 ```
 

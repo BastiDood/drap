@@ -1,57 +1,7 @@
-# Production overrides for internal services (postgres, inngest, redis, o2, drizzle-gateway).
-# docker compose --file compose.yaml --file compose.prod.yaml up --detach --wait --build
+# Production overrides for observability and Drizzle services (o2, drizzle-gateway).
+# docker compose --file compose.yaml --file compose.ci.yaml --file compose.prod.yaml up --detach --wait --build
 
 services:
-  postgres:
-    environment:
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready']
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  redis:
-    image: redis:8.4.0
-    command:
-      - redis-server
-      - '--appendonly'
-      - 'yes'
-    volumes:
-      - redis:/data
-    restart: always
-    healthcheck:
-      test: ['CMD', 'redis-cli', 'ping']
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
-  inngest:
-    command:
-      - inngest
-      - start
-      - '--sqlite-dir'
-      - '/app'
-      - '--sdk-url'
-      - 'http://host.docker.internal:4173/api/inngest'
-    extra_hosts:
-      - host.docker.internal:host-gateway
-    environment:
-      INNGEST_EVENT_KEY: ${INNGEST_EVENT_KEY:?required}
-      INNGEST_SIGNING_KEY: ${INNGEST_SIGNING_KEY:?required}
-      INNGEST_REDIS_URI: redis://redis:6379
-    volumes:
-      - inngest:/app
-    depends_on:
-      redis:
-        condition: service_healthy
-    healthcheck:
-      test: ['CMD', 'curl', '--fail', 'http://localhost:8288/health']
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 40s
-
   o2:
     environment:
       ZO_ROOT_USER_EMAIL: ${ZO_ROOT_USER_EMAIL:?required}
@@ -70,6 +20,4 @@ services:
     restart: always
 
 volumes:
-  redis:
-  inngest:
   drizzle-gateway:

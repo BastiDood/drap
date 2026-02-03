@@ -13,9 +13,6 @@ jobs:
     env:
       # Backing service credentials (CI-only values)
       POSTGRES_PASSWORD: password
-      ZO_ROOT_USER_EMAIL: admin@example.com
-      ZO_ROOT_USER_PASSWORD: password
-      DRIZZLE_MASTERPASS: password
 
       # SvelteKit app env vars
       POSTGRES_URL: postgresql://postgres:password@localhost:5432/postgres
@@ -30,9 +27,7 @@ jobs:
       INNGEST_SIGNING_KEY: abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789ab
 
       # OpenTelemetry
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://localhost:5080/api/default
-      OTEL_EXPORTER_OTLP_HEADERS: Authorization=Basic%20YWRtaW5AZXhhbXBsZS5jb206cGFzc3dvcmQ%3D
-      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      OTEL_SDK_DISABLED: true
 
     steps:
       - name: Checkout
@@ -71,7 +66,7 @@ jobs:
         run: pnpm build
 
       - name: Start Docker Services
-        run: pnpm docker:prod
+        run: pnpm docker:ci
 
       - name: Run Database Migrations
         run: pnpm db:migrate
