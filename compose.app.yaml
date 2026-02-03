@@ -33,6 +33,4 @@ services:
         condition: service_healthy
       inngest:
         condition: service_healthy
-      o2:
-        condition: service_healthy
     restart: always
