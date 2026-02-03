@@ -55,55 +55,55 @@ test.describe('Draft Lifecycle', () => {
       await expect(eagerDrafteePage.getByText('Complete Your Profile')).toBeVisible();
       await eagerDrafteePage.getByLabel('Student Number').fill('202012345');
       await eagerDrafteePage.getByRole('button', { name: 'Complete Profile' }).click();
-      await expect(eagerDrafteePage.getByText('Complete Your Profile')).not.toBeVisible();
+      await expect(eagerDrafteePage.getByText('Profile completed.')).toBeVisible();
     });
 
     test('Patient completes profile', async ({ patientCandidatePage }) => {
       await patientCandidatePage.getByLabel('Student Number').fill('202012346');
       await patientCandidatePage.getByRole('button', { name: 'Complete Profile' }).click();
-      await expect(patientCandidatePage.getByText('Complete Your Profile')).not.toBeVisible();
+      await expect(patientCandidatePage.getByText('Profile completed.')).toBeVisible();
     });
 
     test('Persistent completes profile', async ({ persistentHopefulPage }) => {
       await persistentHopefulPage.getByLabel('Student Number').fill('202012347');
       await persistentHopefulPage.getByRole('button', { name: 'Complete Profile' }).click();
-      await expect(persistentHopefulPage.getByText('Complete Your Profile')).not.toBeVisible();
+      await expect(persistentHopefulPage.getByText('Profile completed.')).toBeVisible();
     });
 
     test('Unlucky completes profile', async ({ unluckyFullRankerPage }) => {
       await unluckyFullRankerPage.getByLabel('Student Number').fill('202012348');
       await unluckyFullRankerPage.getByRole('button', { name: 'Complete Profile' }).click();
-      await expect(unluckyFullRankerPage.getByText('Complete Your Profile')).not.toBeVisible();
+      await expect(unluckyFullRankerPage.getByText('Profile completed.')).toBeVisible();
     });
 
     test('PartialToDrafted completes profile', async ({ partialToDraftedPage }) => {
       await partialToDraftedPage.getByLabel('Student Number').fill('202012349');
       await partialToDraftedPage.getByRole('button', { name: 'Complete Profile' }).click();
-      await expect(partialToDraftedPage.getByText('Complete Your Profile')).not.toBeVisible();
+      await expect(partialToDraftedPage.getByText('Profile completed.')).toBeVisible();
     });
 
     test('PartialToLottery completes profile', async ({ partialToLotteryPage }) => {
       await partialToLotteryPage.getByLabel('Student Number').fill('202012350');
       await partialToLotteryPage.getByRole('button', { name: 'Complete Profile' }).click();
-      await expect(partialToLotteryPage.getByText('Complete Your Profile')).not.toBeVisible();
+      await expect(partialToLotteryPage.getByText('Profile completed.')).toBeVisible();
     });
 
     test('NoRank completes profile', async ({ noRankStudentPage }) => {
       await noRankStudentPage.getByLabel('Student Number').fill('202012351');
       await noRankStudentPage.getByRole('button', { name: 'Complete Profile' }).click();
-      await expect(noRankStudentPage.getByText('Complete Your Profile')).not.toBeVisible();
+      await expect(noRankStudentPage.getByText('Profile completed.')).toBeVisible();
     });
 
     test('Idle completes profile', async ({ idleBystanderPage }) => {
       await idleBystanderPage.getByLabel('Student Number').fill('202012353');
       await idleBystanderPage.getByRole('button', { name: 'Complete Profile' }).click();
-      await expect(idleBystanderPage.getByText('Complete Your Profile')).not.toBeVisible();
+      await expect(idleBystanderPage.getByText('Profile completed.')).toBeVisible();
     });
 
     test('Late completes profile', async ({ lateRegistrantPage }) => {
       await lateRegistrantPage.getByLabel('Student Number').fill('202012352');
       await lateRegistrantPage.getByRole('button', { name: 'Complete Profile' }).click();
-      await expect(lateRegistrantPage.getByText('Complete Your Profile')).not.toBeVisible();
+      await expect(lateRegistrantPage.getByText('Profile completed.')).toBeVisible();
     });
   });
 
@@ -152,6 +152,7 @@ test.describe('Draft Lifecycle', () => {
       adminPage.on('dialog', dialog => dialog.accept());
       await dialog.getByRole('button', { name: 'Create Draft' }).click();
 
+      await expect(adminPage.getByText('Draft created.')).toBeVisible();
       await expect(dialog).not.toBeVisible();
       await expect(adminPage.getByText(/#\d+/u)).toBeVisible();
       await expect(adminPage.getByText('Registration')).toBeVisible();
@@ -344,6 +345,7 @@ test.describe('Draft Lifecycle', () => {
       await adminPage.goto('/dashboard/drafts/1/');
       adminPage.on('dialog', dialog => dialog.accept());
       await adminPage.getByRole('button', { name: 'Start Draft' }).click();
+      await expect(adminPage.getByText('Draft started.')).toBeVisible();
       await expect(adminPage.getByText(/Round 1/u)).toBeVisible();
     });
   });
@@ -383,7 +385,7 @@ test.describe('Draft Lifecycle', () => {
       await ndslHeadPage.getByRole('button', { name: /Eager/u }).click();
       ndslHeadPage.on('dialog', dialog => dialog.accept());
       await ndslHeadPage.getByRole('button', { name: 'Submit' }).click();
-      await expect(ndslHeadPage.getByText(/submitted|selected/iu)).toBeVisible();
+      await expect(ndslHeadPage.getByText('Selections submitted.')).toBeVisible();
     });
 
     test('CSL selects Patient', async ({ cslHeadPage }) => {
@@ -391,7 +393,7 @@ test.describe('Draft Lifecycle', () => {
       await cslHeadPage.getByRole('button', { name: /Patient/u }).click();
       cslHeadPage.on('dialog', dialog => dialog.accept());
       await cslHeadPage.getByRole('button', { name: 'Submit' }).click();
-      await expect(cslHeadPage.getByText(/submitted|selected/iu)).toBeVisible();
+      await expect(cslHeadPage.getByText('Selections submitted.')).toBeVisible();
     });
 
     test('SCL skips (sees Persistent)', async ({ sclHeadPage }) => {
@@ -399,6 +401,7 @@ test.describe('Draft Lifecycle', () => {
       await expect(sclHeadPage.getByRole('button', { name: /Persistent/u })).toBeVisible();
       sclHeadPage.on('dialog', dialog => dialog.accept());
       await sclHeadPage.getByRole('button', { name: 'Submit' }).click();
+      await expect(sclHeadPage.getByText('Selections submitted.')).toBeVisible();
     });
 
     // CVMIL: no 1st-choice students → auto-acknowledged
@@ -408,6 +411,7 @@ test.describe('Draft Lifecycle', () => {
       await expect(aclHeadPage.getByRole('button', { name: /Unlucky/u })).toBeVisible();
       aclHeadPage.on('dialog', dialog => dialog.accept());
       await aclHeadPage.getByRole('button', { name: 'Submit' }).click();
+      await expect(aclHeadPage.getByText('Selections submitted.')).toBeVisible();
     });
   });
 
@@ -428,7 +432,7 @@ test.describe('Draft Lifecycle', () => {
       await cslHeadPage.getByRole('button', { name: /Partial/u }).click();
       cslHeadPage.on('dialog', dialog => dialog.accept());
       await cslHeadPage.getByRole('button', { name: 'Submit' }).click();
-      await expect(cslHeadPage.getByText(/submitted|selected/iu)).toBeVisible();
+      await expect(cslHeadPage.getByText('Selections submitted.')).toBeVisible();
     });
 
     test('CVMIL skips (sees Persistent, Unlucky)', async ({ cvmilHeadPage }) => {
@@ -437,6 +441,7 @@ test.describe('Draft Lifecycle', () => {
       await expect(cvmilHeadPage.getByRole('button', { name: /Unlucky/u })).toBeVisible();
       cvmilHeadPage.on('dialog', dialog => dialog.accept());
       await cvmilHeadPage.getByRole('button', { name: 'Submit' }).click();
+      await expect(cvmilHeadPage.getByText('Selections submitted.')).toBeVisible();
     });
   });
 
@@ -458,7 +463,7 @@ test.describe('Draft Lifecycle', () => {
       await ndslHeadPage.getByRole('button', { name: /Unlucky/u }).click();
       ndslHeadPage.on('dialog', dialog => dialog.accept());
       await ndslHeadPage.getByRole('button', { name: 'Submit' }).click();
-      await expect(ndslHeadPage.getByText(/submitted|selected/iu)).toBeVisible();
+      await expect(ndslHeadPage.getByText('Selections submitted.')).toBeVisible();
     });
 
     test('ACL skips (sees Persistent)', async ({ aclHeadPage }) => {
@@ -466,6 +471,7 @@ test.describe('Draft Lifecycle', () => {
       await expect(aclHeadPage.getByRole('button', { name: /Persistent/u })).toBeVisible();
       aclHeadPage.on('dialog', dialog => dialog.accept());
       await aclHeadPage.getByRole('button', { name: 'Submit' }).click();
+      await expect(aclHeadPage.getByText('Selections submitted.')).toBeVisible();
     });
   });
 
@@ -594,7 +600,7 @@ test.describe('Draft Lifecycle', () => {
       await expect(adminPage.getByRole('button', { name: 'Conclude Draft' })).toBeVisible();
       await adminPage.getByRole('button', { name: 'Conclude Draft' }).click();
 
-      await expect(adminPage.getByText('Draft Concluded')).toBeVisible();
+      await expect(adminPage.getByText('Draft concluded.')).toBeVisible();
     });
   });
 
@@ -726,6 +732,157 @@ test.describe('Draft Lifecycle', () => {
       await cslHeadPage.getByRole('button', { name: /Draft 1/u }).click();
       await expect(cslHeadPage.getByText(/Patient/u)).toBeVisible();
       await expect(cslHeadPage.getByText(/Partial/u)).toBeVisible();
+    });
+  });
+
+  test.describe('Logout', () => {
+    test('admin can log out and lands on home', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/');
+      await adminPage.getByRole('button', { name: 'Logout' }).click();
+      await expect(adminPage).toHaveURL('/');
+      await expect(
+        adminPage.getByRole('heading', { name: 'Draft Ranking Automated Processor' }),
+      ).toBeVisible();
+    });
+
+    test('NDSL head can log out and lands on home', async ({ ndslHeadPage }) => {
+      await ndslHeadPage.goto('/dashboard/');
+      await ndslHeadPage.getByRole('button', { name: 'Logout' }).click();
+      await expect(ndslHeadPage).toHaveURL('/');
+      await expect(
+        ndslHeadPage.getByRole('heading', { name: 'Draft Ranking Automated Processor' }),
+      ).toBeVisible();
+    });
+
+    test('CSL head can log out and lands on home', async ({ cslHeadPage }) => {
+      await cslHeadPage.goto('/dashboard/');
+      await cslHeadPage.getByRole('button', { name: 'Logout' }).click();
+      await expect(cslHeadPage).toHaveURL('/');
+      await expect(
+        cslHeadPage.getByRole('heading', { name: 'Draft Ranking Automated Processor' }),
+      ).toBeVisible();
+    });
+
+    test('SCL head can log out and lands on home', async ({ sclHeadPage }) => {
+      await sclHeadPage.goto('/dashboard/');
+      await sclHeadPage.getByRole('button', { name: 'Logout' }).click();
+      await expect(sclHeadPage).toHaveURL('/');
+      await expect(
+        sclHeadPage.getByRole('heading', { name: 'Draft Ranking Automated Processor' }),
+      ).toBeVisible();
+    });
+
+    test('CVMIL head can log out and lands on home', async ({ cvmilHeadPage }) => {
+      await cvmilHeadPage.goto('/dashboard/');
+      await cvmilHeadPage.getByRole('button', { name: 'Logout' }).click();
+      await expect(cvmilHeadPage).toHaveURL('/');
+      await expect(
+        cvmilHeadPage.getByRole('heading', { name: 'Draft Ranking Automated Processor' }),
+      ).toBeVisible();
+    });
+
+    test('ACL head can log out and lands on home', async ({ aclHeadPage }) => {
+      await aclHeadPage.goto('/dashboard/');
+      await aclHeadPage.getByRole('button', { name: 'Logout' }).click();
+      await expect(aclHeadPage).toHaveURL('/');
+      await expect(
+        aclHeadPage.getByRole('heading', { name: 'Draft Ranking Automated Processor' }),
+      ).toBeVisible();
+    });
+
+    test('Eager can log out and lands on home', async ({ eagerDrafteePage }) => {
+      await eagerDrafteePage.goto('/dashboard/');
+      await eagerDrafteePage.getByRole('button', { name: 'Logout' }).click();
+      await expect(eagerDrafteePage).toHaveURL('/');
+      await expect(
+        eagerDrafteePage.getByRole('heading', { name: 'Draft Ranking Automated Processor' }),
+      ).toBeVisible();
+    });
+
+    test('Patient can log out and lands on home', async ({ patientCandidatePage }) => {
+      await patientCandidatePage.goto('/dashboard/');
+      await patientCandidatePage.getByRole('button', { name: 'Logout' }).click();
+      await expect(patientCandidatePage).toHaveURL('/');
+      await expect(
+        patientCandidatePage.getByRole('heading', { name: 'Draft Ranking Automated Processor' }),
+      ).toBeVisible();
+    });
+
+    test('Persistent can log out and lands on home', async ({ persistentHopefulPage }) => {
+      await persistentHopefulPage.goto('/dashboard/');
+      await persistentHopefulPage.getByRole('button', { name: 'Logout' }).click();
+      await expect(persistentHopefulPage).toHaveURL('/');
+      await expect(
+        persistentHopefulPage.getByRole('heading', {
+          name: 'Draft Ranking Automated Processor',
+        }),
+      ).toBeVisible();
+    });
+
+    test('Unlucky can log out and lands on home', async ({ unluckyFullRankerPage }) => {
+      await unluckyFullRankerPage.goto('/dashboard/');
+      await unluckyFullRankerPage.getByRole('button', { name: 'Logout' }).click();
+      await expect(unluckyFullRankerPage).toHaveURL('/');
+      await expect(
+        unluckyFullRankerPage.getByRole('heading', {
+          name: 'Draft Ranking Automated Processor',
+        }),
+      ).toBeVisible();
+    });
+
+    test('NoRank can log out and lands on home', async ({ noRankStudentPage }) => {
+      await noRankStudentPage.goto('/dashboard/');
+      await noRankStudentPage.getByRole('button', { name: 'Logout' }).click();
+      await expect(noRankStudentPage).toHaveURL('/');
+      await expect(
+        noRankStudentPage.getByRole('heading', {
+          name: 'Draft Ranking Automated Processor',
+        }),
+      ).toBeVisible();
+    });
+
+    test('Idle can log out and lands on home', async ({ idleBystanderPage }) => {
+      await idleBystanderPage.goto('/dashboard/');
+      await idleBystanderPage.getByRole('button', { name: 'Logout' }).click();
+      await expect(idleBystanderPage).toHaveURL('/');
+      await expect(
+        idleBystanderPage.getByRole('heading', {
+          name: 'Draft Ranking Automated Processor',
+        }),
+      ).toBeVisible();
+    });
+
+    test('Late can log out and lands on home', async ({ lateRegistrantPage }) => {
+      await lateRegistrantPage.goto('/dashboard/');
+      await lateRegistrantPage.getByRole('button', { name: 'Logout' }).click();
+      await expect(lateRegistrantPage).toHaveURL('/');
+      await expect(
+        lateRegistrantPage.getByRole('heading', {
+          name: 'Draft Ranking Automated Processor',
+        }),
+      ).toBeVisible();
+    });
+
+    test('PartialToDrafted can log out and lands on home', async ({ partialToDraftedPage }) => {
+      await partialToDraftedPage.goto('/dashboard/');
+      await partialToDraftedPage.getByRole('button', { name: 'Logout' }).click();
+      await expect(partialToDraftedPage).toHaveURL('/');
+      await expect(
+        partialToDraftedPage.getByRole('heading', {
+          name: 'Draft Ranking Automated Processor',
+        }),
+      ).toBeVisible();
+    });
+
+    test('PartialToLottery can log out and lands on home', async ({ partialToLotteryPage }) => {
+      await partialToLotteryPage.goto('/dashboard/');
+      await partialToLotteryPage.getByRole('button', { name: 'Logout' }).click();
+      await expect(partialToLotteryPage).toHaveURL('/');
+      await expect(
+        partialToLotteryPage.getByRole('heading', {
+          name: 'Draft Ranking Automated Processor',
+        }),
+      ).toBeVisible();
     });
   });
 });
