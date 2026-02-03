@@ -10,56 +10,57 @@ import {
   eq,
   getTableColumns,
   gte,
+  inArray,
   isNotNull,
   isNull,
   lt,
   or,
   sql,
 } from 'drizzle-orm';
-import { array, object, parse, string } from 'valibot';
+import { array, date, number, object, parse, string, union } from 'valibot';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { enumerate, izip } from 'itertools';
 
-import * as DRIZZLE from '$lib/server/env/drizzle';
-import * as POSTGRES from '$lib/server/env/postgres';
 import { assertOptional, assertSingle } from '$lib/server/assert';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 import * as schema from './schema';
 
-const StringArray = array(string());
-const LabRemark = array(object({ lab: string(), remark: string() }));
-
-function init(url: string) {
-  return drizzle(url, { schema, logger: DRIZZLE.DEBUG });
-}
-
-export const db = init(POSTGRES.URL);
+// Ensures that no database details are leaked at runtime.
+export type { schema };
 
 const SERVICE_NAME = 'database';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function coerceDate(value: any) {
-  return new Date(value);
-}
+const StringArray = array(string());
+const LabRemark = array(object({ lab: string(), remark: string() }));
 
-// Ensures that no database details are leaked at runtime.
-export type { schema };
+/** Creates a new database instance. */
+export function init(url: string) {
+  return drizzle(url, { schema });
+}
 
 export type DrizzleDatabase = ReturnType<typeof init>;
 export type DrizzleTransaction = Parameters<Parameters<DrizzleDatabase['transaction']>[0]>[0];
 export type DbConnection = DrizzleDatabase | DrizzleTransaction;
 
-export async function insertDummySession(db: DbConnection, dummyUserId: string) {
+const ParsableDate = union([string(), number(), date()]);
+function coerceDate(value: unknown) {
+  return new Date(parse(ParsableDate, value));
+}
+
+function coerceNullableDate(value: unknown) {
+  return value === null ? null : coerceDate(value);
+}
+
+export async function insertDummySession(db: DbConnection, userId: string) {
   return await tracer.asyncSpan('insert-dummy-session', async span => {
-    span.setAttribute('database.user.id', dummyUserId);
-    // create a session that expires after an hour
+    span.setAttribute('database.user.id', userId);
     const { sessionId } = await db
       .insert(schema.session)
-      .values({ userId: dummyUserId, expiration: sql`now() + interval '1 hour'` })
+      .values({ userId, expiration: sql`now() + interval '1 hour'` })
       .returning({ sessionId: schema.session.id })
       .then(assertSingle);
     return sessionId;
@@ -171,6 +172,13 @@ export async function updateProfileByUserId(
   });
 }
 
+export async function deleteOpenIdUser(db: DbConnection, userId: string) {
+  return await tracer.asyncSpan('delete-user', async span => {
+    span.setAttribute('database.user.id', userId);
+    await db.delete(schema.user).where(eq(schema.user.id, userId));
+  });
+}
+
 export async function insertNewLab(db: DbConnection, id: string, name: string) {
   return await tracer.asyncSpan('insert-new-lab', async span => {
     span.setAttribute('database.lab.id', id);
@@ -178,6 +186,14 @@ export async function insertNewLab(db: DbConnection, id: string, name: string) {
   });
 }
 
+export async function insertNewLabs(db: DbConnection, labs: Pick<schema.Lab, 'id' | 'name'>[]) {
+  return await tracer.asyncSpan('insert-new-labs', async span => {
+    span.setAttribute('database.lab.count', labs.length);
+    await db.insert(schema.lab).values(labs);
+  });
+}
+
+/** Soft-deletion of the lab (a.k.a. "archiving"). */
 export async function deleteLab(db: DbConnection, id: string) {
   return await tracer.asyncSpan('delete-lab', async span => {
     span.setAttribute('database.lab.id', id);
@@ -185,6 +201,14 @@ export async function deleteLab(db: DbConnection, id: string) {
       .update(schema.lab)
       .set({ deletedAt: new Date(), quota: 0 })
       .where(eq(schema.lab.id, id));
+  });
+}
+
+/** Hard-deletion of the lab (a.k.a. "dropping"). */
+export async function dropLabs(db: DbConnection, labIds: string[]) {
+  return await tracer.asyncSpan('drop-labs', async span => {
+    span.setAttribute('database.lab.count', labIds.length);
+    await db.delete(schema.lab).where(inArray(schema.lab.id, labIds));
   });
 }
 
@@ -410,7 +434,7 @@ export async function getDrafts(db: DbConnection) {
           .mapWith(coerceDate)
           .as('_start'),
         activePeriodEnd: sql`upper(${schema.draft.activePeriod})`
-          .mapWith(value => (value === null ? null : coerceDate(value)))
+          .mapWith(coerceNullableDate)
           .as('_end'),
       })
       .from(schema.draft)
@@ -427,7 +451,7 @@ export async function getDraftById(db: DbConnection, id: bigint) {
         maxRounds: schema.draft.maxRounds,
         registrationClosesAt: schema.draft.registrationClosesAt,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
-        activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceDate),
+        activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
       })
       .from(schema.draft)
       .where(eq(schema.draft.id, id))
@@ -444,7 +468,7 @@ export async function getActiveDraft(db: DbConnection) {
         maxRounds: schema.draft.maxRounds,
         registrationClosesAt: schema.draft.registrationClosesAt,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
-        activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceDate),
+        activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
       })
       .from(schema.draft)
       .where(sql`upper_inf(${schema.draft.activePeriod})`)
@@ -487,7 +511,7 @@ export async function getStudentsInDraftTaggedByLab(db: DbConnection, draftId: b
         familyName: schema.user.familyName,
         avatarUrl: schema.user.avatarUrl,
         studentNumber: schema.user.studentNumber,
-        labs: sql`array_agg(${schema.studentRankLab.labId} ORDER BY ${schema.studentRankLab.index})`
+        labs: sql`coalesce(array_agg(${schema.studentRankLab.labId} order by ${schema.studentRankLab.index}) filter (where ${isNotNull(schema.studentRankLab.labId)}), '{}')`
           .mapWith(value => parse(StringArray, value))
           .as('labs'),
         labId: schema.facultyChoiceUser.labId,
@@ -501,7 +525,7 @@ export async function getStudentsInDraftTaggedByLab(db: DbConnection, draftId: b
           eq(schema.studentRank.userId, schema.facultyChoiceUser.studentUserId),
         ),
       )
-      .innerJoin(
+      .leftJoin(
         schema.studentRankLab,
         and(
           eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
@@ -841,7 +865,7 @@ export async function getStudentRankings(db: DbConnection, draftId: bigint, user
         remark: schema.studentRankLab.remark,
       })
       .from(schema.studentRank)
-      .innerJoin(
+      .leftJoin(
         schema.studentRankLab,
         and(
           eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
@@ -855,12 +879,12 @@ export async function getStudentRankings(db: DbConnection, draftId: bigint, user
       .select({
         createdAt: sub.createdAt,
         labRemarks:
-          sql`jsonb_agg(jsonb_build_object('lab', ${schema.activeLabView.name}, 'remark', ${sub.remark}) ORDER BY ${sub.index})`.mapWith(
+          sql`coalesce(jsonb_agg(jsonb_build_object('lab', ${schema.activeLabView.name}, 'remark', ${sub.remark}) ORDER BY ${sub.index}) filter (where ${isNotNull(sub.labId)}), '[]'::jsonb)`.mapWith(
             vals => parse(LabRemark, vals),
           ),
       })
       .from(sub)
-      .innerJoin(schema.activeLabView, eq(sub.labId, schema.activeLabView.id))
+      .leftJoin(schema.activeLabView, eq(sub.labId, schema.activeLabView.id))
       .groupBy(sub.createdAt)
       .then(assertOptional);
   });
@@ -1230,20 +1254,20 @@ export async function getStudentRanksExport(db: DbConnection, draftId: bigint) {
         givenName: schema.user.givenName,
         familyName: schema.user.familyName,
         labRanks:
-          sql`array_agg(${schema.activeLabView.id} ORDER BY ${schema.studentRankLab.index})`.mapWith(
+          sql`coalesce(array_agg(${schema.activeLabView.id} ORDER BY ${schema.studentRankLab.index}) filter (where ${isNotNull(schema.activeLabView.id)}), '{}')`.mapWith(
             vals => parse(StringArray, vals),
           ),
       })
       .from(schema.studentRank)
       .innerJoin(schema.user, eq(schema.studentRank.userId, schema.user.id))
-      .innerJoin(
+      .leftJoin(
         schema.studentRankLab,
         and(
           eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
           eq(schema.studentRank.userId, schema.studentRankLab.userId),
         ),
       )
-      .innerJoin(schema.activeLabView, eq(schema.studentRankLab.labId, schema.activeLabView.id))
+      .leftJoin(schema.activeLabView, eq(schema.studentRankLab.labId, schema.activeLabView.id))
       .where(eq(schema.studentRank.draftId, draftId))
       .groupBy(schema.user.id, schema.studentRank.createdAt)
       .orderBy(schema.user.familyName);
@@ -1351,4 +1375,34 @@ export async function updateUserRole(
     if (labId !== null) span.setAttribute('database.lab.id', labId);
     await db.update(schema.user).set({ isAdmin, labId }).where(eq(schema.user.id, userId));
   });
+}
+
+interface TestUserOptions {
+  email: string;
+  googleUserId: string;
+  givenName: string;
+  familyName: string;
+  avatarUrl?: string;
+  isAdmin: boolean;
+  labId: string | null;
+}
+
+/**
+ * Test helper: Creates a user with explicit Google user ID, isAdmin, and labId.
+ * Combines upsertOpenIdUser + updateUserRole for test fixtures.
+ */
+export async function upsertTestUser(
+  db: DbConnection,
+  { email, googleUserId, givenName, familyName, avatarUrl = '', isAdmin, labId }: TestUserOptions,
+) {
+  const { id: userId } = await upsertOpenIdUser(
+    db,
+    email,
+    googleUserId,
+    givenName,
+    familyName,
+    avatarUrl,
+  );
+  await updateUserRole(db, userId, isAdmin, labId);
+  return { id: userId, isAdmin, labId };
 }

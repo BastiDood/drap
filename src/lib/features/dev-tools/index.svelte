@@ -5,7 +5,7 @@
 
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
   import { Button } from '$lib/components/ui/button';
-  import type { schema } from '$lib/server/database';
+  import type { schema } from '$lib/server/database/drizzle';
 
   import DummyUserDialog from './dummy-user-creator/dialog.svelte';
   import RoleSwitcherDialog from './role-switcher/dialog.svelte';

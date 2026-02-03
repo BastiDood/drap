@@ -1,10 +1,12 @@
 <script lang="ts">
+  import { toast } from 'svelte-sonner';
+
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
-  import type { schema } from '$lib/server/database';
+  import type { schema } from '$lib/server/database/drizzle';
 
   interface Props {
     user: Pick<schema.User, 'givenName' | 'familyName'>;
@@ -25,7 +27,17 @@
     return async ({ update, result }) => {
       submitter.disabled = false;
       await update();
-      if (typeof onSuccess !== 'undefined' && result.type === 'success') onSuccess();
+      switch (result.type) {
+        case 'success':
+          toast.success('Profile updated.');
+          onSuccess?.();
+          break;
+        case 'failure':
+          toast.error('Failed to update profile.');
+          break;
+        default:
+          break;
+      }
     };
   }}
 >

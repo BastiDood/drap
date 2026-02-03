@@ -7,23 +7,45 @@ on:
     branches: main
 
 jobs:
-  build:
+  e2e:
     runs-on: ubuntu-latest
+
     env:
-      ORIGIN: http://drap.dcs.upd.edu.ph
-      PUBLIC_ORIGIN: http://drap.dcs.upd.edu.ph
+      # Backing service credentials (CI-only values)
+      POSTGRES_PASSWORD: password
+
+      # SvelteKit app env vars
+      POSTGRES_URL: postgresql://postgres:password@localhost:5432/postgres
+      ORIGIN: http://localhost:4173
+      PUBLIC_ORIGIN: http://localhost:4173
+      GOOGLE_OAUTH_CLIENT_ID: stub
+      GOOGLE_OAUTH_CLIENT_SECRET: stub
+
+      # Inngest
+      INNGEST_BASE_URL: http://localhost:8288
+      INNGEST_EVENT_KEY: 0123456789abcdef0123456789abcdef
+      INNGEST_SIGNING_KEY: abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789ab
+
+      # OpenTelemetry
+      OTEL_SDK_DISABLED: true
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
       - name: Install pnpm
         uses: pnpm/action-setup@v4
+
       - name: Install Node.js
         uses: actions/setup-node@v6
         with:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
+          node-version: 24.13.0
+
       - name: Install Dependencies
         run: pnpm install
+
       - name: Cache ESLint and Prettier Runs
         uses: actions/cache@v5
         with:
@@ -33,9 +55,35 @@ jobs:
           key: ${{ runner.os }}-lint-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.js', '.prettierrc.json') }}
           restore-keys: |
             ${{ runner.os }}-lint-
+
       - name: Check Formatters
         run: pnpm fmt
+
       - name: Run All Lints in Parallel
         run: pnpm lint
+
       - name: Build Website
         run: pnpm build
+
+      - name: Start Docker Services
+        run: pnpm docker:ci
+
+      - name: Run Database Migrations
+        run: pnpm db:migrate
+
+      - name: Install Playwright Browser
+        run: pnpm install:playwright
+
+      - name: Run End-to-End Tests
+        run: pnpm test:playwright
+
+      - name: Upload Playwright Report
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: playwright
+          path: output/
+
+      - name: Stop Docker Services
+        if: always()
+        run: pnpm docker:down

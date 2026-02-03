@@ -4,7 +4,8 @@ export async function handle({ event, resolve }) {
   const sid = cookies.get('sid');
   if (typeof sid !== 'undefined') {
     // Dynamic import required to avoid invocation during pre-rendering.
-    const { db, getUserFromValidSession } = await import('$lib/server/database');
+    const { db } = await import('$lib/server/database');
+    const { getUserFromValidSession } = await import('$lib/server/database/drizzle');
     const { logger, tracer } = await import('./hooks.telemetry');
 
     await tracer.asyncSpan('http-request', async span => {
@@ -62,6 +63,6 @@ export async function handle({ event, resolve }) {
 export async function handleError({ error }) {
   const { Logger } = await import('$lib/server/telemetry/logger');
   const logger = Logger.byName('hooks.handleError');
-  if (error instanceof Error) logger.error(error.message, error);
-  else logger.error(String(error));
+  if (error instanceof Error) logger.fatal(error.message, error);
+  else logger.fatal(String(error));
 }

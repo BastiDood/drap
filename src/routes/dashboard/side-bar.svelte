@@ -20,7 +20,7 @@
   import { enhance } from '$app/forms';
   import { page } from '$app/state';
   import { resolve } from '$app/paths';
-  import type { schema } from '$lib/server/database';
+  import type { schema } from '$lib/server/database/drizzle';
   import { TooltipProvider } from '$lib/components/ui/tooltip';
 
   interface Props {

@@ -2,15 +2,15 @@ import * as v from 'valibot';
 import { decode } from 'decode-formdata';
 import { error, redirect } from '@sveltejs/kit';
 
+import { db } from '$lib/server/database';
+import { dev } from '$app/environment';
 import {
-  db,
   insertDummySession,
   updateProfileByUserId,
   updateSessionUserId,
   updateUserRole,
   upsertOpenIdUser,
-} from '$lib/server/database';
-import { dev } from '$app/environment';
+} from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
@@ -60,7 +60,7 @@ const DevDummyFormData = v.object({
 export const actions = {
   async profile({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to update profile without session');
+      logger.fatal('attempt to update profile without session');
       error(401);
     }
 
@@ -94,7 +94,7 @@ export const actions = {
         async role({ locals: { session }, request }) {
           return await tracer.asyncSpan('action.role', async span => {
             if (typeof session?.user === 'undefined') {
-              logger.warn('attempt to change role without session');
+              logger.fatal('attempt to change role without session');
               error(401);
             }
 

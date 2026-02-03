@@ -1,6 +1,7 @@
 import { error, redirect } from '@sveltejs/kit';
 
-import { db, deleteValidSession } from '$lib/server/database';
+import { db } from '$lib/server/database';
+import { deleteValidSession } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
@@ -11,7 +12,7 @@ const tracer = Tracer.byName(SERVICE_NAME);
 export const actions = {
   async logout({ locals: { session }, cookies }) {
     if (typeof session === 'undefined') {
-      logger.error('attempt to logout without session');
+      logger.fatal('attempt to logout without session');
       error(401);
     }
 

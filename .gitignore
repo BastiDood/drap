@@ -2,6 +2,7 @@
 /.prettiercache
 /.svelte-kit
 /build
+/output
 
 .claude/**.local.json
 .env

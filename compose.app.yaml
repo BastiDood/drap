@@ -1,0 +1,36 @@
+# App service layered on top of the production internal services.
+# Extends: compose.prod.yaml
+
+services:
+  inngest:
+    command:
+      - inngest
+      - start
+      - '--dir'
+      - '/app'
+      - '--sdk-url'
+      - 'http://app:3000/api/inngest'
+    extra_hosts: []
+
+  app:
+    build: .
+    ports:
+      - 3000:3000
+    environment:
+      ORIGIN: ${ORIGIN:?required}
+      PUBLIC_ORIGIN: ${ORIGIN:?required}
+      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD:?required}@postgres:5432/postgres
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:?required}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:?required}
+      INNGEST_EVENT_KEY: ${INNGEST_EVENT_KEY:?required}
+      INNGEST_SIGNING_KEY: ${INNGEST_SIGNING_KEY:?required}
+      INNGEST_BASE_URL: http://inngest:8288
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://o2:5080/api/default
+      OTEL_EXPORTER_OTLP_HEADERS: ${OTEL_EXPORTER_OTLP_HEADERS:?required}
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+    depends_on:
+      postgres:
+        condition: service_healthy
+      inngest:
+        condition: service_healthy
+    restart: always

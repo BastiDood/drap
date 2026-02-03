@@ -53,7 +53,6 @@ At runtime, the server requires the following environment variables to be presen
 | ---------------------------- | ---------------------------------------------------------------- |
 | `ORIGIN`                     | Server origin (e.g., `https://drap.dcs.upd.edu.ph`).             |
 | `PUBLIC_ORIGIN`              | Public origin for meta tags (same as `ORIGIN`).                  |
-| `DRIZZLE_DEBUG`              | Enables verbose logs from Drizzle queries.                       |
 | `GOOGLE_OAUTH_CLIENT_ID`     | OAuth 2.0 credentials retrieved from the [Google Cloud Console]. |
 | `GOOGLE_OAUTH_CLIENT_SECRET` | OAuth 2.0 credentials retrieved from the [Google Cloud Console]. |
 | `INNGEST_EVENT_KEY`          | Inngest event signing key. Required only in production.          |
@@ -119,7 +118,8 @@ pnpm lint
 ### Running the Development Server
 
 ```bash
-# Run all database and queue services in the background.
+# Run dev services (compose.yaml + compose.dev.yaml):
+# postgres, inngest (dev mode), o2
 pnpm docker:dev
 
 # Run the Vite dev server for SvelteKit.
@@ -140,8 +140,21 @@ node --env-file=.env build/index.js
 ```
 
 ```bash
-# Or, just use Docker for everything.
+# Or, spin up CI services (compose.yaml + compose.ci.yaml):
+# postgres, inngest (prod mode), redis
+pnpm docker:ci
+```
+
+```bash
+# Or, spin up production internal services (+ compose.prod.yaml):
+# CI services + o2, drizzle-gateway
 pnpm docker:prod
+```
+
+```bash
+# Or, spin up full production environment (+ compose.app.yaml):
+# prod services + app
+pnpm docker:app
 ```
 
 ### Local Telemetry with OpenObserve
@@ -163,6 +176,28 @@ To enable full observability in local development:
 
 > [!WARNING]
 > The `OTEL_*` environment variables **must** be set in the shell before running `pnpm dev` or `pnpm preview`. They cannot be loaded from `.env` files because the OpenTelemetry instrumentation initializes before SvelteKit processes environment files.
+
+### Running the End-to-End Tests with Playwright
+
+The Playwright configuration runs `pnpm preview` on port `4173` in production mode by default. A single end-to-end test features a single full draft round.
+
+```bash
+# Ensure development-only services are spun up. We _can_ use the production setup,
+# but that requires a little bit more configuration. This is done in CI, but not
+# necessary for local development.
+pnpm docker:dev
+
+# Apply local production mode overrides here.
+# INNGEST_DEV=http://localhost:8288
+# POSTGRES_URL=
+# PUBLIC_ORIGIN=http://localhost:4173
+set -a
+source .env.production
+
+# Playwright runs `pnpm preview`, so we need to build first.
+pnpm build
+pnpm test:playwright
+```
 
 ## Acknowledgements
 

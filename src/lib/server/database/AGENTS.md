@@ -2,6 +2,17 @@
 
 Drizzle ORM with PostgreSQL.
 
+## Module Structure
+
+The database module is split into two files for environment isolation:
+
+| File         | Purpose                                                   |
+| ------------ | --------------------------------------------------------- |
+| `drizzle.ts` | Environment-agnostic helpers, types, and `init()` factory |
+| `index.js`   | Injects `POSTGRES_URL` and exports the singleton `db`     |
+
+This separation keeps `drizzle.ts` testable and reusable without environment coupling.
+
 ## Schema Overview
 
 Three schemas organized by domain:
@@ -100,16 +111,13 @@ export type DbConnection = DrizzleDatabase | DrizzleTransaction;
 
 Functions accept `DbConnection` to work with both direct db calls and transactions.
 
-## Singleton Export
+## Import Pattern
+
+The `db` singleton comes from `index.js`; helpers and types come from `drizzle.ts`:
 
 ```ts
-export const db = init(POSTGRES.URL);
-```
-
-Import and use directly in routes:
-
-```ts
-import { db, getUserById } from '$lib/server/database';
+import { db } from '$lib/server/database';
+import { getUserById, type schema } from '$lib/server/database/drizzle';
 
 const user = await getUserById(db, userId);
 ```

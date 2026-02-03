@@ -2,6 +2,7 @@
 build
 drizzle
 node_modules
+output
 scratchpad
 
 # Environment Variables

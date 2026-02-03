@@ -34,11 +34,13 @@
 </script>
 
 <script lang="ts">
+  import { toast } from 'svelte-sonner';
+
   import * as Avatar from '$lib/components/ui/avatar';
   import { Button } from '$lib/components/ui/button';
   import { cn } from '$lib/components/ui/utils';
   import { enhance } from '$app/forms';
-  import type { schema } from '$lib/server/database';
+  import type { schema } from '$lib/server/database/drizzle';
 
   interface User extends Pick<
     schema.User,
@@ -69,9 +71,19 @@
         class="flex gap-1"
         use:enhance={() => {
           disabled = true;
-          return async ({ update }) => {
+          return async ({ update, result }) => {
             disabled = false;
             await update();
+            switch (result.type) {
+              case 'success':
+                toast.success('Email sender settings updated.');
+                break;
+              case 'failure':
+                toast.error('Failed to update email sender settings.');
+                break;
+              default:
+                break;
+            }
           };
         }}
       >

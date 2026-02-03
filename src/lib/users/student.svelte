@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as Avatar from '$lib/components/ui/avatar';
   import { Badge } from '$lib/components/ui/badge';
-  import type { schema } from '$lib/server/database';
+  import type { schema } from '$lib/server/database/drizzle';
 
   interface User extends Pick<
     schema.User,

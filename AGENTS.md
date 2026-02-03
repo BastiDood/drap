@@ -15,8 +15,10 @@ pnpm lint:svelte          # Svelte checker only
 pnpm db:generate          # Generate Drizzle migrations
 pnpm db:migrate           # Apply migrations
 pnpm db:studio            # Drizzle Studio UI
-pnpm docker:dev           # Start dev services: postgres, inngest dev, o2
-pnpm docker:prod          # Start prod services: + redis, app, drizzle-gateway
+pnpm docker:dev           # Dev services: postgres, inngest dev, o2
+pnpm docker:ci            # CI services: postgres, inngest prod, redis
+pnpm docker:prod          # Prod internal services: CI + o2, drizzle-gateway
+pnpm docker:app           # Full prod environment: prod + app
 ```
 
 # Tech Stack
@@ -66,14 +68,26 @@ Key directories:
 | `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth credentials                      |
 | `INNGEST_EVENT_KEY`          | Inngest event signing key                     |
 | `INNGEST_SIGNING_KEY`        | Inngest webhook signing key                   |
-| `DRIZZLE_DEBUG`              | Enable verbose Drizzle logs                   |
 | `DRAP_ENABLE_EMAILS`         | Enable real email sending (default: disabled) |
 
 Environment loading organized in `src/lib/server/env/` with hierarchical modules (e.g., `inngest/api.js`, `inngest/signing.js`).
 
-# Development Notes
+# End-to-End Testing
 
-- **Dummy user:** `?/dummy` form action creates test user (dev only)
+Run Playwright tests with environment variables loaded:
+
+```bash
+# Ensure development-only services are spun up.
+pnpm docker:dev
+
+# Apply local production mode overrides here.
+set -a
+source .env.production
+
+# Playwright runs `pnpm preview`, so we need to build first.
+pnpm build
+pnpm test:playwright
+```
 
 # Pre-commit Workflow
 
@@ -89,3 +103,4 @@ If errors appear:
 
 - **Avoid `npx`:** Strongly prefer using package scripts defined in `package.json` (e.g., `pnpm lint`, `pnpm db:generate`) over invoking tools directly via `npx`. The project scripts are pre-configured with correct options and ensure consistent behavior.
 - **Assume CWD is correct:** When running commands, do not use directory-changing flags like `git -C` or `pnpm --filter`. The current working directory is already the project root.
+- **Learn from mistakes:** if the user corrects you on conventions or workflows, update your memory files accordingly so you will not make the same mistake ever again
