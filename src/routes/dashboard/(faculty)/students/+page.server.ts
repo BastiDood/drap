@@ -22,7 +22,7 @@ import { Tracer } from '$lib/server/telemetry/tracer';
 
 const RankingsFormData = v.object({
   draft: v.pipe(v.string(), v.minLength(1)),
-  students: v.array(v.pipe(v.string(), v.minLength(1))),
+  students: v.array(v.string()),
 });
 
 const SERVICE_NAME = 'routes.dashboard.draft.students';
