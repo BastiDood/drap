@@ -76,6 +76,13 @@ jobs:
       - name: Run End-to-End Tests
         run: pnpm test:playwright
 
+      - name: Upload Playwright Report
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: playwright
+          path: output/
+
       - name: Stop Docker Services
         if: always()
         run: docker compose --file compose.yaml --file compose.prod.yaml down
