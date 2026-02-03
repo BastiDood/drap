@@ -91,4 +91,4 @@ jobs:
 
       - name: Stop Docker Services
         if: always()
-        run: docker compose --file compose.yaml --file compose.prod.yaml down
+        run: pnpm docker:down

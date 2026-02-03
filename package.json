@@ -20,6 +20,7 @@
     "docker:dev": "docker compose up --detach --wait",
     "docker:prod": "docker compose --file compose.yaml --file compose.prod.yaml up --detach --wait --build",
     "docker:app": "docker compose --file compose.yaml --file compose.prod.yaml --file compose.app.yaml up --detach --wait --build",
+    "docker:down": "docker compose down --remove-orphans",
     "install:playwright": "playwright install chromium",
     "test:playwright": "playwright test",
     "ui": "shadcn-svelte add --yes"
