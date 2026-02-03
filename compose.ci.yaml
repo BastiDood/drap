@@ -1,5 +1,4 @@
-# CI overrides for minimal production services (postgres, inngest, redis).
-# docker compose --file compose.yaml --file compose.ci.yaml up --detach --wait --build
+# CI overrides (`inngest` prod mode, `redis` prod mode, required env vars, health checks).
 
 services:
   postgres:

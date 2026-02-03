@@ -1,5 +1,5 @@
-# App service layered on top of the productionized internal services.
-# docker compose --file compose.yaml --file compose.prod.yaml --file compose.app.yaml up --detach --wait --build
+# App service layered on top of the production internal services.
+# Extends: compose.prod.yaml
 
 services:
   inngest:

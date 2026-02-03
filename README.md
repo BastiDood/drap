@@ -118,7 +118,7 @@ pnpm lint
 ### Running the Development Server
 
 ```bash
-# Run all database and queue services via the base config (compose.yaml):
+# Run dev services (compose.yaml + compose.dev.yaml):
 # postgres, inngest (dev mode), o2
 pnpm docker:dev
 
@@ -140,21 +140,20 @@ node --env-file=.env build/index.js
 ```
 
 ```bash
-# Or, spin up minimal CI services (compose.yaml + compose.ci.yaml):
+# Or, spin up CI services (compose.yaml + compose.ci.yaml):
 # postgres, inngest (prod mode), redis
 pnpm docker:ci
 ```
 
 ```bash
-# Or, spin up the internal production services without the app
-# (compose.yaml + compose.ci.yaml + compose.prod.yaml):
-# postgres, inngest, redis, o2, drizzle-gateway
+# Or, spin up production internal services (+ compose.prod.yaml):
+# CI services + o2, drizzle-gateway
 pnpm docker:prod
 ```
 
 ```bash
-# Or, spin up the full production environment (internal services + app)
-# (compose.yaml + compose.ci.yaml + compose.prod.yaml + compose.app.yaml):
+# Or, spin up full production environment (+ compose.app.yaml):
+# prod services + app
 pnpm docker:app
 ```
 

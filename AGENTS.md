@@ -15,10 +15,10 @@ pnpm lint:svelte          # Svelte checker only
 pnpm db:generate          # Generate Drizzle migrations
 pnpm db:migrate           # Apply migrations
 pnpm db:studio            # Drizzle Studio UI
-pnpm docker:dev           # Start dev services (base config): postgres, inngest dev, o2
-pnpm docker:ci            # Start CI services: postgres, inngest prod, redis
-pnpm docker:prod          # Start prod internal services: + o2, drizzle-gateway
-pnpm docker:app           # Full prod environment: internal services + app
+pnpm docker:dev           # Dev services: postgres, inngest dev, o2
+pnpm docker:ci            # CI services: postgres, inngest prod, redis
+pnpm docker:prod          # Prod internal services: CI + o2, drizzle-gateway
+pnpm docker:app           # Full prod environment: prod + app
 ```
 
 # Tech Stack

@@ -1,11 +1,18 @@
 # Production overrides for observability and Drizzle services (o2, drizzle-gateway).
-# docker compose --file compose.yaml --file compose.ci.yaml --file compose.prod.yaml up --detach --wait --build
+# Extends: compose.ci.yaml
 
 services:
   o2:
+    image: public.ecr.aws/zinclabs/openobserve:v0.50.3
     environment:
+      ZO_DATA_DIR: /data
       ZO_ROOT_USER_EMAIL: ${ZO_ROOT_USER_EMAIL:?required}
       ZO_ROOT_USER_PASSWORD: ${ZO_ROOT_USER_PASSWORD:?required}
+    ports:
+      - 5080:5080
+    volumes:
+      - open-observe:/data
+    restart: always
 
   drizzle-gateway:
     image: ghcr.io/drizzle-team/gateway:1.2.0
@@ -20,4 +27,5 @@ services:
     restart: always
 
 volumes:
+  open-observe:
   drizzle-gateway:
