@@ -115,6 +115,37 @@ pnpm lint:svelte
 pnpm lint
 ```
 
+### Docker Compose Files
+
+The project uses layered Docker Compose files for different environments.
+
+```mermaid
+flowchart TD
+    subgraph Base
+        base[compose.yaml]
+    end
+
+    subgraph Development
+        dev[compose.dev.yaml]
+    end
+
+    subgraph Production
+        ci[compose.ci.yaml]
+        prod[compose.prod.yaml]
+        app[compose.app.yaml]
+    end
+
+    base --> dev
+    base --> ci --> prod --> app
+```
+
+| Command            | Files                               | Services                                      |
+| ------------------ | ----------------------------------- | --------------------------------------------- |
+| `pnpm docker:dev`  | `compose.yaml` + `compose.dev.yaml` | `postgres` (dev), `inngest` (dev), `o2` (dev) |
+| `pnpm docker:ci`   | `compose.yaml` + `compose.ci.yaml`  | `postgres` (prod), `inngest` (prod), `redis`  |
+| `pnpm docker:prod` | ... + `compose.prod.yaml`           | CI services + `o2` (prod), `drizzle-gateway`  |
+| `pnpm docker:app`  | ... + `compose.app.yaml`            | prod services + app                           |
+
 ### Running the Development Server
 
 ```bash
