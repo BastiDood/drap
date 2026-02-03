@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { toast } from 'svelte-sonner';
+
   import * as Card from '$lib/components/ui/card';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
@@ -30,9 +32,19 @@
         assert(submitter !== null);
         assert(submitter instanceof HTMLButtonElement);
         submitter.disabled = true;
-        return async ({ update }) => {
+        return async ({ update, result }) => {
           submitter.disabled = false;
           await update();
+          switch (result.type) {
+            case 'success':
+              toast.success('Profile completed.');
+              break;
+            case 'failure':
+              toast.error('Failed to complete profile.');
+              break;
+            default:
+              break;
+          }
         };
       }}
     >

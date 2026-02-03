@@ -1,5 +1,6 @@
 <script lang="ts">
   import { SvelteSet } from 'svelte/reactivity';
+  import { toast } from 'svelte-sonner';
 
   import * as Avatar from '$lib/components/ui/avatar';
   import { assert } from '$lib/assert';
@@ -37,9 +38,19 @@
     assert(submitter !== null);
     assert(submitter instanceof HTMLButtonElement);
     submitter.disabled = true;
-    return async ({ update }) => {
+    return async ({ update, result }) => {
       submitter.disabled = false;
       await update();
+      switch (result.type) {
+        case 'success':
+          toast.success('Selections submitted.');
+          break;
+        case 'failure':
+          toast.error('Failed to submit selections.');
+          break;
+        default:
+          break;
+      }
     };
   }}
   class="flex flex-col gap-4 inert:opacity-20"
