@@ -99,6 +99,8 @@ If errors appear:
 2. Analyze remaining errors with `pnpm lint:eslint` and `pnpm lint:svelte` individually.
 3. Only run the linter that reports errors.
 
+**After building features, write and run the new end-to-end tests with `pnpm test:playwright` as the final verification step.** See the [End-to-End Testing](#end-to-end-testing) section above for setup instructions.
+
 # Additional Guidelines
 
 - **Avoid `npx`:** Strongly prefer using package scripts defined in `package.json` (e.g., `pnpm lint`, `pnpm db:generate`) over invoking tools directly via `npx`. The project scripts are pre-configured with correct options and ensure consistent behavior.
