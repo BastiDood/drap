@@ -29,6 +29,11 @@ jobs:
       INNGEST_EVENT_KEY: 0123456789abcdef0123456789abcdef
       INNGEST_SIGNING_KEY: abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789ab
 
+      # OpenTelemetry
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://localhost:5080/api/default
+      OTEL_EXPORTER_OTLP_HEADERS: Authorization=Basic%20YWRtaW5AZXhhbXBsZS5jb206cGFzc3dvcmQ%3D
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
