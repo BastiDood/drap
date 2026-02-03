@@ -54,56 +54,83 @@ test.describe('Draft Lifecycle', () => {
     test('Eager completes profile with student number', async ({ eagerDrafteePage }) => {
       await expect(eagerDrafteePage.getByText('Complete Your Profile')).toBeVisible();
       await eagerDrafteePage.getByLabel('Student Number').fill('202012345');
+      const responsePromise = eagerDrafteePage.waitForResponse('/dashboard/?/profile');
       await eagerDrafteePage.getByRole('button', { name: 'Complete Profile' }).click();
-      await expect(eagerDrafteePage.getByText('Profile completed.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('Patient completes profile', async ({ patientCandidatePage }) => {
       await patientCandidatePage.getByLabel('Student Number').fill('202012346');
+      const responsePromise = patientCandidatePage.waitForResponse('/dashboard/?/profile');
       await patientCandidatePage.getByRole('button', { name: 'Complete Profile' }).click();
-      await expect(patientCandidatePage.getByText('Profile completed.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('Persistent completes profile', async ({ persistentHopefulPage }) => {
       await persistentHopefulPage.getByLabel('Student Number').fill('202012347');
+      const responsePromise = persistentHopefulPage.waitForResponse('/dashboard/?/profile');
       await persistentHopefulPage.getByRole('button', { name: 'Complete Profile' }).click();
-      await expect(persistentHopefulPage.getByText('Profile completed.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('Unlucky completes profile', async ({ unluckyFullRankerPage }) => {
       await unluckyFullRankerPage.getByLabel('Student Number').fill('202012348');
+      const responsePromise = unluckyFullRankerPage.waitForResponse('/dashboard/?/profile');
       await unluckyFullRankerPage.getByRole('button', { name: 'Complete Profile' }).click();
-      await expect(unluckyFullRankerPage.getByText('Profile completed.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('PartialToDrafted completes profile', async ({ partialToDraftedPage }) => {
       await partialToDraftedPage.getByLabel('Student Number').fill('202012349');
+      const responsePromise = partialToDraftedPage.waitForResponse('/dashboard/?/profile');
       await partialToDraftedPage.getByRole('button', { name: 'Complete Profile' }).click();
-      await expect(partialToDraftedPage.getByText('Profile completed.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('PartialToLottery completes profile', async ({ partialToLotteryPage }) => {
       await partialToLotteryPage.getByLabel('Student Number').fill('202012350');
+      const responsePromise = partialToLotteryPage.waitForResponse('/dashboard/?/profile');
       await partialToLotteryPage.getByRole('button', { name: 'Complete Profile' }).click();
-      await expect(partialToLotteryPage.getByText('Profile completed.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('NoRank completes profile', async ({ noRankStudentPage }) => {
       await noRankStudentPage.getByLabel('Student Number').fill('202012351');
+      const responsePromise = noRankStudentPage.waitForResponse('/dashboard/?/profile');
       await noRankStudentPage.getByRole('button', { name: 'Complete Profile' }).click();
-      await expect(noRankStudentPage.getByText('Profile completed.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('Idle completes profile', async ({ idleBystanderPage }) => {
       await idleBystanderPage.getByLabel('Student Number').fill('202012353');
+      const responsePromise = idleBystanderPage.waitForResponse('/dashboard/?/profile');
       await idleBystanderPage.getByRole('button', { name: 'Complete Profile' }).click();
-      await expect(idleBystanderPage.getByText('Profile completed.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('Late completes profile', async ({ lateRegistrantPage }) => {
       await lateRegistrantPage.getByLabel('Student Number').fill('202012352');
+      const responsePromise = lateRegistrantPage.waitForResponse('/dashboard/?/profile');
       await lateRegistrantPage.getByRole('button', { name: 'Complete Profile' }).click();
-      await expect(lateRegistrantPage.getByText('Profile completed.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
   });
 
@@ -129,8 +156,11 @@ test.describe('Draft Lifecycle', () => {
       await adminPage.locator('input[name="scl"]').fill('2');
       await adminPage.locator('input[name="cvmil"]').fill('1');
       await adminPage.locator('input[name="acl"]').fill('1');
+      const responsePromise = adminPage.waitForResponse('/dashboard/labs/?/quota');
       await adminPage.getByRole('button', { name: 'Update Quotas' }).click();
-      await expect(adminPage.getByText('Successfully updated the lab quotas')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
   });
 
@@ -150,9 +180,12 @@ test.describe('Draft Lifecycle', () => {
       await dialog.locator('input#rounds').fill('3');
 
       adminPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = adminPage.waitForResponse('/dashboard/drafts/?/init');
       await dialog.getByRole('button', { name: 'Create Draft' }).click();
 
-      await expect(adminPage.getByText('Draft created.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
       await expect(dialog).not.toBeVisible();
       await expect(adminPage.getByText(/#\d+/u)).toBeVisible();
       await expect(adminPage.getByText('Registration')).toBeVisible();
@@ -205,8 +238,11 @@ test.describe('Draft Lifecycle', () => {
         .click();
 
       eagerDrafteePage.on('dialog', dialog => dialog.accept());
+      const responsePromise = eagerDrafteePage.waitForResponse('/dashboard/student/?/submit');
       await eagerDrafteePage.getByRole('button', { name: 'Submit Lab Preferences' }).click();
-      await expect(eagerDrafteePage.getByText('Uploaded your lab preferences')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('Patient submits full preferences (CSL > NDSL > SCL)', async ({
@@ -226,8 +262,11 @@ test.describe('Draft Lifecycle', () => {
         .click();
 
       patientCandidatePage.on('dialog', dialog => dialog.accept());
+      const responsePromise = patientCandidatePage.waitForResponse('/dashboard/student/?/submit');
       await patientCandidatePage.getByRole('button', { name: 'Submit Lab Preferences' }).click();
-      await expect(patientCandidatePage.getByText('Uploaded your lab preferences')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('Persistent submits full preferences (SCL > CVMIL > ACL)', async ({
@@ -247,8 +286,11 @@ test.describe('Draft Lifecycle', () => {
         .click();
 
       persistentHopefulPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = persistentHopefulPage.waitForResponse('/dashboard/student/?/submit');
       await persistentHopefulPage.getByRole('button', { name: 'Submit Lab Preferences' }).click();
-      await expect(persistentHopefulPage.getByText('Uploaded your lab preferences')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('Unlucky submits full preferences (ACL > CVMIL > NDSL)', async ({
@@ -268,8 +310,11 @@ test.describe('Draft Lifecycle', () => {
         .click();
 
       unluckyFullRankerPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = unluckyFullRankerPage.waitForResponse('/dashboard/student/?/submit');
       await unluckyFullRankerPage.getByRole('button', { name: 'Submit Lab Preferences' }).click();
-      await expect(unluckyFullRankerPage.getByText('Uploaded your lab preferences')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('PartialToDrafted submits 2 preferences (NDSL > CSL)', async ({
@@ -286,8 +331,11 @@ test.describe('Draft Lifecycle', () => {
         .click();
 
       partialToDraftedPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = partialToDraftedPage.waitForResponse('/dashboard/student/?/submit');
       await partialToDraftedPage.getByRole('button', { name: 'Submit Lab Preferences' }).click();
-      await expect(partialToDraftedPage.getByText('Uploaded your lab preferences')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('PartialToLottery submits 1 preference (ACL)', async ({ partialToLotteryPage }) => {
@@ -299,8 +347,11 @@ test.describe('Draft Lifecycle', () => {
         .click();
 
       partialToLotteryPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = partialToLotteryPage.waitForResponse('/dashboard/student/?/submit');
       await partialToLotteryPage.getByRole('button', { name: 'Submit Lab Preferences' }).click();
-      await expect(partialToLotteryPage.getByText('Uploaded your lab preferences')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('NoRank submits 0 prefs (goes directly to lottery)', async ({ noRankStudentPage }) => {
@@ -308,8 +359,11 @@ test.describe('Draft Lifecycle', () => {
       await expect(noRankStudentPage.getByText('Select preferred labs')).toBeVisible();
 
       noRankStudentPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = noRankStudentPage.waitForResponse('/dashboard/student/?/submit');
       await noRankStudentPage.getByRole('button', { name: 'Submit Lab Preferences' }).click();
-      await expect(noRankStudentPage.getByText('Uploaded your lab preferences')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('NoRank sees submitted state after reload', async ({ noRankStudentPage }) => {
@@ -323,8 +377,11 @@ test.describe('Draft Lifecycle', () => {
       await expect(idleBystanderPage.getByText('Select preferred labs')).toBeVisible();
 
       idleBystanderPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = idleBystanderPage.waitForResponse('/dashboard/student/?/submit');
       await idleBystanderPage.getByRole('button', { name: 'Submit Lab Preferences' }).click();
-      await expect(idleBystanderPage.getByText('Uploaded your lab preferences')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
   });
 
@@ -344,8 +401,11 @@ test.describe('Draft Lifecycle', () => {
     test('starts the draft', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
       adminPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = adminPage.waitForResponse('/dashboard/drafts/1/?/start');
       await adminPage.getByRole('button', { name: 'Start Draft' }).click();
-      await expect(adminPage.getByText('Draft started.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
       await expect(adminPage.getByText(/Round 1/u)).toBeVisible();
     });
   });
@@ -384,24 +444,33 @@ test.describe('Draft Lifecycle', () => {
       await ndslHeadPage.goto('/dashboard/students/');
       await ndslHeadPage.getByRole('button', { name: /Eager/u }).click();
       ndslHeadPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
       await ndslHeadPage.getByRole('button', { name: 'Submit' }).click();
-      await expect(ndslHeadPage.getByText('Selections submitted.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('CSL selects Patient', async ({ cslHeadPage }) => {
       await cslHeadPage.goto('/dashboard/students/');
       await cslHeadPage.getByRole('button', { name: /Patient/u }).click();
       cslHeadPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = cslHeadPage.waitForResponse('/dashboard/students/?/rankings');
       await cslHeadPage.getByRole('button', { name: 'Submit' }).click();
-      await expect(cslHeadPage.getByText('Selections submitted.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('SCL skips (sees Persistent)', async ({ sclHeadPage }) => {
       await sclHeadPage.goto('/dashboard/students/');
       await expect(sclHeadPage.getByRole('button', { name: /Persistent/u })).toBeVisible();
       sclHeadPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = sclHeadPage.waitForResponse('/dashboard/students/?/rankings');
       await sclHeadPage.getByRole('button', { name: 'Submit' }).click();
-      await expect(sclHeadPage.getByText('Selections submitted.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     // CVMIL: no 1st-choice students → auto-acknowledged
@@ -410,8 +479,11 @@ test.describe('Draft Lifecycle', () => {
       await aclHeadPage.goto('/dashboard/students/');
       await expect(aclHeadPage.getByRole('button', { name: /Unlucky/u })).toBeVisible();
       aclHeadPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = aclHeadPage.waitForResponse('/dashboard/students/?/rankings');
       await aclHeadPage.getByRole('button', { name: 'Submit' }).click();
-      await expect(aclHeadPage.getByText('Selections submitted.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
   });
 
@@ -431,8 +503,11 @@ test.describe('Draft Lifecycle', () => {
       await expect(cslHeadPage.getByRole('button', { name: /Partial/u })).toBeVisible();
       await cslHeadPage.getByRole('button', { name: /Partial/u }).click();
       cslHeadPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = cslHeadPage.waitForResponse('/dashboard/students/?/rankings');
       await cslHeadPage.getByRole('button', { name: 'Submit' }).click();
-      await expect(cslHeadPage.getByText('Selections submitted.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('CVMIL skips (sees Persistent, Unlucky)', async ({ cvmilHeadPage }) => {
@@ -440,8 +515,11 @@ test.describe('Draft Lifecycle', () => {
       await expect(cvmilHeadPage.getByRole('button', { name: /Persistent/u })).toBeVisible();
       await expect(cvmilHeadPage.getByRole('button', { name: /Unlucky/u })).toBeVisible();
       cvmilHeadPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = cvmilHeadPage.waitForResponse('/dashboard/students/?/rankings');
       await cvmilHeadPage.getByRole('button', { name: 'Submit' }).click();
-      await expect(cvmilHeadPage.getByText('Selections submitted.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
   });
 
@@ -462,16 +540,22 @@ test.describe('Draft Lifecycle', () => {
       await expect(ndslHeadPage.getByRole('button', { name: /Unlucky/u })).toBeVisible();
       await ndslHeadPage.getByRole('button', { name: /Unlucky/u }).click();
       ndslHeadPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
       await ndslHeadPage.getByRole('button', { name: 'Submit' }).click();
-      await expect(ndslHeadPage.getByText('Selections submitted.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('ACL skips (sees Persistent)', async ({ aclHeadPage }) => {
       await aclHeadPage.goto('/dashboard/students/');
       await expect(aclHeadPage.getByRole('button', { name: /Persistent/u })).toBeVisible();
       aclHeadPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = aclHeadPage.waitForResponse('/dashboard/students/?/rankings');
       await aclHeadPage.getByRole('button', { name: 'Submit' }).click();
-      await expect(aclHeadPage.getByText('Selections submitted.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
   });
 
@@ -489,8 +573,7 @@ test.describe('Draft Lifecycle', () => {
       const items = page.locator('section ol.border-s li[class*="preset-tonal-"]');
       const texts = await items.allTextContents();
 
-      /** @param {RegExp} regex */
-      function idx(regex) {
+      function idx(regex: RegExp) {
         return texts.findIndex(t => regex.test(t));
       }
 
@@ -545,13 +628,13 @@ test.describe('Draft Lifecycle', () => {
       adminPage.on('dialog', dialog => dialog.accept());
 
       await expect(adminPage.getByRole('button', { name: 'Conclude Draft' })).toBeVisible();
+      const responsePromise = adminPage.waitForResponse('/dashboard/drafts/1/?/conclude');
       await adminPage.getByRole('button', { name: 'Conclude Draft' }).click();
 
-      await expect(
-        adminPage.getByText(
-          'The total of all lab quota does not match the number of eligible students in the lottery.',
-        ),
-      ).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('failure');
+      expect(responseData.status).toBe(403);
 
       // Page stays on lottery — button re-enables
       await expect(adminPage.getByRole('button', { name: 'Conclude Draft' })).toBeEnabled();
@@ -569,8 +652,11 @@ test.describe('Draft Lifecycle', () => {
       await selects.first().selectOption({ index: 1 });
 
       adminPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = adminPage.waitForResponse('/dashboard/drafts/1/?/intervene');
       await adminPage.getByRole('button', { name: 'Apply Interventions' }).click();
-      await expect(adminPage.getByText('Successfully applied the interventions')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
 
     test('eligible count drops to 3', async ({ adminPage }) => {
@@ -587,8 +673,11 @@ test.describe('Draft Lifecycle', () => {
       await adminPage.locator('input[name="scl"]').fill('1');
       await adminPage.locator('input[name="cvmil"]').fill('1');
       await adminPage.locator('input[name="acl"]').fill('1');
+      const responsePromise = adminPage.waitForResponse('/dashboard/labs/?/quota');
       await adminPage.getByRole('button', { name: 'Update Quotas' }).click();
-      await expect(adminPage.getByText('Successfully updated the lab quotas')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
   });
 
@@ -598,9 +687,12 @@ test.describe('Draft Lifecycle', () => {
       adminPage.on('dialog', dialog => dialog.accept());
 
       await expect(adminPage.getByRole('button', { name: 'Conclude Draft' })).toBeVisible();
+      const responsePromise = adminPage.waitForResponse('/dashboard/drafts/1/?/conclude');
       await adminPage.getByRole('button', { name: 'Conclude Draft' }).click();
 
-      await expect(adminPage.getByText('Draft concluded.')).toBeVisible();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
     });
   });
 
@@ -622,8 +714,7 @@ test.describe('Draft Lifecycle', () => {
       const items = page.locator('section ol.border-s li[class*="preset-tonal-"]');
       const texts = await items.allTextContents();
 
-      /** @param {RegExp} regex */
-      function idx(regex) {
+      function idx(regex: RegExp) {
         return texts.findIndex(t => regex.test(t));
       }
 
