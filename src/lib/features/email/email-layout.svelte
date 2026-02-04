@@ -13,7 +13,7 @@
 
   let { preview, children }: Props = $props();
 
-  const logoUrl = `${ORIGIN}/drap-logo.svg`;
+  const logoUrl = `${ORIGIN}/drap-logo.png`;
 </script>
 
 <Html>
