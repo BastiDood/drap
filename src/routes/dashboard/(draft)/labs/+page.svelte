@@ -1,8 +1,7 @@
 <script lang="ts">
-  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
   import { format } from 'date-fns';
 
-  import * as Alert from '$lib/components/ui/alert';
+  import Callout from '$lib/components/callout.svelte';
   import { LabTable } from '$lib/features/labs';
 
   const { data } = $props();
@@ -13,14 +12,11 @@
   {@const { id: draftId, activePeriodStart, currRound, maxRounds } = draft}
   {@const startDate = format(activePeriodStart, 'PPP')}
   {@const startTime = format(activePeriodStart, 'pp')}
-  <Alert.Root variant="warning" class="mb-4">
-    <TriangleAlertIcon />
-    <Alert.Description>
-      <strong>Draft #{draftId}</strong> started last <strong>{startDate}</strong> at
-      <strong>{startTime}</strong> and is now in Round <strong>{currRound}</strong> of
-      <strong>{maxRounds}</strong>. Lab quotas are read-only while a draft is in progress.
-    </Alert.Description>
-  </Alert.Root>
+  <Callout variant="warning" class="mb-4">
+    <strong>Draft #{draftId}</strong> started last <strong>{startDate}</strong> at
+    <strong>{startTime}</strong> and is now in Round <strong>{currRound}</strong> of
+    <strong>{maxRounds}</strong>. Lab quotas are read-only while a draft is in progress.
+  </Callout>
   <LabTable {labs} hasActiveDraft />
 {:else}
   <LabTable {labs} hasActiveDraft={false} />

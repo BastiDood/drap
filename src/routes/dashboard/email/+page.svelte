@@ -1,9 +1,8 @@
 <script lang="ts">
-  import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
   import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
-  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
 
-  import * as Alert from '$lib/components/ui/alert';
+  import Callout from '$lib/components/callout.svelte';
+  import Link from '$lib/components/link.svelte';
   import { Button } from '$lib/components/ui/button';
 
   import DesignateForm from './designate-form.svelte';
@@ -52,32 +51,23 @@
       Lastly, an administrator may press the <strong>"Remove"</strong> to revoke their consent.
     </p>
     <div class="not-prose space-y-4">
-      <Alert.Root variant="warning">
-        <TriangleAlertIcon />
-        <Alert.Description>
-          Note that consent is user-specific. Nevertheless, <em>any</em> draft administrator may
-          promote, demote, and remove <em>any</em> of the candidate senders.
-        </Alert.Description>
-      </Alert.Root>
-      <Alert.Root variant="warning">
-        <TriangleAlertIcon />
-        <Alert.Description>
-          Google sets <a
-            target="_blank"
-            href="https://support.google.com/a/answer/166852#limits"
-            class="text-primary underline-offset-4 hover:underline">limits</a
-          > on the number of automated emails that can be sent within a rolling 24-hour period. As such,
-          some email notifications may not timely arrive.
-        </Alert.Description>
-      </Alert.Root>
+      <Callout variant="warning">
+        Note that consent is user-specific. Nevertheless, <em>any</em> draft administrator may
+        promote, demote, and remove <em>any</em> of the candidate senders.
+      </Callout>
+      <Callout variant="warning">
+        Google sets <Link
+          target="_blank"
+          rel="external"
+          href="https://support.google.com/a/answer/166852#limits">limits</Link
+        > on the number of automated emails that can be sent within a rolling 24-hour period. As such,
+        some email notifications may not timely arrive.
+      </Callout>
     </div>
   </div>
   {#if senders.length > 0}
     <DesignateForm {senders} />
   {:else}
-    <Alert.Root variant="destructive">
-      <CircleAlertIcon />
-      <Alert.Description>There are no candidate senders yet.</Alert.Description>
-    </Alert.Root>
+    <Callout variant="destructive">There are no candidate senders yet.</Callout>
   {/if}
 </div>
