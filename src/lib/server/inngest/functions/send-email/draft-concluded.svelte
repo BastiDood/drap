@@ -2,7 +2,6 @@
   import { Button, Heading, Section, Text } from 'better-svelte-email';
 
   import { ORIGIN } from '$lib/env';
-  import { resolve } from '$app/paths';
 
   import EmailLayout from './email-layout.svelte';
 
@@ -24,7 +23,7 @@
       <Section class="mx-auto max-w-md">
         <Text class="text-sm">See the new roster of researchers through the lab module.</Text>
         <Button
-          href="{ORIGIN}{resolve('/dashboard')}"
+          href="{ORIGIN}/dashboard/"
           target="_blank"
           pX={24}
           pY={12}

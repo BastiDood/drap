@@ -2,7 +2,6 @@
   import { Button, Heading, Section, Text } from 'better-svelte-email';
 
   import { ORIGIN } from '$lib/env';
-  import { resolve } from '$app/paths';
 
   import EmailLayout from './email-layout.svelte';
 
@@ -51,7 +50,7 @@
             Kindly check the students module to see the list of students who have chosen your lab.
           </Text>
           <Button
-            href="{ORIGIN}{resolve('/dashboard')}"
+            href="{ORIGIN}/dashboard/"
             target="_blank"
             pX={24}
             pY={12}
