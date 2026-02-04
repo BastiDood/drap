@@ -1,5 +1,6 @@
 <script lang="ts">
   import * as Avatar from '$lib/components/ui/avatar';
+  import * as NativeSelect from '$lib/components/ui/native-select';
 
   import type { Lab, Student } from '$lib/features/drafts/types';
 
@@ -24,10 +25,10 @@
     <span class="text-xs opacity-50">{studentNumber}</span>
   {/if}
   <span class="text-xs opacity-50">{email}</span>
-  <select name={id} class="border-input bg-background w-full rounded-md border px-2 py-1 text-xs">
-    <option value="" selected>[Undrafted]</option>
+  <NativeSelect.Root name={id}>
+    <NativeSelect.Option value="" selected>[Undrafted]</NativeSelect.Option>
     {#each labs as { id, name } (id)}
-      <option value={id}>{name}</option>
+      <NativeSelect.Option value={id}>{name}</NativeSelect.Option>
     {/each}
-  </select>
+  </NativeSelect.Root>
 </span>
