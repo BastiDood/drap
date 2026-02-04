@@ -1,5 +1,6 @@
 <script lang="ts">
   import BugIcon from '@lucide/svelte/icons/bug';
+  import SendIcon from '@lucide/svelte/icons/send';
   import UserCogIcon from '@lucide/svelte/icons/user-cog';
   import UserPlusIcon from '@lucide/svelte/icons/user-plus';
 
@@ -8,6 +9,7 @@
   import type { schema } from '$lib/server/database/drizzle';
 
   import DummyUserDialog from './dummy-user-creator/dialog.svelte';
+  import EmailDispatcherDialog from './email-dispatcher/dialog.svelte';
   import RoleSwitcherDialog from './role-switcher/dialog.svelte';
 
   interface Props {
@@ -17,6 +19,7 @@
   const { user }: Props = $props();
 
   let dummyUserDialogOpen = $state(false);
+  let emailDialogOpen = $state(false);
   let roleDialogOpen = $state(false);
 </script>
 
@@ -43,8 +46,13 @@
         <UserCogIcon class="size-4 text-current" />
         <span>Change Role</span>
       </DropdownMenu.Item>
+      <DropdownMenu.Item onclick={() => (emailDialogOpen = true)}>
+        <SendIcon class="size-4 text-current" />
+        <span>Dispatch Email</span>
+      </DropdownMenu.Item>
     </DropdownMenu.Content>
   </DropdownMenu.Root>
 </div>
 <DummyUserDialog bind:open={dummyUserDialogOpen} />
+<EmailDispatcherDialog bind:open={emailDialogOpen} />
 <RoleSwitcherDialog {user} bind:open={roleDialogOpen} />

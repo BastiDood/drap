@@ -1,20 +1,12 @@
 <script>
-  import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
-
-  import * as Alert from '$lib/components/ui/alert';
+  import Callout from '$lib/components/callout.svelte';
   import { page } from '$app/state';
 
   const { status, error } = $derived(page);
 </script>
 
 {#if error !== null}
-  <Alert.Root variant="destructive">
-    <CircleAlertIcon />
-    <Alert.Description><strong>{status}:</strong> {error.message}</Alert.Description>
-  </Alert.Root>
+  <Callout variant="destructive"><strong>{status}:</strong> {error.message}</Callout>
 {:else}
-  <Alert.Root variant="destructive">
-    <CircleAlertIcon />
-    <Alert.Description><strong>{status}</strong></Alert.Description>
-  </Alert.Root>
+  <Callout variant="destructive"><strong>{status}</strong></Callout>
 {/if}

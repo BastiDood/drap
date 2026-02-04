@@ -33,6 +33,7 @@
     "@opentelemetry/instrumentation-pg": "^0.63.0",
     "@opentelemetry/sdk-node": "^0.211.0",
     "@sveltejs/kit": "^2.50.2",
+    "better-svelte-email": "^1.4.0",
     "bits-ui": "^2.15.5",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",

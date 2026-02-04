@@ -248,6 +248,17 @@ export async function getLabById(db: DbConnection, labId: string) {
   });
 }
 
+export async function getUserNameByEmail(db: DbConnection, email: string) {
+  return await tracer.asyncSpan('get-user-name-by-email', async span => {
+    span.setAttribute('database.user.email', email);
+    return await db
+      .select({ givenName: schema.user.givenName, familyName: schema.user.familyName })
+      .from(schema.user)
+      .where(eq(schema.user.email, email))
+      .then(assertSingle);
+  });
+}
+
 export async function isValidTotalLabQuota(db: DbConnection) {
   return await tracer.asyncSpan('is-valid-total-lab-quota', async () => {
     const { result } = await db

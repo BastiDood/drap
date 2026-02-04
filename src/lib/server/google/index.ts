@@ -1,3 +1,5 @@
+import assert from 'node:assert/strict';
+
 import HttpRawRequest from 'http-raw-request';
 import { Component, Multipart } from 'multipart-ts';
 import type { MIMEMessage } from 'mimetext/node';
@@ -127,11 +129,14 @@ export class GoogleOAuthClient {
         }),
       );
 
+      const contentType = multipart.headers.get('Content-Type');
+      assert(contentType !== null, 'missing content type when sending multipart request');
+
       const response = await fetch('https://www.googleapis.com/batch/gmail/v1', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${this.accessToken}`,
-          'Content-Type': multipart.mediaType,
+          'Content-Type': contentType,
         },
         body: multipart.bytes(),
       });

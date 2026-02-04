@@ -5,12 +5,15 @@ import { error, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/database';
 import { dev } from '$app/environment';
 import {
+  getLabById,
+  getUserNameByEmail,
   insertDummySession,
   updateProfileByUserId,
   updateSessionUserId,
   updateUserRole,
   upsertOpenIdUser,
 } from '$lib/server/database/drizzle';
+import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
@@ -56,6 +59,39 @@ const DevDummyFormData = v.object({
   givenName: v.pipe(v.string(), v.minLength(1)),
   familyName: v.pipe(v.string(), v.minLength(1)),
 });
+
+const SendEmailFormData = v.variant('event', [
+  v.object({
+    event: v.literal('draft/round.started'),
+    draftId: v.number(),
+    round: v.optional(v.nullable(v.number()), null),
+    recipientEmail: v.string(),
+  }),
+  v.object({
+    event: v.literal('draft/round.submitted'),
+    draftId: v.number(),
+    round: v.number(),
+    labId: v.string(),
+    recipientEmail: v.string(),
+  }),
+  v.object({
+    event: v.literal('draft/lottery.intervened'),
+    draftId: v.number(),
+    labId: v.string(),
+    studentEmail: v.string(),
+    recipientEmail: v.string(),
+  }),
+  v.object({
+    event: v.literal('draft/draft.concluded'),
+    draftId: v.number(),
+    recipientEmail: v.string(),
+  }),
+  v.object({
+    event: v.literal('draft/user.assigned'),
+    labId: v.string(),
+    userEmail: v.string(),
+  }),
+]);
 
 export const actions = {
   async profile({ locals: { session }, request }) {
@@ -154,6 +190,101 @@ export const actions = {
             }
 
             redirect(303, '/dashboard/');
+          });
+        },
+        async email({ locals: { session }, request }) {
+          return await tracer.asyncSpan('action.email', async () => {
+            if (typeof session?.user === 'undefined') {
+              logger.fatal('attempt to dispatch email without session');
+              error(401);
+            }
+
+            const data = await request.formData();
+            const decoded = decode(data, { numbers: ['draftId', 'round'] });
+            const parsed = v.parse(SendEmailFormData, decoded);
+
+            logger.info('dispatching email event');
+            switch (parsed.event) {
+              case 'draft/round.started': {
+                const { givenName, familyName } = await getUserNameByEmail(
+                  db,
+                  parsed.recipientEmail,
+                );
+                await inngest.send({
+                  name: parsed.event,
+                  data: {
+                    draftId: parsed.draftId,
+                    round: parsed.round,
+                    recipientEmail: parsed.recipientEmail,
+                    recipientName: `${givenName} ${familyName}`,
+                  },
+                });
+                break;
+              }
+              case 'draft/round.submitted': {
+                const lab = await getLabById(db, parsed.labId);
+                await inngest.send({
+                  name: parsed.event,
+                  data: {
+                    draftId: parsed.draftId,
+                    round: parsed.round,
+                    labId: parsed.labId,
+                    labName: lab.name,
+                    recipientEmail: parsed.recipientEmail,
+                  },
+                });
+                break;
+              }
+              case 'draft/lottery.intervened': {
+                const lab = await getLabById(db, parsed.labId);
+                const student = await getUserNameByEmail(db, parsed.studentEmail);
+                const recipient = await getUserNameByEmail(db, parsed.recipientEmail);
+                await inngest.send({
+                  name: parsed.event,
+                  data: {
+                    draftId: parsed.draftId,
+                    labId: parsed.labId,
+                    labName: lab.name,
+                    studentName: `${student.givenName} ${student.familyName}`,
+                    studentEmail: parsed.studentEmail,
+                    recipientEmail: parsed.recipientEmail,
+                    recipientName: `${recipient.givenName} ${recipient.familyName}`,
+                  },
+                });
+                break;
+              }
+              case 'draft/draft.concluded': {
+                const { givenName, familyName } = await getUserNameByEmail(
+                  db,
+                  parsed.recipientEmail,
+                );
+                await inngest.send({
+                  name: parsed.event,
+                  data: {
+                    draftId: parsed.draftId,
+                    recipientEmail: parsed.recipientEmail,
+                    recipientName: `${givenName} ${familyName}`,
+                  },
+                });
+                break;
+              }
+              case 'draft/user.assigned': {
+                const lab = await getLabById(db, parsed.labId);
+                const { givenName, familyName } = await getUserNameByEmail(db, parsed.userEmail);
+                await inngest.send({
+                  name: parsed.event,
+                  data: {
+                    labId: parsed.labId,
+                    labName: lab.name,
+                    userEmail: parsed.userEmail,
+                    userName: `${givenName} ${familyName}`,
+                  },
+                });
+                break;
+              }
+              default:
+                throw new Error('unreachable email event case');
+            }
           });
         },
       }

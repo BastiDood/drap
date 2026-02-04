@@ -10,7 +10,7 @@ export type RoundStartedEvent = v.InferOutput<typeof RoundStartedEvent>;
 
 export const RoundSubmittedEvent = v.object({
   draftId: v.number(),
-  round: v.nullable(v.number()),
+  round: v.number(),
   labId: v.string(),
   labName: v.string(),
   recipientEmail: v.string(),

@@ -1,4 +1,4 @@
-<script lang="ts" context="module">
+<script lang="ts" module>
   import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
   import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
   import XIcon from '@lucide/svelte/icons/x';
@@ -49,15 +49,18 @@
     isActive: boolean;
   }
 
-  // eslint-disable-next-line @typescript-eslint/init-declarations
-  export let senders: User[];
-  let disabled = false;
+  interface Props {
+    senders: User[];
+  }
+
+  const { senders }: Props = $props();
+  let disabled = $state(false);
 </script>
 
 <dl class="space-y-2">
   {#each senders as { id, email, givenName, familyName, avatarUrl, isActive } (email)}
     {@const { action, buttonClass, cardClass, text, icon: Icon } = useSenderControls(isActive)}
-    <div class={cn('flex min-w-max gap-3 rounded-lg p-2', cardClass)}>
+    <div class={cn('flex min-w-max items-center gap-3 rounded-lg p-2', cardClass)}>
       <Avatar.Root class="size-12">
         <Avatar.Image src={avatarUrl} alt="{givenName} {familyName}" />
         <Avatar.Fallback>{givenName[0]}{familyName[0]}</Avatar.Fallback>

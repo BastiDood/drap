@@ -1,5 +1,4 @@
 <script lang="ts">
-  import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
   import type { HTMLSelectAttributes } from 'svelte/elements';
 
   import { cn, type WithElementRef } from '$lib/components/ui/utils';
@@ -31,9 +30,4 @@
   >
     {@render children?.()}
   </select>
-  <ChevronDownIcon
-    class="text-muted-foreground pointer-events-none absolute end-3.5 top-1/2 size-4 -translate-y-1/2 opacity-50 select-none"
-    aria-hidden="true"
-    data-slot="native-select-icon"
-  />
 </div>

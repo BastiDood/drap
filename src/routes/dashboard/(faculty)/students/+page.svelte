@@ -1,9 +1,8 @@
 <script lang="ts">
-  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
   import { SvelteSet } from 'svelte/reactivity';
 
-  import * as Alert from '$lib/components/ui/alert';
   import * as Avatar from '$lib/components/ui/avatar';
+  import Callout from '$lib/components/callout.svelte';
   import { getOrdinalSuffix } from '$lib/ordinal';
 
   import RankingsForm from './rankings-form.svelte';
@@ -23,29 +22,20 @@
 </script>
 
 {#if currRound === null}
-  <Alert.Root variant="warning">
-    <TriangleAlertIcon />
-    <Alert.Description>
-      The draft is now in the lottery stage. Kindly contact the draft administrators on how to
-      proceed.
-    </Alert.Description>
-  </Alert.Root>
+  <Callout variant="warning">
+    The draft is now in the lottery stage. Kindly contact the draft administrators on how to
+    proceed.
+  </Callout>
 {:else if currRound === 0}
-  <Alert.Root variant="warning">
-    <TriangleAlertIcon />
-    <Alert.Description>
-      Students are still registering for this draft. Kindly wait for the draft administrators to
-      officially open the draft.
-    </Alert.Description>
-  </Alert.Root>
+  <Callout variant="warning">
+    Students are still registering for this draft. Kindly wait for the draft administrators to
+    officially open the draft.
+  </Callout>
 {:else if isDone}
-  <Alert.Root variant="warning">
-    <TriangleAlertIcon />
-    <Alert.Description>
-      This lab either has no draft slots remaining or has already submitted their picks for this
-      round. No action is required until the next one.
-    </Alert.Description>
-  </Alert.Root>
+  <Callout variant="warning">
+    This lab either has no draft slots remaining or has already submitted their picks for this
+    round. No action is required until the next one.
+  </Callout>
 {:else if students.length > 0}
   {@const suffix = getOrdinalSuffix(currRound)}
   <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
@@ -71,12 +61,9 @@
     <RankingsForm draft={id} {students} drafteeIds={draftees} disabled={remainingDraftees < 0} />
   </div>
 {:else}
-  <Alert.Root variant="warning">
-    <TriangleAlertIcon />
-    <Alert.Description>
-      No students have selected this lab in this round. No action is required until the next round.
-    </Alert.Description>
-  </Alert.Root>
+  <Callout variant="warning">
+    No students have selected this lab in this round. No action is required until the next round.
+  </Callout>
 {/if}
 {#if researchers.length > 0}
   <h3 class="scroll-m-20 text-2xl font-semibold tracking-tight">
