@@ -21,10 +21,11 @@
         {#if activePeriodEnd !== null}
           <!-- Concluded Draft -->
           {@const end = format(activePeriodEnd, 'PPPpp')}
-          <li
-            class="preset-tonal-muted rounded-lg border-3 px-2 py-3 transition duration-150 hover:brightness-120 dark:hover:brightness-110"
-          >
-            <a href={resolve(`/history/${draftId}/`)} class="flex items-center gap-3 px-2 py-1">
+          <li>
+            <a
+              href={resolve(`/history/${draftId}/`)}
+              class="preset-tonal-muted flex items-center gap-3 rounded-lg border-3 px-4 py-4 transition duration-150 hover:brightness-120 dark:hover:brightness-110"
+            >
               <CheckCircleIcon class="size-8" />
               <span
                 ><strong>Draft #{draftId}</strong> was held from
@@ -35,10 +36,11 @@
           </li>
         {:else if currRound === null}
           <!-- Lottery Stage -->
-          <li
-            class="preset-tonal-accent rounded-lg border-3 px-2 py-3 transition duration-150 hover:brightness-115 dark:hover:brightness-110"
-          >
-            <a href={resolve(`/history/${draftId}/`)} class="flex items-center gap-3 px-2 py-1">
+          <li>
+            <a
+              href={resolve(`/history/${draftId}/`)}
+              class="preset-tonal-accent flex items-center gap-3 rounded-lg border-3 px-4 py-4 transition duration-150 hover:brightness-115 dark:hover:brightness-110"
+            >
               <SparklesIcon class="size-8" />
               <span
                 ><strong>Draft #{draftId}</strong> started on
@@ -49,10 +51,11 @@
           </li>
         {:else if currRound === 0}
           <!-- Registration Stage -->
-          <li
-            class="preset-tonal-secondary rounded-lg border-3 px-2 py-3 transition duration-150 hover:brightness-115 dark:hover:brightness-110"
-          >
-            <a href={resolve(`/history/${draftId}/`)} class="flex items-center gap-3 px-2 py-1">
+          <li>
+            <a
+              href={resolve(`/history/${draftId}/`)}
+              class="preset-tonal-secondary flex items-center gap-3 rounded-lg border-3 px-4 py-4 transition duration-150 hover:brightness-115 dark:hover:brightness-110"
+            >
               <ClockIcon class="size-8" />
               <span
                 ><strong>Draft #{draftId}</strong> started on
@@ -63,10 +66,11 @@
           </li>
         {:else}
           <!-- Regular Draft Process -->
-          <li
-            class="preset-tonal-primary rounded-lg border-3 px-2 py-3 transition duration-150 hover:brightness-120 dark:hover:brightness-110"
-          >
-            <a href={resolve(`/history/${draftId}/`)} class="flex items-center gap-3 px-2 py-1">
+          <li>
+            <a
+              href={resolve(`/history/${draftId}/`)}
+              class="preset-tonal-primary flex items-center gap-3 rounded-lg border-3 px-4 py-4 transition duration-150 hover:brightness-120 dark:hover:brightness-110"
+            >
               <ScaleIcon class="size-8" />
               <span
                 ><strong>Draft #{draftId}</strong> started on

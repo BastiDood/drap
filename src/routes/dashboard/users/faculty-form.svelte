@@ -2,6 +2,7 @@
   import SendIcon from '@lucide/svelte/icons/send';
   import { toast } from 'svelte-sonner';
 
+  import * as NativeSelect from '$lib/components/ui/native-select';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
@@ -44,17 +45,12 @@
 >
   <div class="space-y-2">
     <Label for="lab-select">Laboratory</Label>
-    <select
-      required
-      name="invite"
-      id="lab-select"
-      class="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:outline-none"
-    >
-      <option value="" disabled selected hidden>Send invite to...</option>
+    <NativeSelect.Root required name="invite" id="lab-select">
+      <NativeSelect.Option value="" disabled selected hidden>Send invite to...</NativeSelect.Option>
       {#each labs as { id, name } (id)}
-        <option value={id}>{name}</option>
+        <NativeSelect.Option value={id}>{name}</NativeSelect.Option>
       {/each}
-    </select>
+    </NativeSelect.Root>
   </div>
   <div class="space-y-2">
     <Label for="faculty-email">Email</Label>
