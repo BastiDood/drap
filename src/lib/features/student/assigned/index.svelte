@@ -4,7 +4,7 @@
   import * as Empty from '$lib/components/ui/empty';
   import { Button } from '$lib/components/ui/button';
   import { resolve } from '$app/paths';
-  import type { schema } from '$lib/server/database';
+  import type { schema } from '$lib/server/database/drizzle';
 
   interface Props {
     lab: Pick<schema.Lab, 'name'>;

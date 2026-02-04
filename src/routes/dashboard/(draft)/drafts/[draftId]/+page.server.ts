@@ -9,7 +9,6 @@ import { repeat, roundrobin, zip } from 'itertools';
 import {
   autoAcknowledgeLabsWithoutPreferences,
   concludeDraft,
-  db,
   getDraftById,
   getFacultyAndStaff,
   getFacultyChoiceRecords,
@@ -25,7 +24,8 @@ import {
   isValidTotalLabQuota,
   randomizeRemainingStudents,
   syncResultsToUsers,
-} from '$lib/server/database';
+} from '$lib/server/database/drizzle';
+import { db } from '$lib/server/database';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
@@ -103,13 +103,13 @@ export async function load({ params, locals: { session } }) {
   });
 }
 
-const Email = v.pipe(v.string(), v.email());
-type Email = v.InferOutput<typeof Email>;
+const UserId = v.pipe(v.string(), v.ulid());
+type UserId = v.InferOutput<typeof UserId>;
 
 function* mapRowTuples(data: FormData) {
-  for (const [email, lab] of data.entries()) {
+  for (const [userId, lab] of data.entries()) {
     if (lab instanceof File || lab.length === 0) continue;
-    yield [v.parse(Email, email), lab] as [Email, string];
+    yield [v.parse(UserId, userId), lab] as [UserId, string];
   }
 }
 

@@ -1,4 +1,5 @@
-import { db, getActiveDraft } from '$lib/server/database';
+import { db } from '$lib/server/database';
+import { getActiveDraft } from '$lib/server/database/drizzle';
 
 export async function load() {
   return {

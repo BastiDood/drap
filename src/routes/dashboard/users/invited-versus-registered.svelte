@@ -3,7 +3,7 @@
 
   import Faculty from '$lib/users/faculty.svelte';
   import Invited from '$lib/users/invited.svelte';
-  import type { schema } from '$lib/server/database';
+  import type { schema } from '$lib/server/database/drizzle';
 
   type FacultyPropsUser = ComponentProps<typeof Faculty>['user'];
   interface FacultyUser extends FacultyPropsUser {

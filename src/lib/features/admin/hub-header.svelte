@@ -5,7 +5,7 @@
   import * as Sheet from '$lib/components/ui/sheet';
   import { Badge } from '$lib/components/ui/badge';
   import { Button } from '$lib/components/ui/button';
-  import type { schema } from '$lib/server/database';
+  import type { schema } from '$lib/server/database/drizzle';
 
   import ProfileForm from './profile-form.svelte';
 

@@ -2,12 +2,12 @@ import * as v from 'valibot';
 import { decode } from 'decode-formdata';
 import { error, fail, redirect } from '@sveltejs/kit';
 
+import { db } from '$lib/server/database';
 import {
-  db,
   getFacultyAndStaff,
   getLabRegistry,
   inviteNewFacultyOrStaff,
-} from '$lib/server/database';
+} from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
@@ -31,7 +31,7 @@ export async function load({ locals: { session } }) {
   }
 
   if (!session.user.isAdmin || session.user.googleUserId === null || session.user.labId !== null) {
-    logger.error('insufficient permissions to access users page', void 0, {
+    logger.fatal('insufficient permissions to access users page', void 0, {
       'user.is_admin': session.user.isAdmin,
       'user.google_id': session.user.googleUserId,
       'user.lab_id': session.user.labId,
@@ -62,7 +62,7 @@ export async function load({ locals: { session } }) {
 export const actions = {
   async admin({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to invite user without session');
+      logger.fatal('attempt to invite user without session');
       error(401);
     }
 
@@ -71,7 +71,7 @@ export const actions = {
       session.user.googleUserId === null ||
       session.user.labId !== null
     ) {
-      logger.error('insufficient permissions to invite user', void 0, {
+      logger.fatal('insufficient permissions to invite user', void 0, {
         'user.is_admin': session.user.isAdmin,
         'user.google_id': session.user.googleUserId,
         'user.lab_id': session.user.labId,
@@ -95,7 +95,7 @@ export const actions = {
   },
   async faculty({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to invite faculty without session');
+      logger.fatal('attempt to invite faculty without session');
       error(401);
     }
 
@@ -104,7 +104,7 @@ export const actions = {
       session.user.googleUserId === null ||
       session.user.labId !== null
     ) {
-      logger.error('insufficient permissions to invite faculty', void 0, {
+      logger.fatal('insufficient permissions to invite faculty', void 0, {
         'user.is_admin': session.user.isAdmin,
         'user.google_id': session.user.googleUserId,
         'user.lab_id': session.user.labId,

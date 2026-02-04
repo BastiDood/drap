@@ -2,7 +2,8 @@ import * as v from 'valibot';
 import { decode } from 'decode-formdata';
 import { error, redirect } from '@sveltejs/kit';
 
-import { db, getDrafts, getLabRegistry, hasActiveDraft, initDraft } from '$lib/server/database';
+import { db } from '$lib/server/database';
+import { getDrafts, getLabRegistry, hasActiveDraft, initDraft } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
@@ -18,7 +19,7 @@ export async function load({ locals: { session } }) {
 
   const { user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-    logger.error('insufficient permissions to access drafts page', void 0, {
+    logger.fatal('insufficient permissions to access drafts page', void 0, {
       'user.is_admin': user.isAdmin,
       'user.google_id': user.googleUserId,
       'user.lab_id': user.labId,
@@ -56,13 +57,13 @@ const InitFormData = v.object({
 export const actions = {
   async init({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to init draft without session');
+      logger.fatal('attempt to init draft without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.error('insufficient permissions to init draft', void 0, {
+      logger.fatal('insufficient permissions to init draft', void 0, {
         'user.is_admin': user.isAdmin,
         'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,

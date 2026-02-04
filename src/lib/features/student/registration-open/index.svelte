@@ -2,7 +2,7 @@
   import { format } from 'date-fns';
 
   import Callout from '$lib/components/callout.svelte';
-  import type { schema } from '$lib/server/database';
+  import type { schema } from '$lib/server/database/drizzle';
 
   import LabPreferenceForm from './lab-preference-form.svelte';
 

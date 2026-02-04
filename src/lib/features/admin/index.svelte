@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { schema } from '$lib/server/database';
+  import type { schema } from '$lib/server/database/drizzle';
 
   import HubHeader from './hub-header.svelte';
 

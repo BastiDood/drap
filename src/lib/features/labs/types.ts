@@ -1,4 +1,4 @@
-import type { schema } from '$lib/server/database';
+import type { schema } from '$lib/server/database/drizzle';
 
 export type ActiveLab = Pick<schema.Lab, 'id' | 'name' | 'quota'>;
 

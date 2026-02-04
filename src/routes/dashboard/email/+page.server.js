@@ -2,13 +2,13 @@ import * as v from 'valibot';
 import { decode } from 'decode-formdata';
 import { error, redirect } from '@sveltejs/kit';
 
+import { db } from '$lib/server/database';
 import {
-  db,
   deleteCandidateSender,
   deleteDesignatedSender,
   getCandidateSenders,
   upsertDesignatedSender,
-} from '$lib/server/database';
+} from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
@@ -27,7 +27,7 @@ export async function load({ locals: { session } }) {
   }
 
   if (!session.user.isAdmin || session.user.googleUserId === null || session.user.labId !== null) {
-    logger.error('insufficient permissions to access email page', void 0, {
+    logger.fatal('insufficient permissions to access email page', void 0, {
       'user.is_admin': session.user.isAdmin,
       'user.google_id': session.user.googleUserId,
       'user.lab_id': session.user.labId,
@@ -54,7 +54,7 @@ export async function load({ locals: { session } }) {
 export const actions = {
   async demote({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to demote sender without session');
+      logger.fatal('attempt to demote sender without session');
       error(401);
     }
 
@@ -63,7 +63,7 @@ export const actions = {
       session.user.googleUserId === null ||
       session.user.labId !== null
     ) {
-      logger.error('insufficient permissions to demote sender', void 0, {
+      logger.fatal('insufficient permissions to demote sender', void 0, {
         'user.is_admin': session.user.isAdmin,
         'user.google_id': session.user.googleUserId,
         'user.lab_id': session.user.labId,
@@ -81,13 +81,13 @@ export const actions = {
         return;
       }
 
-      logger.warn('sender does not exist');
+      logger.fatal('sender does not exist');
       error(404, 'Designated sender does not exist.');
     });
   },
   async promote({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to promote sender without session');
+      logger.fatal('attempt to promote sender without session');
       error(401);
     }
 
@@ -96,7 +96,7 @@ export const actions = {
       session.user.googleUserId === null ||
       session.user.labId !== null
     ) {
-      logger.error('insufficient permissions to promote sender', void 0, {
+      logger.fatal('insufficient permissions to promote sender', void 0, {
         'user.is_admin': session.user.isAdmin,
         'user.google_id': session.user.googleUserId,
         'user.lab_id': session.user.labId,
@@ -112,14 +112,14 @@ export const actions = {
       if (await upsertDesignatedSender(db, userId)) {
         logger.info('sender promoted as designated sender');
       } else {
-        logger.warn('sender does not exist', { 'email.sender.user_id': userId });
+        logger.fatal('sender does not exist', void 0, { 'email.sender.user_id': userId });
         error(404);
       }
     });
   },
   async remove({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to remove sender without session');
+      logger.fatal('attempt to remove sender without session');
       error(401);
     }
 
@@ -128,7 +128,7 @@ export const actions = {
       session.user.googleUserId === null ||
       session.user.labId !== null
     ) {
-      logger.error('insufficient permissions to remove sender', void 0, {
+      logger.fatal('insufficient permissions to remove sender', void 0, {
         'user.is_admin': session.user.isAdmin,
         'user.google_id': session.user.googleUserId,
         'user.lab_id': session.user.labId,
@@ -144,7 +144,7 @@ export const actions = {
       if (await deleteCandidateSender(db, userId)) {
         logger.info('sender removed');
       } else {
-        logger.warn('sender does not exist');
+        logger.fatal('sender does not exist');
         error(404, 'Sender email does not exist.');
       }
     });

@@ -7,12 +7,12 @@ import { parse } from 'valibot';
 
 import * as GOOGLE from '$lib/server/env/google';
 import { AuthorizationCode, IdToken, TokenResponse } from '$lib/server/models/oauth';
+import { db } from '$lib/server/database';
 import {
-  db,
   insertValidSession,
   upsertCandidateSender,
   upsertOpenIdUser,
-} from '$lib/server/database';
+} from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 

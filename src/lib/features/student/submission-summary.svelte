@@ -8,7 +8,7 @@
   import { format } from 'date-fns';
 
   import * as Card from '$lib/components/ui/card';
-  import type { schema } from '$lib/server/database';
+  import type { schema } from '$lib/server/database/drizzle';
 
   export interface Lab extends Pick<schema.Lab, 'name'> {
     remark: string;

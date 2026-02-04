@@ -29,11 +29,18 @@
     return async ({ update, result }) => {
       submitter.disabled = false;
       await update();
-      if (result.type === 'failure') {
-        assert(result.status === 403);
-        toast.error(
-          'The total of all lab quota does not match the number of eligible students in the lottery.',
-        );
+      switch (result.type) {
+        case 'success':
+          toast.success('Draft concluded.');
+          break;
+        case 'failure':
+          assert(result.status === 403);
+          toast.error(
+            'The total of all lab quota does not match the number of eligible students in the lottery.',
+          );
+          break;
+        default:
+          break;
       }
     };
   }}

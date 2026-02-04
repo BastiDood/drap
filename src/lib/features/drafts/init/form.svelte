@@ -7,6 +7,7 @@
 <script lang="ts">
   import CalendarDaysIcon from '@lucide/svelte/icons/calendar-days';
   import { format } from 'date-fns';
+  import { toast } from 'svelte-sonner';
 
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
@@ -46,7 +47,17 @@
     return async ({ update, result }) => {
       submitter.disabled = false;
       await update();
-      if (result.type === 'success') onSuccess?.();
+      switch (result.type) {
+        case 'success':
+          toast.success('Draft created.');
+          onSuccess?.();
+          break;
+        case 'failure':
+          toast.error('Failed to create draft.');
+          break;
+        default:
+          break;
+      }
     };
   }}
 >
