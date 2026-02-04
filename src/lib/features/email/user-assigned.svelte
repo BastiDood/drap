@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Button, Heading, Section, Text } from 'better-svelte-email';
 
+  import { ORIGIN } from '$lib/env';
   import EmailLayout from './email-layout.svelte';
 
   interface Props {
@@ -8,10 +9,9 @@
     labName: string;
   }
 
-  const {
-    userName,
-    labName,
-  }: Props = $props();
+  const { userName, labName }: Props = $props();
+
+  const dashboardUrl = `${ORIGIN}/dashboard`;
 </script>
 
 <EmailLayout preview="You have been assigned to {labName}">
@@ -33,11 +33,11 @@
           You can view more details about your lab assignment through your dashboard.
         </Text>
         <Button
-          href="#"
+          href={dashboardUrl}
           target="_blank"
           pX={24}
           pY={12}
-          class="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-medium mb-4"
+          class="bg-primary text-primary-foreground hover:bg-primary/90 mb-4 rounded-md font-medium"
         >
           Go to Dashboard
         </Button>

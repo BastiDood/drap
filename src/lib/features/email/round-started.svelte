@@ -1,6 +1,7 @@
 <script lang="ts">
   import { Button, Heading, Section, Text } from 'better-svelte-email';
 
+  import { ORIGIN } from '$lib/env';
   import EmailLayout from './email-layout.svelte';
 
   interface Props {
@@ -9,6 +10,8 @@
   }
 
   const { draftId, round }: Props = $props();
+
+  const dashboardUrl = `${ORIGIN}/dashboard`;
 </script>
 
 <EmailLayout
@@ -52,11 +55,11 @@
             Kindly check the students module to see the list of students who have chosen your lab.
           </Text>
           <Button
-            href="#"
+            href={dashboardUrl}
             target="_blank"
             pX={24}
             pY={12}
-            class="bg-primary text-primary-foreground hover:bg-primary/90 rounded-md font-medium mb-4"
+            class="bg-primary text-primary-foreground hover:bg-primary/90 mb-4 rounded-md font-medium"
           >
             Go to Dashboard
           </Button>
