@@ -9,11 +9,7 @@
     draftId: number;
   }
 
-  const {
-    labName,
-    round,
-    draftId,
-  }: Props = $props();
+  const { labName, round, draftId }: Props = $props();
 </script>
 
 <EmailLayout preview="{labName} submitted preferences for Round #{round}">
@@ -21,14 +17,14 @@
     <Heading class="text-foreground text-2xl font-bold" as="h1">Preferences Submitted</Heading>
 
     <Text class="text-foreground text-base">
-      The <strong>{labName}</strong> has submitted their student preferences
-      for
+      The <strong>{labName}</strong> has submitted their student preferences for
       <strong>Round #{round}</strong> of Draft
       <strong>#{draftId}</strong>.
     </Text>
 
     <Text class="text-base">
-      The draft will proceed to the next round once all participating labs have submitted their preferences.
+      The draft will proceed to the next round once all participating labs have submitted their
+      preferences.
     </Text>
   </Section>
 </EmailLayout>

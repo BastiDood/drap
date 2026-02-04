@@ -3,6 +3,7 @@
   import type { Snippet } from 'svelte';
 
   import { ORIGIN } from '$lib/env';
+
   import ConfidentialityNotice from './confidentiality-notice.svelte';
 
   interface Props {

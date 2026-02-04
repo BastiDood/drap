@@ -2,6 +2,7 @@
   import { Button, Heading, Section, Text } from 'better-svelte-email';
 
   import { ORIGIN } from '$lib/env';
+
   import EmailLayout from './email-layout.svelte';
 
   interface Props {

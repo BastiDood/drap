@@ -10,12 +10,7 @@
     draftId: number;
   }
 
-  const {
-    studentName,
-    studentEmail,
-    labName,
-    draftId,
-  }: Props = $props();
+  const { studentName, studentEmail, labName, draftId }: Props = $props();
 </script>
 
 <EmailLayout preview="Manual assignment notification - Draft #{draftId}">
