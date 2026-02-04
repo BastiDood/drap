@@ -127,11 +127,7 @@ export const actions = {
         'lab.quota': quota,
       });
 
-      // Track data needed for notifications after transaction
-      let submittedRound: number | null = null;
-      const roundsToNotify: (number | null)[] = [];
-
-      await db.transaction(
+      const { submittedRound, roundsToNotify } = await db.transaction(
         async db => {
           const draft = await insertFacultyChoice(db, draftId, lab, faculty, students);
           if (typeof draft === 'undefined') {
@@ -139,8 +135,11 @@ export const actions = {
             error(404);
           }
 
-          submittedRound = draft.currRound;
+          const submittedRound = draft.currRound;
+          assert(submittedRound !== null, 'cannot submit preferences during lottery phase');
 
+          // Track data needed for notifications after transaction
+          const roundsToNotify: (number | null)[] = [];
           while (true) {
             const count = await getPendingLabCountInDraft(db, draftId);
             if (count > 0) {
@@ -165,6 +164,8 @@ export const actions = {
             await autoAcknowledgeLabsWithoutPreferences(db, draftId);
             logger.debug('labs without preferences auto-acknowledged');
           }
+
+          return { submittedRound, roundsToNotify };
         },
         { isolationLevel: 'repeatable read' },
       );
