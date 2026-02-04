@@ -1,4 +1,4 @@
-<script lang="ts">
+<script>
   import { Section, Text } from 'better-svelte-email';
 </script>
 

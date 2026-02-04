@@ -2,6 +2,7 @@
   import { Button, Heading, Section, Text } from 'better-svelte-email';
 
   import { ORIGIN } from '$lib/env';
+  import { resolve } from '$app/paths';
 
   import EmailLayout from './email-layout.svelte';
 
@@ -11,8 +12,6 @@
   }
 
   const { draftId, round }: Props = $props();
-
-  const dashboardUrl = `${ORIGIN}/dashboard`;
 </script>
 
 <EmailLayout
@@ -28,14 +27,11 @@
         DRAP Round #{round} Started
       {/if}
     </Heading>
-
     <Text class="text-base">Hello,</Text>
-
     {#if round === null}
       <Text class="text-base">
         The <strong>lottery round</strong> for Draft <strong>#{draftId}</strong> has begun.
       </Text>
-
       <Section class="bg-secondary/30 text-secondary-foreground my-6 rounded-lg">
         <Section class="mx-auto max-w-md">
           <Text class="font-semibold">Action Required for Lab Heads</Text>
@@ -48,7 +44,6 @@
       <Text class="text-base">
         <strong>Round #{round}</strong> for Draft <strong>#{draftId}</strong> has begun.
       </Text>
-
       <Section class="bg-secondary/30 text-secondary-foreground my-6 rounded-lg">
         <Section class="mx-auto max-w-md">
           <Text class="font-semibold">Action Required for Lab Heads</Text>
@@ -56,7 +51,7 @@
             Kindly check the students module to see the list of students who have chosen your lab.
           </Text>
           <Button
-            href={dashboardUrl}
+            href="{ORIGIN}{resolve('/dashboard')}"
             target="_blank"
             pX={24}
             pY={12}
