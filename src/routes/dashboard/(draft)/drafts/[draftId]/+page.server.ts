@@ -1,7 +1,6 @@
 import assert from 'node:assert/strict';
 
 import * as v from 'valibot';
-import groupBy from 'just-group-by';
 import { decode } from 'decode-formdata';
 import { error, fail } from '@sveltejs/kit';
 import { repeat, roundrobin, zip } from 'itertools';
@@ -80,7 +79,7 @@ export async function load({ params, locals: { session } }) {
       getLabRegistry(db),
     ]);
 
-    const { available = [], selected = [] } = groupBy(students, ({ labId }) =>
+    const { available = [], selected = [] } = Object.groupBy(students, ({ labId }) =>
       labId === null ? 'available' : 'selected',
     );
 

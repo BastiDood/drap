@@ -44,7 +44,6 @@
     "inngest": "^3.50.0",
     "itertools": "^2.5.0",
     "jose": "^6.1.3",
-    "just-group-by": "^2.2.0",
     "mimetext": "^3.0.28",
     "mode-watcher": "^1.1.0",
     "multipart-ts": "^1.4.1",

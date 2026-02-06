@@ -1,6 +1,4 @@
 <script lang="ts">
-  import groupBy from 'just-group-by';
-
   import * as Card from '$lib/components/ui/card';
 
   import AdminForm from './admin-form.svelte';
@@ -10,7 +8,7 @@
   const { data } = $props();
   const { labs, faculty } = $derived(data);
   const users = $derived(
-    groupBy(faculty, ({ googleUserId, labName }) => {
+    Object.groupBy(faculty, ({ googleUserId, labName }) => {
       const isAdmin = labName === null;
       if (googleUserId === null) return isAdmin ? 'invitedAdmins' : 'invitedHeads';
       return isAdmin ? 'registeredAdmins' : 'registeredHeads';
