@@ -71,3 +71,71 @@ v.number();
 // Date
 v.date();
 ```
+
+## Client-Side: Submitter Disabling
+
+Every `use:enhance` callback must disable the submit button during the form action to prevent double submissions.
+
+### Default: Single submit button
+
+Destructure `submitter` from the enhance callback, assert it is an `HTMLButtonElement`, and toggle `disabled` directly on the DOM element.
+
+```svelte
+<script lang="ts">
+  import { assert } from '$lib/assert';
+  import { enhance } from '$app/forms';
+</script>
+
+<form
+  method="post"
+  action="/?/save"
+  use:enhance={({ submitter }) => {
+    assert(submitter !== null);
+    assert(submitter instanceof HTMLButtonElement);
+    submitter.disabled = true;
+    return async ({ update, result }) => {
+      submitter.disabled = false;
+      await update();
+      switch (result.type) {
+        case 'success':
+          toast.success('Saved.');
+          break;
+        case 'failure':
+          toast.error('Failed to save.');
+          break;
+        default:
+          break;
+      }
+    };
+  }}
+>
+  <Button type="submit">Save</Button>
+</form>
+```
+
+### Exception: Multiple submit buttons
+
+When a form has multiple submit buttons (e.g., different `formaction` values), use a `$state` variable so all buttons share the disabled state.
+
+```svelte
+<script lang="ts">
+  import { enhance } from '$app/forms';
+
+  let disabled = $state(false);
+</script>
+
+<form
+  method="post"
+  use:enhance={() => {
+    disabled = true;
+    return async ({ update, result }) => {
+      disabled = false;
+      await update();
+      // handle result...
+    };
+  }}
+>
+  <Button type="submit" {disabled} formaction="/?/promote">Promote</Button>
+  <Button type="submit" {disabled} formaction="/?/remove">Remove</Button>
+</form>
+```
