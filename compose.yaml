@@ -11,7 +11,7 @@ services:
     restart: always
 
   inngest:
-    image: inngest/inngest:v1.16.1
+    image: inngest/inngest:v1.16.2
     extra_hosts:
       - host.docker.internal:host-gateway
     ports:
