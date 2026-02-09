@@ -147,7 +147,9 @@ flowchart TD
 | `pnpm docker:app`  | ... + `compose.app.yaml`            | prod services + app                           |
 
 > [!NOTE]
-> `docker-buildx` is required for building Docker images. The custom PostgreSQL image uses the `TARGETARCH` build argument, which requires BuildKit to be enabled.
+> Docker BuildKit is required to build the local services used during development. In most platforms, Docker Desktop bundles the core Docker Engine with Docker BuildKit. For others (e.g., Arch Linux), a separate `docker-buildx`-like package must be installed.
+>
+> This requirement is due to the fact that the [custom PostgreSQL image](./docker/postgres/Dockerfile#L9) uses the `TARGETARCH` build argument, which is typically automatically populated by Docker BuildKit.
 
 ### Running the Development Server
 
