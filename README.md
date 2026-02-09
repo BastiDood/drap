@@ -146,6 +146,11 @@ flowchart TD
 | `pnpm docker:prod` | ... + `compose.prod.yaml`           | CI services + `o2` (prod), `drizzle-gateway`  |
 | `pnpm docker:app`  | ... + `compose.app.yaml`            | prod services + app                           |
 
+> [!NOTE]
+> Docker BuildKit is required to build the local services used during development. In most platforms, Docker Desktop bundles the core Docker Engine with Docker BuildKit. For others (e.g., Arch Linux), a separate `docker-buildx`-like package must be installed.
+>
+> This requirement is due to the fact that the [custom PostgreSQL image](./docker/postgres/Dockerfile#L9) uses the `TARGETARCH` build argument, which is typically automatically populated by Docker BuildKit.
+
 ### Running the Development Server
 
 ```bash
@@ -204,9 +209,6 @@ To enable full observability in local development:
    pnpm dev
    ```
 3. View traces and logs at `http://localhost:5080`.
-
-> [!WARNING]
-> The `OTEL_*` environment variables **must** be set in the shell before running `pnpm dev` or `pnpm preview`. They cannot be loaded from `.env` files because the OpenTelemetry instrumentation initializes before SvelteKit processes environment files.
 
 ### Running the End-to-End Tests with Playwright
 
