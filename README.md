@@ -146,6 +146,9 @@ flowchart TD
 | `pnpm docker:prod` | ... + `compose.prod.yaml`           | CI services + `o2` (prod), `drizzle-gateway`  |
 | `pnpm docker:app`  | ... + `compose.app.yaml`            | prod services + app                           |
 
+> [!NOTE]
+> `docker-buildx` is required for building Docker images. The custom PostgreSQL image uses the `TARGETARCH` build argument, which requires BuildKit to be enabled.
+
 ### Running the Development Server
 
 ```bash
