@@ -209,7 +209,9 @@ To enable full observability in local development:
 3. View traces and logs at `http://localhost:5080`.
 
 > [!WARNING]
-> The `OTEL_*` environment variables **must** be set in the shell before running `pnpm dev` or `pnpm preview`. They cannot be loaded from `.env` files because the OpenTelemetry instrumentation initializes before SvelteKit processes environment files.
+> The `OTEL_*` environment variables **must** be set in the shell before running `pnpm dev` or `pnpm preview`. They cannot be loaded directly from `.env` files because the OpenTelemetry instrumentation initializes before SvelteKit processes environment files.
+>
+> If the `OTEL_*` environment variables are put in an `.env` file (like `.env.development`), then `set -a && source .env.development` may be used to load them before running the dev server. The `set -a` command ensures all variables are exported so the Node.js process can access them.
 
 ### Running the End-to-End Tests with Playwright
 
