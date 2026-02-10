@@ -7,11 +7,11 @@ import { sveltekit } from '@sveltejs/kit/vite';
 export default defineConfig({
   plugins: [
     {
-      name: 'open-telemetry-env-loader',
+      name: 'app-environment-loader',
       config(_, { mode }) {
         // Loads OpenTelemetry environment variables into `pnpm dev` and `pnpm preview`.
         // Existing environment variables are not overridden.
-        const otel = loadEnv(mode, cwd(), 'OTEL_');
+        const otel = loadEnv(mode, cwd(), ['OTEL_', 'INNGEST_']);
         for (const [key, value] of Object.entries(otel)) env[key] ??= value;
       },
     },
