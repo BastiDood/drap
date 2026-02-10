@@ -1,53 +1,19 @@
-# IDE / Tooling
-.claude
-.git
-.github
-.gitignore
-.mcp.json
-opencode.json
+# Whitelist mode: exclude everything, then selectively re-include.
+*
 
-# Linting / Formatting
-.eslintcache
-.prettiercache
-.prettierignore
-.prettierrc.json
-eslint.config.js
+# Package Managers
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
 
-# Build outputs (regenerated during build)
-.svelte-kit
-build
+# Vite + SvelteKit
+!svelte.config.js
+!vite.config.js
+!tsconfig.json
 
-# Docker (meta files)
-.dockerignore
-Dockerfile
-compose.yaml
-compose.*.yaml
-docker
-
-# Database (migrations not needed at runtime)
-drizzle
-drizzle.config.js
-
-# Secrets
-**/.env
-**/.env.*
+# Application Source Code + Assets
+!src/
+!static/
 
 # Documentation
-**/*.md
-LICENSE
-
-# Dependencies (reinstalled during build)
-node_modules
-
-# Dev-only config
-components.json
-output
-
-# Agentic Workflows
-scratchpad
-
-# Tests
-output
-tests
-**/*.test.js
-**/*.test.ts
+src/**/*.md
