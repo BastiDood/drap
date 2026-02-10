@@ -32,6 +32,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+        required: true
       inngest:
         condition: service_healthy
+        required: true
     restart: always
