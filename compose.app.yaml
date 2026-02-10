@@ -13,6 +13,7 @@ services:
     extra_hosts: []
 
   app:
+    pull_policy: build
     build: .
     ports:
       - 3000:3000

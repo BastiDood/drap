@@ -3,6 +3,7 @@ name: drap
 
 services:
   postgres:
+    pull_policy: build
     build: ./docker/postgres
     ports:
       - 5432:5432
