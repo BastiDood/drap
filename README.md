@@ -21,28 +21,43 @@ Welcome to DRAP: the Draft Ranking Automated Processor for the [University of th
 ```mermaid
 flowchart TD
     subgraph External
+        direction LR
         User[Browser]
         Google[Google OAuth]
     end
 
     subgraph Production
-        SvelteKit[DRAP :3000]
-        Inngest[Inngest :8288]
-        Postgres[(PostgreSQL :5432)]
-        Redis[(Redis :6379)]
-        SQLite[(SQLite)]
-        O2[OpenObserve :5080]
-        Drizzle[Drizzle Gateway :4983]
+        SvelteKit[DRAP:3000]
+
+        Drizzle[DrizzleGateway:4983]
+
+        subgraph database [database]
+            Postgres[(PostgreSQL:5432)]
+        end
+
+        subgraph durability [durability]
+            direction LR
+            Inngest[Inngest:8288]
+            SQLite[(SQLite)]
+        end
+
+        subgraph queue [queue]
+            Redis[(Redis:6379)]
+        end
+
+        subgraph telemetry [telemetry]
+            O2[OpenObserve:5080]
+        end
     end
 
-    User --> SvelteKit
-    SvelteKit --> Google
-    SvelteKit --> Postgres
+    User <--> SvelteKit
+    Google <-->|OAuth| SvelteKit
+    SvelteKit <--> Postgres
     SvelteKit <--> Inngest
     SvelteKit -.->|OpenTelemetry| O2
-    Inngest --> Redis
-    Inngest --> SQLite
-    Drizzle --> Postgres
+    Inngest <--> Redis
+    Inngest <--> SQLite
+    Drizzle <--> Postgres
 ```
 
 ### Server Environment Variables
