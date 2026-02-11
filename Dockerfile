@@ -6,16 +6,30 @@ RUN corepack enable pnpm
 
 WORKDIR /app
 
-# Only fetch the dependencies into the virtual store for better Docker caching.
-COPY pnpm-workspace.yaml pnpm-lock.yaml ./
-RUN pnpm fetch
+# Fetch dependencies into the pnpm store (lockfile-only).
+RUN --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
+    --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
+    --mount=type=cache,id=pnpm,target=$PNPM_HOME/store \
+    pnpm fetch
 
-# Then copy the project files and build the `node_modules/` (with dev dependencies).
-COPY . ./
-RUN pnpm install --offline
+# Install node_modules/ from the cached store.
+RUN --mount=type=bind,source=package.json,target=package.json \
+    --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
+    --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
+    --mount=type=cache,id=pnpm,target=$PNPM_HOME/store \
+    pnpm install --offline
 
-# build/ and node_modules/ are now ready for production.
-RUN pnpm build && pnpm prune --prod --ignore-scripts
+# Build the app and prune dev dependencies. Bind-mounted source files
+# are not baked into the layer — only build/ and node_modules/ persist.
+RUN --mount=type=bind,source=package.json,target=package.json \
+    --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
+    --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
+    --mount=type=bind,source=svelte.config.js,target=svelte.config.js \
+    --mount=type=bind,source=vite.config.js,target=vite.config.js \
+    --mount=type=bind,source=tsconfig.json,target=tsconfig.json \
+    --mount=type=bind,source=src,target=src \
+    --mount=type=bind,source=static,target=static \
+    pnpm build && pnpm prune --prod --ignore-scripts
 
 FROM gcr.io/distroless/nodejs24-debian13:nonroot-amd64 AS deploy
 
