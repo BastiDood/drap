@@ -9,6 +9,8 @@ services:
       - 5432:5432
     volumes:
       - postgres:/var/lib/postgresql/data
+    networks:
+      - database
     restart: always
 
   inngest:
@@ -21,3 +23,6 @@ services:
 
 volumes:
   postgres:
+
+networks:
+  database:

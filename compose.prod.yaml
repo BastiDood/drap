@@ -12,6 +12,8 @@ services:
       - 5080:5080
     volumes:
       - open-observe:/data
+    networks:
+      - telemetry
     restart: always
 
   drizzle-gateway:
@@ -24,8 +26,13 @@ services:
       MASTERPASS: ${DRIZZLE_MASTERPASS:?required}
     volumes:
       - drizzle-gateway:/app
+    networks:
+      - database
     restart: always
 
 volumes:
   open-observe:
   drizzle-gateway:
+
+networks:
+  telemetry:

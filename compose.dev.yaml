@@ -25,7 +25,12 @@ services:
       - 5080:5080
     volumes:
       - open-observe:/data
+    networks:
+      - telemetry
     restart: always
 
 volumes:
   open-observe:
+
+networks:
+  telemetry:

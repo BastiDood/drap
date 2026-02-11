@@ -11,6 +11,8 @@ services:
       - '--sdk-url'
       - 'http://app:3000/api/inngest'
     extra_hosts: []
+    networks:
+      - durability
 
   app:
     pull_policy: build
@@ -29,6 +31,10 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://o2:5080/api/default
       OTEL_EXPORTER_OTLP_HEADERS: ${OTEL_EXPORTER_OTLP_HEADERS:?required}
       OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+    networks:
+      - database
+      - durability
+      - telemetry
     depends_on:
       postgres:
         condition: service_healthy
@@ -37,3 +43,6 @@ services:
         condition: service_healthy
         required: true
     restart: always
+
+networks:
+  durability:

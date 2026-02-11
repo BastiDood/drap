@@ -18,6 +18,8 @@ services:
       - 'yes'
     volumes:
       - redis:/data
+    networks:
+      - queue
     restart: always
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
@@ -39,6 +41,8 @@ services:
       INNGEST_REDIS_URI: redis://redis:6379
     volumes:
       - inngest:/app
+    networks:
+      - queue
     depends_on:
       redis:
         condition: service_healthy
@@ -53,3 +57,6 @@ services:
 volumes:
   redis:
   inngest:
+
+networks:
+  queue:
