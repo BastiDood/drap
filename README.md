@@ -119,6 +119,9 @@ pnpm db:migrate
 pnpm db:studio
 ```
 
+> [!IMPORTANT]
+> You must run `pnpm db:migrate` on a fresh database in order to initialize the tables.
+
 ### Linting the Codebase
 
 ```bash
