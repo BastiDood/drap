@@ -31,7 +31,7 @@ RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=bind,source=static,target=static \
     pnpm build && pnpm prune --prod --ignore-scripts
 
-FROM gcr.io/distroless/nodejs24-debian13:nonroot-amd64 AS deploy
+FROM gcr.io/distroless/nodejs24-debian13:nonroot-${TARGETARCH} AS deploy
 
 WORKDIR /app
 COPY --from=build /app/node_modules node_modules/
