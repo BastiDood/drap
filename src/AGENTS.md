@@ -34,7 +34,7 @@
 - `(landing)/` - Public pages (home, history, privacy)
 - `dashboard/` - Authenticated app
   - `admin/` - Admin hub page
-  - `(draft)/` - Draft-scoped routes (drafts, labs management)
+  - `(draft)/` - Draft-scoped routes (`drafts`: lifecycle + snapshot quotas, `labs`: global lab config)
   - `(faculty)/` - Faculty routes requiring active draft (students selection)
 
 ## Code Style References

@@ -7,13 +7,15 @@ Welcome to DRAP: the Draft Ranking Automated Processor for the [University of th
 [Department of Computer Science]: https://dcs.upd.edu.ph/
 
 1. All participating students register for the draft by providing their full name, email, student number, and lab rankings (ordered by preference) to the draft administrators.
+1. When a draft is created, the active labs' global quotas are captured as per-draft initial quota snapshots.
 1. The regular draft process begins. For each round in the draft:
    1. Draft administrators notify (typically via email) the lab heads about all of the students that have chosen their respective research lab as the first choice.
    1. Each lab selects a subset (i.e., possibly none, some, or all) of these first-choice students to accept them into the lab. After this point, the selected students are considered to be "drafted" and are thus no longer part of the next rounds.
    1. The next round begins when all of the labs have submitted their preferences. This time around, the second-choice preferences of the remaining students are evaluated (and so on).
 1. Should there be students remaining by the end of the regular draft process, the lottery round begins.
 1. Before the randomization stage, draft administrators first negotiate with participating labs (that have remaining slots) to check if any of the labs would like to accept some of the remaining students immediately.
-1. After manual negotiation and intervention, the remaining students are shuffled and assigned to participating labs in a round-robin fashion.
+1. During lottery, administrators adjust per-draft lottery quota snapshots to match remaining students exactly.
+1. After manual negotiation and intervention, the remaining students are shuffled and assigned to participating labs in a round-robin fashion using the draft's lottery snapshots.
 1. The draft concludes when all registered participants have been assigned to a lab.
 
 ## Development
@@ -237,15 +239,20 @@ The Playwright configuration runs `pnpm preview` on port `4173` in production mo
 # but that requires a little bit more configuration. This is done in CI, but not
 # necessary for local development.
 pnpm docker:dev
+```
 
-# Apply local production mode overrides here.
-# INNGEST_DEV=http://localhost:8288
-# POSTGRES_URL=
-# PUBLIC_ORIGIN=http://localhost:4173
-set -a
-source .env.production
+```nu
+# Nushell: loads local production overrides and runs tests in one scope.
+do {
+  open .env.production.local | from toml | load-env;
+  pnpm build;
+  pnpm test:playwright;
+}
+```
 
-# Playwright runs `pnpm preview`, so we need to build first.
+```bash
+# Bash: loads local production overrides and runs tests in one scope.
+set -a && source .env.production.local && set +a
 pnpm build
 pnpm test:playwright
 ```

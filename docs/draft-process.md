@@ -4,9 +4,10 @@
 
 - **Student (Draftee)**: A participant who submits ranked lab preferences.
 - **Lab Head (Faculty)**: Reviews and selects which students to accept into their lab each round.
-- **Administrator**: Manages the draft lifecycle, adjusts lab quotas, and resolves edge cases.
+- **Administrator**: Manages the draft lifecycle, configures draft quota snapshots, and resolves edge cases.
 - **Drafted**: A student who has been accepted by a lab. Drafted students exit the pool and do not participate in subsequent rounds.
-- **Quota**: The number of slots a lab has available. Quotas determine how many students can be assigned to each lab during the lottery.
+- **Global Lab Quota**: The default quota stored on `/dashboard/labs/` for each lab configuration.
+- **Draft Quota Snapshot**: Per-draft quotas stored at draft creation and edited on `/dashboard/drafts/[draftId]/`.
 
 ## Draft Lifecycle
 
@@ -39,11 +40,16 @@ Before any randomization occurs, administrators have a final opportunity to manu
 
 #### Quota Adjustment
 
-Lab quotas are locked during the regular draft rounds to prevent mid-draft changes. Once the lottery phase begins, quotas are unlocked. Before concluding the draft, the administrator must adjust lab quotas so that the **total available quota across all labs exactly matches the number of remaining undrafted students**. If the totals do not match, the system will reject the conclude action.
+Global lab quotas in `/dashboard/labs/` are separate from active draft allocation. For each draft, the admin edits quota snapshots in `/dashboard/drafts/[draftId]/`:
+
+1. During registration, **initial** snapshots may be adjusted for regular rounds.
+2. During lottery, **lottery** snapshots may be adjusted for conclude allocation.
+
+Before concluding, the **total lottery snapshot quota across labs must exactly match the remaining undrafted student count**. If not, conclude is rejected.
 
 #### Randomized Assignment
 
-When the administrator concludes the draft, the remaining students are randomly shuffled and distributed among labs in a round-robin fashion according to each lab's quota. Because quotas must match the remaining student count exactly, every undrafted student receives an assignment.
+When the administrator concludes the draft, the remaining students are randomly shuffled and distributed among labs in a round-robin fashion according to each lab's **lottery quota snapshot**. Because snapshot totals must match the remaining student count exactly, every undrafted student receives an assignment.
 
 ### 4. Conclusion
 
@@ -69,11 +75,11 @@ Students who were not part of the draft (e.g., those who registered after it sta
 
 ### Administrator
 
-1. `/dashboard/labs/` — Set initial lab quotas
-2. `/dashboard/drafts/` — Create a new draft (set deadline and round count)
+1. `/dashboard/labs/` — Configure global lab defaults (quota baseline + archive/restore)
+2. `/dashboard/drafts/` — Create a new draft (set deadline and round count; captures initial snapshots)
 3. Wait for student registrations
-4. `/dashboard/drafts/` — Start the draft
-5. Monitor round progression (labs are notified automatically)
-6. `/dashboard/drafts/` — During lottery, apply manual interventions as needed
-7. `/dashboard/labs/` — Adjust quotas to match remaining students
+4. `/dashboard/drafts/[draftId]/` — (Optional) adjust initial quota snapshots during registration
+5. `/dashboard/drafts/` — Start the draft
+6. Monitor round progression (labs are notified automatically)
+7. `/dashboard/drafts/[draftId]/` — During lottery, apply manual interventions and adjust lottery snapshots
 8. `/dashboard/drafts/` — Conclude the draft (triggers randomized assignment and notifications)

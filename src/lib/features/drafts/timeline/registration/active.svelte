@@ -2,8 +2,9 @@
   import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
 
   import * as Alert from '$lib/components/ui/alert';
+  import type { DraftConcludedBreakdown, Student } from '$lib/features/drafts/types';
 
-  import type { Student } from '$lib/features/drafts/types';
+  import QuotaSnapshotForm from '../quota-snapshot-form.svelte';
 
   import StartForm from './start-form.svelte';
   import StudentList from './student-list.svelte';
@@ -11,9 +12,10 @@
   interface Props {
     draftId: bigint;
     students: Student[];
+    snapshots: DraftConcludedBreakdown['snapshots'];
   }
 
-  const { draftId, students }: Props = $props();
+  const { draftId, students, snapshots }: Props = $props();
 </script>
 
 <div class="space-y-4">
@@ -34,6 +36,7 @@
             an administrator <em>manually</em> proceeds with the lottery stage.
           </p>
         </section>
+        <QuotaSnapshotForm {draftId} mode="initial" {snapshots} />
         <StartForm {draftId} />
       </div>
       <StudentList {students} />

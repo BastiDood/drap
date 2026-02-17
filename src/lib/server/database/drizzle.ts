@@ -269,6 +269,48 @@ export async function isValidTotalLabQuota(db: DbConnection) {
   });
 }
 
+export async function isValidTotalInitialLabQuotaInDraft(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('is-valid-total-initial-lab-quota-in-draft', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    const { result } = await db
+      .select({
+        result: sql`bool_or(${schema.draftLabQuota.initialQuota} > 0)`.mapWith(Boolean),
+      })
+      .from(schema.draftLabQuota)
+      .where(eq(schema.draftLabQuota.draftId, draftId))
+      .then(assertSingle);
+    return result;
+  });
+}
+
+export async function getDraftLabQuotaSnapshots(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-draft-lab-quota-snapshots', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    return await db
+      .select({
+        labId: schema.draftLabQuota.labId,
+        labName: schema.lab.name,
+        initialQuota: schema.draftLabQuota.initialQuota,
+        lotteryQuota: schema.draftLabQuota.lotteryQuota,
+      })
+      .from(schema.draftLabQuota)
+      .innerJoin(schema.lab, eq(schema.draftLabQuota.labId, schema.lab.id))
+      .where(eq(schema.draftLabQuota.draftId, draftId))
+      .orderBy(asc(schema.lab.name));
+  });
+}
+
+export async function getDraftLabQuotaLabIds(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-draft-lab-quota-lab-ids', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    const rows = await db
+      .select({ labId: schema.draftLabQuota.labId })
+      .from(schema.draftLabQuota)
+      .where(eq(schema.draftLabQuota.draftId, draftId));
+    return rows.map(({ labId }) => labId);
+  });
+}
+
 export async function getLabCount(db: DbConnection, activeOnly = true) {
   return await tracer.asyncSpan('get-lab-count', async span => {
     span.setAttribute('database.lab.active_only', activeOnly);
@@ -301,6 +343,72 @@ export async function updateLabQuotas(
   return await tracer.asyncSpan('update-lab-quotas', async () => {
     for (const [id, quota] of quotas)
       await db.update(schema.lab).set({ quota }).where(eq(schema.lab.id, id));
+  });
+}
+
+export async function updateDraftInitialLabQuotas(
+  db: DbConnection,
+  draftId: bigint,
+  quotas: Iterable<readonly [string, number]>,
+) {
+  return await tracer.asyncSpan('update-draft-initial-lab-quotas', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    const values = Array.from(
+      quotas,
+      ([labId, initialQuota]): Pick<
+        schema.NewDraftLabQuota,
+        'draftId' | 'labId' | 'initialQuota'
+      > => ({
+        draftId,
+        labId,
+        initialQuota,
+      }),
+    );
+    if (values.length === 0) return;
+
+    await db
+      .insert(schema.draftLabQuota)
+      .values(values)
+      .onConflictDoUpdate({
+        target: [schema.draftLabQuota.draftId, schema.draftLabQuota.labId],
+        set: {
+          initialQuota: sql`excluded.${sql.raw(schema.draftLabQuota.initialQuota.name)}`,
+          updatedAt: sql`now()`,
+        },
+      });
+  });
+}
+
+export async function updateDraftLotteryLabQuotas(
+  db: DbConnection,
+  draftId: bigint,
+  quotas: Iterable<readonly [string, number]>,
+) {
+  return await tracer.asyncSpan('update-draft-lottery-lab-quotas', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    const values = Array.from(
+      quotas,
+      ([labId, lotteryQuota]): Pick<
+        schema.NewDraftLabQuota,
+        'draftId' | 'labId' | 'lotteryQuota'
+      > => ({
+        draftId,
+        labId,
+        lotteryQuota,
+      }),
+    );
+    if (values.length === 0) return;
+
+    await db
+      .insert(schema.draftLabQuota)
+      .values(values)
+      .onConflictDoUpdate({
+        target: [schema.draftLabQuota.draftId, schema.draftLabQuota.labId],
+        set: {
+          lotteryQuota: sql`excluded.${sql.raw(schema.draftLabQuota.lotteryQuota.name)}`,
+          updatedAt: sql`now()`,
+        },
+      });
   });
 }
 
@@ -566,10 +674,17 @@ export async function getLabAndRemainingStudentsInDraftWithLabPreference(
     async span => {
       span.setAttribute('database.draft.id', draftId.toString());
       span.setAttribute('database.lab.id', labId);
-      const labInfo = await db.query.lab.findFirst({
-        columns: { name: true, quota: true },
-        where: ({ id }) => eq(id, labId),
-      });
+      const labInfo = await db
+        .select({
+          name: schema.lab.name,
+          quota: schema.draftLabQuota.initialQuota,
+        })
+        .from(schema.draftLabQuota)
+        .innerJoin(schema.lab, eq(schema.draftLabQuota.labId, schema.lab.id))
+        .where(
+          and(eq(schema.draftLabQuota.draftId, draftId), eq(schema.draftLabQuota.labId, labId)),
+        )
+        .then(assertOptional);
 
       const students = await db
         .select({
@@ -721,15 +836,15 @@ export async function autoAcknowledgeLabsWithoutPreferences(db: DbConnection, dr
         .select({
           draftId: draftsCte.draftId,
           round: draftsCte.currRound,
-          labId: schema.activeLabView.id,
+          labId: schema.draftLabQuota.labId,
         })
         .from(draftsCte)
-        .crossJoin(schema.activeLabView)
-        .leftJoin(draftedCte, eq(schema.activeLabView.id, draftedCte.labId))
-        .leftJoin(preferredCte, eq(schema.activeLabView.id, preferredCte.labId))
+        .innerJoin(schema.draftLabQuota, eq(draftsCte.draftId, schema.draftLabQuota.draftId))
+        .leftJoin(draftedCte, eq(schema.draftLabQuota.labId, draftedCte.labId))
+        .leftJoin(preferredCte, eq(schema.draftLabQuota.labId, preferredCte.labId))
         .where(
           or(
-            gte(sql`coalesce(${draftedCte.draftees}, 0)`, schema.activeLabView.quota),
+            gte(sql`coalesce(${draftedCte.draftees}, 0)`, schema.draftLabQuota.initialQuota),
             eq(sql`coalesce(${preferredCte.preferrers}, 0)`, 0),
           ),
         );
@@ -747,10 +862,11 @@ export async function getLabQuotaAndSelectedStudentCountInDraft(
   return await tracer.asyncSpan('get-lab-quota-and-selected-student-count-in-draft', async span => {
     span.setAttribute('database.draft.id', draftId.toString());
     span.setAttribute('database.lab.id', labId);
-    const labInfo = await db.query.lab.findFirst({
-      columns: { quota: true },
-      where: ({ id }, { eq }) => eq(id, labId),
-    });
+    const labInfo = await db
+      .select({ quota: schema.draftLabQuota.initialQuota })
+      .from(schema.draftLabQuota)
+      .where(and(eq(schema.draftLabQuota.draftId, draftId), eq(schema.draftLabQuota.labId, labId)))
+      .then(assertOptional);
 
     const draftCount = await db
       .select({ studentCount: count(schema.facultyChoiceUser.studentUserId) })
@@ -773,14 +889,33 @@ export async function getLabQuotaAndSelectedStudentCountInDraft(
 export async function initDraft(db: DbConnection, maxRounds: number, registrationClosesAt: Date) {
   return await tracer.asyncSpan('init-draft', async span => {
     span.setAttribute('database.draft.max_rounds', maxRounds);
-    return await db
-      .insert(schema.draft)
-      .values({ maxRounds, registrationClosesAt })
-      .returning({
-        id: schema.draft.id,
-        activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
-      })
-      .then(assertSingle);
+    return await db.transaction(async db => {
+      const draft = await db
+        .insert(schema.draft)
+        .values({ maxRounds, registrationClosesAt })
+        .returning({
+          id: schema.draft.id,
+          activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
+        })
+        .then(assertSingle);
+
+      const labs = await db
+        .select({ labId: schema.activeLabView.id, initialQuota: schema.activeLabView.quota })
+        .from(schema.activeLabView);
+      if (labs.length > 0)
+        await db.insert(schema.draftLabQuota).values(
+          labs.map(
+            ({ labId, initialQuota }) =>
+              ({
+                draftId: draft.id,
+                labId,
+                initialQuota,
+              }) satisfies Pick<schema.NewDraftLabQuota, 'draftId' | 'labId' | 'initialQuota'>,
+          ),
+        );
+
+      return draft;
+    });
   });
 }
 
@@ -1139,19 +1274,25 @@ export async function insertLotteryChoices(
   draftId: bigint,
   adminUserId: string,
   assignmentUserIdToLabPairs: (readonly [string, string])[],
+  mode: 'intervention' | 'lottery',
 ) {
   return await tracer.asyncSpan('insert-lottery-choices', async span => {
     span.setAttribute('database.draft.id', draftId.toString());
     span.setAttribute('database.user.admin_id', adminUserId);
+    span.setAttribute('database.choice.mode', mode);
     const draft = await db.query.draft.findFirst({
-      columns: { currRound: true },
+      columns: { maxRounds: true },
       where: ({ id }, { eq }) => eq(id, draftId),
     });
     if (typeof draft === 'undefined') return;
 
-    const labs = await db.select().from(schema.activeLabView);
+    const labs = await db
+      .select({ id: schema.draftLabQuota.labId })
+      .from(schema.draftLabQuota)
+      .where(eq(schema.draftLabQuota.draftId, draftId));
     if (labs.length === 0) return;
 
+    const round = mode === 'intervention' ? draft.maxRounds + 1 : null;
     await db
       .insert(schema.facultyChoice)
       .values(
@@ -1159,7 +1300,7 @@ export async function insertLotteryChoices(
           ({ id }) =>
             ({
               draftId,
-              round: draft.currRound,
+              round,
               labId: id,
               // Non-null to assert that the lottery was initiated by the admin.
               userId: adminUserId,
@@ -1175,20 +1316,20 @@ export async function insertLotteryChoices(
         set: { userId: sql`excluded.${sql.raw(schema.facultyChoice.userId.name)}` },
       });
 
-    if (assignmentUserIdToLabPairs.length > 0)
+    if (assignmentUserIdToLabPairs.length > 0) {
+      const facultyUserId = mode === 'intervention' ? adminUserId : null;
       await db.insert(schema.facultyChoiceUser).values(
         assignmentUserIdToLabPairs.map(
-          ([studentUserId, labId]) =>
-            ({
-              // This *must* be `null` to assert that this was chosen by the lottery.
-              facultyUserId: null,
-              studentUserId,
-              draftId,
-              round: draft.currRound,
-              labId,
-            }) satisfies schema.NewFacultyChoiceUser,
+          ([studentUserId, labId]): schema.NewFacultyChoiceUser => ({
+            facultyUserId,
+            studentUserId,
+            draftId,
+            round,
+            labId,
+          }),
         ),
       );
+    }
 
     return draft;
   });
@@ -1210,10 +1351,10 @@ export async function getPendingLabCountInDraft(db: DbConnection, draftId: bigin
       .where(eq(schema.facultyChoice.draftId, draftId))
       .as('_');
     const { pendingCount } = await db
-      .select({ pendingCount: count(schema.activeLabView.id) })
-      .from(schema.activeLabView)
-      .leftJoin(subquery, eq(schema.activeLabView.id, subquery.labId))
-      .where(isNull(subquery.labId))
+      .select({ pendingCount: count(schema.draftLabQuota.labId) })
+      .from(schema.draftLabQuota)
+      .leftJoin(subquery, eq(schema.draftLabQuota.labId, subquery.labId))
+      .where(and(eq(schema.draftLabQuota.draftId, draftId), isNull(subquery.labId)))
       .then(assertSingle);
     return pendingCount;
   });
@@ -1240,8 +1381,8 @@ export async function getFacultyChoiceRecords(db: DbConnection, draftId: bigint)
         schema.facultyChoiceUser,
         and(
           eq(schema.facultyChoice.draftId, schema.facultyChoiceUser.draftId),
-          eq(schema.facultyChoice.round, schema.facultyChoiceUser.round),
           eq(schema.facultyChoice.labId, schema.facultyChoiceUser.labId),
+          sql`${schema.facultyChoice.round} is not distinct from ${schema.facultyChoiceUser.round}`,
         ),
       )
       .leftJoin(studentUser, eq(schema.facultyChoiceUser.studentUserId, studentUser.id))
@@ -1250,6 +1391,45 @@ export async function getFacultyChoiceRecords(db: DbConnection, draftId: bigint)
         desc(schema.facultyChoice.createdAt),
         desc(schema.facultyChoice.round),
         asc(schema.facultyChoice.labId),
+      );
+  });
+}
+
+export async function getDraftAssignmentRecords(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-draft-assignment-records', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    const choice = alias(schema.facultyChoice, 'choice');
+    const student = alias(schema.user, 'student');
+
+    return await db
+      .select({
+        id: schema.facultyChoiceUser.studentUserId,
+        labId: schema.facultyChoiceUser.labId,
+        round: schema.facultyChoiceUser.round,
+        assignedAt: choice.createdAt,
+        email: student.email,
+        givenName: student.givenName,
+        familyName: student.familyName,
+        avatarUrl: student.avatarUrl,
+        studentNumber: student.studentNumber,
+        labName: schema.lab.name,
+      })
+      .from(schema.facultyChoiceUser)
+      .innerJoin(student, eq(schema.facultyChoiceUser.studentUserId, student.id))
+      .innerJoin(schema.lab, eq(schema.facultyChoiceUser.labId, schema.lab.id))
+      .leftJoin(
+        choice,
+        and(
+          eq(schema.facultyChoiceUser.draftId, choice.draftId),
+          eq(schema.facultyChoiceUser.labId, choice.labId),
+          sql`${schema.facultyChoiceUser.round} is not distinct from ${choice.round}`,
+        ),
+      )
+      .where(eq(schema.facultyChoiceUser.draftId, draftId))
+      .orderBy(
+        asc(schema.facultyChoiceUser.round),
+        asc(student.familyName),
+        asc(student.givenName),
       );
   });
 }

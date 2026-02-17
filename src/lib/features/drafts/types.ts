@@ -27,3 +27,36 @@ export interface Draft extends Pick<
   /** Computed from `activePeriod` range upper bound */
   activePeriodEnd: Date | null;
 }
+
+export interface DraftLabQuotaSnapshot {
+  labId: schema.Lab['id'];
+  labName: schema.Lab['name'];
+  initialQuota: number;
+  lotteryQuota: number;
+  concludedQuota: number;
+}
+
+export interface DraftAssignmentRecord extends Pick<
+  schema.User,
+  'id' | 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
+> {
+  round: schema.FacultyChoiceUser['round'];
+  labId: schema.Lab['id'];
+  labName: schema.Lab['name'];
+  assignedAt: schema.FacultyChoice['createdAt'] | null;
+}
+
+export interface DraftConcludedBreakdown {
+  quota: {
+    initialQuota: number;
+    lotteryInterventions: number;
+    concludedQuota: number;
+  };
+  snapshots: DraftLabQuotaSnapshot[];
+  sections: {
+    regularDrafted: DraftAssignmentRecord[];
+    interventionDrafted: DraftAssignmentRecord[];
+    lotteryDrafted: DraftAssignmentRecord[];
+    undraftedAfterRegular: Student[];
+  };
+}

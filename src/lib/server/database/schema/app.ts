@@ -98,6 +98,29 @@ export const draft = app.table(
 export type Draft = typeof draft.$inferSelect;
 export type NewDraft = typeof draft.$inferInsert;
 
+export const draftLabQuota = app.table(
+  'draft_lab_quota',
+  {
+    createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+    draftId: bigint('draft_id', { mode: 'bigint' })
+      .notNull()
+      .references(() => draft.id, { onUpdate: 'cascade' }),
+    labId: text('lab_id')
+      .notNull()
+      .references(() => lab.id, { onUpdate: 'cascade' }),
+    initialQuota: smallint('initial_quota').notNull().default(0),
+    lotteryQuota: smallint('lottery_quota').notNull().default(0),
+  },
+  ({ draftId, labId, initialQuota, lotteryQuota }) => [
+    primaryKey({ columns: [draftId, labId] }),
+    check('draft_lab_quota_initial_quota_non_negative_check', sql`${initialQuota} >= 0`),
+    check('draft_lab_quota_lottery_quota_non_negative_check', sql`${lotteryQuota} >= 0`),
+  ],
+);
+export type DraftLabQuota = typeof draftLabQuota.$inferSelect;
+export type NewDraftLabQuota = typeof draftLabQuota.$inferInsert;
+
 export const studentRank = app.table(
   'student_rank',
   {
