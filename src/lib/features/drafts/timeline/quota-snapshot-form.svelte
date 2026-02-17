@@ -82,13 +82,14 @@
                 <Table.Cell class="w-full">{labName}</Table.Cell>
                 <Table.Cell class="w-0">
                   {@const quotaInputId = `quota-input-${mode}-${labId}`}
+                  {@const committedQuota = mode === 'initial' ? initialQuota : lotteryQuota}
                   <Label for={quotaInputId} class="sr-only">Quota for {labName}</Label>
                   <Input
                     id={quotaInputId}
                     name={labId}
                     type="number"
                     min="0"
-                    value={mode === 'initial' ? initialQuota : lotteryQuota}
+                    placeholder={committedQuota.toString()}
                     class="h-8 min-w-24 text-right"
                   />
                 </Table.Cell>

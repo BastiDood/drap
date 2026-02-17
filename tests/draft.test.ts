@@ -408,6 +408,44 @@ test.describe('Draft Lifecycle', () => {
       await expect(adminPage.getByText(/\b8\b/u).first()).toBeVisible();
     });
 
+    test('shows initial snapshot quotas as placeholders', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+      const editor = adminPage.locator('#draft-quota-editor-initial');
+      await expect(editor).toBeVisible();
+
+      const aclInput = editor.locator('input[name="acl"]');
+      await expect(aclInput).toHaveValue('');
+      await expect(aclInput).toHaveAttribute('placeholder', '1');
+
+      const ndslInput = editor.locator('input[name="ndsl"]');
+      await expect(ndslInput).toHaveValue('');
+      await expect(ndslInput).toHaveAttribute('placeholder', '2');
+    });
+
+    test('updates initial snapshots with partial inputs and clears to placeholders', async ({
+      adminPage,
+    }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+      const editor = adminPage.locator('#draft-quota-editor-initial');
+      await expect(editor).toBeVisible();
+
+      await editor.locator('input[name="acl"]').fill('1');
+
+      const responsePromise = adminPage.waitForResponse('/dashboard/drafts/1/?/quota');
+      await editor.getByRole('button', { name: 'Update Initial Snapshots' }).click();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
+
+      const aclInput = editor.locator('input[name="acl"]');
+      await expect(aclInput).toHaveValue('');
+      await expect(aclInput).toHaveAttribute('placeholder', '1');
+
+      const ndslInput = editor.locator('input[name="ndsl"]');
+      await expect(ndslInput).toHaveValue('');
+      await expect(ndslInput).toHaveAttribute('placeholder', '2');
+    });
+
     test('starts the draft', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
       adminPage.on('dialog', dialog => dialog.accept());
@@ -676,13 +714,17 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('Adjust Quotas for Remaining Students', () => {
-    test('sets lottery snapshots to match 3 remaining students', async ({ adminPage }) => {
+    test('partially updates lottery snapshots and clears inputs to committed placeholders', async ({
+      adminPage,
+    }) => {
       await adminPage.goto('/dashboard/drafts/1/');
       const editor = adminPage.locator('#draft-quota-editor-lottery');
       await expect(editor).toBeVisible();
 
-      await editor.locator('input[name="ndsl"]').fill('0');
-      await editor.locator('input[name="csl"]').fill('0');
+      const ndslInput = editor.locator('input[name="ndsl"]');
+      await expect(ndslInput).toHaveValue('');
+      await expect(ndslInput).toHaveAttribute('placeholder', '0');
+
       await editor.locator('input[name="scl"]').fill('1');
       await editor.locator('input[name="cvmil"]').fill('1');
       await editor.locator('input[name="acl"]').fill('1');
@@ -692,6 +734,13 @@ test.describe('Draft Lifecycle', () => {
       const response = await responsePromise;
       const responseData = await response.json();
       expect(responseData.type).toBe('success');
+
+      const aclInput = editor.locator('input[name="acl"]');
+      await expect(aclInput).toHaveValue('');
+      await expect(aclInput).toHaveAttribute('placeholder', '1');
+
+      await expect(ndslInput).toHaveValue('');
+      await expect(ndslInput).toHaveAttribute('placeholder', '0');
     });
   });
 
