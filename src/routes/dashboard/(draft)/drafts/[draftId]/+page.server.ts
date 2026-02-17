@@ -8,7 +8,10 @@ import { repeat, roundrobin, zip } from 'itertools';
 import {
   autoAcknowledgeLabsWithoutPreferences,
   concludeDraft,
+  getActiveDraft,
+  getDraftAssignmentRecords,
   getDraftById,
+  getDraftLabQuotaSnapshots,
   getFacultyAndStaff,
   getFacultyChoiceRecords,
   getLabById,
@@ -20,9 +23,11 @@ import {
   getUserById,
   incrementDraftRound,
   insertLotteryChoices,
-  isValidTotalLabQuota,
+  isValidTotalInitialLabQuotaInDraft,
   randomizeRemainingStudents,
   syncResultsToUsers,
+  updateDraftInitialLabQuotas,
+  updateDraftLotteryLabQuotas,
 } from '$lib/server/database/drizzle';
 import { db } from '$lib/server/database';
 import { inngest } from '$lib/server/inngest/client';
@@ -31,6 +36,11 @@ import { Tracer } from '$lib/server/telemetry/tracer';
 
 const DraftActionFormData = v.object({
   draft: v.pipe(v.string(), v.minLength(1)),
+});
+
+const QuotaActionFormData = v.object({
+  draft: v.pipe(v.string(), v.minLength(1)),
+  kind: v.union([v.literal('initial'), v.literal('lottery')]),
 });
 
 const SERVICE_NAME = 'routes.dashboard.admin.drafts.detail';
@@ -73,15 +83,38 @@ export async function load({ params, locals: { session } }) {
       error(404);
     }
 
-    const [students, records, labs] = await Promise.all([
+    const [students, records, labs, assignments, quotaSnapshots] = await Promise.all([
       getStudentsInDraftTaggedByLab(db, draftId),
       getFacultyChoiceRecords(db, draftId),
-      getLabRegistry(db),
+      getLabRegistry(db, draft.activePeriodEnd === null),
+      getDraftAssignmentRecords(db, draftId),
+      getDraftLabQuotaSnapshots(db, draftId),
     ]);
+
+    type DraftAssignmentRecords = typeof assignments;
+    const regularDrafted: DraftAssignmentRecords = [];
+    const interventionDrafted: DraftAssignmentRecords = [];
+    const lotteryDrafted: DraftAssignmentRecords = [];
+
+    for (const assignment of assignments)
+      if (assignment.round === null) lotteryDrafted.push(assignment);
+      else if (assignment.round > 0 && assignment.round <= draft.maxRounds)
+        regularDrafted.push(assignment);
+      else if (assignment.round === draft.maxRounds + 1) interventionDrafted.push(assignment);
+
+    const regularDraftedIds = new Set(regularDrafted.map(({ id }) => id));
+    const undraftedAfterRegular = students.filter(({ id }) => !regularDraftedIds.has(id));
 
     const { available = [], selected = [] } = Object.groupBy(students, ({ labId }) =>
       labId === null ? 'available' : 'selected',
     );
+
+    let initialQuota = 0;
+    let concludedQuota = 0;
+    for (const quota of quotaSnapshots) {
+      initialQuota += quota.initialQuota;
+      concludedQuota += quota.initialQuota + quota.lotteryQuota;
+    }
 
     logger.debug('draft detail loaded', {
       'draft.id': draftId.toString(),
@@ -89,6 +122,9 @@ export async function load({ params, locals: { session } }) {
       'draft.round.max': draft.maxRounds,
       'draft.student.available_count': available.length,
       'draft.student.selected_count': selected.length,
+      'draft.summary.regular_count': regularDrafted.length,
+      'draft.summary.intervention_count': interventionDrafted.length,
+      'draft.summary.lottery_count': lotteryDrafted.length,
     });
 
     return {
@@ -98,6 +134,23 @@ export async function load({ params, locals: { session } }) {
       available,
       selected,
       records,
+      concluded: {
+        quota: {
+          initialQuota,
+          lotteryInterventions: interventionDrafted.length,
+          concludedQuota,
+        },
+        snapshots: quotaSnapshots.map(row => ({
+          ...row,
+          concludedQuota: row.initialQuota + row.lotteryQuota,
+        })),
+        sections: {
+          regularDrafted,
+          interventionDrafted,
+          lotteryDrafted,
+          undraftedAfterRegular,
+        },
+      },
     };
   });
 }
@@ -110,6 +163,18 @@ function* mapRowTuples(data: FormData) {
     if (lab instanceof File || lab.length === 0) continue;
     yield [v.parse(UserId, userId), lab] as [UserId, string];
   }
+}
+
+function mapQuotaPairs(data: FormData) {
+  const pairs: [string, number][] = [];
+  for (const [key, value] of data.entries()) {
+    if (key === 'draft' || key === 'kind') continue;
+    if (value instanceof File || value.length === 0) continue;
+    const quota = Number.parseInt(value, 10);
+    if (!Number.isFinite(quota) || quota < 0) error(400);
+    pairs.push([key, quota]);
+  }
+  return pairs;
 }
 
 const ZIP_NOT_EQUAL = Symbol('ZIP_NOT_EQUAL');
@@ -131,12 +196,6 @@ export const actions = {
       error(403);
     }
 
-    const isValid = await isValidTotalLabQuota(db);
-    if (!isValid) {
-      logger.warn('invalid total lab quota');
-      return fail(498);
-    }
-
     return await tracer.asyncSpan('action.start', async () => {
       const data = await request.formData();
       const { draft } = v.parse(DraftActionFormData, decode(data));
@@ -152,10 +211,16 @@ export const actions = {
 
       logger.debug('starting draft', { 'draft.id': draft });
 
+      const draftId = BigInt(draft);
+      const isValid = await isValidTotalInitialLabQuotaInDraft(db, draftId);
+      if (!isValid) {
+        logger.warn('invalid total draft initial quota', { 'draft.id': draftId.toString() });
+        return fail(498);
+      }
+
       const labCount = await getLabCount(db);
       assert(labCount > 0);
 
-      const draftId = BigInt(draft);
       const studentCount = await getStudentCountInDraft(db, draftId);
       if (studentCount <= 0) {
         logger.warn('no students in draft');
@@ -210,6 +275,84 @@ export const actions = {
     });
   },
 
+  async quota({ params, locals: { session }, request }) {
+    if (typeof session?.user === 'undefined') {
+      logger.error('attempt to update draft quota snapshots without session');
+      error(401);
+    }
+
+    const { user } = session;
+    if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
+      logger.error('insufficient permissions to update draft quota snapshots', void 0, {
+        'user.is_admin': user.isAdmin,
+        'user.google_id': user.googleUserId,
+        'user.lab_id': user.labId,
+      });
+      error(403);
+    }
+
+    return await tracer.asyncSpan('action.quota', async () => {
+      const data = await request.formData();
+      const { draft, kind } = v.parse(QuotaActionFormData, decode(data));
+
+      if (draft !== params.draftId) {
+        logger.warn('draft id mismatch', {
+          'draft.form_id': draft,
+          'draft.param_id': params.draftId,
+        });
+        error(400);
+      }
+
+      const draftId = BigInt(draft);
+      const activeDraft = await getActiveDraft(db);
+      if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
+        logger.warn('attempt to update quota snapshots for non-active draft', {
+          'draft.id': draftId.toString(),
+        });
+        error(403);
+      }
+
+      const pairs = mapQuotaPairs(data);
+      if (pairs.length === 0) {
+        logger.debug('no draft quota snapshot updates provided', {
+          'draft.id': draftId.toString(),
+          'quota.kind': kind,
+        });
+        return;
+      }
+
+      switch (kind) {
+        case 'initial':
+          if (activeDraft.currRound !== 0) {
+            logger.warn('attempt to update initial snapshots outside registration', {
+              'draft.id': draftId.toString(),
+              'draft.round.current': activeDraft.currRound,
+            });
+            error(403);
+          }
+          await updateDraftInitialLabQuotas(db, draftId, pairs);
+          break;
+        case 'lottery':
+          if (activeDraft.currRound !== null) {
+            logger.warn('attempt to update lottery snapshots outside lottery phase', {
+              'draft.id': draftId.toString(),
+              'draft.round.current': activeDraft.currRound,
+            });
+            error(403);
+          }
+          await updateDraftLotteryLabQuotas(db, draftId, pairs);
+          break;
+        default:
+          throw new Error(`invalid quota kind: ${kind}`);
+      }
+
+      logger.info('draft quota snapshots updated', {
+        'draft.id': draftId.toString(),
+        'quota.kind': kind,
+      });
+    });
+  },
+
   async intervene({ params, locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
       logger.error('attempt to intervene draft without session');
@@ -251,7 +394,7 @@ export const actions = {
       const draftId = BigInt(draft);
 
       logger.debug('intervening draft with pairs', { 'draft.pair_count': pairs.length });
-      const result = await insertLotteryChoices(db, draftId, user.id, pairs);
+      const result = await insertLotteryChoices(db, draftId, user.id, pairs, 'intervention');
       if (typeof result === 'undefined') {
         logger.error('draft must exist prior to lottery in intervention');
         error(404);
@@ -323,9 +466,11 @@ export const actions = {
       try {
         await db.transaction(
           async db => {
-            const labs = await getLabRegistry(db);
+            const snapshots = await getDraftLabQuotaSnapshots(db, draftId);
             const schedule = Array.from(
-              roundrobin(...labs.map(({ id, quota }) => repeat(id, quota))),
+              roundrobin(
+                ...snapshots.map(({ labId, lotteryQuota }) => repeat(labId, lotteryQuota)),
+              ),
             );
             logger.debug('round-robin schedule generated', {
               'draft.schedule.length': schedule.length,
@@ -349,7 +494,7 @@ export const actions = {
             if (pairs.length > 0) {
               logger.debug('inserting lottery choices', { 'draft.pair_count': pairs.length });
 
-              const result = await insertLotteryChoices(db, draftId, user.id, pairs);
+              const result = await insertLotteryChoices(db, draftId, user.id, pairs, 'lottery');
               if (typeof result === 'undefined') {
                 logger.error('draft must exist prior to draft conclusion');
                 error(404);

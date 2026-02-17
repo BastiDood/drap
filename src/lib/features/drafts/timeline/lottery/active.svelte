@@ -1,8 +1,13 @@
 <script lang="ts">
   import * as Card from '$lib/components/ui/card';
   import Student from '$lib/users/student.svelte';
+  import type {
+    DraftConcludedBreakdown,
+    Lab,
+    Student as StudentType,
+  } from '$lib/features/drafts/types';
 
-  import type { Lab, Student as StudentType } from '$lib/features/drafts/types';
+  import QuotaSnapshotForm from '../quota-snapshot-form.svelte';
 
   import ConcludeForm from './conclude-form.svelte';
   import InterveneForm from './intervene-form.svelte';
@@ -12,9 +17,10 @@
     labs: Pick<Lab, 'id' | 'name'>[];
     available: StudentType[];
     selected: StudentType[];
+    snapshots: DraftConcludedBreakdown['snapshots'];
   }
 
-  const { draftId, labs, available, selected }: Props = $props();
+  const { draftId, labs, available, selected, snapshots }: Props = $props();
 </script>
 
 <div class="grid grid-cols-1 gap-4 md:grid-cols-[auto_1fr]">
@@ -46,10 +52,11 @@
       After the randomization stage, the draft process is officially complete. All students, lab
       heads, and administrators are notified of the final results.
     </p>
+    <QuotaSnapshotForm {draftId} mode="lottery" {snapshots} />
     <ConcludeForm {draftId} />
   </div>
   <div class="min-w-max space-y-2">
-    <Card.Root class="bg-muted border-0">
+    <Card.Root class="border-0">
       <Card.Header>
         <Card.Title>Eligible for Lottery ({available.length})</Card.Title>
       </Card.Header>
@@ -63,16 +70,14 @@
         {/if}
       </Card.Content>
     </Card.Root>
-    <Card.Root class="bg-muted border-0">
+    <Card.Root class="border-0">
       <Card.Header>
         <Card.Title>Already Drafted ({selected.length})</Card.Title>
       </Card.Header>
       <Card.Content>
         <ul class="space-y-1">
           {#each selected as { id, ...user } (id)}
-            <li class="bg-muted hover:bg-muted/80 rounded-md p-2 transition-colors duration-150">
-              <Student {user} />
-            </li>
+            <li><Student {user} /></li>
           {/each}
         </ul>
       </Card.Content>

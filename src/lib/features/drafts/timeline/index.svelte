@@ -3,7 +3,13 @@
   import { format } from 'date-fns';
 
   import { Button } from '$lib/components/ui/button';
-  import type { Draft, FacultyChoiceRecord, Lab, Student } from '$lib/features/drafts/types';
+  import type {
+    Draft,
+    DraftConcludedBreakdown,
+    FacultyChoiceRecord,
+    Lab,
+    Student,
+  } from '$lib/features/drafts/types';
   import { resolve } from '$app/paths';
 
   import Step, { type Status } from './step.svelte';
@@ -24,9 +30,10 @@
     available: Student[];
     selected: Student[];
     records: FacultyChoiceRecord[];
+    concluded: DraftConcludedBreakdown;
   }
 
-  const { draftId, draft, labs, available, selected, records }: Props = $props();
+  const { draftId, draft, labs, available, selected, records, concluded }: Props = $props();
 
   const allStudents = $derived([...available, ...selected]);
 
@@ -135,7 +142,7 @@
         {#snippet metadata()}
           <span class="text-muted-foreground text-sm">{format(concludedDate, 'PPP')}</span>
         {/snippet}
-        <SummaryPhase {draftId} {draft} students={allStudents} {labs} />
+        <SummaryPhase {draftId} {draft} students={allStudents} {labs} {concluded} />
       </Step>
     {/if}
 
@@ -148,9 +155,9 @@
         last={isLotteryLast}
       >
         {#if currentPhase === 'lottery'}
-          <LotteryActive {draftId} {labs} {available} {selected} />
+          <LotteryActive {draftId} {labs} {available} {selected} snapshots={concluded.snapshots} />
         {:else}
-          <LotteryCompleted {available} {selected} />
+          <LotteryCompleted {selected} lotteryDrafted={concluded.sections.lotteryDrafted} />
         {/if}
       </Step>
     {/if}
@@ -170,6 +177,8 @@
         {/snippet}
         {#if draft.currRound !== null && draft.currRound > 0}
           <RegularPhase round={draft.currRound} {labs} {records} {available} {selected} />
+        {:else if currentPhase === 'concluded'}
+          <RegularPhase round={draft.maxRounds} {labs} {records} {available} {selected} />
         {:else}
           <p class="text-muted-foreground">
             Regular rounds have been completed. {draft.maxRounds} rounds were executed.
@@ -189,7 +198,7 @@
         <span class="text-muted-foreground text-sm">{allStudents.length} students</span>
       {/snippet}
       {#if currentPhase === 'registration'}
-        <RegistrationActive {draftId} students={allStudents} />
+        <RegistrationActive {draftId} students={allStudents} snapshots={concluded.snapshots} />
       {:else}
         <RegistrationCompleted students={allStudents} />
       {/if}
