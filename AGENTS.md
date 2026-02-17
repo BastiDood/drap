@@ -48,8 +48,8 @@ Key directories:
 - `(landing)/privacy/` - Privacy policy
 - `/dashboard/` - Main app (authenticated)
   - `admin/` - Admin hub
-  - `(draft)/drafts/` - Draft lifecycle management + `[draftId]/` detail views
-  - `(draft)/labs/` - Lab quota management
+  - `(draft)/drafts/` - Draft lifecycle + per-draft quota snapshot management + `[draftId]/` detail views
+  - `(draft)/labs/` - Global lab configuration (default quotas + archive/restore)
   - `(faculty)/students/` - Faculty view/select students each round
   - `/email` - Email sender config
   - `/lab` - Lab management (faculty)
@@ -76,15 +76,21 @@ Environment loading organized in `src/lib/server/env/` with hierarchical modules
 
 Run Playwright tests with environment variables loaded:
 
-```bash
+```shell
 # Ensure development-only services are spun up.
 pnpm docker:dev
+```
 
-# Apply local production mode overrides here.
-set -a
-source .env.production
+```nu
+do {
+  open .env.production.local | from toml | load-env;
+  pnpm build;
+  pnpm test:playwright;
+}
+```
 
-# Playwright runs `pnpm preview`, so we need to build first.
+```bash
+set -a && source .env.production.local && set +a
 pnpm build
 pnpm test:playwright
 ```

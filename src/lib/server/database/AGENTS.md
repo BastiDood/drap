@@ -70,6 +70,21 @@ await db.update(schema.lab).set({ deletedAt: new Date() }).where(eq(schema.lab.i
 await db.update(schema.lab).set({ deletedAt: null }).where(eq(schema.lab.id, id));
 ```
 
+## Draft Quota Snapshots
+
+`drap.lab` remains the central hub for global lab configuration:
+
+- `quota`: default quota baseline for future drafts
+- `deletedAt`: archive/restore state for labs
+
+`drap.draft_lab_quota` stores per-draft quota snapshots (`NOT NULL DEFAULT 0`):
+
+- `initialQuota`: copied from active lab quotas in `initDraft`; editable only during registration on draft detail
+- `lotteryQuota`: editable only during lottery on draft detail; used for conclude round-robin allocation
+
+This keeps concluded-draft reporting independent from later edits to global `drap.lab.quota`, and
+ensures `/dashboard/labs` updates do not mutate active-draft snapshots.
+
 ## Query Function Patterns
 
 ### Tracer Wrapping
