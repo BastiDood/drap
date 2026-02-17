@@ -1,23 +1,32 @@
-import { expect } from '@playwright/test';
+import { expect, type Page } from '@playwright/test';
 
 import { test } from './fixtures/users';
+
+async function assertLogout(page: Page) {
+  await page.goto('/dashboard/');
+  await page.getByRole('button', { name: 'Logout' }).click();
+  await expect(page).toHaveURL('/');
+  await expect(
+    page.getByRole('heading', { name: 'Draft Ranking Automated Processor' }),
+  ).toBeVisible();
+}
 
 test.describe('Draft Lifecycle', () => {
   test.describe.configure({ mode: 'serial' });
 
   test.describe('Initial State', () => {
-    test('history page shows no drafts', async ({ page, database: _ }) => {
+    test('history page shows no drafts', async ({ page, database: _database }) => {
       await page.goto('/history/');
       await expect(page.getByText('No drafts have been recorded yet')).toBeVisible();
     });
 
     test('admin sees faculty in users page', async ({
       adminPage,
-      ndslHeadPage: _ndsl,
-      cslHeadPage: _csl,
-      sclHeadPage: _scl,
-      cvmilHeadPage: _cvmil,
-      aclHeadPage: _acl,
+      ndslHeadUserId: _ndsl,
+      cslHeadUserId: _csl,
+      sclHeadUserId: _scl,
+      cvmilHeadUserId: _cvmil,
+      aclHeadUserId: _acl,
     }) => {
       await adminPage.goto('/dashboard/users/');
       await expect(adminPage.getByText('ndsl@up.edu.ph')).toBeVisible();
@@ -666,15 +675,19 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('Adjust Quotas for Remaining Students', () => {
-    test('sets quotas to match 3 remaining students', async ({ adminPage }) => {
-      await adminPage.goto('/dashboard/labs/');
-      await adminPage.locator('input[name="ndsl"]').fill('0');
-      await adminPage.locator('input[name="csl"]').fill('0');
-      await adminPage.locator('input[name="scl"]').fill('1');
-      await adminPage.locator('input[name="cvmil"]').fill('1');
-      await adminPage.locator('input[name="acl"]').fill('1');
-      const responsePromise = adminPage.waitForResponse('/dashboard/labs/?/quota');
-      await adminPage.getByRole('button', { name: 'Update Quotas' }).click();
+    test('sets lottery snapshots to match 3 remaining students', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+      const editor = adminPage.locator('#draft-quota-editor-lottery');
+      await expect(editor).toBeVisible();
+
+      await editor.locator('input[name="ndsl"]').fill('0');
+      await editor.locator('input[name="csl"]').fill('0');
+      await editor.locator('input[name="scl"]').fill('1');
+      await editor.locator('input[name="cvmil"]').fill('1');
+      await editor.locator('input[name="acl"]').fill('1');
+
+      const responsePromise = adminPage.waitForResponse('/dashboard/drafts/1/?/quota');
+      await editor.getByRole('button', { name: 'Update Lottery Snapshots' }).click();
       const response = await responsePromise;
       const responseData = await response.json();
       expect(responseData.type).toBe('success');
@@ -693,6 +706,49 @@ test.describe('Draft Lifecycle', () => {
       const response = await responsePromise;
       const responseData = await response.json();
       expect(responseData.type).toBe('success');
+    });
+  });
+
+  test.describe('Admin Concluded Breakdown', () => {
+    test('shows expected aggregate quota values', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+      await expect(adminPage.locator('#admin-concluded-breakdown')).toBeVisible();
+      await expect(adminPage.locator('#quota-initial')).toHaveText('8');
+      await expect(adminPage.locator('#quota-interventions')).toHaveText('1');
+      await expect(adminPage.locator('#quota-concluded')).toHaveText('11');
+    });
+
+    test('shows regular, intervention, and lottery sections in order', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+
+      const sectionIds = await adminPage
+        .locator(
+          '#section-regular-drafted, #section-intervention-drafted, #section-lottery-drafted',
+        )
+        .evaluateAll(nodes => nodes.map(node => node.id));
+      expect(sectionIds).toEqual([
+        'section-regular-drafted',
+        'section-intervention-drafted',
+        'section-lottery-drafted',
+      ]);
+
+      await expect(adminPage.locator('#section-regular-drafted')).toContainText(
+        'Regular Drafted (4)',
+      );
+      await expect(adminPage.locator('#section-intervention-drafted')).toContainText(
+        'Intervention Drafted (1)',
+      );
+      await expect(adminPage.locator('#section-undrafted-after-regular')).toContainText(
+        'Undrafted After Regular (4)',
+      );
+      await expect(adminPage.locator('#section-lottery-drafted')).toContainText(
+        'Lottery Drafted (3)',
+      );
+
+      const firstInterventionDate = adminPage.locator('[id^="intervention-date-"]').first();
+      await expect(firstInterventionDate).toBeVisible();
+      const interventionDateText = (await firstInterventionDate.textContent())?.trim() ?? '';
+      expect(interventionDateText.length).toBeGreaterThan(0);
     });
   });
 
@@ -826,154 +882,429 @@ test.describe('Draft Lifecycle', () => {
     });
   });
 
+  test.describe('Second Draft — Archive And Setup', () => {
+    test('archives ACL and verifies it appears in archived labs', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/labs/');
+
+      const aclRow = adminPage
+        .locator('tbody tr')
+        .filter({ hasText: 'Algorithms and Complexity Laboratory' });
+      await expect(aclRow).toBeVisible();
+
+      const responsePromise = adminPage.waitForResponse('/dashboard/labs/?/archive');
+      await aclRow.getByRole('button').click();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
+
+      await adminPage.getByRole('tab', { name: /Archived Labs/u }).click();
+      await expect(adminPage.getByText('Algorithms and Complexity Laboratory')).toBeVisible();
+    });
+
+    test('sets minimal quotas for the second draft cycle', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/labs/');
+
+      await adminPage.locator('input[name="ndsl"]').fill('1');
+      await adminPage.locator('input[name="csl"]').fill('1');
+      await adminPage.locator('input[name="scl"]').fill('1');
+      await adminPage.locator('input[name="cvmil"]').fill('0');
+
+      const responsePromise = adminPage.waitForResponse('/dashboard/labs/?/quota');
+      await adminPage.getByRole('button', { name: 'Update Quotas' }).click();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
+    });
+
+    test('creates Draft #2 with 2 rounds', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/');
+      await adminPage.getByRole('button', { name: 'Create Draft' }).click();
+
+      const dialog = adminPage.getByRole('dialog');
+      await expect(dialog).toBeVisible();
+
+      const tomorrow = new Date();
+      tomorrow.setDate(tomorrow.getDate() + 1);
+      const formattedDate = tomorrow.toISOString().slice(0, 16);
+
+      await dialog.locator('input#closesAt').fill(formattedDate);
+      await dialog.locator('input#rounds').fill('2');
+
+      adminPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = adminPage.waitForResponse('/dashboard/drafts/?/init');
+      await dialog.getByRole('button', { name: 'Create Draft' }).click();
+
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
+
+      await expect(adminPage.getByText('#2')).toBeVisible();
+      await expect(adminPage.getByText('Registration')).toBeVisible();
+    });
+  });
+
+  test.describe('Second Draft — Student Registration', () => {
+    test('SecondNdslFirstChoice completes profile and submits rankings (NDSL > CSL)', async ({
+      secondRoundNdslFirstChoicePage,
+    }) => {
+      await secondRoundNdslFirstChoicePage.goto('/dashboard/student/');
+      await secondRoundNdslFirstChoicePage.getByLabel('Student Number').fill('202112360');
+      {
+        const profileResponsePromise =
+          secondRoundNdslFirstChoicePage.waitForResponse('/dashboard/?/profile');
+        await secondRoundNdslFirstChoicePage
+          .getByRole('button', { name: 'Complete Profile' })
+          .click();
+        const profileResponse = await profileResponsePromise;
+        const profileResponseData = await profileResponse.json();
+        expect(profileResponseData.type).toBe('success');
+      }
+
+      await secondRoundNdslFirstChoicePage
+        .getByRole('button', { name: 'Networks and Distributed Systems Laboratory' })
+        .click();
+      await secondRoundNdslFirstChoicePage
+        .getByRole('button', { name: 'Computer Security Laboratory' })
+        .click();
+
+      secondRoundNdslFirstChoicePage.on('dialog', dialog => dialog.accept());
+      const responsePromise = secondRoundNdslFirstChoicePage.waitForResponse(
+        '/dashboard/student/?/submit',
+      );
+      await secondRoundNdslFirstChoicePage
+        .getByRole('button', { name: 'Submit Lab Preferences' })
+        .click();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
+    });
+
+    test('SecondCslFirstChoice completes profile and submits rankings (CSL > NDSL)', async ({
+      secondRoundCslFirstChoicePage,
+    }) => {
+      await secondRoundCslFirstChoicePage.goto('/dashboard/student/');
+      await secondRoundCslFirstChoicePage.getByLabel('Student Number').fill('202112361');
+      {
+        const profileResponsePromise =
+          secondRoundCslFirstChoicePage.waitForResponse('/dashboard/?/profile');
+        await secondRoundCslFirstChoicePage
+          .getByRole('button', { name: 'Complete Profile' })
+          .click();
+        const profileResponse = await profileResponsePromise;
+        const profileResponseData = await profileResponse.json();
+        expect(profileResponseData.type).toBe('success');
+      }
+
+      await secondRoundCslFirstChoicePage
+        .getByRole('button', { name: 'Computer Security Laboratory' })
+        .click();
+      await secondRoundCslFirstChoicePage
+        .getByRole('button', { name: 'Networks and Distributed Systems Laboratory' })
+        .click();
+
+      secondRoundCslFirstChoicePage.on('dialog', dialog => dialog.accept());
+      const responsePromise = secondRoundCslFirstChoicePage.waitForResponse(
+        '/dashboard/student/?/submit',
+      );
+      await secondRoundCslFirstChoicePage
+        .getByRole('button', { name: 'Submit Lab Preferences' })
+        .click();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
+    });
+
+    test('SecondSclSecondChoice completes profile and submits rankings (NDSL > SCL)', async ({
+      secondRoundSclSecondChoicePage,
+    }) => {
+      await secondRoundSclSecondChoicePage.goto('/dashboard/student/');
+      await secondRoundSclSecondChoicePage.getByLabel('Student Number').fill('202112362');
+      {
+        const profileResponsePromise =
+          secondRoundSclSecondChoicePage.waitForResponse('/dashboard/?/profile');
+        await secondRoundSclSecondChoicePage
+          .getByRole('button', { name: 'Complete Profile' })
+          .click();
+        const profileResponse = await profileResponsePromise;
+        const profileResponseData = await profileResponse.json();
+        expect(profileResponseData.type).toBe('success');
+      }
+
+      await secondRoundSclSecondChoicePage
+        .getByRole('button', { name: 'Networks and Distributed Systems Laboratory' })
+        .click();
+      await secondRoundSclSecondChoicePage
+        .getByRole('button', { name: 'Scientific Computing Laboratory' })
+        .click();
+
+      secondRoundSclSecondChoicePage.on('dialog', dialog => dialog.accept());
+      const responsePromise = secondRoundSclSecondChoicePage.waitForResponse(
+        '/dashboard/student/?/submit',
+      );
+      await secondRoundSclSecondChoicePage
+        .getByRole('button', { name: 'Submit Lab Preferences' })
+        .click();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
+    });
+  });
+
+  test.describe('Second Draft — History During Registration', () => {
+    test('history shows Draft #2 in registration phase', async ({ page }) => {
+      await page.goto('/history/');
+      await expect(page.getByText('Draft #2')).toBeVisible();
+      await expect(page.getByText('currently waiting for students to register')).toBeVisible();
+    });
+
+    test('Draft #2 detail shows registration status', async ({ page }) => {
+      await page.goto('/history/2/');
+      await expect(page.getByText('registration stage')).toBeVisible();
+    });
+  });
+
+  test.describe('Second Draft — Regular Flow (No Lottery Assignments)', () => {
+    test('starts Draft #2', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/2/');
+      await expect(adminPage.getByText('There are currently')).toBeVisible();
+      await expect(adminPage.getByText(/\b3\b/u).first()).toBeVisible();
+
+      adminPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = adminPage.waitForResponse('/dashboard/drafts/2/?/start');
+      await adminPage.getByRole('button', { name: 'Start Draft' }).click();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
+
+      await expect(adminPage.getByText(/Round 1/u)).toBeVisible();
+    });
+
+    test('Round 1: NDSL selects SecondNdsl', async ({ ndslHeadPage }) => {
+      await ndslHeadPage.goto('/dashboard/students/');
+      await expect(ndslHeadPage.getByRole('button', { name: /SecondNdsl/u })).toBeVisible();
+      await expect(ndslHeadPage.getByRole('button', { name: /SecondScl/u })).toBeVisible();
+
+      await ndslHeadPage.getByRole('button', { name: /SecondNdsl/u }).click();
+      ndslHeadPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
+      await ndslHeadPage.getByRole('button', { name: 'Submit' }).click();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
+    });
+
+    test('Round 1: CSL selects SecondCsl', async ({ cslHeadPage }) => {
+      await cslHeadPage.goto('/dashboard/students/');
+      await expect(cslHeadPage.getByRole('button', { name: /SecondCsl/u })).toBeVisible();
+
+      await cslHeadPage.getByRole('button', { name: /SecondCsl/u }).click();
+      cslHeadPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = cslHeadPage.waitForResponse('/dashboard/students/?/rankings');
+      await cslHeadPage.getByRole('button', { name: 'Submit' }).click();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
+    });
+
+    test('Draft #2 reaches Round 2', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/2/');
+      await expect(adminPage.getByText(/Round 2/u)).toBeVisible();
+    });
+
+    test('Round 2: SCL selects SecondScl', async ({ sclHeadPage }) => {
+      await sclHeadPage.goto('/dashboard/students/');
+      await expect(sclHeadPage.getByRole('button', { name: /SecondScl/u })).toBeVisible();
+
+      await sclHeadPage.getByRole('button', { name: /SecondScl/u }).click();
+      sclHeadPage.on('dialog', dialog => dialog.accept());
+      const responsePromise = sclHeadPage.waitForResponse('/dashboard/students/?/rankings');
+      await sclHeadPage.getByRole('button', { name: 'Submit' }).click();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
+    });
+
+    test('lottery stage shows zero eligible students', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/2/');
+      await expect(adminPage.getByRole('heading', { name: 'Lottery Phase' })).toBeVisible();
+      await expect(adminPage.getByText('Eligible for Lottery (0)')).toBeVisible();
+      await expect(
+        adminPage.getByText('Congratulations! All participants have been drafted.'),
+      ).toBeVisible();
+    });
+
+    test('sets lottery snapshots to zero and concludes Draft #2', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/2/');
+      const editor = adminPage.locator('#draft-quota-editor-lottery');
+      await expect(editor).toBeVisible();
+
+      await editor.locator('input[name="ndsl"]').fill('0');
+      await editor.locator('input[name="csl"]').fill('0');
+      await editor.locator('input[name="scl"]').fill('0');
+      await editor.locator('input[name="cvmil"]').fill('0');
+
+      {
+        const quotaResponsePromise = adminPage.waitForResponse('/dashboard/drafts/2/?/quota');
+        await editor.getByRole('button', { name: 'Update Lottery Snapshots' }).click();
+        const quotaResponse = await quotaResponsePromise;
+        const quotaResponseData = await quotaResponse.json();
+        expect(quotaResponseData.type).toBe('success');
+      }
+
+      adminPage.on('dialog', dialog => dialog.accept());
+      const concludeResponsePromise = adminPage.waitForResponse('/dashboard/drafts/2/?/conclude');
+      await adminPage.getByRole('button', { name: 'Conclude Draft' }).click();
+
+      const concludeResponse = await concludeResponsePromise;
+      const concludeResponseData = await concludeResponse.json();
+      expect(concludeResponseData.type).toBe('success');
+    });
+  });
+
+  test.describe('Second Draft — Dashboard And History Verification', () => {
+    test('admin concluded breakdown is correct for Draft #2', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/2/');
+      await expect(adminPage.locator('#admin-concluded-breakdown')).toBeVisible();
+      await expect(adminPage.locator('#quota-initial')).toHaveText('3');
+      await expect(adminPage.locator('#quota-interventions')).toHaveText('0');
+      await expect(adminPage.locator('#quota-concluded')).toHaveText('3');
+      await expect(adminPage.locator('#section-regular-drafted')).toContainText(
+        'Regular Drafted (3)',
+      );
+      await expect(adminPage.locator('#section-intervention-drafted')).toContainText(
+        'Intervention Drafted (0)',
+      );
+      await expect(adminPage.locator('#section-undrafted-after-regular')).toContainText(
+        'Undrafted After Regular (0)',
+      );
+      await expect(adminPage.locator('#section-lottery-drafted')).toContainText(
+        'Lottery Drafted (0)',
+      );
+    });
+
+    test('drafts table shows Draft #2 and Draft #1 concluded', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/');
+      await expect(adminPage.getByText('#2')).toBeVisible();
+      await expect(adminPage.getByText('#1')).toBeVisible();
+      await expect(adminPage.getByText('Concluded')).toHaveCount(2);
+    });
+
+    test('history index and Draft #2 detail reflect a 2-round conclusion', async ({ page }) => {
+      await page.goto('/history/');
+      await expect(page.getByText('Draft #2')).toBeVisible();
+      await expect(page.getByText(/over 2 rounds/u)).toBeVisible();
+
+      await page.goto('/history/2/');
+      await expect(page.getByText(/was held from/u)).toBeVisible();
+      await expect(page.getByText(/over 2 rounds/u)).toBeVisible();
+
+      const items = page.locator('section ol.border-s li[class*="preset-tonal-"]');
+      const texts = await items.allTextContents();
+      function idx(regex: RegExp) {
+        return texts.findIndex(t => regex.test(t));
+      }
+
+      const sclR2 = idx(/scl.*2nd batch/isu);
+      const ndslR1 = idx(/ndsl.*1st batch/isu);
+      const cslR1 = idx(/csl.*1st batch/isu);
+
+      expect(idx(/was concluded/u)).toBe(0);
+      expect(idx(/was created/u)).toBe(texts.length - 1);
+      expect(sclR2).toBeGreaterThanOrEqual(0);
+      expect(ndslR1).toBeGreaterThanOrEqual(0);
+      expect(cslR1).toBeGreaterThanOrEqual(0);
+      expect(sclR2).toBeLessThan(ndslR1);
+      expect(sclR2).toBeLessThan(cslR1);
+
+      // Second draft had no randomized lottery assignments.
+      expect(idx(/obtained a batch.*lottery/isu)).toBe(-1);
+    });
+  });
+
+  test.describe('Second Draft — Student And Faculty Final States', () => {
+    test('SecondNdslFirstChoice sees NDSL assignment', async ({
+      secondRoundNdslFirstChoicePage,
+    }) => {
+      await secondRoundNdslFirstChoicePage.goto('/dashboard/student/');
+      await expect(
+        secondRoundNdslFirstChoicePage.getByText(/Networks and Distributed Systems Laboratory/u),
+      ).toBeVisible();
+    });
+
+    test('SecondCslFirstChoice sees CSL assignment', async ({ secondRoundCslFirstChoicePage }) => {
+      await secondRoundCslFirstChoicePage.goto('/dashboard/student/');
+      await expect(
+        secondRoundCslFirstChoicePage.getByText(/Computer Security Laboratory/u),
+      ).toBeVisible();
+    });
+
+    test('SecondSclSecondChoice sees SCL assignment', async ({
+      secondRoundSclSecondChoicePage,
+    }) => {
+      await secondRoundSclSecondChoicePage.goto('/dashboard/student/');
+      await expect(
+        secondRoundSclSecondChoicePage.getByText(/Scientific Computing Laboratory/u),
+      ).toBeVisible();
+    });
+
+    test('NDSL, CSL, and SCL heads can view Draft 2 assignees', async ({
+      ndslHeadPage,
+      cslHeadPage,
+      sclHeadPage,
+    }) => {
+      await ndslHeadPage.goto('/dashboard/lab/');
+      await ndslHeadPage.getByRole('button', { name: /Draft 2/u }).click();
+      await expect(ndslHeadPage.getByText(/SecondNdsl/u)).toBeVisible();
+
+      await cslHeadPage.goto('/dashboard/lab/');
+      await cslHeadPage.getByRole('button', { name: /Draft 2/u }).click();
+      await expect(cslHeadPage.getByText(/SecondCsl/u)).toBeVisible();
+
+      await sclHeadPage.goto('/dashboard/lab/');
+      await sclHeadPage.getByRole('button', { name: /Draft 2/u }).click();
+      await expect(sclHeadPage.getByText(/SecondScl/u)).toBeVisible();
+    });
+  });
+
   test.describe('Logout', () => {
-    test('admin can log out and lands on home', async ({ adminPage }) => {
-      await adminPage.goto('/dashboard/');
-      await adminPage.getByRole('button', { name: 'Logout' }).click();
-      await expect(adminPage).toHaveURL('/');
-      await expect(
-        adminPage.getByRole('heading', { name: 'Draft Ranking Automated Processor' }),
-      ).toBeVisible();
-    });
-
-    test('NDSL head can log out and lands on home', async ({ ndslHeadPage }) => {
-      await ndslHeadPage.goto('/dashboard/');
-      await ndslHeadPage.getByRole('button', { name: 'Logout' }).click();
-      await expect(ndslHeadPage).toHaveURL('/');
-      await expect(
-        ndslHeadPage.getByRole('heading', { name: 'Draft Ranking Automated Processor' }),
-      ).toBeVisible();
-    });
-
-    test('CSL head can log out and lands on home', async ({ cslHeadPage }) => {
-      await cslHeadPage.goto('/dashboard/');
-      await cslHeadPage.getByRole('button', { name: 'Logout' }).click();
-      await expect(cslHeadPage).toHaveURL('/');
-      await expect(
-        cslHeadPage.getByRole('heading', { name: 'Draft Ranking Automated Processor' }),
-      ).toBeVisible();
-    });
-
-    test('SCL head can log out and lands on home', async ({ sclHeadPage }) => {
-      await sclHeadPage.goto('/dashboard/');
-      await sclHeadPage.getByRole('button', { name: 'Logout' }).click();
-      await expect(sclHeadPage).toHaveURL('/');
-      await expect(
-        sclHeadPage.getByRole('heading', { name: 'Draft Ranking Automated Processor' }),
-      ).toBeVisible();
-    });
-
-    test('CVMIL head can log out and lands on home', async ({ cvmilHeadPage }) => {
-      await cvmilHeadPage.goto('/dashboard/');
-      await cvmilHeadPage.getByRole('button', { name: 'Logout' }).click();
-      await expect(cvmilHeadPage).toHaveURL('/');
-      await expect(
-        cvmilHeadPage.getByRole('heading', { name: 'Draft Ranking Automated Processor' }),
-      ).toBeVisible();
-    });
-
-    test('ACL head can log out and lands on home', async ({ aclHeadPage }) => {
-      await aclHeadPage.goto('/dashboard/');
-      await aclHeadPage.getByRole('button', { name: 'Logout' }).click();
-      await expect(aclHeadPage).toHaveURL('/');
-      await expect(
-        aclHeadPage.getByRole('heading', { name: 'Draft Ranking Automated Processor' }),
-      ).toBeVisible();
-    });
-
-    test('Eager can log out and lands on home', async ({ eagerDrafteePage }) => {
-      await eagerDrafteePage.goto('/dashboard/');
-      await eagerDrafteePage.getByRole('button', { name: 'Logout' }).click();
-      await expect(eagerDrafteePage).toHaveURL('/');
-      await expect(
-        eagerDrafteePage.getByRole('heading', { name: 'Draft Ranking Automated Processor' }),
-      ).toBeVisible();
-    });
-
-    test('Patient can log out and lands on home', async ({ patientCandidatePage }) => {
-      await patientCandidatePage.goto('/dashboard/');
-      await patientCandidatePage.getByRole('button', { name: 'Logout' }).click();
-      await expect(patientCandidatePage).toHaveURL('/');
-      await expect(
-        patientCandidatePage.getByRole('heading', { name: 'Draft Ranking Automated Processor' }),
-      ).toBeVisible();
-    });
-
-    test('Persistent can log out and lands on home', async ({ persistentHopefulPage }) => {
-      await persistentHopefulPage.goto('/dashboard/');
-      await persistentHopefulPage.getByRole('button', { name: 'Logout' }).click();
-      await expect(persistentHopefulPage).toHaveURL('/');
-      await expect(
-        persistentHopefulPage.getByRole('heading', {
-          name: 'Draft Ranking Automated Processor',
-        }),
-      ).toBeVisible();
-    });
-
-    test('Unlucky can log out and lands on home', async ({ unluckyFullRankerPage }) => {
-      await unluckyFullRankerPage.goto('/dashboard/');
-      await unluckyFullRankerPage.getByRole('button', { name: 'Logout' }).click();
-      await expect(unluckyFullRankerPage).toHaveURL('/');
-      await expect(
-        unluckyFullRankerPage.getByRole('heading', {
-          name: 'Draft Ranking Automated Processor',
-        }),
-      ).toBeVisible();
-    });
-
-    test('NoRank can log out and lands on home', async ({ noRankStudentPage }) => {
-      await noRankStudentPage.goto('/dashboard/');
-      await noRankStudentPage.getByRole('button', { name: 'Logout' }).click();
-      await expect(noRankStudentPage).toHaveURL('/');
-      await expect(
-        noRankStudentPage.getByRole('heading', {
-          name: 'Draft Ranking Automated Processor',
-        }),
-      ).toBeVisible();
-    });
-
-    test('Idle can log out and lands on home', async ({ idleBystanderPage }) => {
-      await idleBystanderPage.goto('/dashboard/');
-      await idleBystanderPage.getByRole('button', { name: 'Logout' }).click();
-      await expect(idleBystanderPage).toHaveURL('/');
-      await expect(
-        idleBystanderPage.getByRole('heading', {
-          name: 'Draft Ranking Automated Processor',
-        }),
-      ).toBeVisible();
-    });
-
-    test('Late can log out and lands on home', async ({ lateRegistrantPage }) => {
-      await lateRegistrantPage.goto('/dashboard/');
-      await lateRegistrantPage.getByRole('button', { name: 'Logout' }).click();
-      await expect(lateRegistrantPage).toHaveURL('/');
-      await expect(
-        lateRegistrantPage.getByRole('heading', {
-          name: 'Draft Ranking Automated Processor',
-        }),
-      ).toBeVisible();
-    });
-
-    test('PartialToDrafted can log out and lands on home', async ({ partialToDraftedPage }) => {
-      await partialToDraftedPage.goto('/dashboard/');
-      await partialToDraftedPage.getByRole('button', { name: 'Logout' }).click();
-      await expect(partialToDraftedPage).toHaveURL('/');
-      await expect(
-        partialToDraftedPage.getByRole('heading', {
-          name: 'Draft Ranking Automated Processor',
-        }),
-      ).toBeVisible();
-    });
-
-    test('PartialToLottery can log out and lands on home', async ({ partialToLotteryPage }) => {
-      await partialToLotteryPage.goto('/dashboard/');
-      await partialToLotteryPage.getByRole('button', { name: 'Logout' }).click();
-      await expect(partialToLotteryPage).toHaveURL('/');
-      await expect(
-        partialToLotteryPage.getByRole('heading', {
-          name: 'Draft Ranking Automated Processor',
-        }),
-      ).toBeVisible();
-    });
+    test('admin can log out and lands on home', async ({ adminPage }) =>
+      await assertLogout(adminPage));
+    test('NDSL head can log out and lands on home', async ({ ndslHeadPage }) =>
+      await assertLogout(ndslHeadPage));
+    test('CSL head can log out and lands on home', async ({ cslHeadPage }) =>
+      await assertLogout(cslHeadPage));
+    test('SCL head can log out and lands on home', async ({ sclHeadPage }) =>
+      await assertLogout(sclHeadPage));
+    test('CVMIL head can log out and lands on home', async ({ cvmilHeadPage }) =>
+      await assertLogout(cvmilHeadPage));
+    test('ACL head can log out and lands on home', async ({ aclHeadPage }) =>
+      await assertLogout(aclHeadPage));
+    test('Eager can log out and lands on home', async ({ eagerDrafteePage }) =>
+      await assertLogout(eagerDrafteePage));
+    test('Patient can log out and lands on home', async ({ patientCandidatePage }) =>
+      await assertLogout(patientCandidatePage));
+    test('Persistent can log out and lands on home', async ({ persistentHopefulPage }) =>
+      await assertLogout(persistentHopefulPage));
+    test('Unlucky can log out and lands on home', async ({ unluckyFullRankerPage }) =>
+      await assertLogout(unluckyFullRankerPage));
+    test('NoRank can log out and lands on home', async ({ noRankStudentPage }) =>
+      await assertLogout(noRankStudentPage));
+    test('Idle can log out and lands on home', async ({ idleBystanderPage }) =>
+      await assertLogout(idleBystanderPage));
+    test('Late can log out and lands on home', async ({ lateRegistrantPage }) =>
+      await assertLogout(lateRegistrantPage));
+    test('PartialToDrafted can log out and lands on home', async ({ partialToDraftedPage }) =>
+      await assertLogout(partialToDraftedPage));
+    test('PartialToLottery can log out and lands on home', async ({ partialToLotteryPage }) =>
+      await assertLogout(partialToLotteryPage));
+    test('SecondNdslFirstChoice can log out and lands on home', async ({
+      secondRoundNdslFirstChoicePage,
+    }) => await assertLogout(secondRoundNdslFirstChoicePage));
+    test('SecondCslFirstChoice can log out and lands on home', async ({
+      secondRoundCslFirstChoicePage,
+    }) => await assertLogout(secondRoundCslFirstChoicePage));
+    test('SecondSclSecondChoice can log out and lands on home', async ({
+      secondRoundSclSecondChoicePage,
+    }) => await assertLogout(secondRoundSclSecondChoicePage));
   });
 });

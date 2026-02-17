@@ -363,6 +363,129 @@ const testLateRegistrant = testLabs.extend<
   },
 });
 
+const testSecondRoundNdslFirstChoice = testLabs.extend<
+  { secondRoundNdslFirstChoicePage: Page },
+  { secondRoundNdslFirstChoiceUserId: string }
+>({
+  secondRoundNdslFirstChoiceUserId: [
+    async ({ database, labs: _ }, use) => {
+      const { id: userId } = await upsertTestUser(database, {
+        email: 'second-ndsl-first-choice.student@up.edu.ph',
+        googleUserId: 'test-second-ndsl-first-choice-student',
+        givenName: 'SecondNdsl',
+        familyName: 'FirstChoice',
+        isAdmin: false,
+        labId: null,
+      });
+      await use(userId);
+    },
+    { scope: 'worker' },
+  ],
+  async secondRoundNdslFirstChoicePage(
+    { database, browser, secondRoundNdslFirstChoiceUserId },
+    use,
+  ) {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    const sessionId = await insertDummySession(database, secondRoundNdslFirstChoiceUserId);
+    await context.addCookies([
+      {
+        name: 'sid',
+        value: sessionId,
+        domain: 'localhost',
+        path: '/dashboard',
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+    ]);
+    await page.goto('/dashboard/');
+    await use(page);
+    await deleteValidSession(database, sessionId);
+    await context.close();
+  },
+});
+
+const testSecondRoundCslFirstChoice = testLabs.extend<
+  { secondRoundCslFirstChoicePage: Page },
+  { secondRoundCslFirstChoiceUserId: string }
+>({
+  secondRoundCslFirstChoiceUserId: [
+    async ({ database, labs: _ }, use) => {
+      const { id: userId } = await upsertTestUser(database, {
+        email: 'second-csl-first-choice.student@up.edu.ph',
+        googleUserId: 'test-second-csl-first-choice-student',
+        givenName: 'SecondCsl',
+        familyName: 'FirstChoice',
+        isAdmin: false,
+        labId: null,
+      });
+      await use(userId);
+    },
+    { scope: 'worker' },
+  ],
+  async secondRoundCslFirstChoicePage({ database, browser, secondRoundCslFirstChoiceUserId }, use) {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    const sessionId = await insertDummySession(database, secondRoundCslFirstChoiceUserId);
+    await context.addCookies([
+      {
+        name: 'sid',
+        value: sessionId,
+        domain: 'localhost',
+        path: '/dashboard',
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+    ]);
+    await page.goto('/dashboard/');
+    await use(page);
+    await deleteValidSession(database, sessionId);
+    await context.close();
+  },
+});
+
+const testSecondRoundSclSecondChoice = testLabs.extend<
+  { secondRoundSclSecondChoicePage: Page },
+  { secondRoundSclSecondChoiceUserId: string }
+>({
+  secondRoundSclSecondChoiceUserId: [
+    async ({ database, labs: _ }, use) => {
+      const { id: userId } = await upsertTestUser(database, {
+        email: 'second-scl-second-choice.student@up.edu.ph',
+        googleUserId: 'test-second-scl-second-choice-student',
+        givenName: 'SecondScl',
+        familyName: 'SecondChoice',
+        isAdmin: false,
+        labId: null,
+      });
+      await use(userId);
+    },
+    { scope: 'worker' },
+  ],
+  async secondRoundSclSecondChoicePage(
+    { database, browser, secondRoundSclSecondChoiceUserId },
+    use,
+  ) {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    const sessionId = await insertDummySession(database, secondRoundSclSecondChoiceUserId);
+    await context.addCookies([
+      {
+        name: 'sid',
+        value: sessionId,
+        domain: 'localhost',
+        path: '/dashboard',
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+    ]);
+    await page.goto('/dashboard/');
+    await use(page);
+    await deleteValidSession(database, sessionId);
+    await context.close();
+  },
+});
+
 const testNdslHead = testLabs.extend<{ ndslHeadPage: Page }, { ndslHeadUserId: string }>({
   ndslHeadUserId: [
     async ({ database, labs: _ }, use) => {
@@ -593,6 +716,9 @@ export const test = mergeTests(
   testNoRankStudent,
   testIdleBystander,
   testLateRegistrant,
+  testSecondRoundNdslFirstChoice,
+  testSecondRoundCslFirstChoice,
+  testSecondRoundSclSecondChoice,
   testPartialToDrafted,
   testPartialToLottery,
 );
