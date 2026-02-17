@@ -300,6 +300,17 @@ export async function getDraftLabQuotaSnapshots(db: DbConnection, draftId: bigin
   });
 }
 
+export async function getDraftLabQuotaLabIds(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-draft-lab-quota-lab-ids', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    const rows = await db
+      .select({ labId: schema.draftLabQuota.labId })
+      .from(schema.draftLabQuota)
+      .where(eq(schema.draftLabQuota.draftId, draftId));
+    return rows.map(({ labId }) => labId);
+  });
+}
+
 export async function getLabCount(db: DbConnection, activeOnly = true) {
   return await tracer.asyncSpan('get-lab-count', async span => {
     span.setAttribute('database.lab.active_only', activeOnly);

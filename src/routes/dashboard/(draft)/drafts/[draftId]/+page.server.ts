@@ -11,12 +11,12 @@ import {
   getActiveDraft,
   getDraftAssignmentRecords,
   getDraftById,
+  getDraftLabQuotaLabIds,
   getDraftLabQuotaSnapshots,
   getFacultyAndStaff,
   getFacultyChoiceRecords,
   getLabById,
   getLabCount,
-  getLabRegistry,
   getPendingLabCountInDraft,
   getStudentCountInDraft,
   getStudentsInDraftTaggedByLab,
@@ -83,13 +83,17 @@ export async function load({ params, locals: { session } }) {
       error(404);
     }
 
-    const [students, records, labs, assignments, quotaSnapshots] = await Promise.all([
+    const [students, records, assignments, quotaSnapshots] = await Promise.all([
       getStudentsInDraftTaggedByLab(db, draftId),
       getFacultyChoiceRecords(db, draftId),
-      getLabRegistry(db, draft.activePeriodEnd === null),
       getDraftAssignmentRecords(db, draftId),
       getDraftLabQuotaSnapshots(db, draftId),
     ]);
+    const labs = quotaSnapshots.map(({ labId, labName, initialQuota }) => ({
+      id: labId,
+      name: labName,
+      quota: initialQuota,
+    }));
 
     type DraftAssignmentRecords = typeof assignments;
     const regularDrafted: DraftAssignmentRecords = [];
@@ -175,6 +179,12 @@ function mapQuotaPairs(data: FormData) {
     pairs.push([key, quota]);
   }
   return pairs;
+}
+
+function getUnknownLabIds(labIds: Iterable<string>, knownLabIds: ReadonlySet<string>) {
+  const unknown = new Set<string>();
+  for (const labId of labIds) if (!knownLabIds.has(labId)) unknown.add(labId);
+  return Array.from(unknown);
 }
 
 const ZIP_NOT_EQUAL = Symbol('ZIP_NOT_EQUAL');
@@ -321,6 +331,23 @@ export const actions = {
         return;
       }
 
+      const snapshotLabIds = new Set(await getDraftLabQuotaLabIds(db, draftId));
+      const unknownLabIds = getUnknownLabIds(
+        pairs.map(([labId]) => labId),
+        snapshotLabIds,
+      );
+      if (unknownLabIds.length > 0) {
+        logger.error('attempt to update draft quota snapshots with unknown labs', void 0, {
+          'draft.id': draftId.toString(),
+          'quota.kind': kind,
+          'quota.snapshot_lab_count': snapshotLabIds.size,
+          'quota.submitted_lab_count': pairs.length,
+          'quota.unknown_lab_count': unknownLabIds.length,
+          'quota.unknown_lab_ids': unknownLabIds,
+        });
+        error(400);
+      }
+
       switch (kind) {
         case 'initial':
           if (activeDraft.currRound !== 0) {
@@ -392,6 +419,21 @@ export const actions = {
       }
 
       const draftId = BigInt(draft);
+      const snapshotLabIds = new Set(await getDraftLabQuotaLabIds(db, draftId));
+      const unknownLabIds = getUnknownLabIds(
+        pairs.map(([, labId]) => labId),
+        snapshotLabIds,
+      );
+      if (unknownLabIds.length > 0) {
+        logger.error('attempt to intervene draft with unknown labs', void 0, {
+          'draft.id': draftId.toString(),
+          'draft.pair_count': pairs.length,
+          'draft.snapshot_lab_count': snapshotLabIds.size,
+          'draft.unknown_lab_count': unknownLabIds.length,
+          'draft.unknown_lab_ids': unknownLabIds,
+        });
+        error(400);
+      }
 
       logger.debug('intervening draft with pairs', { 'draft.pair_count': pairs.length });
       const result = await insertLotteryChoices(db, draftId, user.id, pairs, 'intervention');

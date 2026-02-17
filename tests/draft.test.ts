@@ -942,6 +942,21 @@ test.describe('Draft Lifecycle', () => {
       await expect(adminPage.getByText('#2')).toBeVisible();
       await expect(adminPage.getByText('Registration')).toBeVisible();
     });
+
+    test('rejects quota updates for unsnapshotted labs', async ({ adminPage }) => {
+      const status = await adminPage.evaluate(async () => {
+        const data = new FormData();
+        data.set('draft', '2');
+        data.set('kind', 'initial');
+        data.set('acl', '1');
+        const response = await fetch('/dashboard/drafts/2/?/quota', {
+          method: 'POST',
+          body: data,
+        });
+        return response.status;
+      });
+      expect(status).toBe(400);
+    });
   });
 
   test.describe('Second Draft — Student Registration', () => {
@@ -1132,6 +1147,20 @@ test.describe('Draft Lifecycle', () => {
       await expect(
         adminPage.getByText('Congratulations! All participants have been drafted.'),
       ).toBeVisible();
+    });
+
+    test('rejects interventions for unsnapshotted labs', async ({ adminPage }) => {
+      const status = await adminPage.evaluate(async () => {
+        const data = new FormData();
+        data.set('draft', '2');
+        data.set('00000000000000000000000000', 'acl');
+        const response = await fetch('/dashboard/drafts/2/?/intervene', {
+          method: 'POST',
+          body: data,
+        });
+        return response.status;
+      });
+      expect(status).toBe(400);
     });
 
     test('sets lottery snapshots to zero and concludes Draft #2', async ({ adminPage }) => {
