@@ -14,7 +14,7 @@
 
 <h2 class="mb-8 scroll-m-20 text-3xl font-semibold tracking-tight">Draft History</h2>
 {#if drafts.length > 0}
-  <nav>
+  <nav id="history-draft-list">
     <ul class="space-y-2">
       {#each drafts as { id: draftId, activePeriodStart, activePeriodEnd, currRound, maxRounds } (draftId)}
         {@const start = format(activePeriodStart, 'PPPpp')}
@@ -84,5 +84,7 @@
     </ul>
   </nav>
 {:else}
-  <Callout variant="warning">No drafts have been recorded yet. Please check again later.</Callout>
+  <div id="history-empty-state">
+    <Callout variant="warning">No drafts have been recorded yet. Please check again later.</Callout>
+  </div>
 {/if}

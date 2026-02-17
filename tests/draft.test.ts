@@ -17,7 +17,8 @@ test.describe('Draft Lifecycle', () => {
   test.describe('Initial State', () => {
     test('history page shows no drafts', async ({ page, database: _database }) => {
       await page.goto('/history/');
-      await expect(page.getByText('No drafts have been recorded yet')).toBeVisible();
+      await expect(page.locator('#history-empty-state')).toBeVisible();
+      await expect(page.locator('#history-draft-list')).toHaveCount(0);
     });
 
     test('admin sees faculty in users page', async ({
