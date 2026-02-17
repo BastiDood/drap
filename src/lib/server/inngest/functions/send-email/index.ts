@@ -110,9 +110,10 @@ export const sendEmail = inngest.createFunction(
                   recipient = event.data.recipientEmail;
                   subject = `[DRAP] Draft #${event.data.draftId} Concluded`;
                   html = await renderer.render(DraftConcluded, {
-                    props: { draftId: event.data.draftId } satisfies ComponentProps<
-                      typeof DraftConcluded
-                    >,
+                    props: {
+                      draftId: event.data.draftId,
+                      lotteryAssignments: event.data.lotteryAssignments,
+                    } satisfies ComponentProps<typeof DraftConcluded>,
                   });
                   break;
                 case 'draft/user.assigned':

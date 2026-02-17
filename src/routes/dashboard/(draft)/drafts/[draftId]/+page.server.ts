@@ -556,27 +556,20 @@ export const actions = {
 
         // Dispatch notifications after successful transaction
         const facultyAndStaff = await getFacultyAndStaff(db);
-
-        for (const [studentUserId, labId] of lotteryPairs) {
-          const [{ name: labName }, student] = await Promise.all([
-            getLabById(db, labId),
-            getUserById(db, studentUserId),
-          ]);
-          await inngest.send(
-            facultyAndStaff.map(({ email, givenName, familyName }) => ({
-              name: 'draft/lottery.intervened' as const,
-              data: {
-                draftId: Number(draftId),
-                labId,
-                labName,
-                studentName: `${student.givenName} ${student.familyName}`,
-                studentEmail: student.email,
-                recipientEmail: email,
-                recipientName: `${givenName} ${familyName}`,
-              },
-            })),
-          );
-        }
+        const lotteryAssignments = await Promise.all(
+          lotteryPairs.map(async ([studentUserId, labId]) => {
+            const [{ name: labName }, student] = await Promise.all([
+              getLabById(db, labId),
+              getUserById(db, studentUserId),
+            ]);
+            return {
+              labId,
+              labName,
+              studentName: `${student.givenName} ${student.familyName}`,
+              studentEmail: student.email,
+            };
+          }),
+        );
 
         await inngest.send(
           facultyAndStaff.map(({ email, givenName, familyName }) => ({
@@ -585,6 +578,7 @@ export const actions = {
               draftId: Number(draftId),
               recipientEmail: email,
               recipientName: `${givenName} ${familyName}`,
+              lotteryAssignments,
             },
           })),
         );
