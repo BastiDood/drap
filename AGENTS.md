@@ -81,18 +81,26 @@ Run Playwright tests with environment variables loaded:
 pnpm docker:dev
 ```
 
-```nu
-do {
-  open .env.production.local | from toml | load-env;
-  pnpm build;
-  pnpm test:playwright;
-}
+```bash
+# Build first (required by playwright.config.js webServer command).
+pnpm build
+
+# Assumes current directory is the project root.
+# Load only .env:
+source ./scripts/test-playwright.sh
+
+# Load .env + .env.<environment> + .env.<environment>.local:
+source ./scripts/test-playwright.sh development
+source ./scripts/test-playwright.sh production
 ```
 
-```bash
-set -a && source .env.production.local && set +a
-pnpm build
-pnpm test:playwright
+```nu
+# Load only .env:
+nu ./scripts/test-playwright.nu
+
+# Load .env + .env.<environment> + .env.<environment>.local:
+nu ./scripts/test-playwright.nu development
+nu ./scripts/test-playwright.nu production
 ```
 
 # Pre-commit Workflow

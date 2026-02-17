@@ -241,20 +241,25 @@ The Playwright configuration runs `pnpm preview` on port `4173` in production mo
 pnpm docker:dev
 ```
 
-```nu
-# Nushell: loads local production overrides and runs tests in one scope.
-do {
-  open .env.production.local | from toml | load-env;
-  pnpm build;
-  pnpm test:playwright;
-}
+```bash
+# Build first (required by playwright.config.js webServer command).
+pnpm build
+
+# Load only .env:
+source ./scripts/test-playwright.sh
+
+source ./scripts/test-playwright.sh development
+source ./scripts/test-playwright.sh production
+source ./scripts/test-playwright.sh staging
 ```
 
-```bash
-# Bash: loads local production overrides and runs tests in one scope.
-set -a && source .env.production.local && set +a
-pnpm build
-pnpm test:playwright
+```nu
+# Load only .env:
+nu ./scripts/test-playwright.nu
+
+# Load .env + .env.<environment> + .env.<environment>.local:
+nu ./scripts/test-playwright.nu development
+nu ./scripts/test-playwright.nu production
 ```
 
 ## Acknowledgements
