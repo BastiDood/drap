@@ -16,7 +16,6 @@ import {
   getFacultyAndStaff,
   getFacultyChoiceRecords,
   getLabById,
-  getLabCount,
   getPendingLabCountInDraft,
   getStudentCountInDraft,
   getStudentsInDraftTaggedByLab,
@@ -227,9 +226,6 @@ export const actions = {
         logger.warn('invalid total draft initial quota', { 'draft.id': draftId.toString() });
         return fail(498);
       }
-
-      const labCount = await getLabCount(db);
-      assert(labCount > 0);
 
       const studentCount = await getStudentCountInDraft(db, draftId);
       if (studentCount <= 0) {
