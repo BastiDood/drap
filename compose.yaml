@@ -17,6 +17,8 @@ services:
     image: inngest/inngest:v1.16.3
     extra_hosts:
       - host.docker.internal:host-gateway
+    networks:
+      - queue
     ports:
       - 8288:8288
     restart: always
@@ -39,4 +41,5 @@ volumes:
 
 networks:
   database:
+  queue:
   telemetry:

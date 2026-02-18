@@ -41,8 +41,6 @@ services:
       INNGEST_REDIS_URI: redis://redis:6379
     volumes:
       - inngest:/app
-    networks:
-      - queue
     depends_on:
       redis:
         condition: service_healthy
@@ -77,6 +75,3 @@ volumes:
   redis:
   inngest:
   drizzle-gateway:
-
-networks:
-  queue:
