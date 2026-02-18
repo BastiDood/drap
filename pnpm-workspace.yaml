@@ -12,6 +12,10 @@ engineStrict: true
 
 minimumReleaseAge: 1440 # 1 day
 
+minimumReleaseAgeExclude:
+  - bits-ui@2.15.7
+  - svelte-check@4.4.1
+
 strictDepBuilds: true
 
 trustPolicy: no-downgrade
