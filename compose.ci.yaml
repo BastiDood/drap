@@ -1,0 +1,8 @@
+services:
+  inngest:
+    command:
+      - inngest
+      - dev
+      - '--no-discovery'
+      - '--sdk-url'
+      - 'http://host.docker.internal:4173/api/inngest'

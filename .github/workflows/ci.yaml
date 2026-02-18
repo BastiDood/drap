@@ -65,7 +65,7 @@ jobs:
         run: pnpm build
 
       - name: Start Docker Services
-        run: pnpm docker:dev
+        run: pnpm docker:ci
 
       - name: Run Database Migrations
         run: pnpm db:migrate
