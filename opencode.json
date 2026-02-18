@@ -47,6 +47,11 @@
       "drizzle/*": "deny",
       "src/*": "allow"
     },
-    "skill": { "*": "ask", "debug-local-database": "allow", "submit-pull-request": "allow" }
+    "skill": {
+      "*": "ask",
+      "debug-local-o2": "allow",
+      "debug-local-postgres": "allow",
+      "submit-pull-request": "allow"
+    }
   }
 }
