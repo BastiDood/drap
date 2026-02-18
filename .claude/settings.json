@@ -13,7 +13,9 @@
       "Bash(ls:*)",
       "Bash(tree:*)",
       "Bash(find:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Skill(debug-local-o2)",
+      "Skill(debug-local-postgres)"
     ],
     "ask": [
       "Bash(docker compose exec postgres psql:*)",

@@ -1,5 +1,5 @@
 ---
-name: debug-local-database
+name: debug-local-postgres
 description: >
   MUST be used whenever the agent needs to query, inspect, or debug values from the local
   PostgreSQL database. This includes checking user data, draft states, lab assignments,
