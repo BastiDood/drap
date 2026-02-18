@@ -244,23 +244,32 @@ pnpm docker:dev
 ```bash
 # Build first (required by playwright.config.js webServer command).
 pnpm build
+```
 
-# Load only .env:
+```bash
+# Load only `.env` + `.env.local`
 source ./scripts/test-playwright.sh
 
+# Include `.env.development` + `.env.development.local`
 source ./scripts/test-playwright.sh development
+
+# Include `.env.production` + `.env.production.local`
 source ./scripts/test-playwright.sh production
-source ./scripts/test-playwright.sh staging
 ```
 
 ```nu
-# Load only .env:
+# Load `.env` + `.env.local`
 nu ./scripts/test-playwright.nu
 
-# Load .env + .env.<environment> + .env.<environment>.local:
+# Include `.env.development` + `.env.development.local`
 nu ./scripts/test-playwright.nu development
+
+# Include `.env.production` + `.env.production.local`
 nu ./scripts/test-playwright.nu production
 ```
+
+> [!CAUTION]
+> If running from `pnpm docker:dev`, make sure to specify `INNGEST_DEV=1` in one of the environment files. This configures the production-mode `pnpm preview` server to bypass the Inngest secrets validation (per `inngest dev`). Without this, the tests will fail due to the Inngest client failing to sign its dispatched events.
 
 ## Acknowledgements
 
