@@ -23,8 +23,7 @@ jobs:
 
       # Inngest
       INNGEST_BASE_URL: http://localhost:8288
-      INNGEST_EVENT_KEY: 0123456789abcdef0123456789abcdef
-      INNGEST_SIGNING_KEY: abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789ab
+      INNGEST_DEV: 1
 
       # OpenTelemetry
       OTEL_SDK_DISABLED: true
@@ -66,7 +65,7 @@ jobs:
         run: pnpm build
 
       - name: Start Docker Services
-        run: pnpm docker:ci
+        run: pnpm docker:dev
 
       - name: Run Database Migrations
         run: pnpm db:migrate
