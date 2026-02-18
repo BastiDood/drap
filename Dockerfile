@@ -1,4 +1,4 @@
-FROM node:24.13.0-alpine3.23 AS build
+FROM node:24.13.0-alpine3.23 AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -18,6 +18,13 @@ RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
     --mount=type=cache,id=pnpm,target=$PNPM_HOME/store \
     pnpm install --offline
+
+FROM base AS migrate
+
+# Migration files are provided as bind mounts.
+ENTRYPOINT ["pnpm", "db:migrate"]
+
+FROM base AS build
 
 # Build the app and prune dev dependencies. Bind-mounted source files
 # are not baked into the layer — only build/ and node_modules/ persist.
