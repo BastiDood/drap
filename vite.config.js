@@ -20,4 +20,5 @@ export default defineConfig({
   ],
   build: { assetsInlineLimit: 0 },
   server: { host: true, allowedHosts: ['host.docker.internal'] },
+  preview: { host: true, allowedHosts: ['host.docker.internal'] },
 });
