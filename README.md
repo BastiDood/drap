@@ -150,21 +150,19 @@ flowchart TD
     end
 
     subgraph Production
-        ci[compose.ci.yaml]
         prod[compose.prod.yaml]
         app[compose.app.yaml]
     end
 
     base --> dev
-    base --> ci --> prod --> app
+    base --> prod --> app
 ```
 
-| Command            | Files                               | Services                                      |
-| ------------------ | ----------------------------------- | --------------------------------------------- |
-| `pnpm docker:dev`  | `compose.yaml` + `compose.dev.yaml` | `postgres` (dev), `inngest` (dev), `o2` (dev) |
-| `pnpm docker:ci`   | `compose.yaml` + `compose.ci.yaml`  | `postgres` (prod), `inngest` (prod), `redis`  |
-| `pnpm docker:prod` | ... + `compose.prod.yaml`           | CI services + `o2` (prod), `drizzle-gateway`  |
-| `pnpm docker:app`  | ... + `compose.app.yaml`            | prod services + app                           |
+| Command            | Files                                                     | Services                                                              |
+| ------------------ | --------------------------------------------------------- | --------------------------------------------------------------------- |
+| `pnpm docker:dev`  | `compose.yaml` + `compose.dev.yaml`                       | `postgres` (dev), `inngest` (dev), `o2` (dev)                         |
+| `pnpm docker:prod` | `compose.yaml` + `compose.prod.yaml`                      | `postgres` (prod), `inngest` (prod), `redis`, `o2`, `drizzle-gateway` |
+| `pnpm docker:app`  | `compose.yaml` + `compose.prod.yaml` + `compose.app.yaml` | prod services + `app` + `migrate`                                     |
 
 > [!NOTE]
 > Docker BuildKit is required to build the local services used during development. In most platforms, Docker Desktop bundles the core Docker Engine with Docker BuildKit. For others (e.g., Arch Linux), a separate `docker-buildx`-like package must be installed.
@@ -196,20 +194,14 @@ node --env-file=.env build/index.js
 ```
 
 ```bash
-# Or, spin up CI services (compose.yaml + compose.ci.yaml):
-# postgres, inngest (prod mode), redis
-pnpm docker:ci
-```
-
-```bash
-# Or, spin up production internal services (+ compose.prod.yaml):
-# CI services + o2, drizzle-gateway
+# Or, spin up production internal services (compose.yaml + compose.prod.yaml):
+# postgres (prod), inngest (prod mode), redis, o2, drizzle-gateway
 pnpm docker:prod
 ```
 
 ```bash
 # Or, spin up full production environment (+ compose.app.yaml):
-# prod services + app
+# prod services + app + migrate
 pnpm docker:app
 ```
 
@@ -235,9 +227,7 @@ To enable full observability in local development:
 The Playwright configuration runs `pnpm preview` on port `4173` in production mode by default. A single end-to-end test features a single full draft round.
 
 ```bash
-# Ensure development-only services are spun up. We _can_ use the production setup,
-# but that requires a little bit more configuration. This is done in CI, but not
-# necessary for local development.
+# Ensure development-only services are spun up.
 pnpm docker:dev
 ```
 

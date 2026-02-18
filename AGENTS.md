@@ -16,8 +16,7 @@ pnpm db:generate          # Generate Drizzle migrations
 pnpm db:migrate           # Apply migrations
 pnpm db:studio            # Drizzle Studio UI
 pnpm docker:dev           # Dev services: postgres, inngest dev, o2
-pnpm docker:ci            # CI services: postgres, inngest prod, redis
-pnpm docker:prod          # Prod internal services: CI + o2, drizzle-gateway
+pnpm docker:prod          # Prod internal services: postgres, inngest prod, redis, o2, drizzle-gateway
 pnpm docker:app           # Full prod environment: prod + app
 ```
 
