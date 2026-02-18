@@ -14,9 +14,48 @@ services:
     networks:
       - durability
 
+  migrate:
+    pull_policy: build
+    build:
+      context: .
+      target: migrate
+    environment:
+      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD:?required}@postgres:5432/postgres
+    volumes:
+      - type: bind
+        source: ./package.json
+        target: /app/package.json
+        read_only: true
+      - type: bind
+        source: ./drizzle.config.js
+        target: /app/drizzle.config.js
+        read_only: true
+      - type: bind
+        source: ./drizzle
+        target: /app/drizzle
+        read_only: true
+      - type: bind
+        source: ./src/lib/server/database/schema
+        target: /app/src/lib/server/database/schema
+        read_only: true
+    networks:
+      - database
+    depends_on:
+      # Wait for the app to start before running migrations. This ensures
+      # the app is not broken before irreversibly applying migrations.
+      app:
+        condition: service_started
+        required: true
+      postgres:
+        condition: service_healthy
+        required: true
+    restart: 'no'
+
   app:
     pull_policy: build
-    build: .
+    build:
+      context: .
+      target: deploy
     ports:
       - 3000:3000
     environment:
