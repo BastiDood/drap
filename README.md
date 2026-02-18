@@ -149,20 +149,25 @@ flowchart TD
         dev[compose.dev.yaml]
     end
 
+    subgraph Continuous Integration
+        ci[compose.ci.yaml]
+    end
+
     subgraph Production
         prod[compose.prod.yaml]
         app[compose.app.yaml]
     end
 
-    base --> dev
+    base --> dev --> ci
     base --> prod --> app
 ```
 
-| Command            | Files                                                     | Services                                                              |
-| ------------------ | --------------------------------------------------------- | --------------------------------------------------------------------- |
-| `pnpm docker:dev`  | `compose.yaml` + `compose.dev.yaml`                       | `postgres` (dev), `inngest` (dev), `o2` (dev)                         |
-| `pnpm docker:prod` | `compose.yaml` + `compose.prod.yaml`                      | `postgres` (prod), `inngest` (prod), `redis`, `o2`, `drizzle-gateway` |
-| `pnpm docker:app`  | `compose.yaml` + `compose.prod.yaml` + `compose.app.yaml` | prod services + `app` + `migrate`                                     |
+| Command            | Files                                                     | Services                                                                                     |
+| ------------------ | --------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `pnpm docker:dev`  | `compose.yaml` + `compose.dev.yaml`                       | `postgres` (dev), `inngest` (dev), `o2` (dev)                                                |
+| `pnpm docker:ci`   | `compose.yaml` + `compose.dev.yaml` + `compose.ci.yaml`   | dev services with Inngest SDK URL override to `http://host.docker.internal:4173/api/inngest` |
+| `pnpm docker:prod` | `compose.yaml` + `compose.prod.yaml`                      | `postgres` (prod), `inngest` (prod), `redis`, `o2`, `drizzle-gateway`                        |
+| `pnpm docker:app`  | `compose.yaml` + `compose.prod.yaml` + `compose.app.yaml` | prod services + `app` + `migrate`                                                            |
 
 > [!NOTE]
 > Docker BuildKit is required to build the local services used during development. In most platforms, Docker Desktop bundles the core Docker Engine with Docker BuildKit. For others (e.g., Arch Linux), a separate `docker-buildx`-like package must be installed.
@@ -230,6 +235,8 @@ The Playwright configuration runs `pnpm preview` on port `4173` in production mo
 # Ensure development-only services are spun up.
 pnpm docker:dev
 ```
+
+In CI, use `pnpm docker:ci` so `inngest dev` can reach `pnpm preview` on port `4173`.
 
 ```bash
 # Build first (required by playwright.config.js webServer command).
