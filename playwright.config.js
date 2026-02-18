@@ -7,7 +7,7 @@ export default defineConfig({
   fullyParallel: false,
   webServer: {
     // Assumes that `pnpm build` has already been run.
-    command: 'pnpm preview --host',
+    command: 'pnpm preview',
     port: 4173,
     gracefulShutdown: { signal: 'SIGINT', timeout: 0 },
   },

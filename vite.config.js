@@ -19,5 +19,6 @@ export default defineConfig({
     sveltekit(),
   ],
   build: { assetsInlineLimit: 0 },
-  server: { allowedHosts: ['host.docker.internal'] },
+  server: { host: true, allowedHosts: ['host.docker.internal'] },
+  preview: { host: true, allowedHosts: ['host.docker.internal'] },
 });
