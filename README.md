@@ -246,6 +246,9 @@ pnpm docker:dev
 pnpm build
 ```
 
+<details>
+<summary><strong>Bash</strong></summary>
+
 ```bash
 # Load only `.env` + `.env.local`
 source ./scripts/test-playwright.sh
@@ -257,6 +260,11 @@ source ./scripts/test-playwright.sh development
 source ./scripts/test-playwright.sh production
 ```
 
+</details>
+
+<details>
+<summary><strong>Nushell</strong></summary>
+
 ```nu
 # Load `.env` + `.env.local`
 nu ./scripts/test-playwright.nu
@@ -267,6 +275,8 @@ nu ./scripts/test-playwright.nu development
 # Include `.env.production` + `.env.production.local`
 nu ./scripts/test-playwright.nu production
 ```
+
+</details>
 
 > [!CAUTION]
 > If running from `pnpm docker:dev`, make sure to specify `INNGEST_DEV=1` in one of the environment files. This configures the production-mode `pnpm preview` server to bypass the Inngest secrets validation (per `inngest dev`). Without this, the tests will fail due to the Inngest client failing to sign its dispatched events.
