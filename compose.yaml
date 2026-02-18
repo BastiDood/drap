@@ -14,7 +14,7 @@ services:
     restart: always
 
   inngest:
-    image: inngest/inngest:v1.16.3
+    image: inngest/inngest:v1.17.1
     extra_hosts:
       - host.docker.internal:host-gateway
     networks:
@@ -24,7 +24,7 @@ services:
     restart: always
 
   o2:
-    image: public.ecr.aws/zinclabs/openobserve:v0.50.3
+    image: public.ecr.aws/zinclabs/openobserve:v0.60.0
     environment:
       ZO_DATA_DIR: /data
     ports:
