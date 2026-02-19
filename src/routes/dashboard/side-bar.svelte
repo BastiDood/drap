@@ -29,9 +29,15 @@
 
   const { user }: Props = $props();
   const { pathname } = $derived(page.url);
+  const sidebar = Sidebar.useSidebar();
 </script>
 
 <TooltipProvider>
+  {#if !sidebar.openMobile}
+    <div class="fixed top-4 left-4 md:hidden">
+      <Sidebar.Trigger />
+    </div>
+  {/if}
   <Sidebar.Root collapsible="icon" class="border-border border-r">
     <Sidebar.Header>
       <div class="flex items-center justify-between">
@@ -39,7 +45,15 @@
           <img src={Logo} alt="DRAP Logo" class="size-8" />
           <span class="text-lg font-semibold">DRAP</span>
         </div>
-        <ModeSwitcher />
+        {#if sidebar.openMobile}
+          <div class="flex items-center gap-2 pr-2 md:hidden">
+            <ModeSwitcher />
+            <Sidebar.Trigger />
+          </div>
+        {/if}
+        <div class="hidden md:block">
+          <ModeSwitcher />
+        </div>
       </div>
     </Sidebar.Header>
     <Sidebar.Content>
