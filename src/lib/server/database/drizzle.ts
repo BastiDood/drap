@@ -103,7 +103,7 @@ export async function impersonateUserBySessionId(
       .returning({ id: schema.user.id })
       .then(assertOptional);
 
-    if (!user) return null;
+    if (typeof user === 'undefined') return null;
 
     logger.info('Switched to user', { 'user.id': user.id });
     return user.id;
