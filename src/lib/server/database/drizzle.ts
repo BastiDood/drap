@@ -88,7 +88,11 @@ export async function updateSessionUserId(db: DbConnection, sessionId: string, u
 }
 
 /** Dev-only: Impersonates another user via the session's Id. */
-export async function impersonateUserBySessionId(db: DbConnection, sessionId: string, email: string) {
+export async function impersonateUserBySessionId(
+  db: DbConnection,
+  sessionId: string,
+  email: string,
+) {
   return await tracer.asyncSpan('impersonate-user-by-session-id', async span => {
     span.setAttributes({ 'database.session.id': sessionId, 'database.user.email': email });
     await db

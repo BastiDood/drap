@@ -45,7 +45,13 @@
   <div class="flex items-end gap-2">
     <div class="grow space-y-2">
       <Label for="user-email">Email</Label>
-      <Input type="text" name="userEmail" id="user-email" required placeholder="example@up.edu.ph" />
+      <Input
+        type="text"
+        name="userEmail"
+        id="user-email"
+        required
+        placeholder="example@up.edu.ph"
+      />
     </div>
   </div>
   <Button type="submit" class="w-full">
