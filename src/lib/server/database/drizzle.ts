@@ -105,7 +105,7 @@ export async function impersonateUserBySessionId(
 
     if (user === undefined) return null;
 
-    logger.info('Switched to user', { user_id: user.id });
+    logger.info('Switched to user', { 'user.id': user.id });
     return user.id;
   });
 }
