@@ -311,12 +311,13 @@ export const actions = {
             // Switch user via session id
             const id = await impersonateUserBySessionId(db, session.id, userEmail);
 
-            if (id) {
-              logger.info('user switched', { 'session.id': session.id });
-              redirect(303, '/dashboard/');
-            } else {
+            if (id === null) {
               logger.error('failed to switch to another user');
+              error(404);
             }
+
+            logger.info('user switched', { 'session.id': session.id });
+            redirect(303, '/dashboard/');
           });
         },
       }
