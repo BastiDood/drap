@@ -289,7 +289,7 @@ export const actions = {
                 } catch (err) {
                   if (err instanceof AssertionError) {
                     logger.fatal('unknown recipient email', err);
-                    return fail(404, 'Recipient email is not a user in the database.');
+                    return fail(404, { message: 'Recipient email is not a user in the database.' });
                   }
                   throw err;
                 }
@@ -312,7 +312,7 @@ export const actions = {
                 } catch (err) {
                   if (err instanceof AssertionError) {
                     logger.fatal('unknown lab id', err);
-                    return fail(404, 'Lab is not found in the database.');
+                    return fail(404, { message: 'Lab is not found in the database.' });
                   }
                   throw err;
                 }
@@ -336,7 +336,7 @@ export const actions = {
                 } catch (err) {
                   if (err instanceof AssertionError) {
                     logger.fatal('unknown lab id', err);
-                    return fail(404, 'Lab is not found in the database.');
+                    return fail(404, { message: 'Lab is not found in the database.' });
                   }
                   throw err;
                 }
@@ -351,7 +351,7 @@ export const actions = {
                 } catch (err) {
                   if (err instanceof AssertionError) {
                     logger.fatal('unknown student email', err);
-                    return fail(404, 'Student email is not a user in the database.');
+                    return fail(404, { message: 'Student email is not a user in the database.' });
                   }
                   throw err;
                 }
@@ -366,7 +366,7 @@ export const actions = {
                 } catch (err) {
                   if (err instanceof AssertionError) {
                     logger.fatal('unknown recipient email', err);
-                    return fail(404, 'Recipient email is not a user in the database.');
+                    return fail(404, { message: 'Recipient email is not a user in the database.' });
                   }
                   throw err;
                 }
@@ -395,7 +395,7 @@ export const actions = {
                 } catch (err) {
                   if (err instanceof AssertionError) {
                     logger.fatal('unknown recipient email', err);
-                    return fail(404, 'Recipient email is not a user in the database.');
+                    return fail(404, { message: 'Recipient email is not a user in the database.' });
                   }
                   throw err;
                 }
@@ -409,7 +409,9 @@ export const actions = {
                   } catch (err) {
                     if (err instanceof AssertionError) {
                       logger.fatal('unknown lab id', err);
-                      return fail(404, `${labId.toUpperCase()} is not found in the database.`);
+                      return fail(404, {
+                        message: `${labId.toUpperCase()} is not found in the database.`,
+                      });
                     }
                     throw err;
                   }
@@ -424,7 +426,9 @@ export const actions = {
                   } catch (err) {
                     if (err instanceof AssertionError) {
                       logger.fatal('unknown student email', err);
-                      return fail(404, `${studentEmail} is not a user in the database.`);
+                      return fail(404, {
+                        message: `${studentEmail} is not a user in the database.`,
+                      });
                     }
                     throw err;
                   }
@@ -456,7 +460,7 @@ export const actions = {
                 } catch (err) {
                   if (err instanceof AssertionError) {
                     logger.fatal('unknown lab id', err);
-                    return fail(404, 'Lab is not found in the database.');
+                    return fail(404, { message: 'Lab is not found in the database.' });
                   }
                   throw err;
                 }
@@ -471,7 +475,7 @@ export const actions = {
                 } catch (err) {
                   if (err instanceof AssertionError) {
                     logger.fatal('unknown user email', err);
-                    return fail(404, 'User email is not a user in the database.');
+                    return fail(404, { message: 'User email is not a user in the database.' });
                   }
                   throw err;
                 }

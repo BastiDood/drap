@@ -42,8 +42,8 @@
           const { data, status } = result;
           switch (status) {
             case 404:
-              if (typeof data === 'string') {
-                toast.error(data);
+              if (typeof data?.message === 'string') {
+                toast.error(data.message);
                 break;
               }
               toast.error('Referenced lab or user email was not found.');
