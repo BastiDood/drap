@@ -19,7 +19,7 @@
     <Dialog.Header>
       <Dialog.Title>Switch to Another User</Dialog.Title>
       <Dialog.Description>
-        Switch to another logged-in user for testing purposes only. This tool is unavailable in
+        Switch to another user for testing purposes only. This tool is unavailable in
         production.
       </Dialog.Description>
     </Dialog.Header>
