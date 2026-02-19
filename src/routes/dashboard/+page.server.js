@@ -61,6 +61,11 @@ const DevDummyFormData = v.object({
   familyName: v.pipe(v.string(), v.minLength(1)),
 });
 
+const LotteryAssignmentFormData = v.object({
+  labId: v.pipe(v.string(), v.minLength(1)),
+  studentEmail: v.pipe(v.string(), v.email()),
+});
+
 const SendEmailFormData = v.variant('event', [
   v.object({
     event: v.literal('draft/round.started'),
@@ -86,6 +91,7 @@ const SendEmailFormData = v.variant('event', [
     event: v.literal('draft/draft.concluded'),
     draftId: v.number(),
     recipientEmail: v.string(),
+    lotteryAssignments: v.optional(v.array(LotteryAssignmentFormData), []),
   }),
   v.object({
     event: v.literal('draft/user.assigned'),
@@ -205,7 +211,10 @@ export const actions = {
             }
 
             const data = await request.formData();
-            const decoded = decode(data, { numbers: ['draftId', 'round'] });
+            const decoded = decode(data, {
+              arrays: ['lotteryAssignments'],
+              numbers: ['draftId', 'round'],
+            });
             const parsed = v.parse(SendEmailFormData, decoded);
 
             logger.info('dispatching email event');
@@ -259,16 +268,30 @@ export const actions = {
                 break;
               }
               case 'draft/draft.concluded': {
-                const { givenName, familyName } = await getUserNameByEmail(
-                  db,
-                  parsed.recipientEmail,
-                );
+                const [{ givenName, familyName }, lotteryAssignments] = await Promise.all([
+                  getUserNameByEmail(db, parsed.recipientEmail),
+                  Promise.all(
+                    parsed.lotteryAssignments.map(async ({ labId, studentEmail }) => {
+                      const [lab, student] = await Promise.all([
+                        getLabById(db, labId),
+                        getUserNameByEmail(db, studentEmail),
+                      ]);
+                      return {
+                        labId,
+                        labName: lab.name,
+                        studentName: `${student.givenName} ${student.familyName}`,
+                        studentEmail,
+                      };
+                    }),
+                  ),
+                ]);
                 await inngest.send({
                   name: parsed.event,
                   data: {
                     draftId: parsed.draftId,
                     recipientEmail: parsed.recipientEmail,
                     recipientName: `${givenName} ${familyName}`,
+                    lotteryAssignments,
                   },
                 });
                 break;

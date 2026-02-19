@@ -32,6 +32,14 @@ export const DraftConcludedEvent = v.object({
   draftId: v.number(),
   recipientEmail: v.string(),
   recipientName: v.string(),
+  lotteryAssignments: v.array(
+    v.object({
+      labId: v.string(),
+      labName: v.string(),
+      studentName: v.string(),
+      studentEmail: v.string(),
+    }),
+  ),
 });
 export type DraftConcludedEvent = v.InferOutput<typeof DraftConcludedEvent>;
 

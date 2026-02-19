@@ -15,6 +15,8 @@
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
 
+  import LotteryAssignmentsInput from './lottery-assignments-input.svelte';
+
   const { onSuccess }: Props = $props();
 
   let selectedEvent = $state('draft/round.started');
@@ -150,6 +152,7 @@
           placeholder="example@up.edu.ph"
         />
       </div>
+      <LotteryAssignmentsInput />
     {:else if selectedEvent === 'draft/user.assigned'}
       <div class="space-y-2">
         <Label for="labId">Lab ID</Label>

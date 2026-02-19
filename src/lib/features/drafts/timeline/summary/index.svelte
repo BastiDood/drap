@@ -156,11 +156,11 @@
                   <p class="text-muted-foreground px-1 text-sm">
                     Intervention assignment to <strong>{labName}</strong> on
                     {#if assignedAt !== null}
-                      <time id={`intervention-date-${id}`} datetime={assignedAt.toISOString()}>
+                      <time id="intervention-date-{id}" datetime={assignedAt.toISOString()}>
                         {format(assignedAt, 'PPP p')}
                       </time>
                     {:else}
-                      <span id={`intervention-date-${id}`}>Unknown date</span>
+                      <span id="intervention-date-{id}">Unknown date</span>
                     {/if}
                     .
                   </p>

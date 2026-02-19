@@ -31,7 +31,7 @@
   );
 </script>
 
-<Card.Root id={`draft-quota-editor-${mode}`} class="border-0">
+<Card.Root id="draft-quota-editor-{mode}" class="border-0">
   <Card.Header>
     <Card.Title>{title}</Card.Title>
     <Card.Description>{description}</Card.Description>
