@@ -38,7 +38,17 @@
           onSuccess?.();
           break;
         case 'failure':
-          toast.error('Failed to update role.');
+          switch (result.status) {
+            case 404:
+              toast.error('Lab not found.');
+              break;
+            case 422:
+              toast.error('Invalid role input.');
+              break;
+            default:
+              toast.error('Failed to update role.');
+              break;
+          }
           break;
         default:
           break;

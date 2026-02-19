@@ -38,9 +38,25 @@
           toast.success('Email event dispatched successfully.');
           onSuccess?.();
           break;
-        case 'failure':
-          toast.error('Failed to dispatch email event.');
+        case 'failure': {
+          const { data, status } = result;
+          switch (status) {
+            case 404:
+              if (typeof data?.message === 'string') {
+                toast.error(data.message);
+                break;
+              }
+              toast.error('Referenced lab or user email was not found.');
+              break;
+            case 422:
+              toast.error('Invalid email event payload.');
+              break;
+            default:
+              toast.error('Failed to dispatch email event.');
+              break;
+          }
           break;
+        }
         default:
           break;
       }

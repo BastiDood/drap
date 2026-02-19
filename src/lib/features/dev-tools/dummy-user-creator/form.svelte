@@ -34,7 +34,14 @@
           onSuccess?.();
           break;
         case 'failure':
-          toast.error('Failed to create dummy user.');
+          switch (result.status) {
+            case 422:
+              toast.error('Invalid dummy user input.');
+              break;
+            default:
+              toast.error('Failed to create dummy user.');
+              break;
+          }
           break;
         default:
           break;

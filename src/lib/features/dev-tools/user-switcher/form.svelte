@@ -34,7 +34,17 @@
           onSuccess?.();
           break;
         case 'failure':
-          toast.error('Failed to switch to user.');
+          switch (result.status) {
+            case 404:
+              toast.error('User email not found.');
+              break;
+            case 422:
+              toast.error('Invalid user email input.');
+              break;
+            default:
+              toast.error('Failed to switch to user.');
+              break;
+          }
           break;
         default:
           break;
