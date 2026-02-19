@@ -93,6 +93,10 @@ const SendEmailFormData = v.variant('event', [
   }),
 ]);
 
+const DevUserFormData = v.object({
+  userEmail: v.string(),
+});
+
 export const actions = {
   async profile({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
