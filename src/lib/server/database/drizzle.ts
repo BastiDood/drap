@@ -95,14 +95,15 @@ export async function impersonateUserBySessionId(
 ) {
   return await tracer.asyncSpan('impersonate-user-by-session-id', async span => {
     span.setAttributes({ 'database.session.id': sessionId, 'database.user.email': email });
-    const result = await db
+    const user = await db
       .update(schema.session)
       .set({ userId: schema.user.id })
       .from(schema.user)
       .where(and(eq(schema.session.id, sessionId), eq(schema.user.email, email)))
-      .returning();
+      .returning({ id: schema.user.id })
+      .then(assertOptional);
 
-    return { success: result.length === 1 };
+    return user?.id;
   });
 }
 
