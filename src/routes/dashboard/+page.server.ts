@@ -3,6 +3,7 @@ import { AssertionError } from 'node:assert/strict';
 import * as v from 'valibot';
 import { DatabaseError } from 'pg';
 import { decode } from 'decode-formdata';
+import { DrizzleQueryError } from 'drizzle-orm';
 import { error, fail, redirect } from '@sveltejs/kit';
 
 import { db } from '$lib/server/database';
@@ -180,7 +181,11 @@ export const actions = {
             try {
               await updateUserRole(db, user.id, isAdmin, normalizedLabId);
             } catch (err) {
-              if (err instanceof DatabaseError && err.code === '23503') {
+              if (
+                err instanceof DrizzleQueryError &&
+                err.cause instanceof DatabaseError &&
+                err.cause.code === '23503'
+              ) {
                 logger.fatal('invalid lab id', err);
                 return fail(404);
               }
