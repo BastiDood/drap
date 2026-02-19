@@ -3,6 +3,7 @@
   import SendIcon from '@lucide/svelte/icons/send';
   import UserCogIcon from '@lucide/svelte/icons/user-cog';
   import UserPlusIcon from '@lucide/svelte/icons/user-plus';
+  import UsersIcon from '@lucide/svelte/icons/users';
 
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
   import { Button } from '$lib/components/ui/button';
@@ -11,6 +12,7 @@
   import DummyUserDialog from './dummy-user-creator/dialog.svelte';
   import EmailDispatcherDialog from './email-dispatcher/dialog.svelte';
   import RoleSwitcherDialog from './role-switcher/dialog.svelte';
+  import UserSwitcherDialog from './user-switcher/dialog.svelte';
 
   interface Props {
     user: schema.User;
@@ -21,6 +23,7 @@
   let dummyUserDialogOpen = $state(false);
   let emailDialogOpen = $state(false);
   let roleDialogOpen = $state(false);
+  let userDialogOpen = $state(false);
 </script>
 
 <div class="fixed right-4 bottom-4 z-50">
@@ -50,9 +53,14 @@
         <SendIcon class="size-4 text-current" />
         <span>Dispatch Email</span>
       </DropdownMenu.Item>
+      <DropdownMenu.Item onclick={() => (userDialogOpen = true)}>
+        <UsersIcon class="size-4 text-current" />
+        <span>Switch to Another User</span>
+      </DropdownMenu.Item>
     </DropdownMenu.Content>
   </DropdownMenu.Root>
 </div>
 <DummyUserDialog bind:open={dummyUserDialogOpen} />
 <EmailDispatcherDialog bind:open={emailDialogOpen} />
 <RoleSwitcherDialog {user} bind:open={roleDialogOpen} />
+<UserSwitcherDialog bind:open={userDialogOpen} />

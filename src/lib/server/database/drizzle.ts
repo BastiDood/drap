@@ -87,6 +87,32 @@ export async function updateSessionUserId(db: DbConnection, sessionId: string, u
   });
 }
 
+/** Dev-only: Impersonates another user via the session's Id. */
+export async function impersonateUserBySessionId(
+  db: DbConnection,
+  sessionId: string,
+  email: string,
+) {
+  return await tracer.asyncSpan('impersonate-user-by-session-id', async span => {
+    span.setAttributes({ 'database.session.id': sessionId, 'database.user.email': email });
+    const user = await db
+      .update(schema.session)
+      .set({ userId: schema.user.id })
+      .from(schema.user)
+      .where(and(eq(schema.session.id, sessionId), eq(schema.user.email, email)))
+      .returning({ id: schema.user.id })
+      .then(assertOptional);
+
+    if (typeof user === 'undefined') {
+      logger.error('missing session or user');
+      return null;
+    }
+
+    logger.info('Switched to user', { 'user.id': user.id });
+    return user.id;
+  });
+}
+
 export async function getUserById(db: DbConnection, userId: string) {
   return await tracer.asyncSpan('get-user-by-id', async span => {
     span.setAttribute('database.user.id', userId);

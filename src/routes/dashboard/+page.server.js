@@ -7,6 +7,7 @@ import { dev } from '$app/environment';
 import {
   getLabById,
   getUserNameByEmail,
+  impersonateUserBySessionId,
   insertDummySession,
   updateProfileByUserId,
   updateSessionUserId,
@@ -92,6 +93,10 @@ const SendEmailFormData = v.variant('event', [
     userEmail: v.string(),
   }),
 ]);
+
+const DevUserFormData = v.object({
+  userEmail: v.string(),
+});
 
 export const actions = {
   async profile({ locals: { session }, request }) {
@@ -285,6 +290,34 @@ export const actions = {
               default:
                 throw new Error('unreachable email event case');
             }
+          });
+        },
+        async user({ locals: { session }, request }) {
+          return await tracer.asyncSpan('action.user', async span => {
+            if (typeof session?.user === 'undefined') {
+              logger.fatal('attempt to switch to another user without session');
+              error(401);
+            }
+
+            const data = await request.formData();
+            const { userEmail } = v.parse(DevUserFormData, decode(data));
+
+            const { user } = session;
+            span.setAttributes({
+              'user.id': user.id,
+              'user.email': userEmail,
+            });
+
+            // Switch user via session id
+            const id = await impersonateUserBySessionId(db, session.id, userEmail);
+
+            if (id === null) {
+              logger.error('failed to switch to another user');
+              error(404);
+            }
+
+            logger.info('user switched', { 'session.id': session.id });
+            redirect(303, '/dashboard/');
           });
         },
       }
