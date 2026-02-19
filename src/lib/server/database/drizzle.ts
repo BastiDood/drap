@@ -102,8 +102,11 @@ export async function impersonateUserBySessionId(
       .where(and(eq(schema.session.id, sessionId), eq(schema.user.email, email)))
       .returning({ id: schema.user.id })
       .then(assertOptional);
+    
+    if (user === undefined) return null;
 
-    return user?.id;
+    logger.info('Switched to user', { 'user_id': user.id });
+    return user.id;
   });
 }
 
