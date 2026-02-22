@@ -16,6 +16,7 @@
   import { cn } from '$lib/components/ui/utils';
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database/drizzle';
+  import { TextArea } from '$lib/components/ui/textarea';
   import { Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui/tooltip';
 
   interface Props {
@@ -217,12 +218,11 @@
               </Tooltip>
             </div>
           </div>
-          <textarea
-            class="border-input bg-background h-16 min-h-16 w-full rounded-md border p-2"
+          <TextArea
             name="remarks"
             placeholder="Hi, my name is... I would like to do more research on..."
-            maxlength="1028"
-          ></textarea>
+            maxlength={1028}
+          />
         </li>
       {/each}
     </ol>
