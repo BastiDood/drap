@@ -10,7 +10,6 @@
 
   const membersByDraft = $derived.by(() => {
     const grouped = Object.groupBy(members, ({ draftId }) => Number(draftId));
-
     return drafts
       .map(draft => {
         const draftId = Number(draft.id);
