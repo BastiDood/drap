@@ -11,19 +11,21 @@
   const membersByDraft = $derived.by(() => {
     const grouped = Object.groupBy(members, ({ draftId }) => Number(draftId));
 
-    return data.drafts.map(draft => {
-      const draftId = Number(draft.id);
-      const group = grouped[draftId] ?? [];
-      return {
-        draftId,
-        memberUsers: group.map(({ email, givenName, familyName, avatarUrl }) => ({
-          email: email ?? '',
-          givenName: givenName ?? '',
-          familyName: familyName ?? '',
-          avatarUrl: avatarUrl ?? '',
-        })),
-      };
-    });
+    return drafts
+      .map(draft => {
+        const draftId = Number(draft.id);
+        const group = grouped[draftId] ?? [];
+        return {
+          draftId,
+          memberUsers: group.map(({ email, givenName, familyName, avatarUrl }) => ({
+            email: email ?? '',
+            givenName: givenName ?? '',
+            familyName: familyName ?? '',
+            avatarUrl: avatarUrl ?? '',
+          })),
+        };
+      })
+      .filter(({ memberUsers }) => memberUsers.length > 0);
   });
 </script>
 
