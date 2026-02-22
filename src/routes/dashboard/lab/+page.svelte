@@ -1,6 +1,5 @@
 <script lang="ts">
   import { format } from 'date-fns/format';
-  import { groupby } from 'itertools';
 
   import * as Accordion from '$lib/components/ui/accordion';
 
@@ -9,20 +8,24 @@
   const { data } = $props();
   const { lab, heads, members, faculty, drafts } = $derived(data);
 
-  const membersByDraft = $derived(
-    Array.from(
-      groupby(members, ({ draftId }) => Number(draftId)),
-      ([draftId, members]) => ({
-        draftId,
-        memberUsers: Array.from(members, ({ email, givenName, familyName, avatarUrl }) => ({
-          email: email ?? '',
-          givenName: givenName ?? '',
-          familyName: familyName ?? '',
-          avatarUrl: avatarUrl ?? '',
-        })),
-      }),
-    ),
-  );
+  const membersByDraft = $derived.by(() => {
+    const grouped = Object.groupBy(members, ({ draftId }) => Number(draftId));
+    return drafts
+      .map(draft => {
+        const draftId = Number(draft.id);
+        const group = grouped[draftId] ?? [];
+        return {
+          draftId,
+          memberUsers: group.map(({ email, givenName, familyName, avatarUrl }) => ({
+            email: email ?? '',
+            givenName: givenName ?? '',
+            familyName: familyName ?? '',
+            avatarUrl: avatarUrl ?? '',
+          })),
+        };
+      })
+      .filter(({ memberUsers }) => memberUsers.length > 0);
+  });
 </script>
 
 <h2 class="scroll-m-20 text-3xl font-semibold tracking-tight">{lab}</h2>
