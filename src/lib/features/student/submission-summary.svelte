@@ -61,9 +61,8 @@
             </div>
             {#if remark.length > 0}
               <div class="text-muted-foreground flex items-center gap-2 p-2 text-sm">
-                <MessageSquare class="size-4" />
-                <div class="flex gap-1">
-                  <span class="font-semibold">Remarks:</span>
+                <div class="flex gap-3">
+                  <MessageSquare class="mt-0.75 size-4 shrink-0" />
                   <p class="italic">
                     {remark}
                   </p>
