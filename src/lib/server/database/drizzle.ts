@@ -35,7 +35,9 @@ const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
 const StringArray = array(string());
-const LabRemark = array(object({ lab: string(), remark: string() }));
+const StudentRankingLabRemark = array(
+  object({ labId: string(), labName: string(), remark: string() }),
+);
 
 /** Creates a new database instance. */
 export function init(url: string) {
@@ -257,6 +259,21 @@ export async function getLabRegistry(db: DbConnection, activeOnly = true) {
       })
       .from(targetSchema)
       .orderBy(({ name }) => name);
+  });
+}
+
+export async function getDraftLabRegistry(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-draft-lab-registry', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    return await db
+      .select({
+        id: schema.draftLabQuota.labId,
+        name: schema.lab.name,
+      })
+      .from(schema.draftLabQuota)
+      .innerJoin(schema.lab, eq(schema.draftLabQuota.labId, schema.lab.id))
+      .where(eq(schema.draftLabQuota.draftId, draftId))
+      .orderBy(asc(schema.lab.name));
   });
 }
 
@@ -1025,12 +1042,12 @@ export async function getStudentRankings(db: DbConnection, draftId: bigint, user
       .select({
         createdAt: sub.createdAt,
         labRemarks:
-          sql`coalesce(jsonb_agg(jsonb_build_object('lab', ${schema.activeLabView.name}, 'remark', ${sub.remark}) ORDER BY ${sub.index}) filter (where ${isNotNull(sub.labId)}), '[]'::jsonb)`.mapWith(
-            vals => parse(LabRemark, vals),
+          sql`coalesce(jsonb_agg(jsonb_build_object('labId', ${sub.labId}, 'labName', ${schema.lab.name}, 'remark', ${sub.remark}) ORDER BY ${sub.index}) filter (where ${isNotNull(sub.labId)}), '[]'::jsonb)`.mapWith(
+            vals => parse(StudentRankingLabRemark, vals),
           ),
       })
       .from(sub)
-      .leftJoin(schema.activeLabView, eq(sub.labId, schema.activeLabView.id))
+      .leftJoin(schema.lab, eq(sub.labId, schema.lab.id))
       .groupBy(sub.createdAt)
       .then(assertOptional);
   });
@@ -1445,7 +1462,7 @@ export async function getStudentRanksExport(db: DbConnection, draftId: bigint) {
         givenName: schema.user.givenName,
         familyName: schema.user.familyName,
         labRanks:
-          sql`coalesce(array_agg(${schema.activeLabView.id} ORDER BY ${schema.studentRankLab.index}) filter (where ${isNotNull(schema.activeLabView.id)}), '{}')`.mapWith(
+          sql`coalesce(array_agg(${schema.studentRankLab.labId} ORDER BY ${schema.studentRankLab.index}) filter (where ${isNotNull(schema.studentRankLab.labId)}), '{}')`.mapWith(
             vals => parse(StringArray, vals),
           ),
       })
@@ -1458,7 +1475,6 @@ export async function getStudentRanksExport(db: DbConnection, draftId: bigint) {
           eq(schema.studentRank.userId, schema.studentRankLab.userId),
         ),
       )
-      .leftJoin(schema.activeLabView, eq(schema.studentRankLab.labId, schema.activeLabView.id))
       .where(eq(schema.studentRank.draftId, draftId))
       .groupBy(schema.user.id, schema.studentRank.createdAt)
       .orderBy(schema.user.familyName);
