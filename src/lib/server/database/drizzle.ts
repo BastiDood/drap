@@ -225,7 +225,7 @@ export async function deleteLab(db: DbConnection, id: string) {
     span.setAttribute('database.lab.id', id);
     await db
       .update(schema.lab)
-      .set({ deletedAt: new Date(), quota: 0 })
+      .set({ deletedAt: sql`now()` })
       .where(eq(schema.lab.id, id));
   });
 }
@@ -253,7 +253,6 @@ export async function getLabRegistry(db: DbConnection, activeOnly = true) {
       .select({
         id: targetSchema.id,
         name: targetSchema.name,
-        quota: targetSchema.quota,
         deletedAt: targetSchema.deletedAt,
       })
       .from(targetSchema)
@@ -282,16 +281,6 @@ export async function getUserNameByEmail(db: DbConnection, email: string) {
       .from(schema.user)
       .where(eq(schema.user.email, email))
       .then(assertSingle);
-  });
-}
-
-export async function isValidTotalLabQuota(db: DbConnection) {
-  return await tracer.asyncSpan('is-valid-total-lab-quota', async () => {
-    const { result } = await db
-      .select({ result: sql`bool_or(${schema.lab.quota} > 0)`.mapWith(Boolean) })
-      .from(schema.lab)
-      .then(assertSingle);
-    return result;
   });
 }
 
@@ -358,17 +347,6 @@ export async function getStudentCountInDraft(db: DbConnection, id: bigint) {
       .where(eq(schema.studentRank.draftId, id))
       .then(assertSingle);
     return result;
-  });
-}
-
-/** @deprecated Internally uses a `for` loop. */
-export async function updateLabQuotas(
-  db: DbConnection,
-  quotas: Iterable<readonly [string, number]>,
-) {
-  return await tracer.asyncSpan('update-lab-quotas', async () => {
-    for (const [id, quota] of quotas)
-      await db.update(schema.lab).set({ quota }).where(eq(schema.lab.id, id));
   });
 }
 
@@ -925,18 +903,14 @@ export async function initDraft(db: DbConnection, maxRounds: number, registratio
         })
         .then(assertSingle);
 
-      const labs = await db
-        .select({ labId: schema.activeLabView.id, initialQuota: schema.activeLabView.quota })
-        .from(schema.activeLabView);
+      const labs = await db.select({ labId: schema.activeLabView.id }).from(schema.activeLabView);
       if (labs.length > 0)
         await db.insert(schema.draftLabQuota).values(
           labs.map(
-            ({ labId, initialQuota }) =>
-              ({
-                draftId: draft.id,
-                labId,
-                initialQuota,
-              }) satisfies Pick<schema.NewDraftLabQuota, 'draftId' | 'labId' | 'initialQuota'>,
+            ({ labId }): Pick<schema.NewDraftLabQuota, 'draftId' | 'labId'> => ({
+              draftId: draft.id,
+              labId,
+            }),
           ),
         );
 
