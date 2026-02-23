@@ -3,12 +3,17 @@
 
   import { cn, type WithElementRef } from '$lib/components/ui/utils';
 
+  interface CardVariants {
+    variant?: 'default' | 'soft';
+  }
+
   let {
     ref = $bindable(null),
+    variant = 'default',
     class: className,
     children,
     ...restProps
-  }: WithElementRef<HTMLAttributes<HTMLDivElement>> = $props();
+  }: WithElementRef<HTMLAttributes<HTMLDivElement>> & CardVariants = $props();
 </script>
 
 <div
@@ -16,6 +21,7 @@
   data-slot="card"
   class={cn(
     'bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm',
+    variant === 'soft' && 'border-0 shadow-none',
     className,
   )}
   {...restProps}
