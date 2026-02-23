@@ -1,6 +1,5 @@
 <script lang="ts">
   import { fromUnixTime, getUnixTime } from 'date-fns';
-  import { groupBy } from 'itertools';
 
   import * as Card from '$lib/components/ui/card';
   import { Badge } from '$lib/components/ui/badge';
@@ -18,7 +17,7 @@
   interface SystemLogLabGroup {
     key: string;
     labId: string;
-    round: number | null;
+    round: 'Lottery' | `Round ${number}`;
     choices: FacultyChoiceRecord[];
   }
 
@@ -28,42 +27,42 @@
     labs: SystemLogLabGroup[];
   }
 
-  const groupedRecords = $derived(groupBy(records, ({ createdAt }) => getUnixTime(createdAt)));
-  const events = $derived(
-    Object.entries(groupedRecords)
-      .map(([unix, groupedChoices]) => {
-        const visibleChoices = groupedChoices.filter(
-          ({ userEmail }) => userEmail !== null || showAutomated,
-        );
-        if (visibleChoices.length === 0) return null;
+  const events = $derived.by(() => {
+    const groupedByUnix: SystemLogEvent[] = [];
+    const eventByUnixKey: Record<string, SystemLogEvent> = {};
+    const labByEventAndLabKey: Record<string, SystemLogLabGroup> = {};
 
-        const labs = Object.entries(
-          Object.groupBy(visibleChoices, choice => {
-            const roundToken = choice.round === null ? 'lottery' : String(choice.round);
-            return `${unix}|${choice.labId}|${roundToken}`;
-          }),
-        ).flatMap(([key, choices]) => {
-          if (typeof choices === 'undefined' || choices.length === 0) return [];
-          const [firstChoice] = choices;
-          if (typeof firstChoice === 'undefined') return [];
-          return [
-            {
-              key,
-              labId: firstChoice.labId,
-              round: firstChoice.round,
-              choices,
-            } as SystemLogLabGroup,
-          ];
-        });
+    for (const choice of records) {
+      if (choice.userEmail === null && !showAutomated) continue;
 
-        return {
-          key: unix,
-          unix: Number.parseInt(unix, 10),
-          labs,
-        } as SystemLogEvent;
-      })
-      .filter(event => event !== null),
-  );
+      const unix = getUnixTime(choice.createdAt);
+      const unixKey = unix.toString();
+      let event = eventByUnixKey[unixKey];
+      if (typeof event === 'undefined') {
+        event = { key: unixKey, unix, labs: [] };
+        eventByUnixKey[unixKey] = event;
+        groupedByUnix.push(event);
+      }
+
+      const roundToken = choice.round === null ? 'lottery' : choice.round.toString();
+      const eventLabKey = `${unixKey}|${choice.labId}|${roundToken}`;
+      let labGroup = labByEventAndLabKey[eventLabKey];
+      if (typeof labGroup === 'undefined') {
+        labGroup = {
+          key: eventLabKey,
+          labId: choice.labId,
+          round: choice.round === null ? 'Lottery' : `Round ${choice.round}`,
+          choices: [],
+        };
+        labByEventAndLabKey[eventLabKey] = labGroup;
+        event.labs.push(labGroup);
+      }
+
+      labGroup.choices.push(choice);
+    }
+
+    return groupedByUnix;
+  });
 </script>
 
 <!--
@@ -100,7 +99,7 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
         {@const [choice] = lab.choices}
         {#if typeof choice !== 'undefined'}
           <div class="bg-muted space-y-1 rounded-md p-4">
-            <strong class="uppercase">{lab.labId}</strong> (Round {lab.round ?? 'Lottery'}):
+            <strong class="uppercase">{lab.labId}</strong> ({lab.round}):
             {#if choice.userEmail === null || choice.studentEmail === null}
               {#if choice.userEmail === null}
                 <!-- If the system auto-skipped -->
