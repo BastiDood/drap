@@ -22,7 +22,6 @@ import {
   getUserById,
   incrementDraftRound,
   insertLotteryChoices,
-  isValidTotalInitialLabQuotaInDraft,
   randomizeRemainingStudents,
   syncResultsToUsers,
   updateDraftInitialLabQuotas,
@@ -221,12 +220,6 @@ export const actions = {
       logger.debug('starting draft', { 'draft.id': draft });
 
       const draftId = BigInt(draft);
-      const isValid = await isValidTotalInitialLabQuotaInDraft(db, draftId);
-      if (!isValid) {
-        logger.warn('invalid total draft initial quota', { 'draft.id': draftId.toString() });
-        return fail(498);
-      }
-
       const studentCount = await getStudentCountInDraft(db, draftId);
       if (studentCount <= 0) {
         logger.warn('no students in draft');

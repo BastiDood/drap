@@ -159,18 +159,35 @@ test.describe('Draft Lifecycle', () => {
       await expect(adminPage.getByText('Algorithms and Complexity Laboratory')).toBeVisible();
     });
 
-    test('sets quota for each lab', async ({ adminPage }) => {
+    test('archives then restores ACL from lab catalog', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/labs/');
-      await adminPage.locator('input[name="ndsl"]').fill('2');
-      await adminPage.locator('input[name="csl"]').fill('2');
-      await adminPage.locator('input[name="scl"]').fill('2');
-      await adminPage.locator('input[name="cvmil"]').fill('1');
-      await adminPage.locator('input[name="acl"]').fill('1');
-      const responsePromise = adminPage.waitForResponse('/dashboard/labs/?/quota');
-      await adminPage.getByRole('button', { name: 'Update Quotas' }).click();
-      const response = await responsePromise;
-      const responseData = await response.json();
-      expect(responseData.type).toBe('success');
+
+      const aclRow = adminPage
+        .locator('tbody tr')
+        .filter({ hasText: 'Algorithms and Complexity Laboratory' });
+      await expect(aclRow).toBeVisible();
+
+      {
+        const archiveResponsePromise = adminPage.waitForResponse('/dashboard/labs/?/archive');
+        await aclRow.getByRole('button').click();
+        const archiveResponse = await archiveResponsePromise;
+        const archiveResponseData = await archiveResponse.json();
+        expect(archiveResponseData.type).toBe('success');
+      }
+
+      await adminPage.getByRole('tab', { name: /Archived Labs/u }).click();
+      const archivedAclRow = adminPage
+        .locator('tbody tr')
+        .filter({ hasText: 'Algorithms and Complexity Laboratory' });
+      await expect(archivedAclRow).toBeVisible();
+
+      {
+        const restoreResponsePromise = adminPage.waitForResponse('/dashboard/labs/?/restore');
+        await archivedAclRow.getByRole('button').click();
+        const restoreResponse = await restoreResponsePromise;
+        const restoreResponseData = await restoreResponse.json();
+        expect(restoreResponseData.type).toBe('success');
+      }
     });
   });
 
@@ -415,20 +432,24 @@ test.describe('Draft Lifecycle', () => {
 
       const aclInput = editor.locator('input[name="acl"]');
       await expect(aclInput).toHaveValue('');
-      await expect(aclInput).toHaveAttribute('placeholder', '1');
+      await expect(aclInput).toHaveAttribute('placeholder', '0');
 
       const ndslInput = editor.locator('input[name="ndsl"]');
       await expect(ndslInput).toHaveValue('');
-      await expect(ndslInput).toHaveAttribute('placeholder', '2');
+      await expect(ndslInput).toHaveAttribute('placeholder', '0');
     });
 
-    test('updates initial snapshots with partial inputs and clears to placeholders', async ({
+    test('updates initial snapshots and clears to committed placeholders', async ({
       adminPage,
     }) => {
       await adminPage.goto('/dashboard/drafts/1/');
       const editor = adminPage.locator('#draft-quota-editor-initial');
       await expect(editor).toBeVisible();
 
+      await editor.locator('input[name="ndsl"]').fill('2');
+      await editor.locator('input[name="csl"]').fill('2');
+      await editor.locator('input[name="scl"]').fill('2');
+      await editor.locator('input[name="cvmil"]').fill('1');
       await editor.locator('input[name="acl"]').fill('1');
 
       const responsePromise = adminPage.waitForResponse('/dashboard/drafts/1/?/quota');
@@ -950,21 +971,6 @@ test.describe('Draft Lifecycle', () => {
       await expect(adminPage.getByText('Algorithms and Complexity Laboratory')).toBeVisible();
     });
 
-    test('sets minimal quotas for the second draft cycle', async ({ adminPage }) => {
-      await adminPage.goto('/dashboard/labs/');
-
-      await adminPage.locator('input[name="ndsl"]').fill('1');
-      await adminPage.locator('input[name="csl"]').fill('1');
-      await adminPage.locator('input[name="scl"]').fill('1');
-      await adminPage.locator('input[name="cvmil"]').fill('0');
-
-      const responsePromise = adminPage.waitForResponse('/dashboard/labs/?/quota');
-      await adminPage.getByRole('button', { name: 'Update Quotas' }).click();
-      const response = await responsePromise;
-      const responseData = await response.json();
-      expect(responseData.type).toBe('success');
-    });
-
     test('creates Draft #2 with 2 rounds', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/');
       await adminPage.getByRole('button', { name: 'Create Draft' }).click();
@@ -1128,6 +1134,26 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('Second Draft — Regular Flow (No Lottery Assignments)', () => {
+    test('updates Draft #2 initial snapshots before start', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/2/');
+      await expect(adminPage.getByText('There are currently')).toBeVisible();
+      await expect(adminPage.getByText(/\b3\b/u).first()).toBeVisible();
+
+      const editor = adminPage.locator('#draft-quota-editor-initial');
+      await expect(editor).toBeVisible();
+
+      await editor.locator('input[name="ndsl"]').fill('1');
+      await editor.locator('input[name="csl"]').fill('1');
+      await editor.locator('input[name="scl"]').fill('1');
+      await editor.locator('input[name="cvmil"]').fill('0');
+
+      const responsePromise = adminPage.waitForResponse('/dashboard/drafts/2/?/quota');
+      await editor.getByRole('button', { name: 'Update Initial Snapshots' }).click();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
+    });
+
     test('starts Draft #2', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
       await expect(adminPage.getByText('There are currently')).toBeVisible();

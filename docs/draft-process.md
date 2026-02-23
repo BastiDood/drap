@@ -6,7 +6,7 @@
 - **Lab Head (Faculty)**: Reviews and selects which students to accept into their lab each round.
 - **Administrator**: Manages the draft lifecycle, configures draft quota snapshots, and resolves edge cases.
 - **Drafted**: A student who has been accepted by a lab. Drafted students exit the pool and do not participate in subsequent rounds.
-- **Global Lab Quota**: The default quota stored on `/dashboard/labs/` for each lab configuration.
+- **Lab Catalog**: The list of labs managed on `/dashboard/labs/` (create, archive, restore).
 - **Draft Quota Snapshot**: Per-draft quotas stored at draft creation and edited on `/dashboard/drafts/[draftId]/`.
 
 ## Draft Lifecycle
@@ -40,7 +40,7 @@ Before any randomization occurs, administrators have a final opportunity to manu
 
 #### Quota Adjustment
 
-Global lab quotas in `/dashboard/labs/` are separate from active draft allocation. For each draft, the admin edits quota snapshots in `/dashboard/drafts/[draftId]/`:
+Lab catalog updates in `/dashboard/labs/` are separate from active draft allocation. For each draft, the admin edits quota snapshots in `/dashboard/drafts/[draftId]/`:
 
 1. During registration, **initial** snapshots may be adjusted for regular rounds.
 2. During lottery, **lottery** snapshots may be adjusted for conclude allocation.
@@ -75,7 +75,7 @@ Students who were not part of the draft (e.g., those who registered after it sta
 
 ### Administrator
 
-1. `/dashboard/labs/` — Configure global lab defaults (quota baseline + archive/restore)
+1. `/dashboard/labs/` — Manage lab catalog (create + archive/restore)
 2. `/dashboard/drafts/` — Create a new draft (set deadline and round count; captures initial snapshots)
 3. Wait for student registrations
 4. `/dashboard/drafts/[draftId]/` — (Optional) adjust initial quota snapshots during registration

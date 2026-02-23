@@ -1,6 +1,8 @@
 import type { schema } from '$lib/server/database/drizzle';
 
-export type Lab = Pick<schema.Lab, 'id' | 'name' | 'quota'>;
+export interface Lab extends Pick<schema.Lab, 'id' | 'name'> {
+  quota: number;
+}
 
 export interface Student extends Pick<
   schema.User,

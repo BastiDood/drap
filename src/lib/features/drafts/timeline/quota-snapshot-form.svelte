@@ -21,14 +21,27 @@
 
   const { draftId, mode, snapshots }: Props = $props();
 
-  const title = $derived(
-    mode === 'initial' ? 'Initial Quota Snapshots' : 'Lottery Quota Snapshots',
-  );
-  const description = $derived(
-    mode === 'initial'
-      ? 'These values are used during regular rounds and are isolated from global lab quota settings.'
-      : 'These values are used when concluding lottery assignments for this draft only.',
-  );
+  const { title, description } = $derived.by(() => {
+    /* eslint-disable @typescript-eslint/init-declarations */
+    let title: string;
+    let description: string;
+    /* eslint-enable @typescript-eslint/init-declarations */
+    switch (mode) {
+      case 'initial':
+        title = 'Initial Quota Snapshots';
+        description =
+          'These values are used during regular rounds and are isolated from lab catalog changes.';
+        break;
+      case 'lottery':
+        title = 'Lottery Quota Snapshots';
+        description =
+          'These values are used when concluding lottery assignments for this draft only.';
+        break;
+      default:
+        throw new Error(`invalid mode: ${mode}`);
+    }
+    return { title, description };
+  });
 </script>
 
 <Card.Root id="draft-quota-editor-{mode}" class="border-0">

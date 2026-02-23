@@ -3,7 +3,6 @@
 
   export interface Props {
     labs: ArchivedLab[];
-    hasActiveDraft: boolean;
   }
 </script>
 
@@ -14,8 +13,7 @@
 
   import RestoreForm from './form.svelte';
 
-  const { labs, hasActiveDraft }: Props = $props();
-  const isRestoreAllowed = $derived(!hasActiveDraft);
+  const { labs }: Props = $props();
 </script>
 
 <div class="rounded-md border">
@@ -24,9 +22,7 @@
       <Table.Row>
         <Table.Head class="w-full">Laboratory</Table.Head>
         <Table.Head class="w-0 text-right">Archived Date</Table.Head>
-        {#if isRestoreAllowed}
-          <Table.Head class="w-0 text-right">Restore?</Table.Head>
-        {/if}
+        <Table.Head class="w-0 text-right">Restore?</Table.Head>
       </Table.Row>
     </Table.Header>
     <Table.Body>
@@ -36,18 +32,13 @@
           <Table.Cell class="w-0 text-right">
             <span class="text-sm">{format(deletedAt, 'PPP')}</span>
           </Table.Cell>
-          {#if isRestoreAllowed}
-            <Table.Cell class="w-0 text-right">
-              <RestoreForm labId={id} labName={name} />
-            </Table.Cell>
-          {/if}
+          <Table.Cell class="w-0 text-right">
+            <RestoreForm labId={id} labName={name} />
+          </Table.Cell>
         </Table.Row>
       {:else}
         <Table.Row>
-          <Table.Cell
-            colspan={isRestoreAllowed ? 3 : 2}
-            class="text-muted-foreground py-8 text-center"
-          >
+          <Table.Cell colspan={3} class="text-muted-foreground py-8 text-center">
             No archived labs found.
           </Table.Cell>
         </Table.Row>

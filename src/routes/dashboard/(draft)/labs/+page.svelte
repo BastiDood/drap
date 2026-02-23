@@ -8,16 +8,15 @@
   const { draft, labs } = $derived(data);
 </script>
 
-{#if typeof draft !== 'undefined' && draft.currRound !== null && draft.currRound > 0}
-  {@const { id: draftId, activePeriodStart, currRound, maxRounds } = draft}
+{#if typeof draft !== 'undefined'}
+  {@const { id: draftId, activePeriodStart } = draft}
   {@const startDate = format(activePeriodStart, 'PPP')}
   {@const startTime = format(activePeriodStart, 'pp')}
   <Callout variant="warning" class="mb-4">
     <strong>Draft #{draftId}</strong> started last <strong>{startDate}</strong> at
-    <strong>{startTime}</strong> and is now in Round <strong>{currRound}</strong> of
-    <strong>{maxRounds}</strong>. Lab quotas are read-only while a draft is in progress.
+    <strong>{startTime}</strong>. Changes on this page only affect the lab catalog and will not be
+    reflected in the currently active draft.
   </Callout>
-  <LabTable {labs} hasActiveDraft />
-{:else}
-  <LabTable {labs} hasActiveDraft={false} />
 {/if}
+
+<LabTable {labs} />

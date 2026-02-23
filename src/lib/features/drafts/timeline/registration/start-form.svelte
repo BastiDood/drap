@@ -39,12 +39,6 @@
                 dismissable: true,
               });
               break;
-            case 498:
-              toast.error('Cannot start the draft when the total lab quota is zero.', {
-                duration: Infinity,
-                dismissable: true,
-              });
-              break;
             default:
               toast.error('Failed to start the draft.');
               break;

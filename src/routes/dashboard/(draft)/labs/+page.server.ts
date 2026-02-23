@@ -3,14 +3,7 @@ import { decode } from 'decode-formdata';
 import { error, redirect } from '@sveltejs/kit';
 
 import { db } from '$lib/server/database';
-import {
-  deleteLab,
-  getActiveDraft,
-  getLabRegistry,
-  insertNewLab,
-  restoreLab,
-  updateLabQuotas,
-} from '$lib/server/database/drizzle';
+import { deleteLab, getLabRegistry, insertNewLab, restoreLab } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
@@ -64,13 +57,6 @@ export async function load({ locals: { session } }) {
   });
 }
 
-function* mapRowTuples(data: FormData) {
-  for (const [key, value] of data.entries()) {
-    if (value instanceof File || value.length === 0) continue;
-    yield [key, parseInt(value, 10)] as const;
-  }
-}
-
 export const actions = {
   async lab({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
@@ -88,12 +74,6 @@ export const actions = {
       error(403);
     }
 
-    const draft = await getActiveDraft(db);
-    if (typeof draft !== 'undefined') {
-      logger.warn('cannot create lab while draft is active');
-      error(403);
-    }
-
     return await tracer.asyncSpan('action.lab', async () => {
       const data = await request.formData();
       const { labId, name } = v.parse(LabFormData, decode(data));
@@ -101,36 +81,6 @@ export const actions = {
 
       await insertNewLab(db, labId, name);
       logger.info('lab created', { labId, name });
-    });
-  },
-  async quota({ locals: { session }, request }) {
-    if (typeof session?.user === 'undefined') {
-      logger.error('attempt to update lab quota without session');
-      error(401);
-    }
-
-    const { user } = session;
-    if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.error('insufficient permissions to update lab quota', void 0, {
-        'user.is_admin': user.isAdmin,
-        'user.google_id': user.googleUserId,
-        'user.lab_id': user.labId,
-      });
-      error(403);
-    }
-
-    const draft = await getActiveDraft(db);
-    if (typeof draft !== 'undefined' && draft.currRound !== null && draft.currRound > 0) {
-      logger.warn('cannot update lab quota while a draft is ongoing', {
-        'draft.round.current': draft.currRound,
-      });
-      error(403, 'It is unsafe to update the lab quota while a draft is ongoing.');
-    }
-
-    return await tracer.asyncSpan('action.quota', async () => {
-      const pairs = mapRowTuples(await request.formData());
-      await updateLabQuotas(db, pairs);
-      logger.info('lab quotas updated');
     });
   },
   async archive({ locals: { session }, request }) {
@@ -147,12 +97,6 @@ export const actions = {
         'user.lab_id': user.labId,
       });
       error(403);
-    }
-
-    const draft = await getActiveDraft(db);
-    if (typeof draft !== 'undefined') {
-      logger.warn('cannot archive lab while draft is active');
-      error(403, 'Cannot archive labs while a draft is active.');
     }
 
     return await tracer.asyncSpan('action.archive', async () => {
@@ -178,12 +122,6 @@ export const actions = {
         'user.lab_id': user.labId,
       });
       error(403);
-    }
-
-    const draft = await getActiveDraft(db);
-    if (typeof draft !== 'undefined') {
-      logger.warn('cannot restore lab while draft is active');
-      error(403, 'Cannot restore labs while a draft is active.');
     }
 
     return await tracer.asyncSpan('action.restore', async () => {
