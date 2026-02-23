@@ -148,6 +148,13 @@
       "when": 1771311166874,
       "tag": "0020_add-draft-lab-quota-snapshots-and-concluded-breakdown",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1771841803271,
+      "tag": "0021_remove-global-lab-quota",
+      "breakpoints": true
     }
   ]
 }
