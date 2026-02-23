@@ -7,18 +7,18 @@ For detailed domain knowledge (terminology, lifecycle, role workflows), see [the
 # Commands
 
 ```bash
-pnpm fmt                  # Check formatting
-pnpm fmt:fix              # Auto-fix formatting
-pnpm lint                 # All linters in parallel
-pnpm lint:eslint          # ESLint only
-pnpm lint:svelte          # Svelte checker only
-pnpm db:generate          # Generate Drizzle migrations
-pnpm db:migrate           # Apply migrations
-pnpm db:studio            # Drizzle Studio UI
-pnpm docker:dev           # Dev services: postgres, inngest dev, o2
-pnpm docker:ci            # CI services: dev stack + Inngest SDK URL override to preview (4173)
-pnpm docker:prod          # Prod internal services: postgres, inngest prod, redis, o2, drizzle-gateway
-pnpm docker:app           # Full prod environment: prod + app
+pnpm fmt         # Check formatting
+pnpm fmt:fix     # Auto-fix formatting
+pnpm lint        # All linters in parallel
+pnpm lint:eslint # ESLint only
+pnpm lint:svelte # Svelte checker only
+pnpm db:generate # Generate Drizzle migrations
+pnpm db:migrate  # Apply migrations
+pnpm db:studio   # Drizzle Studio UI
+pnpm docker:dev  # Dev services: postgres, inngest dev, o2
+pnpm docker:ci   # CI services: dev stack + Inngest SDK URL override to preview (4173)
+pnpm docker:prod # Prod internal services: postgres, inngest prod, redis, o2, drizzle-gateway
+pnpm docker:app  # Full prod environment: prod + app
 ```
 
 # Tech Stack
@@ -57,21 +57,6 @@ Key directories:
   - `/student` - Student hub (rankings, status)
   - `/users` - User management (admin)
 
-# Environment Variables
-
-| Variable                     | Description                                   |
-| ---------------------------- | --------------------------------------------- |
-| `ORIGIN`                     | Server origin (computes OAuth redirect)       |
-| `PUBLIC_ORIGIN`              | Public origin (meta tags)                     |
-| `POSTGRES_URL`               | PostgreSQL connection string                  |
-| `GOOGLE_OAUTH_CLIENT_ID`     | Google OAuth credentials                      |
-| `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth credentials                      |
-| `INNGEST_EVENT_KEY`          | Inngest event signing key                     |
-| `INNGEST_SIGNING_KEY`        | Inngest webhook signing key                   |
-| `DRAP_ENABLE_EMAILS`         | Enable real email sending (default: disabled) |
-
-Environment loading organized in `src/lib/server/env/` with hierarchical modules (e.g., `inngest/api.js`, `inngest/signing.js`).
-
 # End-to-End Testing
 
 Run Playwright tests with environment variables loaded:
@@ -102,6 +87,8 @@ nu ./scripts/test-playwright.nu
 nu ./scripts/test-playwright.nu development
 nu ./scripts/test-playwright.nu production
 ```
+
+**IMPORTANT:** Always run the end-to-end tests with the appropriate environment variables loaded. Running `pnpm test:playwright` directly will fail due to invalid environment variables.
 
 # Pre-commit Workflow
 

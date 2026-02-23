@@ -118,13 +118,7 @@ const user = await db.select().from(users).where(eq(users.id, id)).then(assertOp
 
 ### Connection Types
 
-```ts
-export type DrizzleDatabase = ReturnType<typeof init>;
-export type DrizzleTransaction = Parameters<Parameters<DrizzleDatabase['transaction']>[0]>[0];
-export type DbConnection = DrizzleDatabase | DrizzleTransaction;
-```
-
-Functions accept `DbConnection` to work with both direct db calls and transactions.
+Functions accept `DbConnection` (i.e., `DrizzleDatabase | DrizzleTransaction`) to work with both direct database calls and transactions.
 
 ## Import Pattern
 
