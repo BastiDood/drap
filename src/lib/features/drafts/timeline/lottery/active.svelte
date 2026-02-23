@@ -56,7 +56,7 @@
     <ConcludeForm {draftId} />
   </div>
   <div class="min-w-max space-y-2">
-    <Card.Root class="border-0">
+    <Card.Root variant="soft">
       <Card.Header>
         <Card.Title>Eligible for Lottery ({available.length})</Card.Title>
       </Card.Header>
@@ -70,7 +70,7 @@
         {/if}
       </Card.Content>
     </Card.Root>
-    <Card.Root class="border-0">
+    <Card.Root variant="soft">
       <Card.Header>
         <Card.Title>Already Drafted ({selected.length})</Card.Title>
       </Card.Header>
