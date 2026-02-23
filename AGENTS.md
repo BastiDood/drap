@@ -33,13 +33,13 @@ pnpm docker:app           # Full prod environment: prod + app
 
 ## Code Organization
 
-See [src/AGENTS.md](src/AGENTS.md) for detailed codebase map and convention references.
+See `src/` for detailed codebase map and convention references.
 
 Key directories:
 
-- `src/lib/server/database/` - Drizzle ORM ([AGENTS.md](src/lib/server/database/AGENTS.md))
-- `src/lib/server/inngest/` - Event-driven jobs ([AGENTS.md](src/lib/server/inngest/AGENTS.md))
-- `src/lib/features/` - Feature modules ([AGENTS.md](src/lib/features/AGENTS.md))
+- `src/lib/server/database/` - Drizzle ORM
+- `src/lib/server/inngest/` - Event-driven jobs
+- `src/lib/features/` - Feature modules
 
 ## Route Structure
 
