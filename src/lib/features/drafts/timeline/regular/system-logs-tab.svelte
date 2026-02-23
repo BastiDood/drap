@@ -1,9 +1,7 @@
 <script lang="ts">
   import { fromUnixTime, getUnixTime } from 'date-fns';
-  import { groupby } from 'itertools';
 
   import * as Card from '$lib/components/ui/card';
-  import { assert } from '$lib/assert';
   import { Badge } from '$lib/components/ui/badge';
 
   import type { FacultyChoiceRecord } from '$lib/features/drafts/types';
@@ -16,16 +14,55 @@
 
   let showAutomated = $state(false);
 
-  const events = $derived(
-    Array.from(
-      groupby(records, ({ createdAt }) => getUnixTime(createdAt)),
-      ([timestamp, events]) =>
-        [
-          timestamp,
-          Array.from(events.filter(({ userEmail }) => userEmail !== null || showAutomated)),
-        ] as const,
-    ).filter(([_, events]) => events.length > 0),
-  );
+  interface SystemLogLabGroup {
+    key: string;
+    labId: string;
+    round: 'Lottery' | `Round ${number}`;
+    choices: FacultyChoiceRecord[];
+  }
+
+  interface SystemLogEvent {
+    key: string;
+    unix: number;
+    labs: SystemLogLabGroup[];
+  }
+
+  const events = $derived.by(() => {
+    const groupedByUnix: SystemLogEvent[] = [];
+    const eventByUnixKey: Record<string, SystemLogEvent> = {};
+    const labByEventAndLabKey: Record<string, SystemLogLabGroup> = {};
+
+    for (const choice of records) {
+      if (choice.userEmail === null && !showAutomated) continue;
+
+      const unix = getUnixTime(choice.createdAt);
+      const unixKey = unix.toString();
+      let event = eventByUnixKey[unixKey];
+      if (typeof event === 'undefined') {
+        event = { key: unixKey, unix, labs: [] };
+        eventByUnixKey[unixKey] = event;
+        groupedByUnix.push(event);
+      }
+
+      const roundToken = choice.round === null ? 'lottery' : choice.round.toString();
+      const eventLabKey = `${unixKey}|${choice.labId}|${roundToken}`;
+      let labGroup = labByEventAndLabKey[eventLabKey];
+      if (typeof labGroup === 'undefined') {
+        labGroup = {
+          key: eventLabKey,
+          labId: choice.labId,
+          round: choice.round === null ? 'Lottery' : `Round ${choice.round}`,
+          choices: [],
+        };
+        labByEventAndLabKey[eventLabKey] = labGroup;
+        event.labs.push(labGroup);
+      }
+
+      labGroup.choices.push(choice);
+    }
+
+    return groupedByUnix;
+  });
 </script>
 
 <!--
@@ -52,30 +89,17 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
     </label>
   </Card.Content>
 </Card.Root>
-{#each events as [unix, choices], index (index)}
-  {@const labs = Array.from(
-    choices.reduce((set, { labId, round }) => set.add(`${labId}|${round}`), new Set<string>()),
-    key => {
-      const [labId, round] = key.split('|');
-      assert(typeof round !== 'undefined');
-      assert(typeof labId !== 'undefined');
-      return [labId, round.length === 0 ? null : Number.parseInt(round, 10)];
-    },
-  )}
+{#each events as event (event.key)}
   <Card.Root class="my-2">
     <Card.Header>
-      <Card.Title class="text-base">{fromUnixTime(unix).toLocaleString()}</Card.Title>
+      <Card.Title class="text-base">{fromUnixTime(event.unix).toLocaleString()}</Card.Title>
     </Card.Header>
     <Card.Content class="space-y-4">
-      {#each labs as [labId, round] ([labId, round])}
-        {@const labChoices = choices.filter(
-          ({ labId: choiceLab, round: choiceRound }) =>
-            choiceLab === labId && round === choiceRound,
-        )}
-        {@const [choice] = labChoices}
+      {#each event.labs as lab (lab.key)}
+        {@const [choice] = lab.choices}
         {#if typeof choice !== 'undefined'}
           <div class="bg-muted space-y-1 rounded-md p-4">
-            <strong class="uppercase">{labId}</strong> (Round {choice.round ?? 'Lottery'}):
+            <strong class="uppercase">{lab.labId}</strong> ({lab.round}):
             {#if choice.userEmail === null || choice.studentEmail === null}
               {#if choice.userEmail === null}
                 <!-- If the system auto-skipped -->
@@ -99,7 +123,7 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
               <!-- If a faculty member selected students -->
               <span>
                 This selection of
-                {#each labChoices as { studentEmail } (studentEmail)}
+                {#each lab.choices as { studentEmail } (studentEmail)}
                   <Badge variant="outline" class="border-primary bg-primary/10 text-primary"
                     >{studentEmail}</Badge
                   >

@@ -1415,7 +1415,7 @@ export async function getFacultyChoiceRecords(db: DbConnection, draftId: bigint)
       .where(eq(schema.facultyChoice.draftId, draftId))
       .orderBy(
         desc(schema.facultyChoice.createdAt),
-        desc(schema.facultyChoice.round),
+        sql`${schema.facultyChoice.round} DESC NULLS FIRST`,
         asc(schema.facultyChoice.labId),
       );
   });
