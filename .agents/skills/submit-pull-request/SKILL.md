@@ -4,11 +4,6 @@ description: Create a PR with dev as base using the pull request template. Use w
 compatibility: Requires Git (`git`) and the GitHub CLI (`gh`).
 user-invocable: true
 disable-model-invocation: false
-allowed-tools:
-  - Read
-  - Bash(git diff:*)
-  - Bash(git show:*)
-  - Bash(git status:*)
 ---
 
 Summarize the latest changes in this branch to create a pull request on GitHub.

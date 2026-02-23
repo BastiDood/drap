@@ -7,12 +7,6 @@ description: >
 compatibility: Requires `jq` to be installed on the system.
 user-invocable: true
 disable-model-invocation: false
-allowed-tools:
-  - Read
-  - Bash(curl:*)
-  - Bash(date:*)
-  - Bash(jq:*)
-  - Bash(bash:*)
 ---
 
 # Debug OpenObserve Skill
@@ -97,7 +91,7 @@ Use `size: -1` to retrieve all spans for a trace.
 
 ## Example Scripts
 
-Pre-written queries for common debugging scenarios. **These are examples only** — compose your own `curl` commands as needed.
+Pre-written queries for common debugging scenarios. Run directly via `bash .agents/skills/debug-local-o2/scripts/<script>.sh`, or compose your own `curl -s ... | jq -c ...` commands as needed.
 
 | Script                                           | Args                                    | Description                         |
 | ------------------------------------------------ | --------------------------------------- | ----------------------------------- |
@@ -168,22 +162,18 @@ Recommended approach — **trace-first**:
 
 ## Manual Curl Template
 
-```shell
-NOW_US=$(( $(date +%s) * 1000000 ))
-START_US=$(( NOW_US - 30 * 60 * 1000000 ))
+When composing ad-hoc queries, first compute the timestamp with `date +%s`, then embed it in the `curl` request:
 
+```shell
+# Step 1: Get current epoch (run separately)
+date +%s
+
+# Step 2: Use the output (e.g., 1708700000) to compose the query
 curl -s -u "admin@example.com:password" \
   -X POST "http://localhost:5080/api/default/_search" \
   -H 'Content-Type: application/json' \
-  -d @- <<EOF | jq '.hits'
-{
-  "query": {
-    "sql": "SELECT * FROM default WHERE ...",
-    "start_time": $START_US,
-    "end_time": $NOW_US,
-    "from": 0,
-    "size": 50
-  }
-}
-EOF
+  -d '{"query":{"sql":"SELECT * FROM default WHERE ...","start_time":1708399700000000,"end_time":1708700000000000,"from":0,"size":50}}' \
+  | jq -c '.hits'
 ```
+
+Use `jq -c` (compact output) to minimize context usage. Use `jq -c '.hits[]'` to stream individual records.

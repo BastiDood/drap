@@ -14,8 +14,21 @@
       "Bash(tree:*)",
       "Bash(find:*)",
       "Bash(grep:*)",
+      "Bash(curl -s:*)",
+      "Bash(jq -c:*)",
+      "Bash(date +%s:*)",
+      "Bash(bash .agents/skills/debug-local-o2/scripts:*)",
+      "Bash(git diff:*)",
+      "Bash(git show:*)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(git branch:*)",
+      "Bash(rm scratchpad:*)",
+      "Write(scratchpad/*)",
       "Skill(debug-local-o2)",
-      "Skill(debug-local-postgres)"
+      "Skill(debug-local-postgres)",
+      "Skill(submit-pull-request)"
     ],
     "ask": [
       "Bash(docker compose exec postgres psql:*)",

@@ -22,9 +22,18 @@
       "tree *": "allow",
       "find *": "allow",
       "grep *": "allow",
+      "curl -s *": "allow",
+      "jq -c *": "allow",
+      "date +%s *": "allow",
+      "bash .agents/skills/debug-local-o2/scripts/*": "allow",
+      "docker compose exec postgres psql *": "allow",
       "git diff *": "allow",
       "git show *": "allow",
       "git status *": "allow",
+      "git log *": "allow",
+      "git rev-parse *": "allow",
+      "git branch *": "allow",
+      "rm scratchpad/*": "allow",
       "pnpm lint": "allow",
       "pnpm lint *": "allow",
       "pnpm fmt": "allow",
@@ -45,7 +54,9 @@
     "edit": {
       "*": "ask",
       "drizzle/*": "deny",
-      "src/*": "allow"
+      "src/*": "allow",
+      "scratchpad/*": "allow",
+      ".agents/skills/*": "allow"
     },
     "skill": {
       "*": "ask",
