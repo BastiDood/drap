@@ -32,6 +32,20 @@ Three schemas organized by domain:
 - `schema/index.js` - Barrel export
 - `schema/custom/` - Custom column types (ulid, tstzrange, bytea)
 
+## Schema Change Workflow
+
+The data model is expected to be edited directly in the schema files when requirements change.
+
+```bash
+# After editing the model, generate a migration into `drizzle/`.
+pnpm db:generate --name descriptive-snake-case-migration-name
+```
+
+```bash
+# Then commit the migration into the database instance.
+pnpm db:migrate
+```
+
 ## User Role Discrimination
 
 Users are discriminated by `is_admin` and `lab_id`:
