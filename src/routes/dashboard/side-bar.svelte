@@ -34,8 +34,8 @@
 
 <TooltipProvider>
   {#if !sidebar.openMobile}
-    <div class="fixed top-4 left-4 md:hidden">
-      <Sidebar.Trigger />
+    <div class="fixed top-4 left-5 z-100 md:hidden">
+      <Sidebar.Trigger class="bg-background shadow-lg" />
     </div>
   {/if}
   <Sidebar.Root collapsible="icon" class="border-border border-r">
