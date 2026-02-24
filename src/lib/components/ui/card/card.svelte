@@ -21,7 +21,7 @@
   data-slot="card"
   class={cn(
     'bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm',
-    variant === 'soft' && 'border-0 shadow-none',
+    { 'border-0 shadow-none': variant === 'soft' },
     className,
   )}
   {...restProps}
