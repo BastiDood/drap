@@ -254,7 +254,7 @@ test.describe('Draft Lifecycle', () => {
   test.describe('Student Lab Preferences', () => {
     test('Eager submits full preferences (NDSL > CSL > SCL)', async ({ eagerDrafteePage }) => {
       await eagerDrafteePage.goto('/dashboard/student/');
-      await expect(eagerDrafteePage.getByText('Select preferred labs')).toBeVisible();
+      await expect(eagerDrafteePage.getByText('Select Lab Preference')).toBeVisible();
 
       await eagerDrafteePage
         .getByRole('button', { name: 'Networks and Distributed Systems Laboratory' })
@@ -276,7 +276,7 @@ test.describe('Draft Lifecycle', () => {
       patientCandidatePage,
     }) => {
       await patientCandidatePage.goto('/dashboard/student/');
-      await expect(patientCandidatePage.getByText('Select preferred labs')).toBeVisible();
+      await expect(patientCandidatePage.getByText('Select Lab Preference')).toBeVisible();
 
       await patientCandidatePage
         .getByRole('button', { name: 'Computer Security Laboratory' })
@@ -300,7 +300,7 @@ test.describe('Draft Lifecycle', () => {
       persistentHopefulPage,
     }) => {
       await persistentHopefulPage.goto('/dashboard/student/');
-      await expect(persistentHopefulPage.getByText('Select preferred labs')).toBeVisible();
+      await expect(persistentHopefulPage.getByText('Select Lab Preference')).toBeVisible();
 
       await persistentHopefulPage
         .getByRole('button', { name: 'Scientific Computing Laboratory' })
@@ -324,7 +324,7 @@ test.describe('Draft Lifecycle', () => {
       unluckyFullRankerPage,
     }) => {
       await unluckyFullRankerPage.goto('/dashboard/student/');
-      await expect(unluckyFullRankerPage.getByText('Select preferred labs')).toBeVisible();
+      await expect(unluckyFullRankerPage.getByText('Select Lab Preference')).toBeVisible();
 
       await unluckyFullRankerPage
         .getByRole('button', { name: 'Algorithms and Complexity Laboratory' })
@@ -348,7 +348,7 @@ test.describe('Draft Lifecycle', () => {
       partialToDraftedPage,
     }) => {
       await partialToDraftedPage.goto('/dashboard/student/');
-      await expect(partialToDraftedPage.getByText('Select preferred labs')).toBeVisible();
+      await expect(partialToDraftedPage.getByText('Select Lab Preference')).toBeVisible();
 
       await partialToDraftedPage
         .getByRole('button', { name: 'Networks and Distributed Systems Laboratory' })
@@ -367,7 +367,7 @@ test.describe('Draft Lifecycle', () => {
 
     test('PartialToLottery submits 1 preference (ACL)', async ({ partialToLotteryPage }) => {
       await partialToLotteryPage.goto('/dashboard/student/');
-      await expect(partialToLotteryPage.getByText('Select preferred labs')).toBeVisible();
+      await expect(partialToLotteryPage.getByText('Select Lab Preference')).toBeVisible();
 
       await partialToLotteryPage
         .getByRole('button', { name: 'Algorithms and Complexity Laboratory' })
@@ -383,7 +383,7 @@ test.describe('Draft Lifecycle', () => {
 
     test('NoRank submits 0 prefs (goes directly to lottery)', async ({ noRankStudentPage }) => {
       await noRankStudentPage.goto('/dashboard/student/');
-      await expect(noRankStudentPage.getByText('Select preferred labs')).toBeVisible();
+      await expect(noRankStudentPage.getByText('Select Lab Preference')).toBeVisible();
 
       noRankStudentPage.on('dialog', dialog => dialog.accept());
       const responsePromise = noRankStudentPage.waitForResponse('/dashboard/student/?/submit');
@@ -401,7 +401,7 @@ test.describe('Draft Lifecycle', () => {
 
     test('Idle submits 0 prefs (goes directly to lottery)', async ({ idleBystanderPage }) => {
       await idleBystanderPage.goto('/dashboard/student/');
-      await expect(idleBystanderPage.getByText('Select preferred labs')).toBeVisible();
+      await expect(idleBystanderPage.getByText('Select Lab Preference')).toBeVisible();
 
       idleBystanderPage.on('dialog', dialog => dialog.accept());
       const responsePromise = idleBystanderPage.waitForResponse('/dashboard/student/?/submit');
@@ -1042,7 +1042,7 @@ test.describe('Draft Lifecycle', () => {
       const profileResponseData = await profileResponse.json();
       expect(profileResponseData.type).toBe('success');
 
-      await expect(snapshotGuardStudentPage.getByText('Select preferred labs')).toBeVisible();
+      await expect(snapshotGuardStudentPage.getByText('Select Lab Preference')).toBeVisible();
       await expect(
         snapshotGuardStudentPage.getByRole('button', { name: 'Wireless Systems Laboratory' }),
       ).toHaveCount(0);

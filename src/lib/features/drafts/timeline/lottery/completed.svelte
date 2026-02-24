@@ -21,7 +21,7 @@
     </p>
   </div>
   <div class="min-w-max space-y-2">
-    <Card.Root class="border-0">
+    <Card.Root variant="soft">
       <Card.Header>
         <Card.Title>Eligible for Lottery ({lotteryDrafted.length})</Card.Title>
       </Card.Header>
@@ -31,7 +31,7 @@
         </p>
       </Card.Content>
     </Card.Root>
-    <Card.Root class="border-0">
+    <Card.Root variant="soft">
       <Card.Header>
         <Card.Title>Already Drafted ({selected.length})</Card.Title>
       </Card.Header>

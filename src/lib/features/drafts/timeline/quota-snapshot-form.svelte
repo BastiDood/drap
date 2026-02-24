@@ -44,7 +44,7 @@
   });
 </script>
 
-<Card.Root id="draft-quota-editor-{mode}" class="border-0">
+<Card.Root id="draft-quota-editor-{mode}" variant="soft">
   <Card.Header>
     <Card.Title>{title}</Card.Title>
     <Card.Description>{description}</Card.Description>

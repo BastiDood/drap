@@ -55,7 +55,7 @@
   </div>
 
   <div id="admin-concluded-breakdown" class="grid grid-cols-1 gap-2 md:grid-cols-3">
-    <Card.Root class="border-0">
+    <Card.Root variant="soft">
       <Card.Header>
         <Card.Title>Initial Quota</Card.Title>
       </Card.Header>
@@ -63,7 +63,7 @@
         <p id="quota-initial" class="text-2xl font-semibold">{concluded.quota.initialQuota}</p>
       </Card.Content>
     </Card.Root>
-    <Card.Root class="border-0">
+    <Card.Root variant="soft">
       <Card.Header>
         <Card.Title>Lottery Interventions</Card.Title>
       </Card.Header>
@@ -73,7 +73,7 @@
         </p>
       </Card.Content>
     </Card.Root>
-    <Card.Root class="border-0">
+    <Card.Root variant="soft">
       <Card.Header>
         <Card.Title>Concluded Quota</Card.Title>
       </Card.Header>
@@ -84,7 +84,7 @@
   </div>
 
   {#if concluded.snapshots.length > 0}
-    <Card.Root class="border-0">
+    <Card.Root variant="soft">
       <Card.Header>
         <Card.Title>Lab Quota Timeline</Card.Title>
       </Card.Header>
@@ -102,7 +102,7 @@
   {/if}
 
   <div class="grid grid-cols-1 gap-2">
-    <Card.Root id="section-regular-drafted" class="border-0">
+    <Card.Root id="section-regular-drafted" variant="soft">
       <Card.Header>
         <Card.Title>Regular Drafted ({concluded.sections.regularDrafted.length})</Card.Title>
       </Card.Header>
@@ -122,7 +122,7 @@
       </Card.Content>
     </Card.Root>
 
-    <Card.Root id="section-intervention-drafted" class="border-0">
+    <Card.Root id="section-intervention-drafted" variant="soft">
       <Card.Header>
         <Card.Title
           >Intervention Drafted ({concluded.sections.interventionDrafted.length})</Card.Title
@@ -174,7 +174,7 @@
       </Card.Content>
     </Card.Root>
 
-    <Card.Root id="section-lottery-drafted" class="border-0">
+    <Card.Root id="section-lottery-drafted" variant="soft">
       <Card.Header>
         <Card.Title>Lottery Drafted ({concluded.sections.lotteryDrafted.length})</Card.Title>
       </Card.Header>
