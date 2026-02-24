@@ -10,6 +10,7 @@
   import { flip } from 'svelte/animate';
   import { toast } from 'svelte-sonner';
 
+  import * as Card from '$lib/components/ui/card';
   import Callout from '$lib/components/callout.svelte';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
@@ -145,109 +146,123 @@
     </p>
     <Button type="submit">Submit Lab Preferences</Button>
   </div>
-  <hr class="border-border border-t" />
-  <h2 class="text-2xl font-semibold">Ranking</h2>
-  {#if selectedLabs.length > 0}
-    <ol class="space-y-2">
-      {#each selectedLabs as { id, name }, idx (id)}
-        {@const config = { key: id }}
-        <li
-          class="border-border dark:bg-muted bg-muted/20 flex flex-col gap-4 rounded-lg border p-4 transition-shadow hover:shadow-md"
-          in:receive={config}
-          out:send={config}
-          animate:flip={DURATION}
-        >
-          <input type="hidden" name="labs" value={id} />
-          <div class="flex items-center gap-3">
-            <div
-              class="bg-secondary text-secondary-foreground flex size-10 items-center justify-center rounded-full pb-0.5 text-lg font-semibold"
-            >
-              {idx + 1}
-            </div>
-            <div class="grow">{name}</div>
-            <div class="flex gap-2">
-              <Tooltip>
-                <TooltipTrigger>
-                  {#snippet child({ props })}
-                    <Button
-                      {...props}
-                      type="button"
-                      size="icon"
-                      class="bg-success text-success-foreground hover:bg-success/80"
-                      onclick={moveLabUp.bind(null, idx)}
-                      disabled={idx <= 0}
-                    >
-                      <ArrowUpIcon class="size-5" />
-                    </Button>
-                  {/snippet}
-                </TooltipTrigger>
-                <TooltipContent>Move up</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger>
-                  {#snippet child({ props })}
-                    <Button
-                      {...props}
-                      type="button"
-                      size="icon"
-                      class="bg-warning text-warning-foreground hover:bg-warning/80"
-                      onclick={moveLabDown.bind(null, idx)}
-                      disabled={idx >= selectedLabs.length - 1}
-                    >
-                      <ArrowDownIcon class="size-5" />
-                    </Button>
-                  {/snippet}
-                </TooltipTrigger>
-                <TooltipContent>Move down</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger>
-                  {#snippet child({ props })}
-                    <Button
-                      {...props}
-                      type="button"
-                      size="icon"
-                      variant="destructive"
-                      onclick={resetSelection.bind(null, idx)}
-                    >
-                      <XIcon class="size-5" />
-                    </Button>
-                  {/snippet}
-                </TooltipTrigger>
-                <TooltipContent>Remove selection</TooltipContent>
-              </Tooltip>
-            </div>
-          </div>
-          <TextArea
-            name="remarks"
-            placeholder="Hi, my name is... I would like to do more research on..."
-            maxlength={1028}
-          />
-        </li>
-      {/each}
-    </ol>
-  {:else}
-    <Callout variant="warning">
-      <p>No labs selected yet.</p>
-    </Callout>
-  {/if}
+  <div class="mt-8 grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+    <Card.Root variant="soft" class="flex h-full">
+      <Card.Header>
+        <Card.Title class="text-2xl">Available Labs</Card.Title>
+      </Card.Header>
+      <Card.Content>
+        {#if availableLabs.length > 0}
+          <ul inert={selectedLabs.length >= maxRounds} class="space-y-2 inert:opacity-20">
+            {#each availableLabs as { id, name }, idx (id)}
+              <li>
+                <button
+                  type="button"
+                  class="bg-muted hover:bg-muted/80 w-full flex-auto rounded-md p-4 text-left transition duration-150"
+                  onclick={selectLab.bind(null, idx)}
+                >
+                  {name}
+                </button>
+              </li>
+            {/each}
+          </ul>
+        {:else}
+          <Callout variant="destructive">
+            <p>No more labs with remaining slots left.</p>
+          </Callout>
+        {/if}
+      </Card.Content>
+    </Card.Root>
+    <Card.Root variant="soft" class="flex h-full">
+      <Card.Header>
+        <Card.Title class="text-2xl">Ranking</Card.Title>
+      </Card.Header>
+      <Card.Content>
+        {#if selectedLabs.length > 0}
+          <ol class="space-y-2">
+            {#each selectedLabs as { id, name }, idx (id)}
+              {@const config = { key: id }}
+              <li
+                class="border-border dark:bg-muted bg-muted/20 flex flex-col gap-4 rounded-lg border p-4 transition-shadow hover:shadow-md"
+                in:receive={config}
+                out:send={config}
+                animate:flip={DURATION}
+              >
+                <input type="hidden" name="labs" value={id} />
+                <div class="flex items-center gap-3">
+                  <div
+                    class="bg-secondary text-secondary-foreground flex size-10 items-center justify-center rounded-full pb-0.5 text-lg font-semibold"
+                  >
+                    {idx + 1}
+                  </div>
+                  <div class="grow">{name}</div>
+                  <div class="flex gap-2">
+                    <Tooltip>
+                      <TooltipTrigger>
+                        {#snippet child({ props })}
+                          <Button
+                            {...props}
+                            type="button"
+                            size="icon"
+                            class="bg-success text-success-foreground hover:bg-success/80"
+                            onclick={moveLabUp.bind(null, idx)}
+                            disabled={idx <= 0}
+                          >
+                            <ArrowUpIcon class="size-5" />
+                          </Button>
+                        {/snippet}
+                      </TooltipTrigger>
+                      <TooltipContent>Move up</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        {#snippet child({ props })}
+                          <Button
+                            {...props}
+                            type="button"
+                            size="icon"
+                            class="bg-warning text-warning-foreground hover:bg-warning/80"
+                            onclick={moveLabDown.bind(null, idx)}
+                            disabled={idx >= selectedLabs.length - 1}
+                          >
+                            <ArrowDownIcon class="size-5" />
+                          </Button>
+                        {/snippet}
+                      </TooltipTrigger>
+                      <TooltipContent>Move down</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        {#snippet child({ props })}
+                          <Button
+                            {...props}
+                            type="button"
+                            size="icon"
+                            variant="destructive"
+                            onclick={resetSelection.bind(null, idx)}
+                          >
+                            <XIcon class="size-5" />
+                          </Button>
+                        {/snippet}
+                      </TooltipTrigger>
+                      <TooltipContent>Remove selection</TooltipContent>
+                    </Tooltip>
+                  </div>
+                </div>
+                <TextArea
+                  name="remarks"
+                  placeholder="Hi, my name is... I would like to do more research on..."
+                  maxlength={1028}
+                />
+              </li>
+            {/each}
+          </ol>
+        {:else}
+          <Callout variant="warning">
+            <p>No labs selected yet.</p>
+          </Callout>
+        {/if}
+      </Card.Content>
+    </Card.Root>
+  </div>
 </form>
-<hr class="border-border border-t" />
-{#if availableLabs.length > 0}
-  <ul inert={selectedLabs.length >= maxRounds} class="space-y-1 inert:opacity-20">
-    {#each availableLabs as { id, name }, idx (id)}
-      <li>
-        <button
-          class="bg-muted hover:bg-muted/80 w-full flex-auto rounded-md p-4 transition duration-150"
-          onclick={selectLab.bind(null, idx)}
-        >
-          {name}
-        </button>
-      </li>
-    {/each}
-  </ul>
-{:else}
-  <Callout variant="destructive">
-    <p>No more labs with remaining slots left.</p>
-  </Callout>
-{/if}
