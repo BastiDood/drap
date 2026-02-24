@@ -159,18 +159,35 @@ test.describe('Draft Lifecycle', () => {
       await expect(adminPage.getByText('Algorithms and Complexity Laboratory')).toBeVisible();
     });
 
-    test('sets quota for each lab', async ({ adminPage }) => {
+    test('archives then restores ACL from lab catalog', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/labs/');
-      await adminPage.locator('input[name="ndsl"]').fill('2');
-      await adminPage.locator('input[name="csl"]').fill('2');
-      await adminPage.locator('input[name="scl"]').fill('2');
-      await adminPage.locator('input[name="cvmil"]').fill('1');
-      await adminPage.locator('input[name="acl"]').fill('1');
-      const responsePromise = adminPage.waitForResponse('/dashboard/labs/?/quota');
-      await adminPage.getByRole('button', { name: 'Update Quotas' }).click();
-      const response = await responsePromise;
-      const responseData = await response.json();
-      expect(responseData.type).toBe('success');
+
+      const aclRow = adminPage
+        .locator('tbody tr')
+        .filter({ hasText: 'Algorithms and Complexity Laboratory' });
+      await expect(aclRow).toBeVisible();
+
+      {
+        const archiveResponsePromise = adminPage.waitForResponse('/dashboard/labs/?/archive');
+        await aclRow.getByRole('button').click();
+        const archiveResponse = await archiveResponsePromise;
+        const archiveResponseData = await archiveResponse.json();
+        expect(archiveResponseData.type).toBe('success');
+      }
+
+      await adminPage.getByRole('tab', { name: /Archived Labs/u }).click();
+      const archivedAclRow = adminPage
+        .locator('tbody tr')
+        .filter({ hasText: 'Algorithms and Complexity Laboratory' });
+      await expect(archivedAclRow).toBeVisible();
+
+      {
+        const restoreResponsePromise = adminPage.waitForResponse('/dashboard/labs/?/restore');
+        await archivedAclRow.getByRole('button').click();
+        const restoreResponse = await restoreResponsePromise;
+        const restoreResponseData = await restoreResponse.json();
+        expect(restoreResponseData.type).toBe('success');
+      }
     });
   });
 
@@ -415,20 +432,24 @@ test.describe('Draft Lifecycle', () => {
 
       const aclInput = editor.locator('input[name="acl"]');
       await expect(aclInput).toHaveValue('');
-      await expect(aclInput).toHaveAttribute('placeholder', '1');
+      await expect(aclInput).toHaveAttribute('placeholder', '0');
 
       const ndslInput = editor.locator('input[name="ndsl"]');
       await expect(ndslInput).toHaveValue('');
-      await expect(ndslInput).toHaveAttribute('placeholder', '2');
+      await expect(ndslInput).toHaveAttribute('placeholder', '0');
     });
 
-    test('updates initial snapshots with partial inputs and clears to placeholders', async ({
+    test('updates initial snapshots and clears to committed placeholders', async ({
       adminPage,
     }) => {
       await adminPage.goto('/dashboard/drafts/1/');
       const editor = adminPage.locator('#draft-quota-editor-initial');
       await expect(editor).toBeVisible();
 
+      await editor.locator('input[name="ndsl"]').fill('2');
+      await editor.locator('input[name="csl"]').fill('2');
+      await editor.locator('input[name="scl"]').fill('2');
+      await editor.locator('input[name="cvmil"]').fill('1');
       await editor.locator('input[name="acl"]').fill('1');
 
       const responsePromise = adminPage.waitForResponse('/dashboard/drafts/1/?/quota');
@@ -950,21 +971,6 @@ test.describe('Draft Lifecycle', () => {
       await expect(adminPage.getByText('Algorithms and Complexity Laboratory')).toBeVisible();
     });
 
-    test('sets minimal quotas for the second draft cycle', async ({ adminPage }) => {
-      await adminPage.goto('/dashboard/labs/');
-
-      await adminPage.locator('input[name="ndsl"]').fill('1');
-      await adminPage.locator('input[name="csl"]').fill('1');
-      await adminPage.locator('input[name="scl"]').fill('1');
-      await adminPage.locator('input[name="cvmil"]').fill('0');
-
-      const responsePromise = adminPage.waitForResponse('/dashboard/labs/?/quota');
-      await adminPage.getByRole('button', { name: 'Update Quotas' }).click();
-      const response = await responsePromise;
-      const responseData = await response.json();
-      expect(responseData.type).toBe('success');
-    });
-
     test('creates Draft #2 with 2 rounds', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/');
       await adminPage.getByRole('button', { name: 'Create Draft' }).click();
@@ -991,6 +997,21 @@ test.describe('Draft Lifecycle', () => {
       await expect(adminPage.getByText('Registration')).toBeVisible();
     });
 
+    test('adds WSL after Draft #2 snapshot is created', async ({ adminPage }) => {
+      const result = await adminPage.evaluate(async () => {
+        const data = new FormData();
+        data.set('labId', 'wsl');
+        data.set('name', 'Wireless Systems Laboratory');
+        const response = await fetch('/dashboard/labs/?/lab', {
+          method: 'POST',
+          body: data,
+        });
+        return { status: response.status, data: await response.json() };
+      });
+      expect(result.status).toBe(200);
+      expect(result.data.type).toBe('success');
+    });
+
     test('rejects quota updates for unsnapshotted labs', async ({ adminPage }) => {
       const status = await adminPage.evaluate(async () => {
         const data = new FormData();
@@ -998,6 +1019,40 @@ test.describe('Draft Lifecycle', () => {
         data.set('kind', 'initial');
         data.set('acl', '1');
         const response = await fetch('/dashboard/drafts/2/?/quota', {
+          method: 'POST',
+          body: data,
+        });
+        return response.status;
+      });
+      expect(status).toBe(400);
+    });
+  });
+
+  test.describe('Second Draft — Snapshot Integrity', () => {
+    test('student registration does not show post-snapshot lab and rejects forged submission', async ({
+      snapshotGuardStudentPage,
+    }) => {
+      await snapshotGuardStudentPage.goto('/dashboard/student/');
+      await snapshotGuardStudentPage.getByLabel('Student Number').fill('202112399');
+
+      const profileResponsePromise =
+        snapshotGuardStudentPage.waitForResponse('/dashboard/?/profile');
+      await snapshotGuardStudentPage.getByRole('button', { name: 'Complete Profile' }).click();
+      const profileResponse = await profileResponsePromise;
+      const profileResponseData = await profileResponse.json();
+      expect(profileResponseData.type).toBe('success');
+
+      await expect(snapshotGuardStudentPage.getByText('Select preferred labs')).toBeVisible();
+      await expect(
+        snapshotGuardStudentPage.getByRole('button', { name: 'Wireless Systems Laboratory' }),
+      ).toHaveCount(0);
+
+      const status = await snapshotGuardStudentPage.evaluate(async () => {
+        const data = new FormData();
+        data.set('draft', '2');
+        data.append('labs', 'wsl');
+        data.append('remarks', '');
+        const response = await fetch('/dashboard/student/?/submit', {
           method: 'POST',
           body: data,
         });
@@ -1114,6 +1169,35 @@ test.describe('Draft Lifecycle', () => {
     });
   });
 
+  test.describe('Second Draft — Archived Lab Read During Registration', () => {
+    test('archives CSL while Draft #2 is still in registration', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/labs/');
+
+      const cslRow = adminPage
+        .locator('tbody tr')
+        .filter({ hasText: 'Computer Security Laboratory' });
+      await expect(cslRow).toBeVisible();
+
+      const responsePromise = adminPage.waitForResponse('/dashboard/labs/?/archive');
+      await cslRow.getByRole('button').click();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
+    });
+
+    test('student summary still shows archived ranked lab while draft is active', async ({
+      secondRoundCslFirstChoicePage,
+    }) => {
+      await secondRoundCslFirstChoicePage.goto('/dashboard/student/');
+      await expect(
+        secondRoundCslFirstChoicePage.getByText('Your Lab Preferences', { exact: true }),
+      ).toBeVisible();
+      await expect(
+        secondRoundCslFirstChoicePage.getByText('Computer Security Laboratory'),
+      ).toBeVisible();
+    });
+  });
+
   test.describe('Second Draft — History During Registration', () => {
     test('history shows Draft #2 in registration phase', async ({ page }) => {
       await page.goto('/history/');
@@ -1128,6 +1212,26 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('Second Draft — Regular Flow (No Lottery Assignments)', () => {
+    test('updates Draft #2 initial snapshots before start', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/2/');
+      await expect(adminPage.getByText('There are currently')).toBeVisible();
+      await expect(adminPage.getByText(/\b3\b/u).first()).toBeVisible();
+
+      const editor = adminPage.locator('#draft-quota-editor-initial');
+      await expect(editor).toBeVisible();
+
+      await editor.locator('input[name="ndsl"]').fill('1');
+      await editor.locator('input[name="csl"]').fill('1');
+      await editor.locator('input[name="scl"]').fill('1');
+      await editor.locator('input[name="cvmil"]').fill('0');
+
+      const responsePromise = adminPage.waitForResponse('/dashboard/drafts/2/?/quota');
+      await editor.getByRole('button', { name: 'Update Initial Snapshots' }).click();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
+    });
+
     test('starts Draft #2', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
       await expect(adminPage.getByText('There are currently')).toBeVisible();
@@ -1299,6 +1403,26 @@ test.describe('Draft Lifecycle', () => {
     });
   });
 
+  test.describe('Second Draft — Archived Lab Read Models', () => {
+    test('CSL appears in archived labs after Draft #2 conclusion', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/labs/');
+      await adminPage.getByRole('tab', { name: /Archived Labs/u }).click();
+      await expect(adminPage.getByText('Computer Security Laboratory')).toBeVisible();
+    });
+
+    test('students.csv keeps ranked archived labs', async ({ adminPage }) => {
+      const response = await adminPage.request.get('/dashboard/drafts/2/students.csv/');
+      expect(response.status()).toBe(200);
+
+      const csv = await response.text();
+      const secondCslRow = csv
+        .split('\n')
+        .find(line => line.includes('second-csl-first-choice.student@up.edu.ph'));
+      expect(secondCslRow).toBeTruthy();
+      expect(secondCslRow ?? '').toContain('csl');
+    });
+  });
+
   test.describe('Second Draft — Student And Faculty Final States', () => {
     test('SecondNdslFirstChoice sees NDSL assignment', async ({
       secondRoundNdslFirstChoicePage,
@@ -1384,5 +1508,7 @@ test.describe('Draft Lifecycle', () => {
     test('SecondSclSecondChoice can log out and lands on home', async ({
       secondRoundSclSecondChoicePage,
     }) => await assertLogout(secondRoundSclSecondChoicePage));
+    test('SnapshotGuard can log out and lands on home', async ({ snapshotGuardStudentPage }) =>
+      await assertLogout(snapshotGuardStudentPage));
   });
 });

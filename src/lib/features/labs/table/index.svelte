@@ -3,7 +3,6 @@
 
   export interface Props {
     labs: Lab[];
-    hasActiveDraft: boolean;
   }
 </script>
 
@@ -20,7 +19,7 @@
 
   type TabType = 'active' | 'archived';
 
-  const { labs, hasActiveDraft }: Props = $props();
+  const { labs }: Props = $props();
 
   let tab: TabType = $state('active');
 
@@ -29,7 +28,7 @@
       deletedAt === null ? 'active' : 'archived',
     );
 
-    const activeLabs = active.map(({ id, name, quota }): ActiveLab => ({ id, name, quota }));
+    const activeLabs = active.map(({ id, name }): ActiveLab => ({ id, name }));
     const archivedLabs = archived.reduce((labs, lab): ArchivedLab[] => {
       if (lab.deletedAt !== null)
         labs.push({ id: lab.id, name: lab.name, deletedAt: lab.deletedAt });
@@ -59,14 +58,12 @@
         <Badge variant="secondary" class="ml-1">{archivedLabs.length}</Badge>
       </Tabs.Trigger>
     </Tabs.List>
-    {#if !hasActiveDraft}
-      <CreateLabDialog />
-    {/if}
+    <CreateLabDialog />
   </div>
   <Tabs.Content value="active">
-    <ActiveTable labs={activeLabs} {hasActiveDraft} />
+    <ActiveTable labs={activeLabs} />
   </Tabs.Content>
   <Tabs.Content value="archived">
-    <ArchivedTable labs={archivedLabs} {hasActiveDraft} />
+    <ArchivedTable labs={archivedLabs} />
   </Tabs.Content>
 </Tabs.Root>

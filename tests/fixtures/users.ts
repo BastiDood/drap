@@ -486,6 +486,45 @@ const testSecondRoundSclSecondChoice = testLabs.extend<
   },
 });
 
+const testSnapshotGuardStudent = testLabs.extend<
+  { snapshotGuardStudentPage: Page },
+  { snapshotGuardStudentUserId: string }
+>({
+  snapshotGuardStudentUserId: [
+    async ({ database, labs: _ }, use) => {
+      const { id: userId } = await upsertTestUser(database, {
+        email: 'snapshot-guard.student@up.edu.ph',
+        googleUserId: 'test-snapshot-guard-student',
+        givenName: 'Snapshot',
+        familyName: 'Guard',
+        isAdmin: false,
+        labId: null,
+      });
+      await use(userId);
+    },
+    { scope: 'worker' },
+  ],
+  async snapshotGuardStudentPage({ database, browser, snapshotGuardStudentUserId }, use) {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    const sessionId = await insertDummySession(database, snapshotGuardStudentUserId);
+    await context.addCookies([
+      {
+        name: 'sid',
+        value: sessionId,
+        domain: 'localhost',
+        path: '/dashboard',
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+    ]);
+    await page.goto('/dashboard/');
+    await use(page);
+    await deleteValidSession(database, sessionId);
+    await context.close();
+  },
+});
+
 const testNdslHead = testLabs.extend<{ ndslHeadPage: Page }, { ndslHeadUserId: string }>({
   ndslHeadUserId: [
     async ({ database, labs: _ }, use) => {
@@ -719,6 +758,7 @@ export const test = mergeTests(
   testSecondRoundNdslFirstChoice,
   testSecondRoundCslFirstChoice,
   testSecondRoundSclSecondChoice,
+  testSnapshotGuardStudent,
   testPartialToDrafted,
   testPartialToLottery,
 );

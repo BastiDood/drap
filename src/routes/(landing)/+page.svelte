@@ -200,7 +200,7 @@
         </Accordion.Trigger>
         <Accordion.Content class="prose dark:prose-invert px-4">
           <ol>
-            <li>Set the <Link href={resolve('/dashboard/labs/')}>lab quota</Link>.</li>
+            <li>Maintain the <Link href={resolve('/dashboard/labs/')}>lab catalog</Link>.</li>
             <li>Initialize a <Link href={resolve('/dashboard/drafts/')}>new draft</Link>.</li>
             <li>Wait for participating draftees to register their lab preferences.</li>
             <li>

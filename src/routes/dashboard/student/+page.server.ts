@@ -6,8 +6,9 @@ import { db } from '$lib/server/database';
 import {
   getActiveDraft,
   getDraftById,
+  getDraftLabQuotaLabIds,
+  getDraftLabRegistry,
   getLabById,
-  getLabRegistry,
   getStudentRankings,
   insertStudentRanking,
   type schema,
@@ -117,9 +118,9 @@ export async function load({ locals: { session } }) {
     function buildSubmission(r: NonNullable<typeof rankings>) {
       return {
         createdAt: r.createdAt,
-        labs: r.labRemarks.map(({ lab, remark }) => ({
-          id: lab,
-          name: lab,
+        labs: r.labRemarks.map(({ labId, labName, remark }) => ({
+          id: labId,
+          name: labName,
           remark,
         })),
       };
@@ -142,7 +143,7 @@ export async function load({ locals: { session } }) {
       if (requestedAt < registrationClosesAt) {
         // REGISTRATION_OPEN: registration still open
         logger.debug('registration open');
-        const availableLabs = await getLabRegistry(db, true);
+        const availableLabs = await getDraftLabRegistry(db, draftId);
         return {
           user: baseUser,
           draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
@@ -247,6 +248,33 @@ export const actions = {
 
       if (labs.length > maxRounds) {
         logger.warn('lab rankings exceed max round', { 'ranking.lab_count': labs.length });
+        error(400);
+      }
+
+      const duplicateLabIds = new Set<string>();
+      const uniqueLabIds = new Set<string>();
+      for (const labId of labs)
+        if (uniqueLabIds.has(labId)) duplicateLabIds.add(labId);
+        else uniqueLabIds.add(labId);
+      if (duplicateLabIds.size > 0) {
+        logger.warn('submitted duplicate lab rankings', {
+          'draft.id': draftId.toString(),
+          'ranking.duplicate_lab_count': duplicateLabIds.size,
+          'ranking.duplicate_lab_ids': Array.from(duplicateLabIds),
+        });
+        error(400);
+      }
+
+      const snapshotLabIds = new Set(await getDraftLabQuotaLabIds(db, draftId));
+      const unknownLabIds = Array.from(uniqueLabIds).filter(labId => !snapshotLabIds.has(labId));
+      if (unknownLabIds.length > 0) {
+        logger.warn('submitted rankings with labs outside draft snapshot', {
+          'draft.id': draftId.toString(),
+          'ranking.lab_count': labs.length,
+          'ranking.snapshot_lab_count': snapshotLabIds.size,
+          'ranking.unknown_lab_count': unknownLabIds.length,
+          'ranking.unknown_lab_ids': unknownLabIds,
+        });
         error(400);
       }
 
