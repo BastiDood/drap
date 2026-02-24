@@ -119,33 +119,10 @@
   }}
 >
   <input type="hidden" name="draft" value={draftId} />
-  <h1 class="text-3xl font-semibold">Select preferred labs</h1>
-  <div
-    class={cn(
-      'prose dark:prose-invert mx-auto max-w-3xl rounded-lg border p-4 transition duration-150',
-      cardVariant,
-    )}
-  >
-    <p>
-      Select labs from the choices below to add them to your ranking. Lab preferences are ordered by
-      preference from top (most preferred) to bottom (least preferred).
-    </p>
-    <p>
-      You may also include remarks alongside your lab rankings. These remarks will only be visible
-      to the heads of the labs you have selected.
-    </p>
-    <p>
-      {#if hasRemaining}
-        <strong
-          >You may select up to <span class="underline">{remaining}</span>
-          {#if remaining === 1}lab{:else}labs{/if} left.</strong
-        >
-      {:else}
-        You may no longer select any more labs.
-      {/if}
-    </p>
-    <Button type="submit">Submit Lab Preferences</Button>
-  </div>
+  <h1 class="text-3xl font-semibold">Select Lab Preference</h1>
+  <p>
+    Select your preferred labs from the list of available labs and rank them by order of preference.
+  </p>
   <div class="mt-8 grid grid-cols-1 items-start gap-4 md:grid-cols-2">
     <Card.Root variant="soft" class="flex h-full">
       <Card.Header>
@@ -176,6 +153,14 @@
     <Card.Root variant="soft" class="flex h-full">
       <Card.Header>
         <Card.Title class="text-2xl">Ranking</Card.Title>
+        <span>
+          {#if hasRemaining}
+            You may select up to <span class="font-bold">{remaining}</span>
+            {#if remaining === 1}lab{:else}labs{/if} left.
+          {:else}
+            You may no longer select any more labs.
+          {/if}
+        </span>
       </Card.Header>
       <Card.Content>
         {#if selectedLabs.length > 0}
@@ -251,7 +236,7 @@
                 </div>
                 <TextArea
                   name="remarks"
-                  placeholder="Hi, my name is... I would like to do more research on..."
+                  placeholder={`Hello ${id.toUpperCase()}, my name is... I would like to do more research on...`}
                   maxlength={1028}
                 />
               </li>
@@ -263,6 +248,9 @@
           </Callout>
         {/if}
       </Card.Content>
+      <Card.Footer class="self-end">
+        <Button type="submit">Submit Lab Preferences</Button>
+      </Card.Footer>
     </Card.Root>
   </div>
 </form>
