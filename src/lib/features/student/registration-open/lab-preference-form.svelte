@@ -5,16 +5,17 @@
 <script lang="ts">
   import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
   import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
+  import BoxSelectIcon from '@lucide/svelte/icons/box-select';
+  import InboxIcon from '@lucide/svelte/icons/inbox';
   import XIcon from '@lucide/svelte/icons/x';
   import { crossfade } from 'svelte/transition';
   import { flip } from 'svelte/animate';
   import { toast } from 'svelte-sonner';
 
   import * as Card from '$lib/components/ui/card';
-  import Callout from '$lib/components/callout.svelte';
+  import * as Empty from '$lib/components/ui/empty';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
-  import { cn } from '$lib/components/ui/utils';
   import { enhance } from '$app/forms';
   import type { schema } from '$lib/server/database/drizzle';
   import { TextArea } from '$lib/components/ui/textarea';
@@ -32,7 +33,6 @@
 
   const remaining = $derived(maxRounds - selectedLabs.length);
   const hasRemaining = $derived(remaining > 0);
-  const cardVariant = $derived(hasRemaining ? 'preset-tonal-secondary' : 'preset-tonal-muted');
 
   function selectLab(index: number) {
     if (selectedLabs.length >= maxRounds) return;
@@ -144,9 +144,15 @@
             {/each}
           </ul>
         {:else}
-          <Callout variant="destructive">
-            <p>No more labs with remaining slots left.</p>
-          </Callout>
+          <Empty.Root>
+            <Empty.Media variant="icon">
+              <InboxIcon />
+            </Empty.Media>
+            <Empty.Header>
+              <Empty.Title>No more labs available</Empty.Title>
+              <Empty.Description>There are no more labs remaining in the list.</Empty.Description>
+            </Empty.Header>
+          </Empty.Root>
         {/if}
       </Card.Content>
     </Card.Root>
@@ -243,9 +249,17 @@
             {/each}
           </ol>
         {:else}
-          <Callout variant="warning">
-            <p>No labs selected yet.</p>
-          </Callout>
+          <Empty.Root>
+            <Empty.Media variant="icon">
+              <BoxSelectIcon />
+            </Empty.Media>
+            <Empty.Header>
+              <Empty.Title>No labs selected</Empty.Title>
+              <Empty.Description>
+                Click on a lab from the available list to add it to your ranking.
+              </Empty.Description>
+            </Empty.Header>
+          </Empty.Root>
         {/if}
       </Card.Content>
       <Card.Footer class="self-end">
