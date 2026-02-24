@@ -3,7 +3,7 @@
 
   import { cn, type WithElementRef } from '$lib/components/ui/utils';
 
-  interface CardVariants {
+  interface Props extends WithElementRef<HTMLAttributes<HTMLDivElement>> {
     variant?: 'default' | 'soft';
   }
 
@@ -13,7 +13,7 @@
     class: className,
     children,
     ...restProps
-  }: WithElementRef<HTMLAttributes<HTMLDivElement>> & CardVariants = $props();
+  }: Props = $props();
 </script>
 
 <div
