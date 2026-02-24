@@ -132,7 +132,8 @@
         {#if availableLabs.length > 0}
           <ul inert={selectedLabs.length >= maxRounds} class="space-y-2 inert:opacity-20">
             {#each availableLabs as { id, name }, idx (id)}
-              <li>
+              {@const config = { key: id }}
+              <li in:receive={config} out:send={config} animate:flip={DURATION}>
                 <button
                   type="button"
                   class="bg-muted hover:bg-muted/80 w-full flex-auto rounded-md p-4 text-left transition duration-150"
