@@ -128,7 +128,7 @@
       <Card.Header>
         <Card.Title class="text-2xl">Available Labs</Card.Title>
       </Card.Header>
-      <Card.Content>
+      <Card.Content class="flex grow flex-col">
         {#if availableLabs.length > 0}
           <ul inert={selectedLabs.length >= maxRounds} class="space-y-2 inert:opacity-20">
             {#each availableLabs as { id, name }, idx (id)}
@@ -144,15 +144,17 @@
             {/each}
           </ul>
         {:else}
-          <Empty.Root>
-            <Empty.Media variant="icon">
-              <InboxIcon />
-            </Empty.Media>
-            <Empty.Header>
-              <Empty.Title>No more labs available</Empty.Title>
-              <Empty.Description>There are no more labs remaining in the list.</Empty.Description>
-            </Empty.Header>
-          </Empty.Root>
+          <div class="flex grow items-center justify-center">
+            <Empty.Root>
+              <Empty.Media variant="icon">
+                <InboxIcon />
+              </Empty.Media>
+              <Empty.Header>
+                <Empty.Title>No more labs available</Empty.Title>
+                <Empty.Description>There are no more labs remaining in the list.</Empty.Description>
+              </Empty.Header>
+            </Empty.Root>
+          </div>
         {/if}
       </Card.Content>
     </Card.Root>
@@ -168,7 +170,7 @@
           {/if}
         </span>
       </Card.Header>
-      <Card.Content>
+      <Card.Content class="flex grow flex-col">
         {#if selectedLabs.length > 0}
           <ol class="space-y-2">
             {#each selectedLabs as { id, name }, idx (id)}
@@ -182,7 +184,7 @@
                 <input type="hidden" name="labs" value={id} />
                 <div class="flex items-center gap-3">
                   <div
-                    class="bg-secondary text-secondary-foreground flex size-10 items-center justify-center rounded-full pb-0.5 text-lg font-semibold"
+                    class="bg-secondary text-secondary-foreground flex size-10 shrink-0 items-center justify-center rounded-full pb-0.5 text-lg font-semibold"
                   >
                     {idx + 1}
                   </div>
@@ -249,17 +251,19 @@
             {/each}
           </ol>
         {:else}
-          <Empty.Root>
-            <Empty.Media variant="icon">
-              <BoxSelectIcon />
-            </Empty.Media>
-            <Empty.Header>
-              <Empty.Title>No labs selected</Empty.Title>
-              <Empty.Description>
-                Click on a lab from the available list to add it to your ranking.
-              </Empty.Description>
-            </Empty.Header>
-          </Empty.Root>
+          <div class="flex grow items-center justify-center">
+            <Empty.Root>
+              <Empty.Media variant="icon">
+                <BoxSelectIcon />
+              </Empty.Media>
+              <Empty.Header>
+                <Empty.Title>No labs selected</Empty.Title>
+                <Empty.Description>
+                  Click on a lab from the available list to add it to your ranking.
+                </Empty.Description>
+              </Empty.Header>
+            </Empty.Root>
+          </div>
         {/if}
       </Card.Content>
       <Card.Footer class="self-end">
