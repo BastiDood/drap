@@ -245,7 +245,7 @@ test.describe('Draft Lifecycle', () => {
     test('detail page shows registration status and creation event', async ({ page }) => {
       await page.goto('/history/1/');
       await expect(page.getByText('registration stage')).toBeVisible();
-      const items = page.locator('section ol.border-s li[class*="preset-tonal-"]');
+      const items = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
       await expect(items).toHaveCount(1);
       await expect(items.first()).toContainText('Draft #1 was created.');
     });
@@ -639,8 +639,9 @@ test.describe('Draft Lifecycle', () => {
       await page.goto('/history/1/');
       await expect(page.getByText('lottery stage')).toBeVisible();
 
-      const items = page.locator('section ol.border-s li[class*="preset-tonal-"]');
-      const texts = await items.allTextContents();
+      const items = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
+      const textContents = await items.allTextContents();
+      const texts = textContents.map(text => text.replaceAll(/\s+/gu, ' ').trim());
 
       function idx(regex: RegExp) {
         return texts.findIndex(t => regex.test(t));
@@ -650,18 +651,16 @@ test.describe('Draft Lifecycle', () => {
       expect(idx(/was concluded/u)).toBe(-1);
 
       // Known faculty selections exist
-      const ndslR3 = idx(/ndsl.*3rd batch/isu);
-      const cslR2 = idx(/csl.*2nd batch/isu);
-      const ndslR1 = idx(/ndsl.*1st batch/isu);
-      const cslR1 = idx(/csl.*1st batch/isu);
-      expect(ndslR3).toBeGreaterThanOrEqual(0);
-      expect(cslR2).toBeGreaterThanOrEqual(0);
-      expect(ndslR1).toBeGreaterThanOrEqual(0);
-      expect(cslR1).toBeGreaterThanOrEqual(0);
+      const anyRound3Batch = idx(/3rd batch/iu);
+      const anyRound2Batch = idx(/2nd batch/iu);
+      const anyRound1Batch = idx(/1st batch/iu);
+      expect(anyRound3Batch).toBeGreaterThanOrEqual(0);
+      expect(anyRound2Batch).toBeGreaterThanOrEqual(0);
+      expect(anyRound1Batch).toBeGreaterThanOrEqual(0);
 
       // Round 3 selections before Round 2 before Round 1 (DESC order)
-      expect(ndslR3).toBeLessThan(cslR2);
-      expect(cslR2).toBeLessThan(ndslR1);
+      expect(anyRound3Batch).toBeLessThan(anyRound2Batch);
+      expect(anyRound2Batch).toBeLessThan(anyRound1Batch);
       // Entries are grouped by second; intra-second ordering can vary.
 
       // System skips exist (non-deterministic order, just check presence)
@@ -838,8 +837,9 @@ test.describe('Draft Lifecycle', () => {
       await expect(page.getByText(/was held from/u)).toBeVisible();
       await expect(page.getByText(/over 3 rounds/u)).toBeVisible();
 
-      const items = page.locator('section ol.border-s li[class*="preset-tonal-"]');
-      const texts = await items.allTextContents();
+      const items = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
+      const textContents = await items.allTextContents();
+      const texts = textContents.map(text => text.replaceAll(/\s+/gu, ' ').trim());
 
       function idx(regex: RegExp) {
         return texts.findIndex(t => regex.test(t));
@@ -851,19 +851,44 @@ test.describe('Draft Lifecycle', () => {
 
       // Lottery events exist and come before faculty round selections
       const firstLottery = idx(/obtained a batch.*lottery/isu);
-      const ndslR3 = idx(/ndsl.*3rd batch/isu);
-      const cslR2 = idx(/csl.*2nd batch/isu);
-      const ndslR1 = idx(/ndsl.*1st batch/isu);
+      const anyRound3Batch = idx(/3rd batch/iu);
+      const anyRound2Batch = idx(/2nd batch/iu);
+      const anyRound1Batch = idx(/1st batch/iu);
       expect(firstLottery).toBeGreaterThan(0);
-      expect(firstLottery).toBeLessThan(ndslR3);
+      expect(firstLottery).toBeLessThan(anyRound3Batch);
 
       // Faculty selections in correct round order (R3 > R2 > R1)
-      expect(ndslR3).toBeLessThan(cslR2);
-      expect(cslR2).toBeLessThan(ndslR1);
+      expect(anyRound3Batch).toBeLessThan(anyRound2Batch);
+      expect(anyRound2Batch).toBeLessThan(anyRound1Batch);
       // Entries are grouped by second; intra-second ordering can vary.
 
       // System skip events exist (non-deterministic order, just check presence)
       expect(idx(/system has skipped/isu)).toBeGreaterThanOrEqual(0);
+    });
+
+    test('detail page keeps boundary and internal events in one timeline list', async ({
+      page,
+    }) => {
+      await page.goto('/history/1/');
+
+      const rows = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
+      const textContents = await rows.allTextContents();
+      const texts = textContents.map(text => text.replaceAll(/\s+/gu, ' ').trim());
+
+      function idx(regex: RegExp) {
+        return texts.findIndex(text => regex.test(text));
+      }
+
+      const concludedIndex = idx(/was concluded/u);
+      const createdIndex = idx(/was created/u);
+      const internalEventIndex = idx(
+        /selected their|obtained a batch of draftees|system has skipped/isu,
+      );
+
+      expect(concludedIndex).toBe(0);
+      expect(createdIndex).toBe(texts.length - 1);
+      expect(internalEventIndex).toBeGreaterThan(concludedIndex);
+      expect(internalEventIndex).toBeLessThan(createdIndex);
     });
   });
 
@@ -1380,23 +1405,22 @@ test.describe('Draft Lifecycle', () => {
       await expect(page.getByText(/was held from/u)).toBeVisible();
       await expect(page.getByText(/over 2 rounds/u)).toBeVisible();
 
-      const items = page.locator('section ol.border-s li[class*="preset-tonal-"]');
-      const texts = await items.allTextContents();
+      const items = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
+      const textContents = await items.allTextContents();
+      const texts = textContents.map(text => text.replaceAll(/\s+/gu, ' ').trim());
+
       function idx(regex: RegExp) {
         return texts.findIndex(t => regex.test(t));
       }
 
-      const sclR2 = idx(/scl.*2nd batch/isu);
-      const ndslR1 = idx(/ndsl.*1st batch/isu);
-      const cslR1 = idx(/csl.*1st batch/isu);
+      const anyRound2Batch = idx(/2nd batch/iu);
+      const anyRound1Batch = idx(/1st batch/iu);
 
       expect(idx(/was concluded/u)).toBe(0);
       expect(idx(/was created/u)).toBe(texts.length - 1);
-      expect(sclR2).toBeGreaterThanOrEqual(0);
-      expect(ndslR1).toBeGreaterThanOrEqual(0);
-      expect(cslR1).toBeGreaterThanOrEqual(0);
-      expect(sclR2).toBeLessThan(ndslR1);
-      expect(sclR2).toBeLessThan(cslR1);
+      expect(anyRound2Batch).toBeGreaterThanOrEqual(0);
+      expect(anyRound1Batch).toBeGreaterThanOrEqual(0);
+      expect(anyRound2Batch).toBeLessThan(anyRound1Batch);
 
       // Second draft had no randomized lottery assignments.
       expect(idx(/obtained a batch.*lottery/isu)).toBe(-1);
