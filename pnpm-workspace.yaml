@@ -10,10 +10,15 @@ cleanupUnusedCatalogs: true
 
 engineStrict: true
 
-minimumReleaseAge: 1440 # 1 day
+minimumReleaseAge: 1440 # 1 Day
+
+minimumReleaseAgeExclude:
+  - '@html-eslint/eslint-plugin@0.57.1'
+  - '@html-eslint/parser@0.57.1'
+  - '@sveltejs/kit@2.53.2'
 
 strictDepBuilds: true
 
 trustPolicy: no-downgrade
 
-trustPolicyIgnoreAfter: 525600 # 1 year
+trustPolicyIgnoreAfter: 525600 # 1 Year
