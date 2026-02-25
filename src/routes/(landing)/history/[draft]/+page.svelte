@@ -10,7 +10,6 @@
   import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
   import UsersIcon from '@lucide/svelte/icons/users';
   import { format, fromUnixTime, getUnixTime } from 'date-fns';
-  import { groupby } from 'itertools';
 
   import Link from '$lib/components/link.svelte';
   import { getOrdinalSuffix } from '$lib/ordinal';
@@ -24,12 +23,83 @@
     events,
   } = $derived(data);
 
-  // TODO: How do we merge the creation and conclusion events into the same array?
-  const entries = $derived(
-    Array.from(
-      groupby(events, ({ createdAt }) => getUnixTime(createdAt)),
-      ([timestamp, events]) => [timestamp, Array.from(events)] as const,
-    ),
+  interface BaseDraftTimelineEntry {
+    key: string;
+    createdAt: Date;
+  }
+
+  interface DraftEventTimelineEntry extends BaseDraftTimelineEntry {
+    type: 'draft-event';
+    round: number | null;
+    labId: string;
+    isSystem: boolean;
+  }
+
+  interface DraftConcludedTimelineEntry extends BaseDraftTimelineEntry {
+    type: 'draft-concluded';
+  }
+
+  interface DraftCreatedTimelineEntry extends BaseDraftTimelineEntry {
+    type: 'draft-created';
+  }
+
+  type DraftTimelineEntry =
+    | DraftEventTimelineEntry
+    | DraftConcludedTimelineEntry
+    | DraftCreatedTimelineEntry;
+
+  const timelineEntries = $derived.by(() => {
+    const seeded: DraftTimelineEntry[] =
+      activePeriodEnd === null
+        ? []
+        : [
+            {
+              key: `draft-concluded-${activePeriodEnd.toISOString()}`,
+              type: 'draft-concluded',
+              createdAt: activePeriodEnd,
+            },
+          ];
+
+    const merged = events.reduce((entries, event, index) => {
+      if (
+        typeof event === 'object' &&
+        event !== null &&
+        event.createdAt instanceof Date &&
+        typeof event.labId === 'string' &&
+        (event.round === null || typeof event.round === 'number') &&
+        typeof event.isSystem === 'boolean'
+      )
+        entries.push({
+          key: `${event.createdAt.toISOString()}-${event.labId}-${event.round ?? 'lottery'}-${index}`,
+          type: 'draft-event',
+          createdAt: event.createdAt,
+          round: event.round,
+          labId: event.labId,
+          isSystem: event.isSystem,
+        });
+      return entries;
+    }, seeded);
+
+    merged.push({
+      key: `draft-created-${activePeriodStart.toISOString()}`,
+      type: 'draft-created',
+      createdAt: activePeriodStart,
+    });
+
+    return merged;
+  });
+
+  const groupedEntries = $derived(
+    Object.entries(
+      Object.groupBy(timelineEntries, ({ createdAt }) => `t${getUnixTime(createdAt)}`),
+    ).map(([prefixedTimestamp, groupedTimelineEntries]) => {
+      if (typeof groupedTimelineEntries === 'undefined')
+        throw new Error('Expected grouped timeline entries to exist.');
+      return {
+        unix: Number(prefixedTimestamp.slice(1)),
+        groupedTimelineEntries,
+      };
+    }),
   );
 
   const startDateTime = $derived(format(activePeriodStart, 'PPPpp'));
@@ -103,101 +173,82 @@
 {/if}
 <section class="mt-10 p-4">
   <ol class="border-border relative border-s">
-    {#if end !== null}
-      {@const { endIsoString, endDateTime } = end}
-      <li class="ms-6 mb-10">
-        <span
-          class="bg-background ring-muted-foreground absolute -start-3 mt-0.5 flex size-6 items-center justify-center rounded-full ring-2"
-          ><CalendarDaysIcon class="text-foreground size-4" /></span
-        >
-        <h4 class="mb-2 scroll-m-20 text-xl font-semibold tracking-tight">
-          <time datetime={endIsoString}>{endDateTime}</time>
-        </h4>
-        <ol class="space-y-1">
-          <li class="preset-tonal-primary rounded-lg border px-3 py-1.5">
-            <span class="flex-auto">Draft #{draftId} was concluded.</span>
-          </li>
-        </ol>
-      </li>
-    {/if}
-    {#each entries as [unix, events] (unix)}
+    {#each groupedEntries as { unix, groupedTimelineEntries } (unix)}
       {@const date = fromUnixTime(unix)}
       {@const heading = format(date, 'PPPpp')}
       <li class="ms-6 mb-10">
         <span
-          class="bg-background ring-muted-foreground absolute -start-3 mt-0.5 flex size-6 items-center justify-center rounded-full ring-2"
+          class="bg-background ring-muted-foreground absolute -inset-s-3 mt-0.5 flex size-6 items-center justify-center rounded-full ring-2"
           ><CalendarDaysIcon class="text-foreground size-4" /></span
         >
         <h4 class="mb-2 scroll-m-20 text-xl font-semibold tracking-tight">
           <time datetime={date.toISOString()}>{heading}</time>
         </h4>
         <ol class="space-y-1">
-          {#each events as { isSystem, labId, round }, index (index)}
-            {#if round !== null}
-              {@const ordinal = round + getOrdinalSuffix(round)}
-              {#if isSystem}
-                <li class="preset-tonal-warning rounded-lg border px-3 py-1.5">
+          {#each groupedTimelineEntries as entry (entry.key)}
+            {#if entry.type === 'draft-concluded'}
+              <li class="preset-tonal-primary rounded-lg border px-3 py-1.5">
+                <span class="flex-auto">Draft #{draftId} was concluded.</span>
+              </li>
+            {:else if entry.type === 'draft-created'}
+              <li class="preset-tonal-success rounded-lg border px-3 py-1.5">
+                Draft #{draftId} was created.
+              </li>
+            {:else}
+              {@const { isSystem, labId, round } = entry}
+              {#if round !== null}
+                {@const ordinal = round + getOrdinalSuffix(round)}
+                {#if isSystem}
+                  <li class="preset-tonal-warning rounded-lg border px-3 py-1.5">
+                    <div class="flex items-center gap-3">
+                      <CogIcon class="size-4" />
+                      <span>
+                        The system has skipped the <strong class="uppercase">{labId}</strong> for
+                        the {ordinal}
+                        round due to insufficient quota and/or zero demand.
+                      </span>
+                    </div>
+                  </li>
+                {:else}
+                  <li class="preset-tonal-secondary rounded-lg border px-3 py-1.5">
+                    <div class="flex items-center gap-3">
+                      <UsersIcon class="size-4" />
+                      <span>
+                        The <strong class="uppercase">{labId}</strong> has selected their {ordinal}
+                        batch of draftees.
+                      </span>
+                    </div>
+                  </li>
+                {/if}
+              {:else if isSystem}
+                <li class="preset-tonal-destructive rounded-lg border px-3 py-1.5">
                   <div class="flex items-center gap-3">
-                    <CogIcon class="size-4" />
+                    <TriangleAlertIcon class="size-4" />
                     <span>
-                      The system has skipped the <strong class="uppercase">{labId}</strong> for the {ordinal}
-                      round due to insufficient quota and/or zero demand.
+                      A system-automated event for the <strong class="uppercase">{labId}</strong>
+                      occurred during a lottery. This should be impossible. Kindly
+                      <a
+                        href="https://github.com/BastiDood/drap/issues/new"
+                        class="text-primary underline-offset-4 hover:underline">file an issue</a
+                      > and report this bug there.
                     </span>
                   </div>
                 </li>
               {:else}
-                <li class="preset-tonal-secondary rounded-lg border px-3 py-1.5">
+                <li class="preset-tonal-accent rounded-lg border px-3 py-1.5">
                   <div class="flex items-center gap-3">
-                    <UsersIcon class="size-4" />
+                    <RefreshCwIcon class="size-4" />
                     <span>
-                      The <strong class="uppercase">{labId}</strong> has selected their {ordinal} batch
-                      of draftees.
+                      The <strong class="uppercase">{labId}</strong> has obtained a batch of draftees
+                      from the lottery round.
                     </span>
                   </div>
                 </li>
               {/if}
-            {:else if isSystem}
-              <li class="preset-tonal-destructive rounded-lg border px-3 py-1.5">
-                <div class="flex items-center gap-3">
-                  <TriangleAlertIcon class="size-4" />
-                  <span>
-                    A system-automated event for the <strong class="uppercase">{labId}</strong>
-                    occurred during a lottery. This should be impossible. Kindly
-                    <a
-                      href="https://github.com/BastiDood/drap/issues/new"
-                      class="text-primary underline-offset-4 hover:underline">file an issue</a
-                    > and report this bug there.
-                  </span>
-                </div>
-              </li>
-            {:else}
-              <li class="preset-tonal-accent rounded-lg border px-3 py-1.5">
-                <div class="flex items-center gap-3">
-                  <RefreshCwIcon class="size-4" />
-                  <span>
-                    The <strong class="uppercase">{labId}</strong> has obtained a batch of draftees from
-                    the lottery round.
-                  </span>
-                </div>
-              </li>
             {/if}
           {/each}
         </ol>
       </li>
     {/each}
-    <li class="ms-6 mb-10">
-      <span
-        class="bg-background ring-muted-foreground absolute -start-3 mt-0.5 flex size-6 items-center justify-center rounded-full ring-2"
-        ><CalendarDaysIcon class="text-foreground size-4" /></span
-      >
-      <h4 class="mb-2 scroll-m-20 text-xl font-semibold tracking-tight">
-        <time datetime={startIsoString}>{startDateTime}</time>
-      </h4>
-      <ol class="space-y-1">
-        <li class="preset-tonal-success rounded-lg border px-3 py-1.5">
-          Draft #{draftId} was created.
-        </li>
-      </ol>
-    </li>
   </ol>
 </section>

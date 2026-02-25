@@ -1515,7 +1515,7 @@ export async function getDraftEvents(db: DbConnection, draftId: bigint) {
         createdAt: schema.facultyChoice.createdAt,
         round: schema.facultyChoice.round,
         labId: schema.facultyChoice.labId,
-        isSystem: isNull(schema.facultyChoice.userId),
+        isSystem: isNull(schema.facultyChoice.userId).mapWith(Boolean),
       })
       .from(schema.facultyChoice)
       .where(eq(schema.facultyChoice.draftId, draftId))
