@@ -129,22 +129,24 @@
         <Card.Title class="text-2xl">Available Labs</Card.Title>
       </Card.Header>
       <Card.Content class="flex grow flex-col">
-        {#if availableLabs.length > 0}
-          <ul inert={selectedLabs.length >= maxRounds} class="space-y-2 inert:opacity-20">
-            {#each availableLabs as { id, name }, idx (id)}
-              {@const config = { key: id }}
-              <li in:receive={config} out:send={config} animate:flip={DURATION}>
-                <button
-                  type="button"
-                  class="bg-muted hover:bg-muted/80 w-full flex-auto rounded-md p-4 text-left transition duration-150"
-                  onclick={selectLab.bind(null, idx)}
-                >
-                  {name}
-                </button>
-              </li>
-            {/each}
-          </ul>
-        {:else}
+        <ul
+          inert={selectedLabs.length >= maxRounds}
+          class="space-y-2 empty:hidden inert:opacity-20"
+        >
+          {#each availableLabs as { id, name }, idx (id)}
+            {@const config = { key: id }}
+            <li in:receive={config} out:send={config} animate:flip={DURATION}>
+              <button
+                type="button"
+                class="bg-muted hover:bg-muted/80 w-full flex-auto rounded-md p-4 text-left transition duration-150"
+                onclick={selectLab.bind(null, idx)}
+              >
+                {name}
+              </button>
+            </li>
+          {/each}
+        </ul>
+        {#if availableLabs.length === 0}
           <div class="flex grow items-center justify-center">
             <Empty.Root>
               <Empty.Media variant="icon">
@@ -172,86 +174,85 @@
         </span>
       </Card.Header>
       <Card.Content class="flex grow flex-col">
-        {#if selectedLabs.length > 0}
-          <ol class="space-y-2">
-            {#each selectedLabs as { id, name }, idx (id)}
-              {@const config = { key: id }}
-              <li
-                class="border-border dark:bg-muted bg-muted/20 flex flex-col gap-4 rounded-lg border p-4 transition-shadow hover:shadow-md"
-                in:receive={config}
-                out:send={config}
-                animate:flip={DURATION}
-              >
-                <input type="hidden" name="labs" value={id} />
-                <div class="flex items-center gap-3">
-                  <div
-                    class="bg-secondary text-secondary-foreground flex size-10 shrink-0 items-center justify-center rounded-full pb-0.5 text-lg font-semibold"
-                  >
-                    {idx + 1}
-                  </div>
-                  <div class="grow">{name}</div>
-                  <div class="flex gap-2">
-                    <Tooltip>
-                      <TooltipTrigger>
-                        {#snippet child({ props })}
-                          <Button
-                            {...props}
-                            type="button"
-                            size="icon"
-                            class="bg-success text-success-foreground hover:bg-success/80"
-                            onclick={moveLabUp.bind(null, idx)}
-                            disabled={idx <= 0}
-                          >
-                            <ArrowUpIcon class="size-5" />
-                          </Button>
-                        {/snippet}
-                      </TooltipTrigger>
-                      <TooltipContent>Move up</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        {#snippet child({ props })}
-                          <Button
-                            {...props}
-                            type="button"
-                            size="icon"
-                            class="bg-warning text-warning-foreground hover:bg-warning/80"
-                            onclick={moveLabDown.bind(null, idx)}
-                            disabled={idx >= selectedLabs.length - 1}
-                          >
-                            <ArrowDownIcon class="size-5" />
-                          </Button>
-                        {/snippet}
-                      </TooltipTrigger>
-                      <TooltipContent>Move down</TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        {#snippet child({ props })}
-                          <Button
-                            {...props}
-                            type="button"
-                            size="icon"
-                            variant="destructive"
-                            onclick={resetSelection.bind(null, idx)}
-                          >
-                            <XIcon class="size-5" />
-                          </Button>
-                        {/snippet}
-                      </TooltipTrigger>
-                      <TooltipContent>Remove selection</TooltipContent>
-                    </Tooltip>
-                  </div>
+        <ol class="space-y-2 empty:hidden">
+          {#each selectedLabs as { id, name }, idx (id)}
+            {@const config = { key: id }}
+            <li
+              class="border-border dark:bg-muted bg-muted/20 flex flex-col gap-4 rounded-lg border p-4 transition-shadow hover:shadow-md"
+              in:receive={config}
+              out:send={config}
+              animate:flip={DURATION}
+            >
+              <input type="hidden" name="labs" value={id} />
+              <div class="flex items-center gap-3">
+                <div
+                  class="bg-secondary text-secondary-foreground flex size-10 shrink-0 items-center justify-center rounded-full pb-0.5 text-lg font-semibold"
+                >
+                  {idx + 1}
                 </div>
-                <TextArea
-                  name="remarks"
-                  placeholder={`Hello ${id.toUpperCase()}, my name is... I would like to do more research on...`}
-                  maxlength={1028}
-                />
-              </li>
-            {/each}
-          </ol>
-        {:else}
+                <div class="grow">{name}</div>
+                <div class="flex gap-2">
+                  <Tooltip>
+                    <TooltipTrigger>
+                      {#snippet child({ props })}
+                        <Button
+                          {...props}
+                          type="button"
+                          size="icon"
+                          class="bg-success text-success-foreground hover:bg-success/80"
+                          onclick={moveLabUp.bind(null, idx)}
+                          disabled={idx <= 0}
+                        >
+                          <ArrowUpIcon class="size-5" />
+                        </Button>
+                      {/snippet}
+                    </TooltipTrigger>
+                    <TooltipContent>Move Up</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      {#snippet child({ props })}
+                        <Button
+                          {...props}
+                          type="button"
+                          size="icon"
+                          class="bg-warning text-warning-foreground hover:bg-warning/80"
+                          onclick={moveLabDown.bind(null, idx)}
+                          disabled={idx >= selectedLabs.length - 1}
+                        >
+                          <ArrowDownIcon class="size-5" />
+                        </Button>
+                      {/snippet}
+                    </TooltipTrigger>
+                    <TooltipContent>Move Down</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      {#snippet child({ props })}
+                        <Button
+                          {...props}
+                          type="button"
+                          size="icon"
+                          variant="destructive"
+                          onclick={resetSelection.bind(null, idx)}
+                        >
+                          <XIcon class="size-5" />
+                        </Button>
+                      {/snippet}
+                    </TooltipTrigger>
+                    <TooltipContent>Remove Selection</TooltipContent>
+                  </Tooltip>
+                </div>
+              </div>
+              <TextArea
+                name="remarks"
+                placeholder={`Hello ${id.toUpperCase()}, my name is... I would like to do more research on...`}
+                maxlength={1028}
+              />
+            </li>
+          {/each}
+        </ol>
+        {#if selectedLabs.length === 0}
           <div class="flex grow items-center justify-center">
             <Empty.Root>
               <Empty.Media variant="icon">
