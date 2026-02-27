@@ -42,7 +42,7 @@ export async function GET({ params: { draftId: draftIdParam }, locals: { session
   return new Response(Papa.unparse(results), {
     headers: {
       'Content-Type': 'text/csv',
-      'Content-Disposition': 'attachment',
+      'Content-Disposition': 'attachment; filename="results.csv"',
     },
   });
 }
