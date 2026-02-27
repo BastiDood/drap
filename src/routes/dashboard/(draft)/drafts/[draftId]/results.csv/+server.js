@@ -39,10 +39,11 @@ export async function GET({ params: { draftId: draftIdParam }, locals: { session
 
   logger.info('exporting draft results');
   const results = await getDraftResultsExport(db, draftId);
+  const now = new Date().toLocaleDateString('en-CA');
   return new Response(Papa.unparse(results), {
     headers: {
       'Content-Type': 'text/csv',
-      'Content-Disposition': 'attachment; filename="results.csv"',
+      'Content-Disposition': `attachment; filename="${now}_${draftIdParam}_results.csv"`,
     },
   });
 }
