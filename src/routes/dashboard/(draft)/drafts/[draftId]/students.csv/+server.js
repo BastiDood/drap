@@ -1,5 +1,7 @@
 import Papa from 'papaparse';
 import { error, redirect } from '@sveltejs/kit';
+import { lightFormat } from 'date-fns';
+import { TZDate } from '@date-fns/tz';
 
 import { db } from '$lib/server/database';
 import { getDraftById, getStudentRanksExport } from '$lib/server/database/drizzle';
@@ -39,7 +41,8 @@ export async function GET({ params: { draftId: draftIdParam }, locals: { session
 
   logger.info('exporting student ranks');
   const studentRanks = await getStudentRanksExport(db, draftId);
-  const now = new Date().toLocaleDateString('en-CA');
+  const philippineTime = new TZDate(new Date(), 'Asia/Manila');
+  const now = lightFormat(philippineTime, 'yyyy-MM-dd');
   return new Response(Papa.unparse(studentRanks), {
     headers: {
       'Content-Type': 'application/csv',
