@@ -27,6 +27,7 @@
     "ui": "shadcn-svelte add --yes"
   },
   "dependencies": {
+    "@date-fns/tz": "^1.4.1",
     "@internationalized/date": "^3.11.0",
     "@lucide/svelte": "^0.575.0",
     "@opentelemetry/instrumentation-http": "^0.212.0",
