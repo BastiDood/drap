@@ -1,5 +1,7 @@
 import Papa from 'papaparse';
 import { error, redirect } from '@sveltejs/kit';
+import { lightFormat } from 'date-fns';
+import { TZDate } from '@date-fns/tz';
 
 import { db } from '$lib/server/database';
 import { getDraftById, getDraftResultsExport } from '$lib/server/database/drizzle';
@@ -39,10 +41,12 @@ export async function GET({ params: { draftId: draftIdParam }, locals: { session
 
   logger.info('exporting draft results');
   const results = await getDraftResultsExport(db, draftId);
+  const philippineTime = new TZDate(new Date(), 'Asia/Manila');
+  const now = lightFormat(philippineTime, 'yyyy-MM-dd');
   return new Response(Papa.unparse(results), {
     headers: {
       'Content-Type': 'text/csv',
-      'Content-Disposition': 'attachment',
+      'Content-Disposition': `attachment; filename="${now}_${draftId}_results.csv"`,
     },
   });
 }
