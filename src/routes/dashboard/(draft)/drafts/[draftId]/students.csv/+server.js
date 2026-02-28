@@ -43,7 +43,7 @@ export async function GET({ params: { draftId: draftIdParam }, locals: { session
   return new Response(Papa.unparse(studentRanks), {
     headers: {
       'Content-Type': 'application/csv',
-      'Content-Disposition': `attachment; filename="${now}_${draftIdParam}_students.csv"`,
+      'Content-Disposition': `attachment; filename="${now}_${draftId}_students.csv"`,
     },
   });
 }
