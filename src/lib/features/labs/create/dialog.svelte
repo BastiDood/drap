@@ -6,6 +6,12 @@
 
   import CreateForm from './form.svelte';
 
+  interface Props {
+    disabled?: boolean;
+  }
+
+  const { disabled = false }: Props = $props();
+
   let open = $state(false);
 
   function handleSuccess() {
@@ -16,7 +22,7 @@
 <Dialog.Root bind:open>
   <Dialog.Trigger>
     {#snippet child({ props })}
-      <Button {...props}>
+      <Button {...props} {disabled}>
         <PlusIcon class="size-4" />
         <span>Create Lab</span>
       </Button>
