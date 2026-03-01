@@ -235,6 +235,70 @@ test.describe('Draft Lifecycle', () => {
     });
   });
 
+  test.describe('Lab Catalog Guards During Registration', () => {
+    test('labs page shows destructive callout during registration', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/labs/');
+      await expect(adminPage.getByText(/registration is ongoing/iu)).toBeVisible();
+      await expect(adminPage.getByText('Changes on this page')).not.toBeVisible();
+    });
+
+    test('Create Lab button is disabled', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/labs/');
+      await expect(adminPage.getByRole('button', { name: 'Create Lab' })).toBeDisabled();
+    });
+
+    test('Archive buttons are disabled', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/labs/');
+      const ndslRow = adminPage
+        .locator('tbody tr')
+        .filter({ hasText: 'Networks and Distributed Systems Laboratory' });
+      await expect(ndslRow.getByRole('button')).toBeDisabled();
+    });
+
+    test('server rejects lab creation (403)', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/labs/');
+      const status = await adminPage.evaluate(async () => {
+        const data = new FormData();
+        data.set('labId', 'test');
+        data.set('name', 'Test Lab');
+        const response = await fetch('/dashboard/labs/?/lab', {
+          method: 'POST',
+          body: data,
+        });
+        return response.status;
+      });
+      expect(status).toBe(403);
+    });
+
+    test('server rejects lab archival (403)', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/labs/');
+      const status = await adminPage.evaluate(async () => {
+        const data = new FormData();
+        data.set('archive', 'ndsl');
+        const response = await fetch('/dashboard/labs/?/archive', {
+          method: 'POST',
+          body: data,
+        });
+        return response.status;
+      });
+      expect(status).toBe(403);
+    });
+
+    test('server rejects lab restoration (403)', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/labs/');
+      const status = await adminPage.evaluate(async () => {
+        const data = new FormData();
+        data.set('restore', 'ndsl');
+        const response = await fetch('/dashboard/labs/?/restore', {
+          method: 'POST',
+          body: data,
+        });
+        return response.status;
+      });
+      expect(status).toBe(403);
+    });
+  });
+
   test.describe('History During Registration', () => {
     test('shows Draft #1 in registration phase', async ({ page }) => {
       await page.goto('/history/');
@@ -483,6 +547,22 @@ test.describe('Draft Lifecycle', () => {
     test('sees registration closed message', async ({ lateRegistrantPage }) => {
       await lateRegistrantPage.goto('/dashboard/student/');
       await expect(lateRegistrantPage.getByText('Registration Closed')).toBeVisible();
+    });
+  });
+
+  test.describe('Lab Catalog Guards Lifted After Registration', () => {
+    test('Create Lab button is enabled after registration ends', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/labs/');
+      await expect(adminPage.getByRole('button', { name: 'Create Lab' })).toBeEnabled();
+      await expect(adminPage.getByText('Changes on this page')).toBeVisible();
+    });
+
+    test('Archive buttons are enabled after registration ends', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/labs/');
+      const ndslRow = adminPage
+        .locator('tbody tr')
+        .filter({ hasText: 'Networks and Distributed Systems Laboratory' });
+      await expect(ndslRow.getByRole('button')).toBeEnabled();
     });
   });
 
@@ -1022,21 +1102,6 @@ test.describe('Draft Lifecycle', () => {
       await expect(adminPage.getByText('Registration')).toBeVisible();
     });
 
-    test('adds WSL after Draft #2 snapshot is created', async ({ adminPage }) => {
-      const result = await adminPage.evaluate(async () => {
-        const data = new FormData();
-        data.set('labId', 'wsl');
-        data.set('name', 'Wireless Systems Laboratory');
-        const response = await fetch('/dashboard/labs/?/lab', {
-          method: 'POST',
-          body: data,
-        });
-        return { status: response.status, data: await response.json() };
-      });
-      expect(result.status).toBe(200);
-      expect(result.data.type).toBe('success');
-    });
-
     test('rejects quota updates for unsnapshotted labs', async ({ adminPage }) => {
       const status = await adminPage.evaluate(async () => {
         const data = new FormData();
@@ -1054,7 +1119,7 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('Second Draft — Snapshot Integrity', () => {
-    test('student registration does not show post-snapshot lab and rejects forged submission', async ({
+    test('student registration does not show archived lab and rejects forged submission', async ({
       snapshotGuardStudentPage,
     }) => {
       await snapshotGuardStudentPage.goto('/dashboard/student/');
@@ -1069,13 +1134,15 @@ test.describe('Draft Lifecycle', () => {
 
       await expect(snapshotGuardStudentPage.getByText('Select Lab Preference')).toBeVisible();
       await expect(
-        snapshotGuardStudentPage.getByRole('button', { name: 'Wireless Systems Laboratory' }),
+        snapshotGuardStudentPage.getByRole('button', {
+          name: 'Algorithms and Complexity Laboratory',
+        }),
       ).toHaveCount(0);
 
       const status = await snapshotGuardStudentPage.evaluate(async () => {
         const data = new FormData();
         data.set('draft', '2');
-        data.append('labs', 'wsl');
+        data.append('labs', 'acl');
         data.append('remarks', '');
         const response = await fetch('/dashboard/student/?/submit', {
           method: 'POST',
@@ -1194,35 +1261,6 @@ test.describe('Draft Lifecycle', () => {
     });
   });
 
-  test.describe('Second Draft — Archived Lab Read During Registration', () => {
-    test('archives CSL while Draft #2 is still in registration', async ({ adminPage }) => {
-      await adminPage.goto('/dashboard/labs/');
-
-      const cslRow = adminPage
-        .locator('tbody tr')
-        .filter({ hasText: 'Computer Security Laboratory' });
-      await expect(cslRow).toBeVisible();
-
-      const responsePromise = adminPage.waitForResponse('/dashboard/labs/?/archive');
-      await cslRow.getByRole('button').click();
-      const response = await responsePromise;
-      const responseData = await response.json();
-      expect(responseData.type).toBe('success');
-    });
-
-    test('student summary still shows archived ranked lab while draft is active', async ({
-      secondRoundCslFirstChoicePage,
-    }) => {
-      await secondRoundCslFirstChoicePage.goto('/dashboard/student/');
-      await expect(
-        secondRoundCslFirstChoicePage.getByText('Your Lab Preferences', { exact: true }),
-      ).toBeVisible();
-      await expect(
-        secondRoundCslFirstChoicePage.getByText('Computer Security Laboratory'),
-      ).toBeVisible();
-    });
-  });
-
   test.describe('Second Draft — History During Registration', () => {
     test('history shows Draft #2 in registration phase', async ({ page }) => {
       await page.goto('/history/');
@@ -1270,6 +1308,33 @@ test.describe('Draft Lifecycle', () => {
       expect(responseData.type).toBe('success');
 
       await expect(adminPage.getByText(/Round 1/u)).toBeVisible();
+    });
+
+    test('archives CSL while Draft #2 is active', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/labs/');
+
+      const cslRow = adminPage
+        .locator('tbody tr')
+        .filter({ hasText: 'Computer Security Laboratory' });
+      await expect(cslRow).toBeVisible();
+
+      const responsePromise = adminPage.waitForResponse('/dashboard/labs/?/archive');
+      await cslRow.getByRole('button').click();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
+    });
+
+    test('student summary still shows archived ranked lab while draft is active', async ({
+      secondRoundCslFirstChoicePage,
+    }) => {
+      await secondRoundCslFirstChoicePage.goto('/dashboard/student/');
+      await expect(
+        secondRoundCslFirstChoicePage.getByText('Your Lab Preferences', { exact: true }),
+      ).toBeVisible();
+      await expect(
+        secondRoundCslFirstChoicePage.getByText('Computer Security Laboratory'),
+      ).toBeVisible();
     });
 
     test('Round 1: NDSL selects SecondNdsl', async ({ ndslHeadPage }) => {

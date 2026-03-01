@@ -2,6 +2,7 @@
   export interface Props {
     labId: string;
     labName: string;
+    disabled?: boolean;
   }
 </script>
 
@@ -14,7 +15,7 @@
   import { enhance } from '$app/forms';
   import { Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui/tooltip';
 
-  const { labId, labName }: Props = $props();
+  const { labId, labName, disabled = false }: Props = $props();
 </script>
 
 <form
@@ -44,7 +45,7 @@
   <Tooltip>
     <TooltipTrigger>
       {#snippet child({ props })}
-        <Button {...props} type="submit" variant="secondary" size="icon-sm">
+        <Button {...props} type="submit" variant="secondary" size="icon-sm" {disabled}>
           <ArchiveRestoreIcon class="size-4" />
         </Button>
       {/snippet}
