@@ -87,7 +87,7 @@ export const draft = app.table(
       .default(sql`tstzrange(now(), null, '[)')`),
   },
   ({ currRound, maxRounds }) => [
-    check('draft_curr_round_within_bounds', sql`${currRound} BETWEEN 0 AND ${maxRounds}`),
+    check('draft_curr_round_within_bounds', sql`${currRound} BETWEEN 0 AND ${maxRounds} + 1`),
     // TODO: Exclusive index range for `activePeriod`.
   ],
 );
