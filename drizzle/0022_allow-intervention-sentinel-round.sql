@@ -1,0 +1,2 @@
+ALTER TABLE "drap"."draft" DROP CONSTRAINT "draft_curr_round_within_bounds";--> statement-breakpoint
+ALTER TABLE "drap"."draft" ADD CONSTRAINT "draft_curr_round_within_bounds" CHECK ("drap"."draft"."curr_round" BETWEEN 0 AND "drap"."draft"."max_rounds" + 1);
