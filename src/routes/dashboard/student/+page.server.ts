@@ -187,7 +187,7 @@ export async function load({ locals: { session } }) {
 export const actions = {
   async submit({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to submit lab rankings without session');
+      logger.fatal('attempt to submit lab rankings without session');
       error(401);
     }
 

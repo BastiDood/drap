@@ -36,13 +36,13 @@ function toRoundStartedPayload(round: number | null, maxRounds: number) {
 
 export async function load({ locals: { session }, parent }) {
   if (typeof session?.user === 'undefined') {
-    logger.error('attempt to access students page without session');
+    logger.warn('attempt to access students page without session');
     redirect(307, '/dashboard/oauth/login');
   }
 
   const { id: sessionId, user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId === null) {
-    logger.error('insufficient permissions to access students page', void 0, {
+    logger.fatal('insufficient permissions to access students page', void 0, {
       'user.is_admin': user.isAdmin,
       'user.google_id': user.googleUserId,
       'user.lab_id': user.labId,
@@ -73,7 +73,7 @@ export async function load({ locals: { session }, parent }) {
     const { lab, students, researchers, isDone } =
       await getLabAndRemainingStudentsInDraftWithLabPreference(db, draft.id, labId);
     if (typeof lab === 'undefined') {
-      logger.error('lab not found');
+      logger.fatal('lab not found');
       error(404);
     }
 
@@ -90,13 +90,13 @@ export async function load({ locals: { session }, parent }) {
 export const actions = {
   async rankings({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to submit rankings without session');
+      logger.fatal('attempt to submit rankings without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId === null) {
-      logger.error('insufficient permissions to submit rankings', void 0, {
+      logger.fatal('insufficient permissions to submit rankings', void 0, {
         'user.is_admin': user.isAdmin,
         'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -156,7 +156,7 @@ export const actions = {
         async db => {
           const draft = await insertFacultyChoice(db, draftId, lab, faculty, students);
           if (typeof draft === 'undefined') {
-            logger.error('draft must exist prior to faculty choice submission');
+            logger.fatal('draft must exist prior to faculty choice submission');
             error(404);
           }
 

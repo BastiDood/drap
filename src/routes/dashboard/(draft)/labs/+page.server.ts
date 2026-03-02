@@ -32,13 +32,13 @@ const tracer = Tracer.byName(SERVICE_NAME);
 
 export async function load({ locals: { session } }) {
   if (typeof session?.user === 'undefined') {
-    logger.error('attempt to access labs page without session');
+    logger.warn('attempt to access labs page without session');
     redirect(307, '/dashboard/oauth/login');
   }
 
   const { user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-    logger.error('insufficient permissions to access labs page', void 0, {
+    logger.fatal('insufficient permissions to access labs page', void 0, {
       'user.is_admin': user.isAdmin,
       'user.google_id': user.googleUserId,
       'user.lab_id': user.labId,
@@ -66,7 +66,7 @@ export async function load({ locals: { session } }) {
 export const actions = {
   async lab({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to create lab without session');
+      logger.fatal('attempt to create lab without session');
       error(401);
     }
 
@@ -97,13 +97,13 @@ export const actions = {
   },
   async archive({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to archive lab without session');
+      logger.fatal('attempt to archive lab without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.error('insufficient permissions to archive lab', void 0, {
+      logger.fatal('insufficient permissions to archive lab', void 0, {
         'user.is_admin': user.isAdmin,
         'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -128,13 +128,13 @@ export const actions = {
   },
   async restore({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to restore lab without session');
+      logger.fatal('attempt to restore lab without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.error('insufficient permissions to restore lab', void 0, {
+      logger.fatal('insufficient permissions to restore lab', void 0, {
         'user.is_admin': user.isAdmin,
         'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,

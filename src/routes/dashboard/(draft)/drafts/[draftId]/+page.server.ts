@@ -48,7 +48,7 @@ const tracer = Tracer.byName(SERVICE_NAME);
 
 export async function load({ params, locals: { session } }) {
   if (typeof session?.user === 'undefined') {
-    logger.error('attempt to access draft detail page without session');
+    logger.fatal('attempt to access draft detail page without session');
     error(401);
   }
 
@@ -195,13 +195,13 @@ function toRoundStartedPayload(round: number | null, maxRounds: number) {
 export const actions = {
   async start({ params, locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to start draft without session');
+      logger.fatal('attempt to start draft without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.error('insufficient permissions to start draft', void 0, {
+      logger.fatal('insufficient permissions to start draft', void 0, {
         'user.is_admin': user.isAdmin,
         'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -281,13 +281,13 @@ export const actions = {
 
   async quota({ params, locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to update draft quota snapshots without session');
+      logger.fatal('attempt to update draft quota snapshots without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.error('insufficient permissions to update draft quota snapshots', void 0, {
+      logger.fatal('insufficient permissions to update draft quota snapshots', void 0, {
         'user.is_admin': user.isAdmin,
         'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -377,13 +377,13 @@ export const actions = {
 
   async intervene({ params, locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to intervene draft without session');
+      logger.fatal('attempt to intervene draft without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.error('insufficient permissions to intervene draft', void 0, {
+      logger.fatal('insufficient permissions to intervene draft', void 0, {
         'user.is_admin': user.isAdmin,
         'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -482,13 +482,13 @@ export const actions = {
 
   async conclude({ params, locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to conclude draft without session');
+      logger.fatal('attempt to conclude draft without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.error('insufficient permissions to conclude draft', void 0, {
+      logger.fatal('insufficient permissions to conclude draft', void 0, {
         'user.is_admin': user.isAdmin,
         'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -586,13 +586,13 @@ export const actions = {
 
   async finalize({ params, locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to finalize draft without session');
+      logger.fatal('attempt to finalize draft without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.error('insufficient permissions to finalize draft', void 0, {
+      logger.fatal('insufficient permissions to finalize draft', void 0, {
         'user.is_admin': user.isAdmin,
         'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
