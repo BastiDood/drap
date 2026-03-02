@@ -3,7 +3,13 @@ import { decode } from 'decode-formdata';
 import { error, redirect } from '@sveltejs/kit';
 
 import { db } from '$lib/server/database';
-import { deleteLab, getLabRegistry, insertNewLab, restoreLab } from '$lib/server/database/drizzle';
+import {
+  deleteLab,
+  getActiveDraft,
+  getLabRegistry,
+  insertNewLab,
+  restoreLab,
+} from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
@@ -79,6 +85,12 @@ export const actions = {
       const { labId, name } = v.parse(LabFormData, decode(data));
       logger.debug('creating lab', { labId, name });
 
+      const draft = await getActiveDraft(db);
+      if (typeof draft !== 'undefined' && draft.currRound === 0) {
+        logger.fatal('cannot mutate lab catalog during registration');
+        error(403, 'Cannot modify labs while draft registration is ongoing.');
+      }
+
       await insertNewLab(db, labId, name);
       logger.info('lab created', { labId, name });
     });
@@ -104,6 +116,12 @@ export const actions = {
       const { archive: labId } = v.parse(ArchiveFormData, decode(data));
       logger.debug('archiving lab', { labId });
 
+      const draft = await getActiveDraft(db);
+      if (typeof draft !== 'undefined' && draft.currRound === 0) {
+        logger.fatal('cannot mutate lab catalog during registration');
+        error(403, 'Cannot modify labs while draft registration is ongoing.');
+      }
+
       await deleteLab(db, labId);
       logger.info('lab archived');
     });
@@ -128,6 +146,12 @@ export const actions = {
       const data = await request.formData();
       const { restore: labId } = v.parse(RestoreFormData, decode(data));
       logger.debug('restoring lab', { labId });
+
+      const draft = await getActiveDraft(db);
+      if (typeof draft !== 'undefined' && draft.currRound === 0) {
+        logger.fatal('cannot mutate lab catalog during registration');
+        error(403, 'Cannot modify labs while draft registration is ongoing.');
+      }
 
       await restoreLab(db, labId);
       logger.info('lab restored');

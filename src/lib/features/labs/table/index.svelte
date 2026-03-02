@@ -3,6 +3,7 @@
 
   export interface Props {
     labs: Lab[];
+    disabled?: boolean;
   }
 </script>
 
@@ -19,7 +20,7 @@
 
   type TabType = 'active' | 'archived';
 
-  const { labs }: Props = $props();
+  const { labs, disabled = false }: Props = $props();
 
   let tab: TabType = $state('active');
 
@@ -58,12 +59,12 @@
         <Badge variant="secondary" class="ml-1">{archivedLabs.length}</Badge>
       </Tabs.Trigger>
     </Tabs.List>
-    <CreateLabDialog />
+    <CreateLabDialog {disabled} />
   </div>
   <Tabs.Content value="active">
-    <ActiveTable labs={activeLabs} />
+    <ActiveTable labs={activeLabs} {disabled} />
   </Tabs.Content>
   <Tabs.Content value="archived">
-    <ArchivedTable labs={archivedLabs} />
+    <ArchivedTable labs={archivedLabs} {disabled} />
   </Tabs.Content>
 </Tabs.Root>

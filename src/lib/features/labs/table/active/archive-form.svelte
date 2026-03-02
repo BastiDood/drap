@@ -1,6 +1,7 @@
 <script lang="ts" module>
   export interface Props {
     labId: string;
+    disabled?: boolean;
   }
 </script>
 
@@ -13,7 +14,7 @@
   import { enhance } from '$app/forms';
   import { Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui/tooltip';
 
-  const { labId }: Props = $props();
+  const { labId, disabled = false }: Props = $props();
 </script>
 
 <form
@@ -43,7 +44,7 @@
   <Tooltip>
     <TooltipTrigger>
       {#snippet child({ props })}
-        <Button {...props} type="submit" variant="destructive" size="icon-sm">
+        <Button {...props} type="submit" variant="destructive" size="icon-sm" {disabled}>
           <ArchiveIcon class="size-4" />
         </Button>
       {/snippet}
