@@ -148,7 +148,14 @@
             <span class="text-muted-foreground text-sm">Pending Finalization</span>
           {/if}
         {/snippet}
-        <SummaryPhase {draftId} {draft} students={allStudents} {labs} {finalized} />
+        <SummaryPhase
+          {draftId}
+          {draft}
+          students={allStudents}
+          {labs}
+          {finalized}
+          isReview={currentPhase === 'review'}
+        />
       </Step>
     {/if}
 

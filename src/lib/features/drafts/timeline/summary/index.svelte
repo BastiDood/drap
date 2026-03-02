@@ -1,6 +1,7 @@
 <script lang="ts">
   import ArrowUpFromLineIcon from '@lucide/svelte/icons/arrow-up-from-line';
   import CheckCircle2Icon from '@lucide/svelte/icons/check-circle-2';
+  import SparklesIcon from '@lucide/svelte/icons/sparkles';
   import { format } from 'date-fns';
 
   import * as Alert from '$lib/components/ui/alert';
@@ -16,9 +17,10 @@
     students: Student[];
     labs: Lab[];
     finalized: DraftFinalizedBreakdown;
+    isReview: boolean;
   }
 
-  const { draftId, draft, students, labs, finalized }: Props = $props();
+  const { draftId, draft, students, labs, finalized, isReview }: Props = $props();
 
   const totalStudents = $derived(students.length);
   const assignedStudents = $derived(students.filter(s => s.labId !== null).length);
@@ -28,13 +30,23 @@
 </script>
 
 <div class="space-y-4">
-  <Alert.Root variant="default" class="border-success bg-success/10">
-    <CheckCircle2Icon class="text-success" />
-    <Alert.Title>Draft Finalized</Alert.Title>
-    <Alert.Description>
-      This draft has been completed. All students have been assigned to their respective labs.
-    </Alert.Description>
-  </Alert.Root>
+  {#if isReview}
+    <Alert.Root variant="warning">
+      <SparklesIcon class="text-accent" />
+      <Alert.Title>Draft Review</Alert.Title>
+      <Alert.Description>
+        Lottery assignments are complete. Review results below before finalizing.
+      </Alert.Description>
+    </Alert.Root>
+  {:else}
+    <Alert.Root variant="success">
+      <CheckCircle2Icon class="text-success" />
+      <Alert.Title>Draft Finalized</Alert.Title>
+      <Alert.Description>
+        This draft has been completed. All students have been assigned to their respective labs.
+      </Alert.Description>
+    </Alert.Root>
+  {/if}
 
   <div class="prose dark:prose-invert">
     <h3>Summary</h3>
