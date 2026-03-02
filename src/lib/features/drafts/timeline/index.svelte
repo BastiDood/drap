@@ -90,8 +90,8 @@
       case 'regular':
         return 'pending';
       case 'intervention':
-      case 'review':
         return 'active';
+      case 'review':
       case 'concluded':
         return 'completed';
       default:
@@ -99,10 +99,7 @@
     }
   });
 
-  // Determine which phase is last in the visible timeline
-  const isRegistrationLast = $derived(currentPhase === 'registration');
-  const isRegularLast = $derived(currentPhase === 'regular');
-  const isLotteryLast = $derived(currentPhase === 'intervention' || currentPhase === 'review');
+  const lotteryStepTitle = $derived(currentPhase === 'review' ? 'Review' : 'Lottery');
 </script>
 
 <div class="space-y-6">
@@ -148,7 +145,7 @@
             <span class="text-muted-foreground text-sm">{format(draft.activePeriodEnd, 'PPP')}</span
             >
           {:else}
-            <span class="text-muted-foreground text-sm">Pending finalization</span>
+            <span class="text-muted-foreground text-sm">Pending Finalization</span>
           {/if}
         {/snippet}
         <SummaryPhase {draftId} {draft} students={allStudents} {labs} {concluded} />
@@ -158,10 +155,9 @@
     <!-- Lottery -->
     {#if currentPhase === 'intervention' || currentPhase === 'review' || currentPhase === 'concluded'}
       <Step
-        title="Lottery"
+        title={lotteryStepTitle}
         status={lotteryStatus}
         defaultOpen={currentPhase === 'intervention' || currentPhase === 'review'}
-        last={isLotteryLast}
       >
         {#if currentPhase === 'intervention'}
           <LotteryActive {draftId} {labs} {available} {selected} snapshots={concluded.snapshots} />
@@ -178,12 +174,7 @@
 
     <!-- Regular Rounds -->
     {#if currentPhase !== 'registration'}
-      <Step
-        title="Regular Rounds"
-        status={regularStatus}
-        defaultOpen={currentPhase === 'regular'}
-        last={isRegularLast}
-      >
+      <Step title="Regular Rounds" status={regularStatus} defaultOpen={currentPhase === 'regular'}>
         {#snippet metadata()}
           <span class="text-muted-foreground text-sm">
             {draft.currRound === null
@@ -208,7 +199,7 @@
       title="Registration"
       status={registrationStatus}
       defaultOpen={currentPhase === 'registration'}
-      last={isRegistrationLast}
+      last
     >
       {#snippet metadata()}
         <span class="text-muted-foreground text-sm">{allStudents.length} students</span>

@@ -17,7 +17,7 @@
 
 <div class="grid grid-cols-1 gap-4 md:grid-cols-[auto_1fr]">
   <div class="prose dark:prose-invert">
-    <h3>Lottery Phase</h3>
+    <h3>{isReview ? 'Review Phase' : 'Lottery Phase'}</h3>
     {#if isReview}
       <p>
         Lottery assignment has completed. <strong>{lotteryDrafted.length}</strong> students were assigned
@@ -38,7 +38,9 @@
   <div class="min-w-max space-y-2">
     <Card.Root variant="soft">
       <Card.Header>
-        <Card.Title>Eligible for Lottery ({lotteryDrafted.length})</Card.Title>
+        <Card.Title>
+          {isReview ? 'Lottery Results' : 'Eligible for Lottery'} ({lotteryDrafted.length})
+        </Card.Title>
       </Card.Header>
       <Card.Content class="space-y-4">
         <p class="prose dark:prose-invert max-w-none">
