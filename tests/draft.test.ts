@@ -71,6 +71,25 @@ test.describe('Draft Lifecycle', () => {
       expect(responseData.type).toBe('success');
     });
 
+    test('Patient cannot reuse an existing student number', async ({ patientCandidatePage }) => {
+      await expect(patientCandidatePage.getByText('Complete Your Profile')).toBeVisible();
+      await patientCandidatePage.getByLabel('Student Number').fill('202012345');
+
+      const responsePromise = patientCandidatePage.waitForResponse('/dashboard/?/profile');
+      await patientCandidatePage.getByRole('button', { name: 'Complete Profile' }).click();
+      const response = await responsePromise;
+      const responseData = await response.json();
+
+      expect(response.status()).toBe(200);
+      expect(responseData.type).toBe('failure');
+      expect(responseData.status).toBe(409);
+
+      await expect(patientCandidatePage.getByText('Complete Your Profile')).toBeVisible();
+      await expect(
+        patientCandidatePage.getByText('Student number is already in use.'),
+      ).toBeVisible();
+    });
+
     test('Patient completes profile', async ({ patientCandidatePage }) => {
       await patientCandidatePage.getByLabel('Student Number').fill('202012346');
       const responsePromise = patientCandidatePage.waitForResponse('/dashboard/?/profile');

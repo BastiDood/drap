@@ -136,13 +136,30 @@ export const actions = {
         'user.family_name': family,
       });
 
-      await updateProfileByUserId(
-        db,
-        user.id,
-        typeof studentNumber === 'undefined' ? null : BigInt(studentNumber),
-        given,
-        family,
-      );
+      try {
+        await updateProfileByUserId(
+          db,
+          user.id,
+          typeof studentNumber === 'undefined' ? null : BigInt(studentNumber),
+          given,
+          family,
+        );
+      } catch (err) {
+        if (
+          err instanceof DrizzleQueryError &&
+          err.cause instanceof DatabaseError &&
+          err.cause.code === '23505'
+        ) {
+          logger.fatal('student number already in use', void 0, {
+            'user.id': user.id,
+            'user.email': user.email,
+            'user.student_number': studentNumber,
+          });
+          return fail(409, { message: 'Student number is already in use.' });
+        }
+        throw err;
+      }
+
       logger.info('profile updated');
     });
   },
