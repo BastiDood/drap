@@ -8,7 +8,7 @@
 
   import type { Draft } from './types';
 
-  type Status = 'registration' | 'regular' | 'lottery' | 'concluded';
+  type Status = 'registration' | 'regular' | 'intervention' | 'review' | 'concluded';
 
   interface Props {
     drafts: Draft[];
@@ -16,21 +16,24 @@
 
   const { drafts }: Props = $props();
 
-  function getStatus(draft: Draft): Status {
+  function getStatus(draft: Draft) {
     if (draft.activePeriodEnd !== null) return 'concluded';
-    if (draft.currRound === null) return 'lottery';
+    if (draft.currRound === null) return 'review';
     if (draft.currRound === 0) return 'registration';
+    if (draft.currRound > draft.maxRounds) return 'intervention';
     return 'regular';
   }
 
-  function getStatusLabel(status: Status): string {
+  function getStatusLabel(status: Status) {
     switch (status) {
       case 'registration':
         return 'Registration';
       case 'regular':
         return 'In Progress';
-      case 'lottery':
+      case 'intervention':
         return 'Lottery';
+      case 'review':
+        return 'Review';
       case 'concluded':
         return 'Concluded';
       default:
@@ -45,7 +48,8 @@
         return 'secondary';
       case 'regular':
         return 'default';
-      case 'lottery':
+      case 'intervention':
+      case 'review':
         return 'outline';
       default:
         throw new Error('unreachable');

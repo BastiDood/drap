@@ -27,9 +27,9 @@
   <div class="prose dark:prose-invert">
     <h3>Lottery Phase</h3>
     <p>
-      The final stage is the lottery phase, where the remaining undrafted students are randomly
-      assigned to their labs. Before the system automatically randomizes anything, administrators
-      are given a final chance to manually intervene with the draft results.
+      The final active stage is the lottery phase, where remaining undrafted students are prepared
+      for random assignment. Before randomization runs, administrators get one last chance to
+      manually intervene.
     </p>
     <ul>
       <li>
@@ -43,14 +43,13 @@
       </li>
     </ul>
     <p>
-      When ready, administrators can press the <strong>"Conclude Draft"</strong> button to proceed with
-      the randomization stage. The list of students will be randomly shuffled and distributed among the
-      labs in a round-robin fashion. To uphold fairness, it is important that uneven distributions are
-      manually resolved beforehand.
+      When ready, administrators can press <strong>"Run Lottery"</strong> to execute randomization. The
+      list of students will be shuffled and distributed among labs in round-robin fashion. To uphold fairness,
+      uneven distributions should be resolved beforehand.
     </p>
     <p>
-      After the randomization stage, the draft process is officially complete. All students, lab
-      heads, and administrators are notified of the final results.
+      After randomization, the draft enters <strong>Review</strong>. Administrators can inspect
+      results before finalization, email dispatch, and official lab assignment.
     </p>
     <QuotaSnapshotForm {draftId} mode="lottery" {snapshots} />
     <ConcludeForm {draftId} />

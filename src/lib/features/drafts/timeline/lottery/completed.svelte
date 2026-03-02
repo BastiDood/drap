@@ -1,24 +1,39 @@
 <script lang="ts">
   import * as Card from '$lib/components/ui/card';
   import Student from '$lib/users/student.svelte';
-
   import type { DraftAssignmentRecord, Student as StudentType } from '$lib/features/drafts/types';
 
+  import FinalizeForm from './finalize-form.svelte';
+
   interface Props {
+    draftId: bigint;
     selected: StudentType[];
     lotteryDrafted: DraftAssignmentRecord[];
+    isReview: boolean;
   }
 
-  const { selected, lotteryDrafted }: Props = $props();
+  const { draftId, selected, lotteryDrafted, isReview }: Props = $props();
 </script>
 
 <div class="grid grid-cols-1 gap-4 md:grid-cols-[auto_1fr]">
   <div class="prose dark:prose-invert">
     <h3>Lottery Phase</h3>
-    <p>
-      The lottery phase has completed. <strong>{lotteryDrafted.length}</strong> students were assigned
-      during final lottery randomization.
-    </p>
+    {#if isReview}
+      <p>
+        Lottery assignment has completed. <strong>{lotteryDrafted.length}</strong> students were assigned
+        during randomization.
+      </p>
+      <p>
+        Review the results below. When ready, finalize to dispatch emails and synchronize official
+        student lab assignments.
+      </p>
+      <FinalizeForm {draftId} />
+    {:else}
+      <p>
+        The lottery phase has completed. <strong>{lotteryDrafted.length}</strong> students were assigned
+        during final lottery randomization.
+      </p>
+    {/if}
   </div>
   <div class="min-w-max space-y-2">
     <Card.Root variant="soft">

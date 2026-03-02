@@ -21,7 +21,7 @@
   import RegularPhase from './regular/index.svelte';
   import SummaryPhase from './summary/index.svelte';
 
-  type Phase = 'registration' | 'regular' | 'lottery' | 'concluded';
+  type Phase = 'registration' | 'regular' | 'intervention' | 'review' | 'concluded';
 
   interface Props {
     draftId: bigint;
@@ -38,26 +38,29 @@
   const allStudents = $derived([...available, ...selected]);
 
   // Determine current phase
-  const currentPhase: Phase = $derived.by(() => {
+  const currentPhase = $derived.by(() => {
     if (draft.activePeriodEnd !== null) return 'concluded';
-    if (draft.currRound === null) return 'lottery';
+    if (draft.currRound === null) return 'review';
     if (draft.currRound === 0) return 'registration';
+    if (draft.currRound !== null && draft.currRound > draft.maxRounds) return 'intervention';
     return 'regular';
   });
 
   // Phase labels for display
-  function getPhaseLabel(phase: Phase): string {
+  function getPhaseLabel(phase: Phase) {
     switch (phase) {
       case 'registration':
         return 'Registration';
       case 'regular':
-        return `Round ${draft.currRound} of ${draft.maxRounds}`;
-      case 'lottery':
+        return `Round ${draft.currRound} of ${draft.maxRounds}` as const;
+      case 'intervention':
         return 'Lottery';
+      case 'review':
+        return 'Review';
       case 'concluded':
         return 'Concluded';
       default:
-        return phase satisfies never;
+        throw new Error('unreachable');
     }
   }
 
@@ -72,7 +75,8 @@
         return 'active';
       case 'registration':
         return 'pending';
-      case 'lottery':
+      case 'intervention':
+      case 'review':
       case 'concluded':
         return 'completed';
       default:
@@ -85,7 +89,8 @@
       case 'registration':
       case 'regular':
         return 'pending';
-      case 'lottery':
+      case 'intervention':
+      case 'review':
         return 'active';
       case 'concluded':
         return 'completed';
@@ -97,7 +102,7 @@
   // Determine which phase is last in the visible timeline
   const isRegistrationLast = $derived(currentPhase === 'registration');
   const isRegularLast = $derived(currentPhase === 'regular');
-  const isLotteryLast = $derived(currentPhase === 'lottery');
+  const isLotteryLast = $derived(currentPhase === 'intervention' || currentPhase === 'review');
 </script>
 
 <div class="space-y-6">
@@ -135,29 +140,38 @@
 
   <!-- Timeline (reverse chronological: newest at top) -->
   <div class="pl-1">
-    <!-- Summary (only if concluded) - always at top when present -->
-    {#if currentPhase === 'concluded' && draft.activePeriodEnd !== null}
-      {@const concludedDate = draft.activePeriodEnd}
+    <!-- Summary (visible in review and concluded phases) -->
+    {#if currentPhase === 'review' || currentPhase === 'concluded'}
       <Step title="Summary" status="active" collapsible={false}>
         {#snippet metadata()}
-          <span class="text-muted-foreground text-sm">{format(concludedDate, 'PPP')}</span>
+          {#if draft.activePeriodEnd !== null}
+            <span class="text-muted-foreground text-sm">{format(draft.activePeriodEnd, 'PPP')}</span
+            >
+          {:else}
+            <span class="text-muted-foreground text-sm">Pending finalization</span>
+          {/if}
         {/snippet}
         <SummaryPhase {draftId} {draft} students={allStudents} {labs} {concluded} />
       </Step>
     {/if}
 
     <!-- Lottery -->
-    {#if currentPhase === 'lottery' || currentPhase === 'concluded'}
+    {#if currentPhase === 'intervention' || currentPhase === 'review' || currentPhase === 'concluded'}
       <Step
         title="Lottery"
         status={lotteryStatus}
-        defaultOpen={currentPhase === 'lottery'}
+        defaultOpen={currentPhase === 'intervention' || currentPhase === 'review'}
         last={isLotteryLast}
       >
-        {#if currentPhase === 'lottery'}
+        {#if currentPhase === 'intervention'}
           <LotteryActive {draftId} {labs} {available} {selected} snapshots={concluded.snapshots} />
         {:else}
-          <LotteryCompleted {selected} lotteryDrafted={concluded.sections.lotteryDrafted} />
+          <LotteryCompleted
+            {selected}
+            lotteryDrafted={concluded.sections.lotteryDrafted}
+            isReview={currentPhase === 'review'}
+            {draftId}
+          />
         {/if}
       </Step>
     {/if}
@@ -172,12 +186,14 @@
       >
         {#snippet metadata()}
           <span class="text-muted-foreground text-sm">
-            {draft.currRound ?? draft.maxRounds} / {draft.maxRounds}
+            {draft.currRound === null
+              ? draft.maxRounds
+              : Math.min(draft.currRound, draft.maxRounds)} / {draft.maxRounds}
           </span>
         {/snippet}
-        {#if draft.currRound !== null && draft.currRound > 0}
+        {#if draft.currRound !== null && draft.currRound > 0 && draft.currRound <= draft.maxRounds}
           <RegularPhase round={draft.currRound} {labs} {records} {available} {selected} />
-        {:else if currentPhase === 'concluded'}
+        {:else if currentPhase === 'review' || currentPhase === 'concluded'}
           <RegularPhase round={draft.maxRounds} {labs} {records} {available} {selected} />
         {:else}
           <p class="text-muted-foreground">

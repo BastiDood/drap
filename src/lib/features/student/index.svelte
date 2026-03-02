@@ -47,25 +47,25 @@
       <hr class="border-border" />
       {#if typeof lab !== 'undefined'}
         <Assigned {lab} />
-        {#if submission}
+        {#if typeof submission !== 'undefined'}
           <SubmissionSummary {submission} />
         {/if}
       {:else if typeof draft === 'undefined'}
         <NoDraft />
-      {:else if draft.currRound === null}
+      {:else if draft.currRound === null || draft.currRound > draft.maxRounds}
         <Lottery />
-        {#if submission}
+        {#if typeof submission !== 'undefined'}
           <SubmissionSummary {submission} />
         {/if}
       {:else if draft.currRound === 0}
-        {#if submission}
+        {#if typeof submission !== 'undefined'}
           <Submitted {submission} />
-        {:else if availableLabs && new Date() < draft.registrationClosesAt}
+        {:else if typeof availableLabs !== 'undefined' && new Date() < draft.registrationClosesAt}
           <RegistrationOpen {draft} {availableLabs} />
         {:else}
           <RegistrationClosed registrationClosesAt={draft.registrationClosesAt} />
         {/if}
-      {:else if submission}
+      {:else if typeof submission !== 'undefined'}
         <DraftInProgress
           draft={{ currRound: draft.currRound, maxRounds: draft.maxRounds }}
           {submission}

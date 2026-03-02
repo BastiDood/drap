@@ -100,9 +100,9 @@ export async function load({ locals: { session } }) {
       'draft.round.max': maxRounds,
     });
 
-    // LOTTERY: currRound is null (lottery phase)
-    if (currRound === null) {
-      logger.debug('draft in lottery phase');
+    // LOTTERY/REVIEW: intervention and review stages.
+    if (currRound === null || currRound > maxRounds) {
+      logger.debug('draft in lottery or review phase');
       return {
         user: baseUser,
         draft: { id: draftId, currRound, maxRounds, registrationClosesAt },

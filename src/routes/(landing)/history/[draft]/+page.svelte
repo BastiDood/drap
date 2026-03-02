@@ -134,6 +134,18 @@
   </div>
   <Progress value={100} />
 {:else if currRound === null}
+  <!-- Review Stage -->
+  <div
+    class="preset-tonal-accent mb-2 flex items-center gap-3 rounded-lg border-2 px-4 py-3 text-sm"
+  >
+    <SparklesIcon class="size-6" />
+    <div>
+      This draft started last <strong><time datetime={startIsoString}>{startDateTime}</time></strong
+      > and is currently in the review stage.
+    </div>
+  </div>
+  <Progress class="animate-pulse" value={100} />
+{:else if currRound > maxRounds}
   <!-- Lottery Stage -->
   <div
     class="preset-tonal-accent mb-2 flex items-center gap-3 rounded-lg border-2 px-4 py-3 text-sm"

@@ -6,6 +6,7 @@ import { error, redirect } from '@sveltejs/kit';
 
 import {
   autoAcknowledgeLabsWithoutPreferences,
+  getActiveDraft,
   getFacultyAndStaff,
   getLabAndRemainingStudentsInDraftWithLabPreference,
   getLabById,
@@ -28,6 +29,10 @@ const RankingsFormData = v.object({
 const SERVICE_NAME = 'routes.dashboard.draft.students';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
+
+function toRoundStartedPayload(round: number | null, maxRounds: number) {
+  return round === null || round > maxRounds ? null : round;
+}
 
 export async function load({ locals: { session }, parent }) {
   if (typeof session?.user === 'undefined') {
@@ -110,6 +115,26 @@ export const actions = {
       logger.debug('students submitted', { students });
 
       const draftId = BigInt(draft);
+      const activeDraft = await getActiveDraft(db);
+      if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
+        logger.warn('attempt to submit rankings for non-active draft', {
+          'draft.id': draftId.toString(),
+        });
+        error(403);
+      }
+      if (
+        activeDraft.currRound === null ||
+        activeDraft.currRound <= 0 ||
+        activeDraft.currRound > activeDraft.maxRounds
+      ) {
+        logger.warn('attempt to submit rankings outside regular rounds', {
+          'draft.id': draftId.toString(),
+          'draft.round.current': activeDraft.currRound,
+          'draft.round.max': activeDraft.maxRounds,
+        });
+        error(403);
+      }
+
       const { quota, selected } = await getLabQuotaAndSelectedStudentCountInDraft(db, draftId, lab);
       assert(typeof quota !== 'undefined');
 
@@ -136,7 +161,12 @@ export const actions = {
           }
 
           const submittedRound = draft.currRound;
-          assert(submittedRound !== null, 'cannot submit preferences during lottery phase');
+          assert(
+            submittedRound !== null &&
+              submittedRound > 0 &&
+              submittedRound <= activeDraft.maxRounds,
+            'cannot submit preferences outside regular rounds',
+          );
 
           // Track data needed for notifications after transaction
           const roundsToNotify: (number | null)[] = [];
@@ -154,10 +184,10 @@ export const actions = {
             );
             logger.debug('draft round incremented', draftRound);
 
-            roundsToNotify.push(draftRound.currRound);
+            roundsToNotify.push(toRoundStartedPayload(draftRound.currRound, draftRound.maxRounds));
 
-            if (draftRound.currRound === null) {
-              logger.info('lottery round reached');
+            if (draftRound.currRound === null || draftRound.currRound > draftRound.maxRounds) {
+              logger.info('intervention round reached');
               break;
             }
 
