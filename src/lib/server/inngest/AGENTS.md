@@ -20,6 +20,8 @@ export const RoundStartedEvent = v.object({
 export type RoundStartedEvent = v.InferOutput<typeof RoundStartedEvent>;
 ```
 
+`RoundStartedEvent.round` may be `null`, which represents the review phase announcement after lottery execution.
+
 Register schemas in `client.js` via `EventSchemas().fromSchema()`:
 
 ```js

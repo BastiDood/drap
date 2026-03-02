@@ -8,6 +8,20 @@
 - **Drafted**: A student who has been accepted by a lab. Drafted students exit the pool and do not participate in subsequent rounds.
 - **Lab Catalog**: The list of labs managed on `/dashboard/labs/` (create, archive, restore).
 - **Draft Quota Snapshot**: Per-draft quotas stored at draft creation and edited on `/dashboard/drafts/[draftId]/`.
+- **Intervention Phase**: The post-regular, pre-lottery stage where admins can manually assign remaining students.
+- **Review Phase**: The post-lottery, pre-finalization stage where admins can inspect full lottery outcomes before making them official.
+
+## Phase State Model (Developer Reference)
+
+The system tracks draft progression with `draft.curr_round` plus `upper(draft.active_period)`:
+
+- `curr_round = 0` -> Registration
+- `1 <= curr_round <= max_rounds` -> Regular rounds
+- `curr_round = max_rounds + 1` -> Intervention / lottery setup
+- `curr_round = null` -> Review (lottery already executed, not yet finalized)
+- `upper(active_period) is not null` -> Draft is done (finalized/concluded)
+
+`done` is defined by `active_period` having an upper bound, not by `curr_round` alone.
 
 ## Draft Lifecycle
 
@@ -30,9 +44,9 @@ For each round:
 
 Rounds continue sequentially until all rounds have been completed. If every student is drafted before all rounds finish, the remaining rounds are skipped entirely.
 
-### 3. Lottery Phase
+### 3. Intervention and Lottery Setup
 
-The lottery phase begins when undrafted students remain after all regular rounds have concluded. This phase has two stages:
+This phase begins when undrafted students remain after all regular rounds have concluded.
 
 #### Manual Intervention
 
@@ -43,17 +57,36 @@ Before any randomization occurs, administrators have a final opportunity to manu
 Lab catalog updates in `/dashboard/labs/` are separate from active draft allocation. For each draft, the admin edits quota snapshots in `/dashboard/drafts/[draftId]/`:
 
 1. During registration, **initial** snapshots may be adjusted for regular rounds.
-2. During lottery, **lottery** snapshots may be adjusted for conclude allocation.
+2. During intervention/lottery setup, **lottery** snapshots may be adjusted for lottery allocation.
 
-Before concluding, the **total lottery snapshot quota across labs must exactly match the remaining undrafted student count**. If not, conclude is rejected.
+Before running lottery, the **total lottery snapshot quota across labs must exactly match the remaining undrafted student count**. If not, the action is rejected.
 
-#### Randomized Assignment
+#### Run Lottery
 
-When the administrator concludes the draft, the remaining students are randomly shuffled and distributed among labs in a round-robin fashion according to each lab's **lottery quota snapshot**. Because snapshot totals must match the remaining student count exactly, every undrafted student receives an assignment.
+When the administrator runs lottery, the remaining students are randomly shuffled and distributed among labs in a round-robin fashion according to each lab's **lottery quota snapshot**. Because snapshot totals must match the remaining student count exactly, every undrafted student receives a computed assignment.
 
-### 4. Conclusion
+At this point, the draft enters **Review**. Results are visible to admins, but they are not yet official.
 
-The draft is complete once every registered participant has been assigned to a lab — either through a regular round, manual intervention, or the lottery. All students, lab heads, and administrators are notified of the final results.
+### 4. Review
+
+In review, administrators verify the lottery output before finalization. This supports a final manual validation checkpoint before any irreversible side effects.
+
+While in review:
+
+1. Lottery outcomes are visible in the dashboard/history views.
+2. Finalization controls are available to administrators.
+3. Emails are not yet dispatched.
+4. `user.lab_id` is not yet officially synchronized for affected users.
+
+### 5. Finalization and Conclusion
+
+When the administrator finalizes the draft:
+
+1. The draft is marked done by closing `active_period`.
+2. Final assignment emails are dispatched.
+3. Official `user.lab_id` values are synchronized from the finalized draft outcomes.
+
+The draft is complete once every registered participant has a final assignment, either through a regular round, manual intervention, or finalized lottery.
 
 Students who were not part of the draft (e.g., those who registered after it started) are unaffected and will see no assignment.
 
@@ -70,7 +103,7 @@ Students who were not part of the draft (e.g., those who registered after it sta
 
 1. `/dashboard/lab/` — View lab details and assigned members
 2. `/dashboard/students/` — Each round, review and select students who chose the lab
-3. During lottery — Coordinate with administrators on remaining placements
+3. During intervention/review — Coordinate with administrators on remaining placements and validation
 4. `/dashboard/lab/` — View newly assigned members after conclusion
 
 ### Administrator
@@ -81,5 +114,7 @@ Students who were not part of the draft (e.g., those who registered after it sta
 4. `/dashboard/drafts/[draftId]/` — (Optional) adjust initial quota snapshots during registration
 5. `/dashboard/drafts/` — Start the draft
 6. Monitor round progression (labs are notified automatically)
-7. `/dashboard/drafts/[draftId]/` — During lottery, apply manual interventions and adjust lottery snapshots
-8. `/dashboard/drafts/` — Conclude the draft (triggers randomized assignment and notifications)
+7. `/dashboard/drafts/[draftId]/` — During intervention, apply manual interventions and adjust lottery snapshots
+8. `/dashboard/drafts/[draftId]/` — Run Lottery (computes assignments and enters review)
+9. `/dashboard/drafts/[draftId]/` — Review results
+10. `/dashboard/drafts/[draftId]/` — Finalize Draft (dispatches emails, syncs `user.lab_id`, and concludes)
