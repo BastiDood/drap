@@ -890,6 +890,8 @@ test.describe('Draft Lifecycle', () => {
     test('enters review phase with finalize action', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
       await expect(adminPage.getByText(/Started .* · Review/u)).toBeVisible();
+      await expect(adminPage.getByRole('heading', { name: 'Review Phase' })).toBeVisible();
+      await expect(adminPage.getByRole('heading', { name: 'Lottery Phase' })).toHaveCount(0);
       await expect(adminPage.getByRole('button', { name: 'Finalize Draft' })).toBeVisible();
     });
   });
@@ -1526,6 +1528,8 @@ test.describe('Draft Lifecycle', () => {
     test('enters review phase with finalize action for Draft #2', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
       await expect(adminPage.getByText(/Started .* · Review/u)).toBeVisible();
+      await expect(adminPage.getByRole('heading', { name: 'Review Phase' })).toBeVisible();
+      await expect(adminPage.getByRole('heading', { name: 'Lottery Phase' })).toHaveCount(0);
       await expect(adminPage.getByRole('button', { name: 'Finalize Draft' })).toBeVisible();
     });
 
