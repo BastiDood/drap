@@ -113,10 +113,10 @@ export async function load({ params, locals: { session } }) {
     );
 
     let initialQuota = 0;
-    let concludedQuota = 0;
+    let finalizedQuota = 0;
     for (const quota of quotaSnapshots) {
       initialQuota += quota.initialQuota;
-      concludedQuota += quota.initialQuota + quota.lotteryQuota;
+      finalizedQuota += quota.initialQuota + quota.lotteryQuota;
     }
 
     logger.debug('draft detail loaded', {
@@ -137,15 +137,15 @@ export async function load({ params, locals: { session } }) {
       available,
       selected,
       records,
-      concluded: {
+      finalized: {
         quota: {
           initialQuota,
           lotteryInterventions: interventionDrafted.length,
-          concludedQuota,
+          finalizedQuota,
         },
         snapshots: quotaSnapshots.map(row => ({
           ...row,
-          concludedQuota: row.initialQuota + row.lotteryQuota,
+          finalizedQuota: row.initialQuota + row.lotteryQuota,
         })),
         sections: {
           regularDrafted,
@@ -560,7 +560,7 @@ export const actions = {
 
               const result = await insertLotteryChoices(db, draftId, user.id, pairs, 'lottery');
               if (typeof result === 'undefined') {
-                logger.error('draft must exist prior to draft conclusion');
+                logger.error('draft must exist prior to draft finalization');
                 error(404);
               }
             } else {
@@ -633,9 +633,9 @@ export const actions = {
       let userAssignments: { userId: string; labId: string }[] = [];
       await db.transaction(
         async db => {
-          const concluded = await concludeDraft(db, draftId);
+          const finalizedAt = await concludeDraft(db, draftId);
           logger.info('draft finalized and closed', {
-            'draft.concluded_at': concluded.toISOString(),
+            'draft.finalized_at': finalizedAt.toISOString(),
           });
 
           const results = await syncResultsToUsers(db, draftId);
@@ -661,7 +661,7 @@ export const actions = {
 
       await inngest.send(
         facultyAndStaff.map(({ email, givenName, familyName }) => ({
-          name: 'draft/draft.concluded' as const,
+          name: 'draft/draft.finalized' as const,
           data: {
             draftId: Number(draftId),
             recipientEmail: email,

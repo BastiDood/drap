@@ -19,7 +19,7 @@ The system tracks draft progression with `draft.curr_round` plus `upper(draft.ac
 - `1 <= curr_round <= max_rounds` -> Regular rounds
 - `curr_round = max_rounds + 1` -> Intervention / lottery setup
 - `curr_round = null` -> Review (lottery already executed, not yet finalized)
-- `upper(active_period) is not null` -> Draft is done (finalized/concluded)
+- `upper(active_period) is not null` -> Draft is done (finalized)
 
 `done` is defined by `active_period` having an upper bound, not by `curr_round` alone.
 
@@ -46,7 +46,7 @@ Rounds continue sequentially until all rounds have been completed. If every stud
 
 ### 3. Intervention and Lottery Setup
 
-This phase begins when undrafted students remain after all regular rounds have concluded.
+This phase begins when undrafted students remain after all regular rounds have completed.
 
 #### Manual Intervention
 
@@ -97,14 +97,14 @@ Students who were not part of the draft (e.g., those who registered after it sta
 1. `/dashboard/student/` — Complete profile (student number, set once)
 2. `/dashboard/student/` — Submit lab preference rankings during registration
 3. `/history/` — Track draft progress and view past results
-4. `/dashboard/student/` — View final lab assignment after conclusion
+4. `/dashboard/student/` — View final lab assignment after finalization
 
 ### Lab Head
 
 1. `/dashboard/lab/` — View lab details and assigned members
 2. `/dashboard/students/` — Each round, review and select students who chose the lab
 3. During intervention/review — Coordinate with administrators on remaining placements and validation
-4. `/dashboard/lab/` — View newly assigned members after conclusion
+4. `/dashboard/lab/` — View newly assigned members after finalization
 
 ### Administrator
 

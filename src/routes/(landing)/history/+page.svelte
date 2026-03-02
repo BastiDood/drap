@@ -19,7 +19,7 @@
       {#each drafts as { id: draftId, activePeriodStart, activePeriodEnd, currRound, maxRounds } (draftId)}
         {@const start = format(activePeriodStart, 'PPPpp')}
         {#if activePeriodEnd !== null}
-          <!-- Concluded Draft -->
+          <!-- Finalized Draft -->
           {@const end = format(activePeriodEnd, 'PPPpp')}
           <li>
             <a

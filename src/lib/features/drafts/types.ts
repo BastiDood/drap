@@ -35,7 +35,7 @@ export interface DraftLabQuotaSnapshot {
   labName: schema.Lab['name'];
   initialQuota: number;
   lotteryQuota: number;
-  concludedQuota: number;
+  finalizedQuota: number;
 }
 
 export interface DraftAssignmentRecord extends Pick<
@@ -48,11 +48,11 @@ export interface DraftAssignmentRecord extends Pick<
   assignedAt: schema.FacultyChoice['createdAt'] | null;
 }
 
-export interface DraftConcludedBreakdown {
+export interface DraftFinalizedBreakdown {
   quota: {
     initialQuota: number;
     lotteryInterventions: number;
-    concludedQuota: number;
+    finalizedQuota: number;
   };
   snapshots: DraftLabQuotaSnapshot[];
   sections: {

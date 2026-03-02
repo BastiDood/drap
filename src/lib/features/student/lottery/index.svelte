@@ -11,7 +11,7 @@
   <Empty.Header>
     <Empty.Title>Lottery / Review in Progress</Empty.Title>
     <Empty.Description>
-      The regular draft rounds have concluded. The remaining students are being processed through
+      The regular draft rounds have completed. The remaining students are being processed through
       lottery assignment and administrator review. You will be notified once finalization is
       complete.
     </Empty.Description>

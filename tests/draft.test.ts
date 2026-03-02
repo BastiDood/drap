@@ -749,8 +749,8 @@ test.describe('Draft Lifecycle', () => {
         return texts.findIndex(t => regex.test(t));
       }
 
-      // No conclusion event yet
-      expect(idx(/was concluded/u)).toBe(-1);
+      // No finalized event yet
+      expect(idx(/was finalized/u)).toBe(-1);
 
       // Known faculty selections exist
       const anyRound3Batch = idx(/3rd batch/iu);
@@ -911,13 +911,13 @@ test.describe('Draft Lifecycle', () => {
     });
   });
 
-  test.describe('Admin Concluded Breakdown', () => {
+  test.describe('Admin Finalized Breakdown', () => {
     test('shows expected aggregate quota values', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
-      await expect(adminPage.locator('#admin-concluded-breakdown')).toBeVisible();
+      await expect(adminPage.locator('#admin-finalized-breakdown')).toBeVisible();
       await expect(adminPage.locator('#quota-initial')).toHaveText('8');
       await expect(adminPage.locator('#quota-interventions')).toHaveText('1');
-      await expect(adminPage.locator('#quota-concluded')).toHaveText('11');
+      await expect(adminPage.locator('#quota-finalized')).toHaveText('11');
     });
 
     test.describe('drafted sections', () => {
@@ -962,8 +962,8 @@ test.describe('Draft Lifecycle', () => {
     });
   });
 
-  test.describe('History After Conclusion', () => {
-    test('shows Draft #1 as concluded', async ({ page }) => {
+  test.describe('History After Finalization', () => {
+    test('shows Draft #1 as finalized', async ({ page }) => {
       await page.goto('/history/');
       await expect(page.getByText('Draft #1')).toBeVisible();
       await expect(page.getByText(/was held from/u)).toBeVisible();
@@ -971,7 +971,7 @@ test.describe('Draft Lifecycle', () => {
     });
 
     test.describe('Draft #1 detail timeline', () => {
-      test('shows concluded status banner', async ({ page }) => {
+      test('shows finalized status banner', async ({ page }) => {
         await page.goto('/history/1/');
         await expect(page.getByText(/was held from/u)).toBeVisible();
         await expect(page.getByText(/over 3 rounds/u)).toBeVisible();
@@ -988,7 +988,7 @@ test.describe('Draft Lifecycle', () => {
           return texts.findIndex(text => regex.test(text));
         }
 
-        expect(idx(/was concluded/u)).toBe(0);
+        expect(idx(/was finalized/u)).toBe(0);
         expect(idx(/was created/u)).toBe(texts.length - 1);
       });
 
@@ -1014,7 +1014,7 @@ test.describe('Draft Lifecycle', () => {
         expect(anyRound2Batch).toBeLessThan(anyRound1Batch);
       });
 
-      test('keeps internal events between concluded and created boundaries', async ({ page }) => {
+      test('distinguishes intervention picks from lottery picks', async ({ page }) => {
         await page.goto('/history/1/');
 
         const rows = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
@@ -1025,13 +1025,32 @@ test.describe('Draft Lifecycle', () => {
           return texts.findIndex(text => regex.test(text));
         }
 
-        const concludedIndex = idx(/was concluded/u);
+        const interventionIndex = idx(/manual lottery intervention/iu);
+        const lotteryIndex = idx(/lottery randomization/iu);
+
+        expect(interventionIndex).toBeGreaterThanOrEqual(0);
+        expect(lotteryIndex).toBeGreaterThanOrEqual(0);
+        expect(lotteryIndex).toBeLessThan(interventionIndex);
+      });
+
+      test('keeps internal events between finalized and created boundaries', async ({ page }) => {
+        await page.goto('/history/1/');
+
+        const rows = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
+        const textContents = await rows.allTextContents();
+        const texts = textContents.map(text => text.replaceAll(/\s+/gu, ' ').trim());
+
+        function idx(regex: RegExp) {
+          return texts.findIndex(text => regex.test(text));
+        }
+
+        const finalizedIndex = idx(/was finalized/u);
         const createdIndex = idx(/was created/u);
         const internalEventIndex = idx(
           /selected their|obtained a batch of draftees|system has skipped/isu,
         );
 
-        expect(internalEventIndex).toBeGreaterThan(concludedIndex);
+        expect(internalEventIndex).toBeGreaterThan(finalizedIndex);
         expect(internalEventIndex).toBeLessThan(createdIndex);
       });
 
@@ -1049,10 +1068,10 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('Drafts Table Final State', () => {
-    test('shows draft with concluded status', async ({ adminPage }) => {
+    test('shows draft with finalized status', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/');
       await expect(adminPage.getByText('#1')).toBeVisible();
-      await expect(adminPage.getByText('Concluded')).toBeVisible();
+      await expect(adminPage.getByText('Finalized')).toBeVisible();
     });
   });
 
@@ -1110,7 +1129,7 @@ test.describe('Draft Lifecycle', () => {
 
     test('Late registrant has no assignment', async ({ lateRegistrantPage }) => {
       await lateRegistrantPage.goto('/dashboard/student/');
-      // Late registrant missed registration — draft is concluded so no active draft
+      // Late registrant missed registration — draft is finalized so no active draft
       await expect(lateRegistrantPage.getByText('No Active Draft')).toBeVisible();
     });
   });
@@ -1546,12 +1565,12 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('Second Draft — Dashboard And History Verification', () => {
-    test('admin concluded breakdown is correct for Draft #2', async ({ adminPage }) => {
+    test('admin finalized breakdown is correct for Draft #2', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
-      await expect(adminPage.locator('#admin-concluded-breakdown')).toBeVisible();
+      await expect(adminPage.locator('#admin-finalized-breakdown')).toBeVisible();
       await expect(adminPage.locator('#quota-initial')).toHaveText('3');
       await expect(adminPage.locator('#quota-interventions')).toHaveText('0');
-      await expect(adminPage.locator('#quota-concluded')).toHaveText('3');
+      await expect(adminPage.locator('#quota-finalized')).toHaveText('3');
       await expect(adminPage.locator('#section-regular-drafted')).toContainText(
         'Regular Drafted (3)',
       );
@@ -1573,18 +1592,18 @@ test.describe('Draft Lifecycle', () => {
         await expect(adminPage.getByText('#1')).toBeVisible();
       });
 
-      test('drafts table shows both drafts as concluded', async ({ adminPage }) => {
+      test('drafts table shows both drafts as finalized', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/drafts/');
-        await expect(adminPage.getByText('Concluded')).toHaveCount(2);
+        await expect(adminPage.getByText('Finalized')).toHaveCount(2);
       });
 
-      test('history index reflects Draft #2 2-round conclusion', async ({ page }) => {
+      test('history index reflects Draft #2 2-round finalization', async ({ page }) => {
         await page.goto('/history/');
         await expect(page.getByText('Draft #2')).toBeVisible();
         await expect(page.getByText(/over 2 rounds/u)).toBeVisible();
       });
 
-      test('Draft #2 detail shows concluded status', async ({ page }) => {
+      test('Draft #2 detail shows finalized status', async ({ page }) => {
         await page.goto('/history/2/');
         await expect(page.getByText(/was held from/u)).toBeVisible();
         await expect(page.getByText(/over 2 rounds/u)).toBeVisible();
@@ -1606,7 +1625,7 @@ test.describe('Draft Lifecycle', () => {
         const anyRound2Batch = idx(/2nd batch/iu);
         const anyRound1Batch = idx(/1st batch/iu);
 
-        expect(idx(/was concluded/u)).toBe(0);
+        expect(idx(/was finalized/u)).toBe(0);
         expect(idx(/was created/u)).toBe(texts.length - 1);
         expect(anyRound2Batch).toBeGreaterThanOrEqual(0);
         expect(anyRound1Batch).toBeGreaterThanOrEqual(0);
@@ -1619,7 +1638,7 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('Second Draft — Archived Lab Read Models', () => {
-    test('CSL appears in archived labs after Draft #2 conclusion', async ({ adminPage }) => {
+    test('CSL appears in archived labs after Draft #2 finalization', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/labs/');
       await adminPage.getByRole('tab', { name: /Archived Labs/u }).click();
       await expect(adminPage.getByText('Computer Security Laboratory')).toBeVisible();

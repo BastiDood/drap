@@ -35,8 +35,8 @@
     isSystem: boolean;
   }
 
-  interface DraftConcludedTimelineEntry extends BaseDraftTimelineEntry {
-    type: 'draft-concluded';
+  interface DraftFinalizedTimelineEntry extends BaseDraftTimelineEntry {
+    type: 'draft-finalized';
   }
 
   interface DraftCreatedTimelineEntry extends BaseDraftTimelineEntry {
@@ -45,7 +45,7 @@
 
   type DraftTimelineEntry =
     | DraftEventTimelineEntry
-    | DraftConcludedTimelineEntry
+    | DraftFinalizedTimelineEntry
     | DraftCreatedTimelineEntry;
 
   const timelineEntries = $derived.by(() => {
@@ -54,8 +54,8 @@
         ? []
         : [
             {
-              key: `draft-concluded-${activePeriodEnd.toISOString()}`,
-              type: 'draft-concluded',
+              key: `draft-finalized-${activePeriodEnd.toISOString()}`,
+              type: 'draft-finalized',
               createdAt: activePeriodEnd,
             },
           ];
@@ -121,7 +121,7 @@
 </div>
 {#if end !== null}
   {@const { endIsoString, endDateTime } = end}
-  <!-- Concluded Draft -->
+  <!-- Finalized Draft -->
   <div
     class="preset-tonal-success mb-2 flex items-center gap-3 rounded-lg border-2 px-4 py-3 text-sm"
   >
@@ -198,9 +198,9 @@
         </h4>
         <ol class="space-y-1">
           {#each groupedTimelineEntries as entry (entry.key)}
-            {#if entry.type === 'draft-concluded'}
+            {#if entry.type === 'draft-finalized'}
               <li class="preset-tonal-primary rounded-lg border px-3 py-1.5">
-                <span class="flex-auto">Draft #{draftId} was concluded.</span>
+                <span class="flex-auto">Draft #{draftId} was finalized.</span>
               </li>
             {:else if entry.type === 'draft-created'}
               <li class="preset-tonal-success rounded-lg border px-3 py-1.5">
@@ -208,7 +208,33 @@
               </li>
             {:else}
               {@const { isSystem, labId, round } = entry}
-              {#if round !== null}
+              {#if round === maxRounds + 1}
+                {#if isSystem}
+                  <li class="preset-tonal-destructive rounded-lg border px-3 py-1.5">
+                    <div class="flex items-center gap-3">
+                      <TriangleAlertIcon class="size-4" />
+                      <span>
+                        A system-automated event for the <strong class="uppercase">{labId}</strong>
+                        occurred during manual lottery intervention. This should be impossible. Kindly
+                        <a
+                          href="https://github.com/BastiDood/drap/issues/new"
+                          class="text-primary underline-offset-4 hover:underline">file an issue</a
+                        > and report this bug there.
+                      </span>
+                    </div>
+                  </li>
+                {:else}
+                  <li class="preset-tonal-accent rounded-lg border px-3 py-1.5">
+                    <div class="flex items-center gap-3">
+                      <SparklesIcon class="size-4" />
+                      <span>
+                        The <strong class="uppercase">{labId}</strong> has obtained a draftee through
+                        manual lottery intervention.
+                      </span>
+                    </div>
+                  </li>
+                {/if}
+              {:else if round !== null}
                 {@const ordinal = round + getOrdinalSuffix(round)}
                 {#if isSystem}
                   <li class="preset-tonal-warning rounded-lg border px-3 py-1.5">
@@ -252,7 +278,7 @@
                     <RefreshCwIcon class="size-4" />
                     <span>
                       The <strong class="uppercase">{labId}</strong> has obtained a batch of draftees
-                      from the lottery round.
+                      from lottery randomization.
                     </span>
                   </div>
                 </li>

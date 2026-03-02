@@ -45,12 +45,12 @@
   });
 </script>
 
-<EmailLayout preview="Draft #{draftId} has concluded - View final assignments">
+<EmailLayout preview="Draft #{draftId} is finalized - View final assignments">
   <Section>
-    <Heading class="text-foreground text-2xl font-bold" as="h1">Draft Concluded</Heading>
+    <Heading class="text-foreground text-2xl font-bold" as="h1">Draft Finalized</Heading>
     <Text class="text-base">
-      Draft <strong class="text-foreground">#{draftId}</strong> has just concluded. All registered students
-      have been assigned to their respective research labs.
+      Draft <strong class="text-foreground">#{draftId}</strong> has just been finalized. All registered
+      students have been assigned to their respective research labs.
     </Text>
     {#if groupedLotteryAssignments.length > 0}
       <Section class="bg-card text-card-foreground my-6 rounded-lg">

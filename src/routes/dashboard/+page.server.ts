@@ -8,7 +8,7 @@ import { error, fail, redirect } from '@sveltejs/kit';
 
 import { db } from '$lib/server/database';
 import { dev } from '$app/environment';
-import type { DraftConcludedEvent } from '$lib/server/inngest/schema';
+import type { DraftFinalizedEvent } from '$lib/server/inngest/schema';
 import {
   getLabById,
   getUserNameByEmail,
@@ -93,7 +93,7 @@ const SendEmailFormData = v.variant('event', [
     recipientEmail: v.string(),
   }),
   v.object({
-    event: v.literal('draft/draft.concluded'),
+    event: v.literal('draft/draft.finalized'),
     draftId: v.number(),
     recipientEmail: v.string(),
     lotteryAssignments: v.optional(v.array(LotteryAssignmentFormData), []),
@@ -385,7 +385,7 @@ export const actions = {
                 });
                 break;
               }
-              case 'draft/draft.concluded': {
+              case 'draft/draft.finalized': {
                 /* eslint-disable @typescript-eslint/init-declarations */
                 let givenName: string;
                 let familyName: string;
@@ -400,7 +400,7 @@ export const actions = {
                   throw err;
                 }
 
-                const lotteryAssignments: DraftConcludedEvent['lotteryAssignments'] = [];
+                const lotteryAssignments: DraftFinalizedEvent['lotteryAssignments'] = [];
                 for (const { labId, studentEmail } of parsed.lotteryAssignments) {
                   // eslint-disable-next-line @typescript-eslint/init-declarations
                   let labName: string;

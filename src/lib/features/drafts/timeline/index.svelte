@@ -5,7 +5,7 @@
   import { Button } from '$lib/components/ui/button';
   import type {
     Draft,
-    DraftConcludedBreakdown,
+    DraftFinalizedBreakdown,
     FacultyChoiceRecord,
     Lab,
     Student,
@@ -21,7 +21,7 @@
   import RegularPhase from './regular/index.svelte';
   import SummaryPhase from './summary/index.svelte';
 
-  type Phase = 'registration' | 'regular' | 'intervention' | 'review' | 'concluded';
+  type Phase = 'registration' | 'regular' | 'intervention' | 'review' | 'finalized';
 
   interface Props {
     draftId: bigint;
@@ -30,16 +30,16 @@
     available: Student[];
     selected: Student[];
     records: FacultyChoiceRecord[];
-    concluded: DraftConcludedBreakdown;
+    finalized: DraftFinalizedBreakdown;
   }
 
-  const { draftId, draft, labs, available, selected, records, concluded }: Props = $props();
+  const { draftId, draft, labs, available, selected, records, finalized }: Props = $props();
 
   const allStudents = $derived([...available, ...selected]);
 
   // Determine current phase
   const currentPhase = $derived.by(() => {
-    if (draft.activePeriodEnd !== null) return 'concluded';
+    if (draft.activePeriodEnd !== null) return 'finalized';
     if (draft.currRound === null) return 'review';
     if (draft.currRound === 0) return 'registration';
     if (draft.currRound !== null && draft.currRound > draft.maxRounds) return 'intervention';
@@ -57,8 +57,8 @@
         return 'Lottery';
       case 'review':
         return 'Review';
-      case 'concluded':
-        return 'Concluded';
+      case 'finalized':
+        return 'Finalized';
       default:
         throw new Error('unreachable');
     }
@@ -77,7 +77,7 @@
         return 'pending';
       case 'intervention':
       case 'review':
-      case 'concluded':
+      case 'finalized':
         return 'completed';
       default:
         throw new Error('unreachable');
@@ -92,7 +92,7 @@
       case 'intervention':
         return 'active';
       case 'review':
-      case 'concluded':
+      case 'finalized':
         return 'completed';
       default:
         throw new Error('unreachable');
@@ -137,8 +137,8 @@
 
   <!-- Timeline (reverse chronological: newest at top) -->
   <div class="pl-1">
-    <!-- Summary (visible in review and concluded phases) -->
-    {#if currentPhase === 'review' || currentPhase === 'concluded'}
+    <!-- Summary (visible in review and finalized phases) -->
+    {#if currentPhase === 'review' || currentPhase === 'finalized'}
       <Step title="Summary" status="active" collapsible={false}>
         {#snippet metadata()}
           {#if draft.activePeriodEnd !== null}
@@ -148,23 +148,23 @@
             <span class="text-muted-foreground text-sm">Pending Finalization</span>
           {/if}
         {/snippet}
-        <SummaryPhase {draftId} {draft} students={allStudents} {labs} {concluded} />
+        <SummaryPhase {draftId} {draft} students={allStudents} {labs} {finalized} />
       </Step>
     {/if}
 
     <!-- Lottery -->
-    {#if currentPhase === 'intervention' || currentPhase === 'review' || currentPhase === 'concluded'}
+    {#if currentPhase === 'intervention' || currentPhase === 'review' || currentPhase === 'finalized'}
       <Step
         title={lotteryStepTitle}
         status={lotteryStatus}
         defaultOpen={currentPhase === 'intervention' || currentPhase === 'review'}
       >
         {#if currentPhase === 'intervention'}
-          <LotteryActive {draftId} {labs} {available} {selected} snapshots={concluded.snapshots} />
+          <LotteryActive {draftId} {labs} {available} {selected} snapshots={finalized.snapshots} />
         {:else}
           <LotteryCompleted
             {selected}
-            lotteryDrafted={concluded.sections.lotteryDrafted}
+            lotteryDrafted={finalized.sections.lotteryDrafted}
             isReview={currentPhase === 'review'}
             {draftId}
           />
@@ -184,7 +184,7 @@
         {/snippet}
         {#if draft.currRound !== null && draft.currRound > 0 && draft.currRound <= draft.maxRounds}
           <RegularPhase round={draft.currRound} {labs} {records} {available} {selected} />
-        {:else if currentPhase === 'review' || currentPhase === 'concluded'}
+        {:else if currentPhase === 'review' || currentPhase === 'finalized'}
           <RegularPhase round={draft.maxRounds} {labs} {records} {available} {selected} />
         {:else}
           <p class="text-muted-foreground">
@@ -205,7 +205,7 @@
         <span class="text-muted-foreground text-sm">{allStudents.length} students</span>
       {/snippet}
       {#if currentPhase === 'registration'}
-        <RegistrationActive {draftId} students={allStudents} snapshots={concluded.snapshots} />
+        <RegistrationActive {draftId} students={allStudents} snapshots={finalized.snapshots} />
       {:else}
         <RegistrationCompleted students={allStudents} />
       {/if}

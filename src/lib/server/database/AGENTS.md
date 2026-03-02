@@ -96,7 +96,7 @@ await db.update(schema.lab).set({ deletedAt: null }).where(eq(schema.lab.id, id)
 - `initialQuota`: defaults to `0` when `initDraft` snapshots active labs; editable only during registration on draft detail
 - `lotteryQuota`: editable only during intervention/lottery setup on draft detail; used by `Run Lottery` round-robin allocation
 
-This keeps concluded-draft reporting independent from later catalog edits (`create`, `archive`,
+This keeps finalized-draft reporting independent from later catalog edits (`create`, `archive`,
 `restore`) on `/dashboard/labs`, and ensures those updates do not mutate active-draft snapshots.
 
 ## Draft Phase Sentinels
@@ -107,7 +107,7 @@ Use `currRound` and `activePeriod` together:
 - `1..maxRounds`: regular rounds
 - `currRound = maxRounds + 1`: intervention/lottery setup
 - `currRound = null`: review (lottery already executed, pending finalization)
-- `upper(activePeriod) IS NOT NULL`: draft is finalized/concluded
+- `upper(activePeriod) IS NOT NULL`: draft is finalized
 
 ## Query Function Patterns
 

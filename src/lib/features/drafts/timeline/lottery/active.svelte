@@ -2,7 +2,7 @@
   import * as Card from '$lib/components/ui/card';
   import Student from '$lib/users/student.svelte';
   import type {
-    DraftConcludedBreakdown,
+    DraftFinalizedBreakdown,
     Lab,
     Student as StudentType,
   } from '$lib/features/drafts/types';
@@ -17,7 +17,7 @@
     labs: Pick<Lab, 'id' | 'name'>[];
     available: StudentType[];
     selected: StudentType[];
-    snapshots: DraftConcludedBreakdown['snapshots'];
+    snapshots: DraftFinalizedBreakdown['snapshots'];
   }
 
   const { draftId, labs, available, selected, snapshots }: Props = $props();

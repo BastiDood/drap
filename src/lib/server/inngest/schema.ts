@@ -28,7 +28,7 @@ export const LotteryInterventionEvent = v.object({
 });
 export type LotteryInterventionEvent = v.InferOutput<typeof LotteryInterventionEvent>;
 
-export const DraftConcludedEvent = v.object({
+export const DraftFinalizedEvent = v.object({
   draftId: v.number(),
   recipientEmail: v.string(),
   recipientName: v.string(),
@@ -41,7 +41,7 @@ export const DraftConcludedEvent = v.object({
     }),
   ),
 });
-export type DraftConcludedEvent = v.InferOutput<typeof DraftConcludedEvent>;
+export type DraftFinalizedEvent = v.InferOutput<typeof DraftFinalizedEvent>;
 
 export const UserAssignedEvent = v.object({
   labId: v.string(),

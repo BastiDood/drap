@@ -2,7 +2,7 @@
   import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
 
   import * as Alert from '$lib/components/ui/alert';
-  import type { DraftConcludedBreakdown, Student } from '$lib/features/drafts/types';
+  import type { DraftFinalizedBreakdown, Student } from '$lib/features/drafts/types';
 
   import QuotaSnapshotForm from '../quota-snapshot-form.svelte';
 
@@ -12,7 +12,7 @@
   interface Props {
     draftId: bigint;
     students: Student[];
-    snapshots: DraftConcludedBreakdown['snapshots'];
+    snapshots: DraftFinalizedBreakdown['snapshots'];
   }
 
   const { draftId, students, snapshots }: Props = $props();
