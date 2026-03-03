@@ -4,7 +4,7 @@ Feature modules live in `$lib/features/<feature>/`. The main pattern is to wrap 
 
 ## Component Types
 
-### 1. Orchestrator (`*/index.svelte`)
+### Orchestrator (`*/index.svelte`)
 
 - Conditional rendering based on state
 - Imports child components and forwards props
@@ -31,18 +31,18 @@ Example (draft state machine uses nested conditionals):
 {/if}
 ```
 
-### 2. Form (`*-form.svelte`)
+### Form (`*-form.svelte`)
 
 - Self-contained with `use:enhance`
 - Absolute action paths (e.g., `/dashboard/drafts/{draftId}/?/start`)
 - Runtime assertions over non-null assertions
 
-### 3. Presentation
+### Presentation
 
 - Display-only, receives data via props
 - Uses `$derived` for computed values
 
-### 4. Dialog Wrapper (`*-dialog.svelte`)
+### Dialog Wrapper (`*-dialog.svelte`)
 
 - Wraps a form component to defer mounting until dialog opens
 - Ensures form state only initializes when visible

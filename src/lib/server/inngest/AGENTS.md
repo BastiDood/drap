@@ -67,7 +67,3 @@ await inngest.send(
   })),
 );
 ```
-
-## Service Names
-
-- [`inngest.functions.send-email`](functions/send-email.ts) - Email sending function

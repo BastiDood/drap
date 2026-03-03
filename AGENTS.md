@@ -4,60 +4,13 @@ DRAP (Draft Ranking Automated Processor) automates the University of the Philipp
 
 For detailed domain knowledge (terminology, lifecycle, role workflows), see [the draft process document](docs/draft-process.md). If you're working on a new feature, you must first understand how the draft process works.
 
-# Commands
+## Conventions
 
-```bash
-pnpm fmt         # Check formatting
-pnpm fmt:fix     # Auto-fix formatting
-pnpm lint        # All linters in parallel
-pnpm lint:eslint # ESLint only
-pnpm lint:svelte # Svelte checker only
-pnpm db:generate # Generate Drizzle migrations
-pnpm db:migrate  # Apply migrations
-pnpm db:studio   # Drizzle Studio UI
-pnpm docker:dev  # Dev services: postgres, inngest dev, o2
-pnpm docker:ci   # CI services: dev stack + Inngest SDK URL override to preview (4173)
-pnpm docker:prod # Prod internal services: postgres, inngest prod, redis, o2, drizzle-gateway
-pnpm docker:app  # Full prod environment: prod + app
-```
+For the available project scripts and commands, see the [`package.json`](package.json) scripts and the bespoke [`scripts/`](scripts) directory.
 
-# Tech Stack
+For the `shadcn-svelte` UI configuration and aliases, see the [`components.json`](components.json) file.
 
-- **Framework:** SvelteKit 2 + Svelte 5, Tailwind 4 + `shadcn-svelte` (`bits-ui`)
-- **Database:** PostgreSQL with Drizzle ORM
-- **Jobs:** Inngest for event-driven background processing
-- **Auth:** Google OAuth 2.0 (restricted to `@up.edu.ph` emails)
-- **Validation:** Valibot for runtime schemas
-
-# Architecture
-
-## Code Organization
-
-See `src/` for detailed codebase map and convention references.
-
-Key directories:
-
-- `src/lib/server/database/` - Drizzle ORM
-- `src/lib/server/inngest/` - Event-driven jobs
-- `src/lib/features/` - Feature modules
-
-## Route Structure
-
-- `/` - Landing page
-- `(landing)/history/` - Draft history index and past results
-- `(landing)/privacy/` - Privacy policy
-- `/dashboard/` - Main app (authenticated)
-  - `admin/` - Admin hub
-  - `(draft)/drafts/` - Draft lifecycle + per-draft quota snapshot management + `[draftId]/` detail views
-  - `(draft)/labs/` - Global lab configuration (default quotas + archive/restore)
-  - `(faculty)/students/` - Faculty view/select students each round
-  - `/email` - Email sender config
-  - `/lab` - Lab management (faculty)
-  - `/oauth` - Google OAuth flow
-  - `/student` - Student hub (rankings, status)
-  - `/users` - User management (admin)
-
-# End-to-End Testing
+## End-to-End Testing
 
 Run Playwright tests with environment variables loaded:
 
@@ -69,7 +22,9 @@ pnpm docker:dev
 ```bash
 # Build first (required by playwright.config.js webServer command).
 pnpm build
+```
 
+```bash
 # Assumes current directory is the project root.
 # Load only .env:
 source ./scripts/test-playwright.sh
