@@ -37,14 +37,26 @@ Three schemas organized by domain:
 The data model is expected to be edited directly in the schema files when requirements change.
 
 ```bash
-# After editing the model, generate a migration into `drizzle/`.
-pnpm db:generate --name descriptive-snake-case-migration-name
+# After editing the Drizzle schema, always auto-generate the migration into `drizzle/`.
+pnpm db:generate --name $DESCRIPTIVE_MIGRATION_NAME
 ```
 
+Never hand-write schema migrations.
+
 ```bash
-# Then commit the migration into the database instance.
+# For data-only backfill/transformation migrations that prepare future constraint hardening.
+pnpm db:generate --custom --name $BESPOKE_BACKFILL_NAME
+```
+
+Use `--custom` migrations only for data operations, not for schema diffs that Drizzle can auto-generate.
+
+```bash
+# Then apply generated migration(s) to the database instance.
 pnpm db:migrate
 ```
+
+> [!CAUTION]
+> Order of migrations matters! Always apply auto-generated migrations first, then apply custom migrations, and finally apply any follow-up auto-generated migrations that were enabled by the custom data-only migrations. This is typically the case for data constraint updates that require backfills.
 
 ## User Role Discrimination
 
@@ -96,8 +108,7 @@ await db.update(schema.lab).set({ deletedAt: null }).where(eq(schema.lab.id, id)
 - `initialQuota`: defaults to `0` when `initDraft` snapshots active labs; editable only during registration on draft detail
 - `lotteryQuota`: editable only during intervention/lottery setup on draft detail; used by `Run Lottery` round-robin allocation
 
-This keeps finalized-draft reporting independent from later catalog edits (`create`, `archive`,
-`restore`) on `/dashboard/labs`, and ensures those updates do not mutate active-draft snapshots.
+This keeps finalized-draft reporting independent from later catalog edits (`create`, `archive`, `restore`) on `/dashboard/labs`, and ensures those updates do not mutate active-draft snapshots.
 
 ## Draft Phase Sentinels
 
