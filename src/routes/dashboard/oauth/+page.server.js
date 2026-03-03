@@ -26,7 +26,7 @@ export const actions = {
       else
         logger.info('session deleted', {
           'session.user_id': deleted.userId,
-          'session.expiration': deleted.expiration.toISOString(),
+          'session.expiration': deleted.expiredAt.toISOString(),
         });
 
       cookies.delete('sid', { path: '/dashboard', httpOnly: true, sameSite: 'lax' });
