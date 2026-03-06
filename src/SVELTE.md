@@ -31,18 +31,18 @@ Pass props directly to components rather than wrapping in a `data` object:
 <ChildComponent {data} />
 ```
 
-## Truthiness over Undefined Checks
+## Undefined over Truthiness Checks
 
-Use truthiness checks instead of `typeof !== 'undefined'`:
+Use explicit `typeof` checks for `undefined` instead of truthiness checks that rely on implicit type coercion.
 
 ```svelte
 <!-- Good -->
-{#if user}
+{#if typeof user !== 'undefined'}
   <span>{user.name}</span>
 {/if}
 
 <!-- Avoid -->
-{#if typeof user !== 'undefined'}
+{#if user}
   <span>{user.name}</span>
 {/if}
 ```
