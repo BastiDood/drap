@@ -39,9 +39,20 @@
             case 'success':
               toast.success('Profile completed.');
               break;
-            case 'failure':
-              toast.error('Failed to complete profile.');
+            case 'failure': {
+              switch (result.status) {
+                case 409:
+                  if (typeof result.data?.message === 'string') {
+                    toast.error(result.data.message);
+                    break;
+                  }
+                // falls through
+                default:
+                  toast.error('Failed to complete profile.');
+                  break;
+              }
               break;
+            }
             default:
               break;
           }
