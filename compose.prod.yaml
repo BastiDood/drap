@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
 
   redis:
-    image: redis:8.4.0
+    image: redis:8.6.1-alpine3.23
     command:
       - redis-server
       - '--appendonly'
