@@ -14,6 +14,7 @@ import {
   isNotNull,
   isNull,
   lt,
+  lte,
   or,
   sql,
 } from 'drizzle-orm';
@@ -1523,14 +1524,35 @@ export async function getDraftEvents(db: DbConnection, draftId: bigint) {
   return await tracer.asyncSpan('get-draft-events', async span => {
     span.setAttribute('database.draft.id', draftId.toString());
     return await db
-      .select({
+      .selectDistinct({
         createdAt: schema.facultyChoice.createdAt,
         round: schema.facultyChoice.round,
         labId: schema.facultyChoice.labId,
         isSystem: isNull(schema.facultyChoice.userId).mapWith(Boolean),
       })
       .from(schema.facultyChoice)
-      .where(eq(schema.facultyChoice.draftId, draftId))
+      .innerJoin(schema.draft, eq(schema.facultyChoice.draftId, schema.draft.id))
+      .leftJoin(
+        schema.facultyChoiceUser,
+        and(
+          eq(schema.facultyChoice.draftId, schema.facultyChoiceUser.draftId),
+          eq(schema.facultyChoice.labId, schema.facultyChoiceUser.labId),
+          or(
+            and(isNull(schema.facultyChoice.round), isNull(schema.facultyChoiceUser.round)),
+            eq(schema.facultyChoice.round, schema.facultyChoiceUser.round),
+          ),
+        ),
+      )
+      .where(
+        and(
+          eq(schema.facultyChoice.draftId, draftId),
+          or(
+            lte(schema.facultyChoice.round, schema.draft.maxRounds),
+            isNull(schema.facultyChoice.userId),
+            isNotNull(schema.facultyChoiceUser.studentUserId),
+          ),
+        ),
+      )
       .orderBy(({ createdAt, round, labId }) => [desc(createdAt), desc(round), asc(labId)]);
   });
 }

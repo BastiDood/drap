@@ -1033,6 +1033,29 @@ test.describe('Draft Lifecycle', () => {
         expect(lotteryIndex).toBeLessThan(interventionIndex);
       });
 
+      test('shows intervention and lottery events only for labs with actual assignments', async ({
+        page,
+      }) => {
+        await page.goto('/history/1/');
+
+        const rows = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
+        const textContents = await rows.allTextContents();
+        const texts = textContents.map(text => text.replaceAll(/\s+/gu, ' ').trim());
+
+        const interventionEntries = texts.filter(text =>
+          /manual lottery intervention/iu.test(text),
+        );
+        const lotteryEntries = texts.filter(text => /lottery randomization/iu.test(text));
+
+        expect(interventionEntries).toHaveLength(1);
+        expect(lotteryEntries).toHaveLength(3);
+        expect(
+          texts.some(text =>
+            /NDSL.*(?:manual lottery intervention|lottery randomization)/iu.test(text),
+          ),
+        ).toBe(false);
+      });
+
       test('keeps internal events between finalized and created boundaries', async ({ page }) => {
         await page.goto('/history/1/');
 
