@@ -1,7 +1,7 @@
 import { EventSchemas, Inngest } from 'inngest';
 
 import {
-  DraftConcludedEvent,
+  DraftFinalizedEvent,
   LotteryInterventionEvent,
   RoundStartedEvent,
   RoundSubmittedEvent,
@@ -20,7 +20,7 @@ export const inngest = new Inngest({
     'draft/round.started': RoundStartedEvent,
     'draft/round.submitted': RoundSubmittedEvent,
     'draft/lottery.intervened': LotteryInterventionEvent,
-    'draft/draft.concluded': DraftConcludedEvent,
+    'draft/draft.finalized': DraftFinalizedEvent,
     'draft/user.assigned': UserAssignedEvent,
   }),
 });

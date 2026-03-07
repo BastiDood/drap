@@ -6,6 +6,7 @@ import { error, redirect } from '@sveltejs/kit';
 
 import {
   autoAcknowledgeLabsWithoutPreferences,
+  getActiveDraft,
   getFacultyAndStaff,
   getLabAndRemainingStudentsInDraftWithLabPreference,
   getLabById,
@@ -29,15 +30,19 @@ const SERVICE_NAME = 'routes.dashboard.draft.students';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
+function toRoundStartedPayload(round: number | null, maxRounds: number) {
+  return round === null || round > maxRounds ? null : round;
+}
+
 export async function load({ locals: { session }, parent }) {
   if (typeof session?.user === 'undefined') {
-    logger.error('attempt to access students page without session');
+    logger.warn('attempt to access students page without session');
     redirect(307, '/dashboard/oauth/login');
   }
 
   const { id: sessionId, user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId === null) {
-    logger.error('insufficient permissions to access students page', void 0, {
+    logger.fatal('insufficient permissions to access students page', void 0, {
       'user.is_admin': user.isAdmin,
       'user.google_id': user.googleUserId,
       'user.lab_id': user.labId,
@@ -68,7 +73,7 @@ export async function load({ locals: { session }, parent }) {
     const { lab, students, researchers, isDone } =
       await getLabAndRemainingStudentsInDraftWithLabPreference(db, draft.id, labId);
     if (typeof lab === 'undefined') {
-      logger.error('lab not found');
+      logger.fatal('lab not found');
       error(404);
     }
 
@@ -85,13 +90,13 @@ export async function load({ locals: { session }, parent }) {
 export const actions = {
   async rankings({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to submit rankings without session');
+      logger.fatal('attempt to submit rankings without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId === null) {
-      logger.error('insufficient permissions to submit rankings', void 0, {
+      logger.fatal('insufficient permissions to submit rankings', void 0, {
         'user.is_admin': user.isAdmin,
         'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -110,6 +115,26 @@ export const actions = {
       logger.debug('students submitted', { students });
 
       const draftId = BigInt(draft);
+      const activeDraft = await getActiveDraft(db);
+      if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
+        logger.warn('attempt to submit rankings for non-active draft', {
+          'draft.id': draftId.toString(),
+        });
+        error(403);
+      }
+      if (
+        activeDraft.currRound === null ||
+        activeDraft.currRound <= 0 ||
+        activeDraft.currRound > activeDraft.maxRounds
+      ) {
+        logger.warn('attempt to submit rankings outside regular rounds', {
+          'draft.id': draftId.toString(),
+          'draft.round.current': activeDraft.currRound,
+          'draft.round.max': activeDraft.maxRounds,
+        });
+        error(403);
+      }
+
       const { quota, selected } = await getLabQuotaAndSelectedStudentCountInDraft(db, draftId, lab);
       assert(typeof quota !== 'undefined');
 
@@ -131,12 +156,17 @@ export const actions = {
         async db => {
           const draft = await insertFacultyChoice(db, draftId, lab, faculty, students);
           if (typeof draft === 'undefined') {
-            logger.error('draft must exist prior to faculty choice submission');
+            logger.fatal('draft must exist prior to faculty choice submission');
             error(404);
           }
 
           const submittedRound = draft.currRound;
-          assert(submittedRound !== null, 'cannot submit preferences during lottery phase');
+          assert(
+            submittedRound !== null &&
+              submittedRound > 0 &&
+              submittedRound <= activeDraft.maxRounds,
+            'cannot submit preferences outside regular rounds',
+          );
 
           // Track data needed for notifications after transaction
           const roundsToNotify: (number | null)[] = [];
@@ -154,10 +184,10 @@ export const actions = {
             );
             logger.debug('draft round incremented', draftRound);
 
-            roundsToNotify.push(draftRound.currRound);
+            roundsToNotify.push(toRoundStartedPayload(draftRound.currRound, draftRound.maxRounds));
 
-            if (draftRound.currRound === null) {
-              logger.info('lottery round reached');
+            if (draftRound.currRound === null || draftRound.currRound > draftRound.maxRounds) {
+              logger.info('intervention round reached');
               break;
             }
 

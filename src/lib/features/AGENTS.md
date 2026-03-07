@@ -14,14 +14,17 @@ Example (draft state machine uses nested conditionals):
 
 ```svelte
 {#if draft.activePeriodEnd !== null}
-  <!-- Concluded state -->
+  <!-- Finalized state -->
   <SummaryPhase {draft} />
 {:else if draft.currRound === null}
-  <!-- Lottery state -->
+  <!-- Review state (lottery already ran) -->
   <LotteryPhase {draft} />
 {:else if draft.currRound === 0}
   <!-- Registration state -->
   <RegistrationPhase {draft} />
+{:else if draft.currRound > draft.maxRounds}
+  <!-- Intervention / lottery setup state -->
+  <LotteryPhase {draft} />
 {:else}
   <!-- Regular rounds state -->
   <RegularPhase {draft} />

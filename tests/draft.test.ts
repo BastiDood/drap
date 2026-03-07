@@ -178,35 +178,45 @@ test.describe('Draft Lifecycle', () => {
       await expect(adminPage.getByText('Algorithms and Complexity Laboratory')).toBeVisible();
     });
 
-    test('archives then restores ACL from lab catalog', async ({ adminPage }) => {
-      await adminPage.goto('/dashboard/labs/');
+    test.describe('ACL archive and restore from lab catalog', () => {
+      test('archives ACL', async ({ adminPage }) => {
+        await adminPage.goto('/dashboard/labs/');
 
-      const aclRow = adminPage
-        .locator('tbody tr')
-        .filter({ hasText: 'Algorithms and Complexity Laboratory' });
-      await expect(aclRow).toBeVisible();
+        const aclRow = adminPage
+          .locator('tbody tr')
+          .filter({ hasText: 'Algorithms and Complexity Laboratory' });
+        await expect(aclRow).toBeVisible();
 
-      {
         const archiveResponsePromise = adminPage.waitForResponse('/dashboard/labs/?/archive');
         await aclRow.getByRole('button').click();
         const archiveResponse = await archiveResponsePromise;
         const archiveResponseData = await archiveResponse.json();
         expect(archiveResponseData.type).toBe('success');
-      }
+      });
 
-      await adminPage.getByRole('tab', { name: /Archived Labs/u }).click();
-      const archivedAclRow = adminPage
-        .locator('tbody tr')
-        .filter({ hasText: 'Algorithms and Complexity Laboratory' });
-      await expect(archivedAclRow).toBeVisible();
+      test('shows ACL in archived labs', async ({ adminPage }) => {
+        await adminPage.goto('/dashboard/labs/');
+        await adminPage.getByRole('tab', { name: /Archived Labs/u }).click();
+        const archivedAclRow = adminPage
+          .locator('tbody tr')
+          .filter({ hasText: 'Algorithms and Complexity Laboratory' });
+        await expect(archivedAclRow).toBeVisible();
+      });
 
-      {
+      test('restores ACL from archived labs', async ({ adminPage }) => {
+        await adminPage.goto('/dashboard/labs/');
+        await adminPage.getByRole('tab', { name: /Archived Labs/u }).click();
+        const archivedAclRow = adminPage
+          .locator('tbody tr')
+          .filter({ hasText: 'Algorithms and Complexity Laboratory' });
+        await expect(archivedAclRow).toBeVisible();
+
         const restoreResponsePromise = adminPage.waitForResponse('/dashboard/labs/?/restore');
         await archivedAclRow.getByRole('button').click();
         const restoreResponse = await restoreResponsePromise;
         const restoreResponseData = await restoreResponse.json();
         expect(restoreResponseData.type).toBe('success');
-      }
+      });
     });
   });
 
@@ -225,7 +235,7 @@ test.describe('Draft Lifecycle', () => {
       await dialog.locator('input#closesAt').fill(formattedDate);
       await dialog.locator('input#rounds').fill('3');
 
-      adminPage.on('dialog', dialog => dialog.accept());
+      adminPage.on('dialog', async dialog => await dialog.accept());
       const responsePromise = adminPage.waitForResponse('/dashboard/drafts/?/init');
       await dialog.getByRole('button', { name: 'Create Draft' }).click();
 
@@ -325,12 +335,18 @@ test.describe('Draft Lifecycle', () => {
       await expect(page.getByText('currently waiting for students to register')).toBeVisible();
     });
 
-    test('detail page shows registration status and creation event', async ({ page }) => {
-      await page.goto('/history/1/');
-      await expect(page.getByText('registration stage')).toBeVisible();
-      const items = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
-      await expect(items).toHaveCount(1);
-      await expect(items.first()).toContainText('Draft #1 was created.');
+    test.describe('Draft #1 detail page', () => {
+      test('shows registration status', async ({ page }) => {
+        await page.goto('/history/1/');
+        await expect(page.getByText('registration stage')).toBeVisible();
+      });
+
+      test('shows creation event in timeline', async ({ page }) => {
+        await page.goto('/history/1/');
+        const items = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
+        await expect(items).toHaveCount(1);
+        await expect(items.first()).toContainText('Draft #1 was created.');
+      });
     });
   });
 
@@ -522,32 +538,38 @@ test.describe('Draft Lifecycle', () => {
       await expect(ndslInput).toHaveAttribute('placeholder', '0');
     });
 
-    test('updates initial snapshots and clears to committed placeholders', async ({
-      adminPage,
-    }) => {
-      await adminPage.goto('/dashboard/drafts/1/');
-      const editor = adminPage.locator('#draft-quota-editor-initial');
-      await expect(editor).toBeVisible();
+    test.describe('initial snapshot updates', () => {
+      test('updates initial snapshots', async ({ adminPage }) => {
+        await adminPage.goto('/dashboard/drafts/1/');
+        const editor = adminPage.locator('#draft-quota-editor-initial');
+        await expect(editor).toBeVisible();
 
-      await editor.locator('input[name="ndsl"]').fill('2');
-      await editor.locator('input[name="csl"]').fill('2');
-      await editor.locator('input[name="scl"]').fill('2');
-      await editor.locator('input[name="cvmil"]').fill('1');
-      await editor.locator('input[name="acl"]').fill('1');
+        await editor.locator('input[name="ndsl"]').fill('2');
+        await editor.locator('input[name="csl"]').fill('2');
+        await editor.locator('input[name="scl"]').fill('2');
+        await editor.locator('input[name="cvmil"]').fill('1');
+        await editor.locator('input[name="acl"]').fill('1');
 
-      const responsePromise = adminPage.waitForResponse('/dashboard/drafts/1/?/quota');
-      await editor.getByRole('button', { name: 'Update Initial Snapshots' }).click();
-      const response = await responsePromise;
-      const responseData = await response.json();
-      expect(responseData.type).toBe('success');
+        const responsePromise = adminPage.waitForResponse('/dashboard/drafts/1/?/quota');
+        await editor.getByRole('button', { name: 'Update Initial Snapshots' }).click();
+        const response = await responsePromise;
+        const responseData = await response.json();
+        expect(responseData.type).toBe('success');
+      });
 
-      const aclInput = editor.locator('input[name="acl"]');
-      await expect(aclInput).toHaveValue('');
-      await expect(aclInput).toHaveAttribute('placeholder', '1');
+      test('shows committed placeholders after update', async ({ adminPage }) => {
+        await adminPage.goto('/dashboard/drafts/1/');
+        const editor = adminPage.locator('#draft-quota-editor-initial');
+        await expect(editor).toBeVisible();
 
-      const ndslInput = editor.locator('input[name="ndsl"]');
-      await expect(ndslInput).toHaveValue('');
-      await expect(ndslInput).toHaveAttribute('placeholder', '2');
+        const aclInput = editor.locator('input[name="acl"]');
+        await expect(aclInput).toHaveValue('');
+        await expect(aclInput).toHaveAttribute('placeholder', '1');
+
+        const ndslInput = editor.locator('input[name="ndsl"]');
+        await expect(ndslInput).toHaveValue('');
+        await expect(ndslInput).toHaveAttribute('placeholder', '2');
+      });
     });
 
     test('starts the draft', async ({ adminPage }) => {
@@ -746,8 +768,8 @@ test.describe('Draft Lifecycle', () => {
         return texts.findIndex(t => regex.test(t));
       }
 
-      // No conclusion event yet
-      expect(idx(/was concluded/u)).toBe(-1);
+      // No finalized event yet
+      expect(idx(/was finalized/u)).toBe(-1);
 
       // Known faculty selections exist
       const anyRound3Batch = idx(/3rd batch/iu);
@@ -794,9 +816,9 @@ test.describe('Draft Lifecycle', () => {
       await adminPage.goto('/dashboard/drafts/1/');
       adminPage.on('dialog', dialog => dialog.accept());
 
-      await expect(adminPage.getByRole('button', { name: 'Conclude Draft' })).toBeVisible();
+      await expect(adminPage.getByRole('button', { name: 'Run Lottery' })).toBeVisible();
       const responsePromise = adminPage.waitForResponse('/dashboard/drafts/1/?/conclude');
-      await adminPage.getByRole('button', { name: 'Conclude Draft' }).click();
+      await adminPage.getByRole('button', { name: 'Run Lottery' }).click();
 
       const response = await responsePromise;
       const responseData = await response.json();
@@ -804,7 +826,7 @@ test.describe('Draft Lifecycle', () => {
       expect(responseData.status).toBe(403);
 
       // Page stays on lottery — button re-enables
-      await expect(adminPage.getByRole('button', { name: 'Conclude Draft' })).toBeEnabled();
+      await expect(adminPage.getByRole('button', { name: 'Run Lottery' })).toBeEnabled();
     });
   });
 
@@ -833,44 +855,74 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('Adjust Quotas for Remaining Students', () => {
-    test('partially updates lottery snapshots and clears inputs to committed placeholders', async ({
-      adminPage,
-    }) => {
-      await adminPage.goto('/dashboard/drafts/1/');
-      const editor = adminPage.locator('#draft-quota-editor-lottery');
-      await expect(editor).toBeVisible();
+    test.describe('lottery snapshot updates', () => {
+      test('partially updates lottery snapshots', async ({ adminPage }) => {
+        await adminPage.goto('/dashboard/drafts/1/');
+        const editor = adminPage.locator('#draft-quota-editor-lottery');
+        await expect(editor).toBeVisible();
 
-      const ndslInput = editor.locator('input[name="ndsl"]');
-      await expect(ndslInput).toHaveValue('');
-      await expect(ndslInput).toHaveAttribute('placeholder', '0');
+        const ndslInput = editor.locator('input[name="ndsl"]');
+        await expect(ndslInput).toHaveValue('');
+        await expect(ndslInput).toHaveAttribute('placeholder', '0');
 
-      await editor.locator('input[name="scl"]').fill('1');
-      await editor.locator('input[name="cvmil"]').fill('1');
-      await editor.locator('input[name="acl"]').fill('1');
+        await editor.locator('input[name="scl"]').fill('1');
+        await editor.locator('input[name="cvmil"]').fill('1');
+        await editor.locator('input[name="acl"]').fill('1');
 
-      const responsePromise = adminPage.waitForResponse('/dashboard/drafts/1/?/quota');
-      await editor.getByRole('button', { name: 'Update Lottery Snapshots' }).click();
-      const response = await responsePromise;
-      const responseData = await response.json();
-      expect(responseData.type).toBe('success');
+        const responsePromise = adminPage.waitForResponse('/dashboard/drafts/1/?/quota');
+        await editor.getByRole('button', { name: 'Update Lottery Snapshots' }).click();
+        const response = await responsePromise;
+        const responseData = await response.json();
+        expect(responseData.type).toBe('success');
+      });
 
-      const aclInput = editor.locator('input[name="acl"]');
-      await expect(aclInput).toHaveValue('');
-      await expect(aclInput).toHaveAttribute('placeholder', '1');
+      test('shows committed placeholders after lottery snapshot update', async ({ adminPage }) => {
+        await adminPage.goto('/dashboard/drafts/1/');
+        const editor = adminPage.locator('#draft-quota-editor-lottery');
+        await expect(editor).toBeVisible();
 
-      await expect(ndslInput).toHaveValue('');
-      await expect(ndslInput).toHaveAttribute('placeholder', '0');
+        const aclInput = editor.locator('input[name="acl"]');
+        await expect(aclInput).toHaveValue('');
+        await expect(aclInput).toHaveAttribute('placeholder', '1');
+
+        const ndslInput = editor.locator('input[name="ndsl"]');
+        await expect(ndslInput).toHaveValue('');
+        await expect(ndslInput).toHaveAttribute('placeholder', '0');
+      });
     });
   });
 
-  test.describe('Conclude Draft', () => {
-    test('concludes draft successfully', async ({ adminPage }) => {
+  test.describe('Run Lottery', () => {
+    test('runs lottery successfully', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
       adminPage.on('dialog', dialog => dialog.accept());
 
-      await expect(adminPage.getByRole('button', { name: 'Conclude Draft' })).toBeVisible();
+      await expect(adminPage.getByRole('button', { name: 'Run Lottery' })).toBeVisible();
       const responsePromise = adminPage.waitForResponse('/dashboard/drafts/1/?/conclude');
-      await adminPage.getByRole('button', { name: 'Conclude Draft' }).click();
+      await adminPage.getByRole('button', { name: 'Run Lottery' }).click();
+
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
+    });
+
+    test('enters review phase with finalize action', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+      await expect(adminPage.getByText(/Started .* · Review/u)).toBeVisible();
+      await expect(adminPage.getByRole('heading', { name: 'Review Phase' })).toBeVisible();
+      await expect(adminPage.getByRole('heading', { name: 'Lottery Phase' })).toHaveCount(0);
+      await expect(adminPage.getByRole('button', { name: 'Finalize Draft' })).toBeVisible();
+    });
+  });
+
+  test.describe('Finalize Draft', () => {
+    test('finalizes draft successfully', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+      adminPage.on('dialog', dialog => dialog.accept());
+
+      await expect(adminPage.getByRole('button', { name: 'Finalize Draft' })).toBeVisible();
+      const responsePromise = adminPage.waitForResponse('/dashboard/drafts/1/?/finalize');
+      await adminPage.getByRole('button', { name: 'Finalize Draft' }).click();
 
       const response = await responsePromise;
       const responseData = await response.json();
@@ -878,124 +930,190 @@ test.describe('Draft Lifecycle', () => {
     });
   });
 
-  test.describe('Admin Concluded Breakdown', () => {
+  test.describe('Admin Finalized Breakdown', () => {
     test('shows expected aggregate quota values', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
-      await expect(adminPage.locator('#admin-concluded-breakdown')).toBeVisible();
+      await expect(adminPage.locator('#admin-finalized-breakdown')).toBeVisible();
       await expect(adminPage.locator('#quota-initial')).toHaveText('8');
       await expect(adminPage.locator('#quota-interventions')).toHaveText('1');
-      await expect(adminPage.locator('#quota-concluded')).toHaveText('11');
+      await expect(adminPage.locator('#quota-finalized')).toHaveText('11');
     });
 
-    test('shows regular, intervention, and lottery sections in order', async ({ adminPage }) => {
-      await adminPage.goto('/dashboard/drafts/1/');
+    test.describe('drafted sections', () => {
+      test('are ordered as regular then intervention then lottery', async ({ adminPage }) => {
+        await adminPage.goto('/dashboard/drafts/1/');
 
-      const sectionIds = await adminPage
-        .locator(
-          '#section-regular-drafted, #section-intervention-drafted, #section-lottery-drafted',
-        )
-        .evaluateAll(nodes => nodes.map(node => node.id));
-      expect(sectionIds).toEqual([
-        'section-regular-drafted',
-        'section-intervention-drafted',
-        'section-lottery-drafted',
-      ]);
+        const sectionIds = await adminPage
+          .locator(
+            '#section-regular-drafted, #section-intervention-drafted, #section-lottery-drafted',
+          )
+          .evaluateAll(nodes => nodes.map(node => node.id));
+        expect(sectionIds).toEqual([
+          'section-regular-drafted',
+          'section-intervention-drafted',
+          'section-lottery-drafted',
+        ]);
+      });
 
-      await expect(adminPage.locator('#section-regular-drafted')).toContainText(
-        'Regular Drafted (4)',
-      );
-      await expect(adminPage.locator('#section-intervention-drafted')).toContainText(
-        'Intervention Drafted (1)',
-      );
-      await expect(adminPage.locator('#section-undrafted-after-regular')).toContainText(
-        'Undrafted After Regular (4)',
-      );
-      await expect(adminPage.locator('#section-lottery-drafted')).toContainText(
-        'Lottery Drafted (3)',
-      );
+      test('show expected section counts', async ({ adminPage }) => {
+        await adminPage.goto('/dashboard/drafts/1/');
+        await expect(adminPage.locator('#section-regular-drafted')).toContainText(
+          'Regular Drafted (4)',
+        );
+        await expect(adminPage.locator('#section-intervention-drafted')).toContainText(
+          'Intervention Drafted (1)',
+        );
+        await expect(adminPage.locator('#section-undrafted-after-regular')).toContainText(
+          'Undrafted After Regular (4)',
+        );
+        await expect(adminPage.locator('#section-lottery-drafted')).toContainText(
+          'Lottery Drafted (3)',
+        );
+      });
 
-      const firstInterventionDate = adminPage.locator('[id^="intervention-date-"]').first();
-      await expect(firstInterventionDate).toBeVisible();
-      const interventionDateText = (await firstInterventionDate.textContent())?.trim() ?? '';
-      expect(interventionDateText.length).toBeGreaterThan(0);
+      test('show intervention assignment dates', async ({ adminPage }) => {
+        await adminPage.goto('/dashboard/drafts/1/');
+        const firstInterventionDate = adminPage.locator('[id^="intervention-date-"]').first();
+        await expect(firstInterventionDate).toBeVisible();
+        const interventionDateText = (await firstInterventionDate.textContent())?.trim() ?? '';
+        expect(interventionDateText.length).toBeGreaterThan(0);
+      });
     });
   });
 
-  test.describe('History After Conclusion', () => {
-    test('shows Draft #1 as concluded', async ({ page }) => {
+  test.describe('History After Finalization', () => {
+    test('shows Draft #1 as finalized', async ({ page }) => {
       await page.goto('/history/');
       await expect(page.getByText('Draft #1')).toBeVisible();
       await expect(page.getByText(/was held from/u)).toBeVisible();
       await expect(page.getByText(/over 3 rounds/u)).toBeVisible();
     });
 
-    test('detail page shows concluded status and ordered timeline', async ({ page }) => {
-      await page.goto('/history/1/');
+    test.describe('Draft #1 detail timeline', () => {
+      test('shows finalized status banner', async ({ page }) => {
+        await page.goto('/history/1/');
+        await expect(page.getByText(/was held from/u)).toBeVisible();
+        await expect(page.getByText(/over 3 rounds/u)).toBeVisible();
+      });
 
-      // Status banner
-      await expect(page.getByText(/was held from/u)).toBeVisible();
-      await expect(page.getByText(/over 3 rounds/u)).toBeVisible();
+      test('keeps timeline boundary events in place', async ({ page }) => {
+        await page.goto('/history/1/');
 
-      const items = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
-      const textContents = await items.allTextContents();
-      const texts = textContents.map(text => text.replaceAll(/\s+/gu, ' ').trim());
+        const rows = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
+        const textContents = await rows.allTextContents();
+        const texts = textContents.map(text => text.replaceAll(/\s+/gu, ' ').trim());
 
-      function idx(regex: RegExp) {
-        return texts.findIndex(t => regex.test(t));
-      }
+        function idx(regex: RegExp) {
+          return texts.findIndex(text => regex.test(text));
+        }
 
-      // Concluded is first, created is last
-      expect(idx(/was concluded/u)).toBe(0);
-      expect(idx(/was created/u)).toBe(texts.length - 1);
+        expect(idx(/was finalized/u)).toBe(0);
+        expect(idx(/was created/u)).toBe(texts.length - 1);
+      });
 
-      // Lottery events exist and come before faculty round selections
-      const firstLottery = idx(/obtained a batch.*lottery/isu);
-      const anyRound3Batch = idx(/3rd batch/iu);
-      const anyRound2Batch = idx(/2nd batch/iu);
-      const anyRound1Batch = idx(/1st batch/iu);
-      expect(firstLottery).toBeGreaterThan(0);
-      expect(firstLottery).toBeLessThan(anyRound3Batch);
+      test('orders lottery and faculty round events correctly', async ({ page }) => {
+        await page.goto('/history/1/');
 
-      // Faculty selections in correct round order (R3 > R2 > R1)
-      expect(anyRound3Batch).toBeLessThan(anyRound2Batch);
-      expect(anyRound2Batch).toBeLessThan(anyRound1Batch);
-      // Entries are grouped by second; intra-second ordering can vary.
+        const rows = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
+        const textContents = await rows.allTextContents();
+        const texts = textContents.map(text => text.replaceAll(/\s+/gu, ' ').trim());
 
-      // System skip events exist (non-deterministic order, just check presence)
-      expect(idx(/system has skipped/isu)).toBeGreaterThanOrEqual(0);
-    });
+        function idx(regex: RegExp) {
+          return texts.findIndex(text => regex.test(text));
+        }
 
-    test('detail page keeps boundary and internal events in one timeline list', async ({
-      page,
-    }) => {
-      await page.goto('/history/1/');
+        const firstLottery = idx(/obtained a batch.*lottery/isu);
+        const anyRound3Batch = idx(/3rd batch/iu);
+        const anyRound2Batch = idx(/2nd batch/iu);
+        const anyRound1Batch = idx(/1st batch/iu);
 
-      const rows = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
-      const textContents = await rows.allTextContents();
-      const texts = textContents.map(text => text.replaceAll(/\s+/gu, ' ').trim());
+        expect(firstLottery).toBeGreaterThan(0);
+        expect(firstLottery).toBeLessThan(anyRound3Batch);
+        expect(anyRound3Batch).toBeLessThan(anyRound2Batch);
+        expect(anyRound2Batch).toBeLessThan(anyRound1Batch);
+      });
 
-      function idx(regex: RegExp) {
-        return texts.findIndex(text => regex.test(text));
-      }
+      test('distinguishes intervention picks from lottery picks', async ({ page }) => {
+        await page.goto('/history/1/');
 
-      const concludedIndex = idx(/was concluded/u);
-      const createdIndex = idx(/was created/u);
-      const internalEventIndex = idx(
-        /selected their|obtained a batch of draftees|system has skipped/isu,
-      );
+        const rows = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
+        const textContents = await rows.allTextContents();
+        const texts = textContents.map(text => text.replaceAll(/\s+/gu, ' ').trim());
 
-      expect(concludedIndex).toBe(0);
-      expect(createdIndex).toBe(texts.length - 1);
-      expect(internalEventIndex).toBeGreaterThan(concludedIndex);
-      expect(internalEventIndex).toBeLessThan(createdIndex);
+        function idx(regex: RegExp) {
+          return texts.findIndex(text => regex.test(text));
+        }
+
+        const interventionIndex = idx(/manual lottery intervention/iu);
+        const lotteryIndex = idx(/lottery randomization/iu);
+
+        expect(interventionIndex).toBeGreaterThanOrEqual(0);
+        expect(lotteryIndex).toBeGreaterThanOrEqual(0);
+        expect(lotteryIndex).toBeLessThan(interventionIndex);
+      });
+
+      test('shows intervention and lottery events only for labs with actual assignments', async ({
+        page,
+      }) => {
+        await page.goto('/history/1/');
+
+        const rows = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
+        const textContents = await rows.allTextContents();
+        const texts = textContents.map(text => text.replaceAll(/\s+/gu, ' ').trim());
+
+        const interventionEntries = texts.filter(text =>
+          /manual lottery intervention/iu.test(text),
+        );
+        const lotteryEntries = texts.filter(text => /lottery randomization/iu.test(text));
+
+        expect(interventionEntries).toHaveLength(1);
+        expect(lotteryEntries).toHaveLength(3);
+        expect(
+          texts.some(text =>
+            /NDSL.*(?:manual lottery intervention|lottery randomization)/iu.test(text),
+          ),
+        ).toBe(false);
+      });
+
+      test('keeps internal events between finalized and created boundaries', async ({ page }) => {
+        await page.goto('/history/1/');
+
+        const rows = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
+        const textContents = await rows.allTextContents();
+        const texts = textContents.map(text => text.replaceAll(/\s+/gu, ' ').trim());
+
+        function idx(regex: RegExp) {
+          return texts.findIndex(text => regex.test(text));
+        }
+
+        const finalizedIndex = idx(/was finalized/u);
+        const createdIndex = idx(/was created/u);
+        const internalEventIndex = idx(
+          /selected their|obtained a batch of draftees|system has skipped/isu,
+        );
+
+        expect(internalEventIndex).toBeGreaterThan(finalizedIndex);
+        expect(internalEventIndex).toBeLessThan(createdIndex);
+      });
+
+      test('includes system skip entries', async ({ page }) => {
+        await page.goto('/history/1/');
+
+        const rows = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
+        const textContents = await rows.allTextContents();
+        const texts = textContents.map(text => text.replaceAll(/\s+/gu, ' ').trim());
+        const firstSkip = texts.findIndex(text => /system has skipped/isu.test(text));
+
+        expect(firstSkip).toBeGreaterThanOrEqual(0);
+      });
     });
   });
 
   test.describe('Drafts Table Final State', () => {
-    test('shows draft with concluded status', async ({ adminPage }) => {
+    test('shows draft with finalized status', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/');
       await expect(adminPage.getByText('#1')).toBeVisible();
-      await expect(adminPage.getByText('Concluded')).toBeVisible();
+      await expect(adminPage.getByText('Finalized')).toBeVisible();
     });
   });
 
@@ -1053,7 +1171,7 @@ test.describe('Draft Lifecycle', () => {
 
     test('Late registrant has no assignment', async ({ lateRegistrantPage }) => {
       await lateRegistrantPage.goto('/dashboard/student/');
-      // Late registrant missed registration — draft is concluded so no active draft
+      // Late registrant missed registration — draft is finalized so no active draft
       await expect(lateRegistrantPage.getByText('No Active Draft')).toBeVisible();
     });
   });
@@ -1077,22 +1195,27 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('Second Draft — Archive And Setup', () => {
-    test('archives ACL and verifies it appears in archived labs', async ({ adminPage }) => {
-      await adminPage.goto('/dashboard/labs/');
+    test.describe('ACL archival before Draft #2', () => {
+      test('archives ACL', async ({ adminPage }) => {
+        await adminPage.goto('/dashboard/labs/');
 
-      const aclRow = adminPage
-        .locator('tbody tr')
-        .filter({ hasText: 'Algorithms and Complexity Laboratory' });
-      await expect(aclRow).toBeVisible();
+        const aclRow = adminPage
+          .locator('tbody tr')
+          .filter({ hasText: 'Algorithms and Complexity Laboratory' });
+        await expect(aclRow).toBeVisible();
 
-      const responsePromise = adminPage.waitForResponse('/dashboard/labs/?/archive');
-      await aclRow.getByRole('button').click();
-      const response = await responsePromise;
-      const responseData = await response.json();
-      expect(responseData.type).toBe('success');
+        const responsePromise = adminPage.waitForResponse('/dashboard/labs/?/archive');
+        await aclRow.getByRole('button').click();
+        const response = await responsePromise;
+        const responseData = await response.json();
+        expect(responseData.type).toBe('success');
+      });
 
-      await adminPage.getByRole('tab', { name: /Archived Labs/u }).click();
-      await expect(adminPage.getByText('Algorithms and Complexity Laboratory')).toBeVisible();
+      test('shows ACL in archived labs', async ({ adminPage }) => {
+        await adminPage.goto('/dashboard/labs/');
+        await adminPage.getByRole('tab', { name: /Archived Labs/u }).click();
+        await expect(adminPage.getByText('Algorithms and Complexity Laboratory')).toBeVisible();
+      });
     });
 
     test('creates Draft #2 with 2 rounds', async ({ adminPage }) => {
@@ -1109,7 +1232,7 @@ test.describe('Draft Lifecycle', () => {
       await dialog.locator('input#closesAt').fill(formattedDate);
       await dialog.locator('input#rounds').fill('2');
 
-      adminPage.on('dialog', dialog => dialog.accept());
+      adminPage.on('dialog', async dialog => await dialog.accept());
       const responsePromise = adminPage.waitForResponse('/dashboard/drafts/?/init');
       await dialog.getByRole('button', { name: 'Create Draft' }).click();
 
@@ -1138,48 +1261,49 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('Second Draft — Snapshot Integrity', () => {
-    test('student registration does not show archived lab and rejects forged submission', async ({
-      snapshotGuardStudentPage,
-    }) => {
-      await snapshotGuardStudentPage.goto('/dashboard/student/');
-      await snapshotGuardStudentPage.getByLabel('Student Number').fill('202112399');
+    test.describe('snapshot guard student', () => {
+      test('registration does not show archived lab', async ({ snapshotGuardStudentPage }) => {
+        await snapshotGuardStudentPage.goto('/dashboard/student/');
+        await snapshotGuardStudentPage.getByLabel('Student Number').fill('202112399');
 
-      const profileResponsePromise =
-        snapshotGuardStudentPage.waitForResponse('/dashboard/?/profile');
-      await snapshotGuardStudentPage.getByRole('button', { name: 'Complete Profile' }).click();
-      const profileResponse = await profileResponsePromise;
-      const profileResponseData = await profileResponse.json();
-      expect(profileResponseData.type).toBe('success');
+        const profileResponsePromise =
+          snapshotGuardStudentPage.waitForResponse('/dashboard/?/profile');
+        await snapshotGuardStudentPage.getByRole('button', { name: 'Complete Profile' }).click();
+        const profileResponse = await profileResponsePromise;
+        const profileResponseData = await profileResponse.json();
+        expect(profileResponseData.type).toBe('success');
 
-      await expect(snapshotGuardStudentPage.getByText('Select Lab Preference')).toBeVisible();
-      await expect(
-        snapshotGuardStudentPage.getByRole('button', {
-          name: 'Algorithms and Complexity Laboratory',
-        }),
-      ).toHaveCount(0);
-
-      const status = await snapshotGuardStudentPage.evaluate(async () => {
-        const data = new FormData();
-        data.set('draft', '2');
-        data.append('labs', 'acl');
-        data.append('remarks', '');
-        const response = await fetch('/dashboard/student/?/submit', {
-          method: 'POST',
-          body: data,
-        });
-        return response.status;
+        await expect(snapshotGuardStudentPage.getByText('Select Lab Preference')).toBeVisible();
+        await expect(
+          snapshotGuardStudentPage.getByRole('button', {
+            name: 'Algorithms and Complexity Laboratory',
+          }),
+        ).toHaveCount(0);
       });
-      expect(status).toBe(400);
+
+      test('forged archived-lab submission is rejected', async ({ snapshotGuardStudentPage }) => {
+        await snapshotGuardStudentPage.goto('/dashboard/student/');
+        const status = await snapshotGuardStudentPage.evaluate(async () => {
+          const data = new FormData();
+          data.set('draft', '2');
+          data.append('labs', 'acl');
+          data.append('remarks', '');
+          const response = await fetch('/dashboard/student/?/submit', {
+            method: 'POST',
+            body: data,
+          });
+          return response.status;
+        });
+        expect(status).toBe(400);
+      });
     });
   });
 
   test.describe('Second Draft — Student Registration', () => {
-    test('SecondNdslFirstChoice completes profile and submits rankings (NDSL > CSL)', async ({
-      secondRoundNdslFirstChoicePage,
-    }) => {
-      await secondRoundNdslFirstChoicePage.goto('/dashboard/student/');
-      await secondRoundNdslFirstChoicePage.getByLabel('Student Number').fill('202112360');
-      {
+    test.describe('SecondNdslFirstChoice (NDSL > CSL)', () => {
+      test('completes profile', async ({ secondRoundNdslFirstChoicePage }) => {
+        await secondRoundNdslFirstChoicePage.goto('/dashboard/student/');
+        await secondRoundNdslFirstChoicePage.getByLabel('Student Number').fill('202112360');
         const profileResponsePromise =
           secondRoundNdslFirstChoicePage.waitForResponse('/dashboard/?/profile');
         await secondRoundNdslFirstChoicePage
@@ -1188,33 +1312,34 @@ test.describe('Draft Lifecycle', () => {
         const profileResponse = await profileResponsePromise;
         const profileResponseData = await profileResponse.json();
         expect(profileResponseData.type).toBe('success');
-      }
+      });
 
-      await secondRoundNdslFirstChoicePage
-        .getByRole('button', { name: 'Networks and Distributed Systems Laboratory' })
-        .click();
-      await secondRoundNdslFirstChoicePage
-        .getByRole('button', { name: 'Computer Security Laboratory' })
-        .click();
+      test('submits rankings', async ({ secondRoundNdslFirstChoicePage }) => {
+        await secondRoundNdslFirstChoicePage.goto('/dashboard/student/');
+        await secondRoundNdslFirstChoicePage
+          .getByRole('button', { name: 'Networks and Distributed Systems Laboratory' })
+          .click();
+        await secondRoundNdslFirstChoicePage
+          .getByRole('button', { name: 'Computer Security Laboratory' })
+          .click();
 
-      secondRoundNdslFirstChoicePage.on('dialog', dialog => dialog.accept());
-      const responsePromise = secondRoundNdslFirstChoicePage.waitForResponse(
-        '/dashboard/student/?/submit',
-      );
-      await secondRoundNdslFirstChoicePage
-        .getByRole('button', { name: 'Submit Lab Preferences' })
-        .click();
-      const response = await responsePromise;
-      const responseData = await response.json();
-      expect(responseData.type).toBe('success');
+        secondRoundNdslFirstChoicePage.on('dialog', dialog => dialog.accept());
+        const responsePromise = secondRoundNdslFirstChoicePage.waitForResponse(
+          '/dashboard/student/?/submit',
+        );
+        await secondRoundNdslFirstChoicePage
+          .getByRole('button', { name: 'Submit Lab Preferences' })
+          .click();
+        const response = await responsePromise;
+        const responseData = await response.json();
+        expect(responseData.type).toBe('success');
+      });
     });
 
-    test('SecondCslFirstChoice completes profile and submits rankings (CSL > NDSL)', async ({
-      secondRoundCslFirstChoicePage,
-    }) => {
-      await secondRoundCslFirstChoicePage.goto('/dashboard/student/');
-      await secondRoundCslFirstChoicePage.getByLabel('Student Number').fill('202112361');
-      {
+    test.describe('SecondCslFirstChoice (CSL > NDSL)', () => {
+      test('completes profile', async ({ secondRoundCslFirstChoicePage }) => {
+        await secondRoundCslFirstChoicePage.goto('/dashboard/student/');
+        await secondRoundCslFirstChoicePage.getByLabel('Student Number').fill('202112361');
         const profileResponsePromise =
           secondRoundCslFirstChoicePage.waitForResponse('/dashboard/?/profile');
         await secondRoundCslFirstChoicePage
@@ -1223,33 +1348,34 @@ test.describe('Draft Lifecycle', () => {
         const profileResponse = await profileResponsePromise;
         const profileResponseData = await profileResponse.json();
         expect(profileResponseData.type).toBe('success');
-      }
+      });
 
-      await secondRoundCslFirstChoicePage
-        .getByRole('button', { name: 'Computer Security Laboratory' })
-        .click();
-      await secondRoundCslFirstChoicePage
-        .getByRole('button', { name: 'Networks and Distributed Systems Laboratory' })
-        .click();
+      test('submits rankings', async ({ secondRoundCslFirstChoicePage }) => {
+        await secondRoundCslFirstChoicePage.goto('/dashboard/student/');
+        await secondRoundCslFirstChoicePage
+          .getByRole('button', { name: 'Computer Security Laboratory' })
+          .click();
+        await secondRoundCslFirstChoicePage
+          .getByRole('button', { name: 'Networks and Distributed Systems Laboratory' })
+          .click();
 
-      secondRoundCslFirstChoicePage.on('dialog', dialog => dialog.accept());
-      const responsePromise = secondRoundCslFirstChoicePage.waitForResponse(
-        '/dashboard/student/?/submit',
-      );
-      await secondRoundCslFirstChoicePage
-        .getByRole('button', { name: 'Submit Lab Preferences' })
-        .click();
-      const response = await responsePromise;
-      const responseData = await response.json();
-      expect(responseData.type).toBe('success');
+        secondRoundCslFirstChoicePage.on('dialog', dialog => dialog.accept());
+        const responsePromise = secondRoundCslFirstChoicePage.waitForResponse(
+          '/dashboard/student/?/submit',
+        );
+        await secondRoundCslFirstChoicePage
+          .getByRole('button', { name: 'Submit Lab Preferences' })
+          .click();
+        const response = await responsePromise;
+        const responseData = await response.json();
+        expect(responseData.type).toBe('success');
+      });
     });
 
-    test('SecondSclSecondChoice completes profile and submits rankings (NDSL > SCL)', async ({
-      secondRoundSclSecondChoicePage,
-    }) => {
-      await secondRoundSclSecondChoicePage.goto('/dashboard/student/');
-      await secondRoundSclSecondChoicePage.getByLabel('Student Number').fill('202112362');
-      {
+    test.describe('SecondSclSecondChoice (NDSL > SCL)', () => {
+      test('completes profile', async ({ secondRoundSclSecondChoicePage }) => {
+        await secondRoundSclSecondChoicePage.goto('/dashboard/student/');
+        await secondRoundSclSecondChoicePage.getByLabel('Student Number').fill('202112362');
         const profileResponsePromise =
           secondRoundSclSecondChoicePage.waitForResponse('/dashboard/?/profile');
         await secondRoundSclSecondChoicePage
@@ -1258,25 +1384,28 @@ test.describe('Draft Lifecycle', () => {
         const profileResponse = await profileResponsePromise;
         const profileResponseData = await profileResponse.json();
         expect(profileResponseData.type).toBe('success');
-      }
+      });
 
-      await secondRoundSclSecondChoicePage
-        .getByRole('button', { name: 'Networks and Distributed Systems Laboratory' })
-        .click();
-      await secondRoundSclSecondChoicePage
-        .getByRole('button', { name: 'Scientific Computing Laboratory' })
-        .click();
+      test('submits rankings', async ({ secondRoundSclSecondChoicePage }) => {
+        await secondRoundSclSecondChoicePage.goto('/dashboard/student/');
+        await secondRoundSclSecondChoicePage
+          .getByRole('button', { name: 'Networks and Distributed Systems Laboratory' })
+          .click();
+        await secondRoundSclSecondChoicePage
+          .getByRole('button', { name: 'Scientific Computing Laboratory' })
+          .click();
 
-      secondRoundSclSecondChoicePage.on('dialog', dialog => dialog.accept());
-      const responsePromise = secondRoundSclSecondChoicePage.waitForResponse(
-        '/dashboard/student/?/submit',
-      );
-      await secondRoundSclSecondChoicePage
-        .getByRole('button', { name: 'Submit Lab Preferences' })
-        .click();
-      const response = await responsePromise;
-      const responseData = await response.json();
-      expect(responseData.type).toBe('success');
+        secondRoundSclSecondChoicePage.on('dialog', dialog => dialog.accept());
+        const responsePromise = secondRoundSclSecondChoicePage.waitForResponse(
+          '/dashboard/student/?/submit',
+        );
+        await secondRoundSclSecondChoicePage
+          .getByRole('button', { name: 'Submit Lab Preferences' })
+          .click();
+        const response = await responsePromise;
+        const responseData = await response.json();
+        expect(responseData.type).toBe('success');
+      });
     });
   });
 
@@ -1423,8 +1552,10 @@ test.describe('Draft Lifecycle', () => {
       });
       expect(status).toBe(400);
     });
+  });
 
-    test('sets lottery snapshots to zero and concludes Draft #2', async ({ adminPage }) => {
+  test.describe('Second Draft — Lottery And Finalization', () => {
+    test('sets lottery snapshots to zero for Draft #2', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
       const editor = adminPage.locator('#draft-quota-editor-lottery');
       await expect(editor).toBeVisible();
@@ -1441,24 +1572,47 @@ test.describe('Draft Lifecycle', () => {
         const quotaResponseData = await quotaResponse.json();
         expect(quotaResponseData.type).toBe('success');
       }
+    });
+
+    test('runs lottery for Draft #2', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/2/');
 
       adminPage.on('dialog', dialog => dialog.accept());
       const concludeResponsePromise = adminPage.waitForResponse('/dashboard/drafts/2/?/conclude');
-      await adminPage.getByRole('button', { name: 'Conclude Draft' }).click();
+      await adminPage.getByRole('button', { name: 'Run Lottery' }).click();
 
       const concludeResponse = await concludeResponsePromise;
       const concludeResponseData = await concludeResponse.json();
       expect(concludeResponseData.type).toBe('success');
     });
+
+    test('enters review phase with finalize action for Draft #2', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/2/');
+      await expect(adminPage.getByText(/Started .* · Review/u)).toBeVisible();
+      await expect(adminPage.getByRole('heading', { name: 'Review Phase' })).toBeVisible();
+      await expect(adminPage.getByRole('heading', { name: 'Lottery Phase' })).toHaveCount(0);
+      await expect(adminPage.getByRole('button', { name: 'Finalize Draft' })).toBeVisible();
+    });
+
+    test('finalizes Draft #2', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/2/');
+      adminPage.on('dialog', dialog => dialog.accept());
+
+      const finalizeResponsePromise = adminPage.waitForResponse('/dashboard/drafts/2/?/finalize');
+      await adminPage.getByRole('button', { name: 'Finalize Draft' }).click();
+      const finalizeResponse = await finalizeResponsePromise;
+      const finalizeResponseData = await finalizeResponse.json();
+      expect(finalizeResponseData.type).toBe('success');
+    });
   });
 
   test.describe('Second Draft — Dashboard And History Verification', () => {
-    test('admin concluded breakdown is correct for Draft #2', async ({ adminPage }) => {
+    test('admin finalized breakdown is correct for Draft #2', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
-      await expect(adminPage.locator('#admin-concluded-breakdown')).toBeVisible();
+      await expect(adminPage.locator('#admin-finalized-breakdown')).toBeVisible();
       await expect(adminPage.locator('#quota-initial')).toHaveText('3');
       await expect(adminPage.locator('#quota-interventions')).toHaveText('0');
-      await expect(adminPage.locator('#quota-concluded')).toHaveText('3');
+      await expect(adminPage.locator('#quota-finalized')).toHaveText('3');
       await expect(adminPage.locator('#section-regular-drafted')).toContainText(
         'Regular Drafted (3)',
       );
@@ -1473,46 +1627,60 @@ test.describe('Draft Lifecycle', () => {
       );
     });
 
-    test('drafts table shows Draft #2 and Draft #1 concluded', async ({ adminPage }) => {
-      await adminPage.goto('/dashboard/drafts/');
-      await expect(adminPage.getByText('#2')).toBeVisible();
-      await expect(adminPage.getByText('#1')).toBeVisible();
-      await expect(adminPage.getByText('Concluded')).toHaveCount(2);
-    });
+    test.describe('drafts table and history', () => {
+      test('drafts table lists Draft #2 and Draft #1', async ({ adminPage }) => {
+        await adminPage.goto('/dashboard/drafts/');
+        await expect(adminPage.getByText('#2')).toBeVisible();
+        await expect(adminPage.getByText('#1')).toBeVisible();
+      });
 
-    test('history index and Draft #2 detail reflect a 2-round conclusion', async ({ page }) => {
-      await page.goto('/history/');
-      await expect(page.getByText('Draft #2')).toBeVisible();
-      await expect(page.getByText(/over 2 rounds/u)).toBeVisible();
+      test('drafts table shows both drafts as finalized', async ({ adminPage }) => {
+        await adminPage.goto('/dashboard/drafts/');
+        await expect(adminPage.getByText('Finalized')).toHaveCount(2);
+      });
 
-      await page.goto('/history/2/');
-      await expect(page.getByText(/was held from/u)).toBeVisible();
-      await expect(page.getByText(/over 2 rounds/u)).toBeVisible();
+      test('history index reflects Draft #2 2-round finalization', async ({ page }) => {
+        await page.goto('/history/');
+        await expect(page.getByText('Draft #2')).toBeVisible();
+        await expect(page.getByText(/over 2 rounds/u)).toBeVisible();
+      });
 
-      const items = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
-      const textContents = await items.allTextContents();
-      const texts = textContents.map(text => text.replaceAll(/\s+/gu, ' ').trim());
+      test('Draft #2 detail shows finalized status', async ({ page }) => {
+        await page.goto('/history/2/');
+        await expect(page.getByText(/was held from/u)).toBeVisible();
+        await expect(page.getByText(/over 2 rounds/u)).toBeVisible();
+      });
 
-      function idx(regex: RegExp) {
-        return texts.findIndex(t => regex.test(t));
-      }
+      test('Draft #2 detail timeline has round ordering without lottery events', async ({
+        page,
+      }) => {
+        await page.goto('/history/2/');
 
-      const anyRound2Batch = idx(/2nd batch/iu);
-      const anyRound1Batch = idx(/1st batch/iu);
+        const items = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
+        const textContents = await items.allTextContents();
+        const texts = textContents.map(text => text.replaceAll(/\s+/gu, ' ').trim());
 
-      expect(idx(/was concluded/u)).toBe(0);
-      expect(idx(/was created/u)).toBe(texts.length - 1);
-      expect(anyRound2Batch).toBeGreaterThanOrEqual(0);
-      expect(anyRound1Batch).toBeGreaterThanOrEqual(0);
-      expect(anyRound2Batch).toBeLessThan(anyRound1Batch);
+        function idx(regex: RegExp) {
+          return texts.findIndex(t => regex.test(t));
+        }
 
-      // Second draft had no randomized lottery assignments.
-      expect(idx(/obtained a batch.*lottery/isu)).toBe(-1);
+        const anyRound2Batch = idx(/2nd batch/iu);
+        const anyRound1Batch = idx(/1st batch/iu);
+
+        expect(idx(/was finalized/u)).toBe(0);
+        expect(idx(/was created/u)).toBe(texts.length - 1);
+        expect(anyRound2Batch).toBeGreaterThanOrEqual(0);
+        expect(anyRound1Batch).toBeGreaterThanOrEqual(0);
+        expect(anyRound2Batch).toBeLessThan(anyRound1Batch);
+
+        // Second draft had no randomized lottery assignments.
+        expect(idx(/obtained a batch.*lottery/isu)).toBe(-1);
+      });
     });
   });
 
   test.describe('Second Draft — Archived Lab Read Models', () => {
-    test('CSL appears in archived labs after Draft #2 conclusion', async ({ adminPage }) => {
+    test('CSL appears in archived labs after Draft #2 finalization', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/labs/');
       await adminPage.getByRole('tab', { name: /Archived Labs/u }).click();
       await expect(adminPage.getByText('Computer Security Laboratory')).toBeVisible();
@@ -1557,22 +1725,24 @@ test.describe('Draft Lifecycle', () => {
       ).toBeVisible();
     });
 
-    test('NDSL, CSL, and SCL heads can view Draft 2 assignees', async ({
-      ndslHeadPage,
-      cslHeadPage,
-      sclHeadPage,
-    }) => {
-      await ndslHeadPage.goto('/dashboard/lab/');
-      await ndslHeadPage.getByRole('button', { name: /Draft 2/u }).click();
-      await expect(ndslHeadPage.getByText(/SecondNdsl/u)).toBeVisible();
+    test.describe('Draft #2 faculty views', () => {
+      test('NDSL head can view assignees', async ({ ndslHeadPage }) => {
+        await ndslHeadPage.goto('/dashboard/lab/');
+        await ndslHeadPage.getByRole('button', { name: /Draft 2/u }).click();
+        await expect(ndslHeadPage.getByText(/SecondNdsl/u)).toBeVisible();
+      });
 
-      await cslHeadPage.goto('/dashboard/lab/');
-      await cslHeadPage.getByRole('button', { name: /Draft 2/u }).click();
-      await expect(cslHeadPage.getByText(/SecondCsl/u)).toBeVisible();
+      test('CSL head can view assignees', async ({ cslHeadPage }) => {
+        await cslHeadPage.goto('/dashboard/lab/');
+        await cslHeadPage.getByRole('button', { name: /Draft 2/u }).click();
+        await expect(cslHeadPage.getByText(/SecondCsl/u)).toBeVisible();
+      });
 
-      await sclHeadPage.goto('/dashboard/lab/');
-      await sclHeadPage.getByRole('button', { name: /Draft 2/u }).click();
-      await expect(sclHeadPage.getByText(/SecondScl/u)).toBeVisible();
+      test('SCL head can view assignees', async ({ sclHeadPage }) => {
+        await sclHeadPage.goto('/dashboard/lab/');
+        await sclHeadPage.getByRole('button', { name: /Draft 2/u }).click();
+        await expect(sclHeadPage.getByText(/SecondScl/u)).toBeVisible();
+      });
     });
   });
 

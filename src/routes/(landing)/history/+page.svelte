@@ -19,7 +19,7 @@
       {#each drafts as { id: draftId, activePeriodStart, activePeriodEnd, currRound, maxRounds } (draftId)}
         {@const start = format(activePeriodStart, 'PPPpp')}
         {#if activePeriodEnd !== null}
-          <!-- Concluded Draft -->
+          <!-- Finalized Draft -->
           {@const end = format(activePeriodEnd, 'PPPpp')}
           <li>
             <a
@@ -35,6 +35,21 @@
             </a>
           </li>
         {:else if currRound === null}
+          <!-- Review Stage -->
+          <li>
+            <a
+              href={resolve(`/history/${draftId}/`)}
+              class="preset-tonal-accent flex items-center gap-3 rounded-lg border-3 px-4 py-4 transition duration-150 hover:brightness-115 dark:hover:brightness-110"
+            >
+              <SparklesIcon class="size-8" />
+              <span
+                ><strong>Draft #{draftId}</strong> started on
+                <time datetime={activePeriodStart.toISOString()}>{start}</time> and is now in the review
+                stage after lottery assignment.</span
+              >
+            </a>
+          </li>
+        {:else if currRound > maxRounds}
           <!-- Lottery Stage -->
           <li>
             <a
@@ -45,7 +60,7 @@
               <span
                 ><strong>Draft #{draftId}</strong> started on
                 <time datetime={activePeriodStart.toISOString()}>{start}</time> and is now in the
-                lottery stage after {maxRounds} of the regular draft process.</span
+                lottery stage after {maxRounds} regular rounds.</span
               >
             </a>
           </li>

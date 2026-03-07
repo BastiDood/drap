@@ -5,7 +5,7 @@
   import { Button } from '$lib/components/ui/button';
   import type {
     Draft,
-    DraftConcludedBreakdown,
+    DraftFinalizedBreakdown,
     FacultyChoiceRecord,
     Lab,
     Student,
@@ -21,7 +21,7 @@
   import RegularPhase from './regular/index.svelte';
   import SummaryPhase from './summary/index.svelte';
 
-  type Phase = 'registration' | 'regular' | 'lottery' | 'concluded';
+  type Phase = 'registration' | 'regular' | 'intervention' | 'review' | 'finalized';
 
   interface Props {
     draftId: bigint;
@@ -30,34 +30,37 @@
     available: Student[];
     selected: Student[];
     records: FacultyChoiceRecord[];
-    concluded: DraftConcludedBreakdown;
+    finalized: DraftFinalizedBreakdown;
   }
 
-  const { draftId, draft, labs, available, selected, records, concluded }: Props = $props();
+  const { draftId, draft, labs, available, selected, records, finalized }: Props = $props();
 
   const allStudents = $derived([...available, ...selected]);
 
   // Determine current phase
-  const currentPhase: Phase = $derived.by(() => {
-    if (draft.activePeriodEnd !== null) return 'concluded';
-    if (draft.currRound === null) return 'lottery';
+  const currentPhase = $derived.by(() => {
+    if (draft.activePeriodEnd !== null) return 'finalized';
+    if (draft.currRound === null) return 'review';
     if (draft.currRound === 0) return 'registration';
+    if (draft.currRound !== null && draft.currRound > draft.maxRounds) return 'intervention';
     return 'regular';
   });
 
   // Phase labels for display
-  function getPhaseLabel(phase: Phase): string {
+  function getPhaseLabel(phase: Phase) {
     switch (phase) {
       case 'registration':
         return 'Registration';
       case 'regular':
-        return `Round ${draft.currRound} of ${draft.maxRounds}`;
-      case 'lottery':
+        return `Round ${draft.currRound} of ${draft.maxRounds}` as const;
+      case 'intervention':
         return 'Lottery';
-      case 'concluded':
-        return 'Concluded';
+      case 'review':
+        return 'Review';
+      case 'finalized':
+        return 'Finalized';
       default:
-        return phase satisfies never;
+        throw new Error('unreachable');
     }
   }
 
@@ -72,8 +75,9 @@
         return 'active';
       case 'registration':
         return 'pending';
-      case 'lottery':
-      case 'concluded':
+      case 'intervention':
+      case 'review':
+      case 'finalized':
         return 'completed';
       default:
         throw new Error('unreachable');
@@ -85,19 +89,17 @@
       case 'registration':
       case 'regular':
         return 'pending';
-      case 'lottery':
+      case 'intervention':
         return 'active';
-      case 'concluded':
+      case 'review':
+      case 'finalized':
         return 'completed';
       default:
         throw new Error('unreachable');
     }
   });
 
-  // Determine which phase is last in the visible timeline
-  const isRegistrationLast = $derived(currentPhase === 'registration');
-  const isRegularLast = $derived(currentPhase === 'regular');
-  const isLotteryLast = $derived(currentPhase === 'lottery');
+  const lotteryStepTitle = $derived(currentPhase === 'review' ? 'Review' : 'Lottery');
 </script>
 
 <div class="space-y-6">
@@ -135,49 +137,61 @@
 
   <!-- Timeline (reverse chronological: newest at top) -->
   <div class="pl-1">
-    <!-- Summary (only if concluded) - always at top when present -->
-    {#if currentPhase === 'concluded' && draft.activePeriodEnd !== null}
-      {@const concludedDate = draft.activePeriodEnd}
+    <!-- Summary (visible in review and finalized phases) -->
+    {#if currentPhase === 'review' || currentPhase === 'finalized'}
       <Step title="Summary" status="active" collapsible={false}>
         {#snippet metadata()}
-          <span class="text-muted-foreground text-sm">{format(concludedDate, 'PPP')}</span>
+          {#if draft.activePeriodEnd !== null}
+            <span class="text-muted-foreground text-sm">{format(draft.activePeriodEnd, 'PPP')}</span
+            >
+          {:else}
+            <span class="text-muted-foreground text-sm">Pending Finalization</span>
+          {/if}
         {/snippet}
-        <SummaryPhase {draftId} {draft} students={allStudents} {labs} {concluded} />
+        <SummaryPhase
+          {draftId}
+          {draft}
+          students={allStudents}
+          {labs}
+          {finalized}
+          isReview={currentPhase === 'review'}
+        />
       </Step>
     {/if}
 
     <!-- Lottery -->
-    {#if currentPhase === 'lottery' || currentPhase === 'concluded'}
+    {#if currentPhase === 'intervention' || currentPhase === 'review' || currentPhase === 'finalized'}
       <Step
-        title="Lottery"
+        title={lotteryStepTitle}
         status={lotteryStatus}
-        defaultOpen={currentPhase === 'lottery'}
-        last={isLotteryLast}
+        defaultOpen={currentPhase === 'intervention' || currentPhase === 'review'}
       >
-        {#if currentPhase === 'lottery'}
-          <LotteryActive {draftId} {labs} {available} {selected} snapshots={concluded.snapshots} />
+        {#if currentPhase === 'intervention'}
+          <LotteryActive {draftId} {labs} {available} {selected} snapshots={finalized.snapshots} />
         {:else}
-          <LotteryCompleted {selected} lotteryDrafted={concluded.sections.lotteryDrafted} />
+          <LotteryCompleted
+            {selected}
+            lotteryDrafted={finalized.sections.lotteryDrafted}
+            isReview={currentPhase === 'review'}
+            {draftId}
+          />
         {/if}
       </Step>
     {/if}
 
     <!-- Regular Rounds -->
     {#if currentPhase !== 'registration'}
-      <Step
-        title="Regular Rounds"
-        status={regularStatus}
-        defaultOpen={currentPhase === 'regular'}
-        last={isRegularLast}
-      >
+      <Step title="Regular Rounds" status={regularStatus} defaultOpen={currentPhase === 'regular'}>
         {#snippet metadata()}
           <span class="text-muted-foreground text-sm">
-            {draft.currRound ?? draft.maxRounds} / {draft.maxRounds}
+            {draft.currRound === null
+              ? draft.maxRounds
+              : Math.min(draft.currRound, draft.maxRounds)} / {draft.maxRounds}
           </span>
         {/snippet}
-        {#if draft.currRound !== null && draft.currRound > 0}
+        {#if draft.currRound !== null && draft.currRound > 0 && draft.currRound <= draft.maxRounds}
           <RegularPhase round={draft.currRound} {labs} {records} {available} {selected} />
-        {:else if currentPhase === 'concluded'}
+        {:else if currentPhase === 'review' || currentPhase === 'finalized'}
           <RegularPhase round={draft.maxRounds} {labs} {records} {available} {selected} />
         {:else}
           <p class="text-muted-foreground">
@@ -192,13 +206,13 @@
       title="Registration"
       status={registrationStatus}
       defaultOpen={currentPhase === 'registration'}
-      last={isRegistrationLast}
+      last
     >
       {#snippet metadata()}
         <span class="text-muted-foreground text-sm">{allStudents.length} students</span>
       {/snippet}
       {#if currentPhase === 'registration'}
-        <RegistrationActive {draftId} students={allStudents} snapshots={concluded.snapshots} />
+        <RegistrationActive {draftId} students={allStudents} snapshots={finalized.snapshots} />
       {:else}
         <RegistrationCompleted students={allStudents} />
       {/if}

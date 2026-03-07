@@ -7,6 +7,7 @@ import { repeat, roundrobin, zip } from 'itertools';
 
 import {
   autoAcknowledgeLabsWithoutPreferences,
+  beginDraftReview,
   concludeDraft,
   getActiveDraft,
   getDraftAssignmentRecords,
@@ -47,7 +48,7 @@ const tracer = Tracer.byName(SERVICE_NAME);
 
 export async function load({ params, locals: { session } }) {
   if (typeof session?.user === 'undefined') {
-    logger.error('attempt to access draft detail page without session');
+    logger.fatal('attempt to access draft detail page without session');
     error(401);
   }
 
@@ -112,10 +113,10 @@ export async function load({ params, locals: { session } }) {
     );
 
     let initialQuota = 0;
-    let concludedQuota = 0;
+    let finalizedQuota = 0;
     for (const quota of quotaSnapshots) {
       initialQuota += quota.initialQuota;
-      concludedQuota += quota.initialQuota + quota.lotteryQuota;
+      finalizedQuota += quota.initialQuota + quota.lotteryQuota;
     }
 
     logger.debug('draft detail loaded', {
@@ -136,15 +137,15 @@ export async function load({ params, locals: { session } }) {
       available,
       selected,
       records,
-      concluded: {
+      finalized: {
         quota: {
           initialQuota,
           lotteryInterventions: interventionDrafted.length,
-          concludedQuota,
+          finalizedQuota,
         },
         snapshots: quotaSnapshots.map(row => ({
           ...row,
-          concludedQuota: row.initialQuota + row.lotteryQuota,
+          finalizedQuota: row.initialQuota + row.lotteryQuota,
         })),
         sections: {
           regularDrafted,
@@ -187,16 +188,20 @@ function getUnknownLabIds(labIds: Iterable<string>, knownLabIds: ReadonlySet<str
 
 const ZIP_NOT_EQUAL = Symbol('ZIP_NOT_EQUAL');
 
+function toRoundStartedPayload(round: number | null, maxRounds: number) {
+  return round === null || round > maxRounds ? null : round;
+}
+
 export const actions = {
   async start({ params, locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to start draft without session');
+      logger.fatal('attempt to start draft without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.error('insufficient permissions to start draft', void 0, {
+      logger.fatal('insufficient permissions to start draft', void 0, {
         'user.is_admin': user.isAdmin,
         'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -234,11 +239,11 @@ export const actions = {
             assert(typeof draftRound !== 'undefined', 'cannot start a non-existent draft');
             logger.debug('draft round incremented', draftRound);
 
-            roundsToNotify.push(draftRound.currRound);
+            roundsToNotify.push(toRoundStartedPayload(draftRound.currRound, draftRound.maxRounds));
 
-            // Pause at the lottery rounds
-            if (draftRound.currRound === null) {
-              logger.info('lottery round reached');
+            // Pause at intervention rounds (`maxRounds + 1`).
+            if (draftRound.currRound === null || draftRound.currRound > draftRound.maxRounds) {
+              logger.info('intervention round reached');
               break;
             }
 
@@ -276,13 +281,13 @@ export const actions = {
 
   async quota({ params, locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to update draft quota snapshots without session');
+      logger.fatal('attempt to update draft quota snapshots without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.error('insufficient permissions to update draft quota snapshots', void 0, {
+      logger.fatal('insufficient permissions to update draft quota snapshots', void 0, {
         'user.is_admin': user.isAdmin,
         'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -349,10 +354,11 @@ export const actions = {
           await updateDraftInitialLabQuotas(db, draftId, pairs);
           break;
         case 'lottery':
-          if (activeDraft.currRound !== null) {
-            logger.warn('attempt to update lottery snapshots outside lottery phase', {
+          if (activeDraft.currRound !== activeDraft.maxRounds + 1) {
+            logger.warn('attempt to update lottery snapshots outside intervention phase', {
               'draft.id': draftId.toString(),
               'draft.round.current': activeDraft.currRound,
+              'draft.round.max': activeDraft.maxRounds,
             });
             error(403);
           }
@@ -371,13 +377,13 @@ export const actions = {
 
   async intervene({ params, locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to intervene draft without session');
+      logger.fatal('attempt to intervene draft without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.error('insufficient permissions to intervene draft', void 0, {
+      logger.fatal('insufficient permissions to intervene draft', void 0, {
         'user.is_admin': user.isAdmin,
         'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -398,6 +404,23 @@ export const actions = {
         error(400);
       }
 
+      const draftId = BigInt(draft);
+      const activeDraft = await getActiveDraft(db);
+
+      if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
+        logger.warn('attempt to intervene non-active draft', { 'draft.id': draftId.toString() });
+        error(403);
+      }
+
+      if (activeDraft.currRound !== activeDraft.maxRounds + 1) {
+        logger.warn('attempt to intervene outside intervention rounds', {
+          'draft.id': draftId.toString(),
+          'draft.round.current': activeDraft.currRound,
+          'draft.round.max': activeDraft.maxRounds,
+        });
+        error(403);
+      }
+
       logger.debug('intervening draft', { 'draft.id': draft });
       data.delete('draft');
 
@@ -407,7 +430,6 @@ export const actions = {
         return;
       }
 
-      const draftId = BigInt(draft);
       const snapshotLabIds = new Set(await getDraftLabQuotaLabIds(db, draftId));
       const unknownLabIds = getUnknownLabIds(
         pairs.map(([, labId]) => labId),
@@ -460,13 +482,13 @@ export const actions = {
 
   async conclude({ params, locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to conclude draft without session');
+      logger.fatal('attempt to conclude draft without session');
       error(401);
     }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.error('insufficient permissions to conclude draft', void 0, {
+      logger.fatal('insufficient permissions to conclude draft', void 0, {
         'user.is_admin': user.isAdmin,
         'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -487,13 +509,24 @@ export const actions = {
         error(400);
       }
 
-      logger.debug('concluding draft', { 'draft.id': draft });
-
-      // Track data needed for notifications after transaction
-      let lotteryPairs: (readonly [string, string])[] = [];
-      let userAssignments: { userId: string; labId: string }[] = [];
-
       const draftId = BigInt(draft);
+      const activeDraft = await getActiveDraft(db);
+      if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
+        logger.warn('attempt to conclude non-active draft', { 'draft.id': draftId.toString() });
+        error(403);
+      }
+
+      if (activeDraft.currRound !== activeDraft.maxRounds + 1) {
+        logger.warn('attempt to conclude outside intervention rounds', {
+          'draft.id': draftId.toString(),
+          'draft.round.current': activeDraft.currRound,
+          'draft.round.max': activeDraft.maxRounds,
+        });
+        error(403);
+      }
+
+      logger.debug('running lottery and entering review', { 'draft.id': draft });
+
       try {
         await db.transaction(
           async db => {
@@ -527,73 +560,131 @@ export const actions = {
 
               const result = await insertLotteryChoices(db, draftId, user.id, pairs, 'lottery');
               if (typeof result === 'undefined') {
-                logger.error('draft must exist prior to draft conclusion');
+                logger.error('draft must exist prior to draft finalization');
                 error(404);
               }
-
-              lotteryPairs = pairs;
             } else {
               // This only happens if all draft rounds successfully exhausted the student pool.
               logger.debug('no students remaining in the lottery');
             }
 
-            const concluded = await concludeDraft(db, draftId);
-            logger.info('draft concluded', { 'draft.concluded_at': concluded.toISOString() });
-
-            const results = await syncResultsToUsers(db, draftId);
-            logger.debug('draft results synced', { 'draft.result_count': results.length });
-            userAssignments = results;
+            const review = await beginDraftReview(db, draftId);
+            if (typeof review === 'undefined') {
+              logger.error('draft must exist prior to entering review');
+              error(404);
+            }
           },
           { isolationLevel: 'repeatable read' },
         );
-
-        // Dispatch notifications after successful transaction
-        const facultyAndStaff = await getFacultyAndStaff(db);
-        const lotteryAssignments = await Promise.all(
-          lotteryPairs.map(async ([studentUserId, labId]) => {
-            const [{ name: labName }, student] = await Promise.all([
-              getLabById(db, labId),
-              getUserById(db, studentUserId),
-            ]);
-            return {
-              labId,
-              labName,
-              studentName: `${student.givenName} ${student.familyName}`,
-              studentEmail: student.email,
-            };
-          }),
-        );
-
-        await inngest.send(
-          facultyAndStaff.map(({ email, givenName, familyName }) => ({
-            name: 'draft/draft.concluded' as const,
-            data: {
-              draftId: Number(draftId),
-              recipientEmail: email,
-              recipientName: `${givenName} ${familyName}`,
-              lotteryAssignments,
-            },
-          })),
-        );
-
-        for (const { userId, labId } of userAssignments) {
-          const [{ name: labName }, assignedUser] = await Promise.all([
-            getLabById(db, labId),
-            getUserById(db, userId),
-          ]);
-          await inngest.send({
-            name: 'draft/user.assigned' as const,
-            data: {
-              labId,
-              labName,
-              userEmail: assignedUser.email,
-              userName: `${assignedUser.givenName} ${assignedUser.familyName}`,
-            },
-          });
-        }
+        logger.info('draft review started');
       } catch (err) {
         if (err === ZIP_NOT_EQUAL) return fail(403);
         throw err;
+      }
+    });
+  },
+
+  async finalize({ params, locals: { session }, request }) {
+    if (typeof session?.user === 'undefined') {
+      logger.fatal('attempt to finalize draft without session');
+      error(401);
+    }
+
+    const { user } = session;
+    if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
+      logger.fatal('insufficient permissions to finalize draft', void 0, {
+        'user.is_admin': user.isAdmin,
+        'user.google_id': user.googleUserId,
+        'user.lab_id': user.labId,
+      });
+      error(403);
+    }
+
+    return await tracer.asyncSpan('action.finalize', async () => {
+      const data = await request.formData();
+      const { draft } = v.parse(DraftActionFormData, decode(data));
+
+      if (draft !== params.draftId) {
+        logger.warn('draft id mismatch', {
+          'draft.form_id': draft,
+          'draft.param_id': params.draftId,
+        });
+        error(400);
+      }
+
+      const draftId = BigInt(draft);
+      const activeDraft = await getActiveDraft(db);
+
+      if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
+        logger.warn('attempt to finalize non-active draft', { 'draft.id': draftId.toString() });
+        error(403);
+      }
+
+      if (activeDraft.currRound !== null) {
+        logger.warn('attempt to finalize outside review phase', {
+          'draft.id': draftId.toString(),
+          'draft.round.current': activeDraft.currRound,
+          'draft.round.max': activeDraft.maxRounds,
+        });
+        error(403);
+      }
+
+      logger.debug('finalizing draft', { 'draft.id': draft });
+      let userAssignments: { userId: string; labId: string }[] = [];
+      await db.transaction(
+        async db => {
+          const finalizedAt = await concludeDraft(db, draftId);
+          logger.info('draft finalized and closed', {
+            'draft.finalized_at': finalizedAt.toISOString(),
+          });
+
+          const results = await syncResultsToUsers(db, draftId);
+          logger.debug('draft results synced', { 'draft.result_count': results.length });
+          userAssignments = results;
+        },
+        { isolationLevel: 'repeatable read' },
+      );
+
+      const [facultyAndStaff, assignments] = await Promise.all([
+        getFacultyAndStaff(db),
+        getDraftAssignmentRecords(db, draftId),
+      ]);
+
+      const lotteryAssignments = assignments
+        .filter(({ round }) => round === null)
+        .map(({ labId, labName, givenName, familyName, email }) => ({
+          labId,
+          labName,
+          studentName: `${givenName} ${familyName}`,
+          studentEmail: email,
+        }));
+
+      await inngest.send(
+        facultyAndStaff.map(({ email, givenName, familyName }) => ({
+          name: 'draft/draft.finalized' as const,
+          data: {
+            draftId: Number(draftId),
+            recipientEmail: email,
+            recipientName: `${givenName} ${familyName}`,
+            lotteryAssignments,
+          },
+        })),
+      );
+
+      for (const { userId, labId } of userAssignments) {
+        const [{ name: labName }, assignedUser] = await Promise.all([
+          getLabById(db, labId),
+          getUserById(db, userId),
+        ]);
+        await inngest.send({
+          name: 'draft/user.assigned' as const,
+          data: {
+            labId,
+            labName,
+            userEmail: assignedUser.email,
+            userName: `${assignedUser.givenName} ${assignedUser.familyName}`,
+          },
+        });
       }
     });
   },

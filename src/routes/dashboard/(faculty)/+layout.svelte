@@ -19,6 +19,10 @@
     <p>
       {#if currRound === null}
         <strong>Draft #{id}</strong> (which opened last <strong>{startDate}</strong> at
+        <strong>{startTime}</strong>) has completed lottery assignment and is now under review by
+        the draft administrators.
+      {:else if currRound > maxRounds}
+        <strong>Draft #{id}</strong> (which opened last <strong>{startDate}</strong> at
         <strong>{startTime}</strong>) has recently finished the main drafting process. It is
         currently in the lottery round.
       {:else}

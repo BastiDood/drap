@@ -100,9 +100,9 @@ export async function load({ locals: { session } }) {
       'draft.round.max': maxRounds,
     });
 
-    // LOTTERY: currRound is null (lottery phase)
-    if (currRound === null) {
-      logger.debug('draft in lottery phase');
+    // LOTTERY/REVIEW: intervention and review stages.
+    if (currRound === null || currRound > maxRounds) {
+      logger.debug('draft in lottery or review phase');
       return {
         user: baseUser,
         draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
@@ -187,7 +187,7 @@ export async function load({ locals: { session } }) {
 export const actions = {
   async submit({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
-      logger.error('attempt to submit lab rankings without session');
+      logger.fatal('attempt to submit lab rankings without session');
       error(401);
     }
 

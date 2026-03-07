@@ -1,6 +1,6 @@
 # Project Overview
 
-DRAP (Draft Ranking Automated Processor) automates the University of the Philippines Diliman - Department of Computer Science's yearly research lab assignment draft. Students submit ranked lab preferences; faculty review and accept students round-by-round; unassigned students enter a lottery.
+DRAP (Draft Ranking Automated Processor) automates the University of the Philippines Diliman - Department of Computer Science's yearly research lab assignment draft. Students submit ranked lab preferences; faculty review and accept students round-by-round; unassigned students go through intervention, lottery execution, admin review, and finalization.
 
 For detailed domain knowledge (terminology, lifecycle, role workflows), see [the draft process document](docs/draft-process.md). If you're working on a new feature, you must first understand how the draft process works.
 

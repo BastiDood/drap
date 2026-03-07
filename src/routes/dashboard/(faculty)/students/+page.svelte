@@ -9,7 +9,7 @@
 
   const { data } = $props();
   const {
-    draft: { id, currRound },
+    draft: { id, currRound, maxRounds },
     students,
     researchers,
     lab: { name, quota },
@@ -22,6 +22,11 @@
 </script>
 
 {#if currRound === null}
+  <Callout variant="warning">
+    The draft is now in review. Lottery assignment has already run, and draft administrators are
+    validating results before finalization.
+  </Callout>
+{:else if currRound > maxRounds}
   <Callout variant="warning">
     The draft is now in the lottery stage. Kindly contact the draft administrators on how to
     proceed.

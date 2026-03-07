@@ -72,7 +72,7 @@
         <NativeSelect.Option value="draft/lottery.intervened"
           >Lottery Intervened</NativeSelect.Option
         >
-        <NativeSelect.Option value="draft/draft.concluded">Draft Concluded</NativeSelect.Option>
+        <NativeSelect.Option value="draft/draft.finalized">Draft Finalized</NativeSelect.Option>
         <NativeSelect.Option value="draft/user.assigned">User Assigned</NativeSelect.Option>
       </NativeSelect.Root>
     </div>
@@ -153,7 +153,7 @@
           placeholder="example@up.edu.ph"
         />
       </div>
-    {:else if selectedEvent === 'draft/draft.concluded'}
+    {:else if selectedEvent === 'draft/draft.finalized'}
       <div class="space-y-2">
         <Label for="draftId">Draft ID</Label>
         <Input type="number" name="draftId" id="draftId" min="1" required placeholder="1" />

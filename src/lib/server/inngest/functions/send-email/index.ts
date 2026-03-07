@@ -16,7 +16,7 @@ import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
-import DraftConcluded from './draft-concluded.svelte';
+import DraftFinalized from './draft-finalized.svelte';
 import LotteryIntervened from './lottery-intervened.svelte';
 import RoundStarted from './round-started.svelte';
 import RoundSubmitted from './round-submitted.svelte';
@@ -47,7 +47,7 @@ export const sendEmail = inngest.createFunction(
     { event: 'draft/round.started' },
     { event: 'draft/round.submitted' },
     { event: 'draft/lottery.intervened' },
-    { event: 'draft/draft.concluded' },
+    { event: 'draft/draft.finalized' },
     { event: 'draft/user.assigned' },
   ],
   async ({ events, step }) =>
@@ -106,14 +106,14 @@ export const sendEmail = inngest.createFunction(
                     } satisfies ComponentProps<typeof LotteryIntervened>,
                   });
                   break;
-                case 'draft/draft.concluded':
+                case 'draft/draft.finalized':
                   recipient = event.data.recipientEmail;
-                  subject = `[DRAP] Draft #${event.data.draftId} Concluded`;
-                  html = await renderer.render(DraftConcluded, {
+                  subject = `[DRAP] Draft #${event.data.draftId} Finalized`;
+                  html = await renderer.render(DraftFinalized, {
                     props: {
                       draftId: event.data.draftId,
                       lotteryAssignments: event.data.lotteryAssignments,
-                    } satisfies ComponentProps<typeof DraftConcluded>,
+                    } satisfies ComponentProps<typeof DraftFinalized>,
                   });
                   break;
                 case 'draft/user.assigned':

@@ -14,6 +14,7 @@ import {
   isNotNull,
   isNull,
   lt,
+  lte,
   or,
   sql,
 } from 'drizzle-orm';
@@ -942,7 +943,7 @@ export async function incrementDraftRound(db: DbConnection, draftId: bigint) {
     return await db
       .update(schema.draft)
       .set({
-        currRound: sql`case when ${schema.draft.currRound} < ${schema.draft.maxRounds} then ${schema.draft.currRound} + 1 else null end`,
+        currRound: sql`case when ${schema.draft.currRound} < ${schema.draft.maxRounds} + 1 then ${schema.draft.currRound} + 1 else ${schema.draft.currRound} end`,
       })
       .where(eq(schema.draft.id, draftId))
       .returning({
@@ -989,6 +990,18 @@ export async function concludeDraft(db: DbConnection, draftId: bigint) {
       .returning({ activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceDate) })
       .then(assertSingle);
     return activePeriodEnd;
+  });
+}
+
+export async function beginDraftReview(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('begin-draft-review', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    return await db
+      .update(schema.draft)
+      .set({ currRound: null })
+      .where(eq(schema.draft.id, draftId))
+      .returning({ maxRounds: schema.draft.maxRounds })
+      .then(assertOptional);
   });
 }
 
@@ -1511,14 +1524,35 @@ export async function getDraftEvents(db: DbConnection, draftId: bigint) {
   return await tracer.asyncSpan('get-draft-events', async span => {
     span.setAttribute('database.draft.id', draftId.toString());
     return await db
-      .select({
+      .selectDistinct({
         createdAt: schema.facultyChoice.createdAt,
         round: schema.facultyChoice.round,
         labId: schema.facultyChoice.labId,
         isSystem: isNull(schema.facultyChoice.userId).mapWith(Boolean),
       })
       .from(schema.facultyChoice)
-      .where(eq(schema.facultyChoice.draftId, draftId))
+      .innerJoin(schema.draft, eq(schema.facultyChoice.draftId, schema.draft.id))
+      .leftJoin(
+        schema.facultyChoiceUser,
+        and(
+          eq(schema.facultyChoice.draftId, schema.facultyChoiceUser.draftId),
+          eq(schema.facultyChoice.labId, schema.facultyChoiceUser.labId),
+          or(
+            and(isNull(schema.facultyChoice.round), isNull(schema.facultyChoiceUser.round)),
+            eq(schema.facultyChoice.round, schema.facultyChoiceUser.round),
+          ),
+        ),
+      )
+      .where(
+        and(
+          eq(schema.facultyChoice.draftId, draftId),
+          or(
+            lte(schema.facultyChoice.round, schema.draft.maxRounds),
+            isNull(schema.facultyChoice.userId),
+            isNotNull(schema.facultyChoiceUser.studentUserId),
+          ),
+        ),
+      )
       .orderBy(({ createdAt, round, labId }) => [desc(createdAt), desc(round), asc(labId)]);
   });
 }
