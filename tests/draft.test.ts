@@ -11,6 +11,28 @@ async function assertLogout(page: Page) {
   ).toBeVisible();
 }
 
+async function expectStudentsCallout(
+  page: Page,
+  expected: string | RegExp,
+  forbidden: (string | RegExp)[] = [],
+  options: {
+    title?: string | RegExp;
+    banner?: string | RegExp;
+  } = {},
+) {
+  await page.goto('/dashboard/students/');
+  const emptyState = page.locator('[data-slot="empty"]');
+  await expect(emptyState).toBeVisible();
+  if (typeof options.title !== 'undefined') await expect(emptyState).toContainText(options.title);
+  await expect(emptyState).toContainText(expected);
+  for (const matcher of forbidden) await expect(emptyState).not.toContainText(matcher);
+  if (typeof options.banner !== 'undefined') {
+    const statusBanner = page.getByRole('alert');
+    await expect(statusBanner).toHaveAttribute('data-variant', 'info');
+    await expect(statusBanner).toContainText(options.banner);
+  }
+}
+
 test.describe('Draft Lifecycle', () => {
   test.describe.configure({ mode: 'serial' });
 
@@ -257,10 +279,15 @@ test.describe('Draft Lifecycle', () => {
     });
 
     test('faculty sees no students yet', async ({ ndslHeadPage }) => {
-      await ndslHeadPage.goto('/dashboard/students/');
-      await expect(
-        ndslHeadPage.getByText(/Students are still registering|No students have selected/u),
-      ).toBeVisible();
+      await expectStudentsCallout(
+        ndslHeadPage,
+        'Students are still registering for this draft. Kindly wait for the draft administrators to officially open the draft.',
+        [],
+        {
+          title: 'Registration Still Open',
+          banner: 'Draft registration is currently open and will close on',
+        },
+      );
     });
   });
 
@@ -627,6 +654,14 @@ test.describe('Draft Lifecycle', () => {
       await expect(ndslHeadPage.getByRole('button', { name: /Eager/u })).toBeVisible();
       await expect(ndslHeadPage.getByRole('button', { name: /Partial/u })).toBeVisible();
     });
+
+    test('CVMIL sees round-1 no-preferences auto-acknowledgement', async ({ cvmilHeadPage }) => {
+      await expectStudentsCallout(
+        cvmilHeadPage,
+        'No undrafted students have selected this lab in this round.',
+        ['This lab has no more draft slots remaining for the rest of this draft.'],
+      );
+    });
   });
 
   test.describe('Round 1 — 1st choice', () => {
@@ -639,6 +674,11 @@ test.describe('Draft Lifecycle', () => {
       const response = await responsePromise;
       const responseData = await response.json();
       expect(responseData.type).toBe('success');
+
+      await expectStudentsCallout(
+        ndslHeadPage,
+        'This lab has already submitted its picks for this round.',
+      );
     });
 
     test('CSL selects Patient', async ({ cslHeadPage }) => {
@@ -650,6 +690,11 @@ test.describe('Draft Lifecycle', () => {
       const response = await responsePromise;
       const responseData = await response.json();
       expect(responseData.type).toBe('success');
+
+      await expectStudentsCallout(
+        cslHeadPage,
+        'This lab has already submitted its picks for this round.',
+      );
     });
 
     test('SCL skips (sees Persistent)', async ({ sclHeadPage }) => {
@@ -661,6 +706,12 @@ test.describe('Draft Lifecycle', () => {
       const response = await responsePromise;
       const responseData = await response.json();
       expect(responseData.type).toBe('success');
+
+      await expectStudentsCallout(
+        sclHeadPage,
+        'This lab has already submitted its picks for this round.',
+        ['No undrafted students have selected this lab in this round.'],
+      );
     });
 
     // CVMIL: no 1st-choice students → auto-acknowledged
@@ -674,6 +725,12 @@ test.describe('Draft Lifecycle', () => {
       const response = await responsePromise;
       const responseData = await response.json();
       expect(responseData.type).toBe('success');
+
+      await expectStudentsCallout(
+        aclHeadPage,
+        'No undrafted students have selected this lab in this round.',
+        ['This lab has no more draft slots remaining for the rest of this draft.'],
+      );
     });
   });
 
@@ -688,6 +745,30 @@ test.describe('Draft Lifecycle', () => {
     // NDSL: Patient ranked NDSL 2nd, but Patient is drafted → no undrafted 2nd-choice students → auto-acknowledged
     // SCL, ACL: no undrafted 2nd-choice students → auto-acknowledged
 
+    test('SCL sees no-preferences message with quota remaining', async ({ sclHeadPage }) => {
+      await expectStudentsCallout(
+        sclHeadPage,
+        'No undrafted students have selected this lab in this round.',
+        ['This lab has no more draft slots remaining for the rest of this draft.'],
+      );
+    });
+
+    test('ACL sees no-preferences message with quota remaining', async ({ aclHeadPage }) => {
+      await expectStudentsCallout(
+        aclHeadPage,
+        'No undrafted students have selected this lab in this round.',
+        ['This lab has no more draft slots remaining for the rest of this draft.'],
+      );
+    });
+
+    test('NDSL sees no-preferences message with quota remaining', async ({ ndslHeadPage }) => {
+      await expectStudentsCallout(
+        ndslHeadPage,
+        'No undrafted students have selected this lab in this round.',
+        ['This lab has no more draft slots remaining for the rest of this draft.'],
+      );
+    });
+
     test('CSL selects PartialToDrafted', async ({ cslHeadPage }) => {
       await cslHeadPage.goto('/dashboard/students/');
       await expect(cslHeadPage.getByRole('button', { name: /Partial/u })).toBeVisible();
@@ -698,6 +779,11 @@ test.describe('Draft Lifecycle', () => {
       const response = await responsePromise;
       const responseData = await response.json();
       expect(responseData.type).toBe('success');
+
+      await expectStudentsCallout(
+        cslHeadPage,
+        'This lab has already submitted its picks for this round.',
+      );
     });
 
     test('CVMIL skips (sees Persistent, Unlucky)', async ({ cvmilHeadPage }) => {
@@ -710,6 +796,12 @@ test.describe('Draft Lifecycle', () => {
       const response = await responsePromise;
       const responseData = await response.json();
       expect(responseData.type).toBe('success');
+
+      await expectStudentsCallout(
+        cvmilHeadPage,
+        'No undrafted students have selected this lab in this round.',
+        ['This lab has no more draft slots remaining for the rest of this draft.'],
+      );
     });
   });
 
@@ -725,6 +817,30 @@ test.describe('Draft Lifecycle', () => {
     // SCL: Eager ranked SCL 3rd, but Eager is drafted → no undrafted students → auto-acknowledged
     // CVMIL: no 3rd-choice students → auto-acknowledged
 
+    test('SCL sees no-preferences message with quota remaining', async ({ sclHeadPage }) => {
+      await expectStudentsCallout(
+        sclHeadPage,
+        'No undrafted students have selected this lab in this round.',
+        ['This lab has no more draft slots remaining for the rest of this draft.'],
+      );
+    });
+
+    test('CVMIL sees no-preferences message with quota remaining', async ({ cvmilHeadPage }) => {
+      await expectStudentsCallout(
+        cvmilHeadPage,
+        'No undrafted students have selected this lab in this round.',
+        ['This lab has no more draft slots remaining for the rest of this draft.'],
+      );
+    });
+
+    test('CSL sees quota-exhausted message', async ({ cslHeadPage }) => {
+      await expectStudentsCallout(
+        cslHeadPage,
+        'This lab has no more draft slots remaining for the rest of this draft.',
+        ['No undrafted students have selected this lab in this round.'],
+      );
+    });
+
     test('NDSL selects Unlucky', async ({ ndslHeadPage }) => {
       await ndslHeadPage.goto('/dashboard/students/');
       await expect(ndslHeadPage.getByRole('button', { name: /Unlucky/u })).toBeVisible();
@@ -735,6 +851,11 @@ test.describe('Draft Lifecycle', () => {
       const response = await responsePromise;
       const responseData = await response.json();
       expect(responseData.type).toBe('success');
+
+      await expectStudentsCallout(
+        ndslHeadPage,
+        'This lab has already submitted its picks for this round.',
+      );
     });
 
     test('ACL skips (sees Persistent)', async ({ aclHeadPage }) => {
@@ -746,6 +867,11 @@ test.describe('Draft Lifecycle', () => {
       const response = await responsePromise;
       const responseData = await response.json();
       expect(responseData.type).toBe('success');
+
+      await expectStudentsCallout(
+        aclHeadPage,
+        'The draft is now in the lottery stage. Kindly contact the draft administrators on how to proceed.',
+      );
     });
   });
 
@@ -806,8 +932,16 @@ test.describe('Draft Lifecycle', () => {
 
   test.describe('Faculty Lottery Phase', () => {
     test('sees lottery pending message', async ({ ndslHeadPage }) => {
-      await ndslHeadPage.goto('/dashboard/students/');
-      await expect(ndslHeadPage.getByText('The draft is now in the lottery stage')).toBeVisible();
+      await expectStudentsCallout(
+        ndslHeadPage,
+        'The draft is now in the lottery stage. Kindly contact the draft administrators on how to proceed.',
+        [],
+        {
+          title: 'Lottery Stage',
+          banner:
+            'has recently finished the main drafting process. It is currently in the lottery round.',
+        },
+      );
     });
   });
 
@@ -912,6 +1046,21 @@ test.describe('Draft Lifecycle', () => {
       await expect(adminPage.getByRole('heading', { name: 'Review Phase' })).toBeVisible();
       await expect(adminPage.getByRole('heading', { name: 'Lottery Phase' })).toHaveCount(0);
       await expect(adminPage.getByRole('button', { name: 'Finalize Draft' })).toBeVisible();
+    });
+  });
+
+  test.describe('Faculty Review Phase', () => {
+    test('sees review pending message', async ({ ndslHeadPage }) => {
+      await expectStudentsCallout(
+        ndslHeadPage,
+        'The draft is now in review. Lottery assignment has already run, and draft administrators are validating results before finalization.',
+        [],
+        {
+          title: 'Draft Under Review',
+          banner:
+            'has completed lottery assignment and is now under review by the draft administrators.',
+        },
+      );
     });
   });
 
@@ -1458,6 +1607,21 @@ test.describe('Draft Lifecycle', () => {
       await expect(adminPage.getByText(/Round 1/u)).toBeVisible();
     });
 
+    test('Draft #2 round-1 auto-acks show correct callouts', async ({
+      sclHeadPage,
+      cvmilHeadPage,
+    }) => {
+      await expectStudentsCallout(
+        sclHeadPage,
+        'No undrafted students have selected this lab in this round.',
+        ['This lab has no more draft slots remaining for the rest of this draft.'],
+      );
+      await expectStudentsCallout(
+        cvmilHeadPage,
+        'This lab has no more draft slots remaining for the rest of this draft.',
+      );
+    });
+
     test('archives CSL while Draft #2 is active', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/labs/');
 
@@ -1497,6 +1661,11 @@ test.describe('Draft Lifecycle', () => {
       const response = await responsePromise;
       const responseData = await response.json();
       expect(responseData.type).toBe('success');
+
+      await expectStudentsCallout(
+        ndslHeadPage,
+        'This lab has already submitted its picks for this round.',
+      );
     });
 
     test('Round 1: CSL selects SecondCsl', async ({ cslHeadPage }) => {
@@ -1510,11 +1679,35 @@ test.describe('Draft Lifecycle', () => {
       const response = await responsePromise;
       const responseData = await response.json();
       expect(responseData.type).toBe('success');
+
+      await expectStudentsCallout(
+        cslHeadPage,
+        'This lab has no more draft slots remaining for the rest of this draft.',
+      );
     });
 
     test('Draft #2 reaches Round 2', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
       await expect(adminPage.getByText(/Round 2/u)).toBeVisible();
+    });
+
+    test('Draft #2 round-2 auto-acks show correct callouts', async ({
+      cvmilHeadPage,
+      ndslHeadPage,
+      cslHeadPage,
+    }) => {
+      await expectStudentsCallout(
+        cvmilHeadPage,
+        'This lab has no more draft slots remaining for the rest of this draft.',
+      );
+      await expectStudentsCallout(
+        ndslHeadPage,
+        'This lab has no more draft slots remaining for the rest of this draft.',
+      );
+      await expectStudentsCallout(
+        cslHeadPage,
+        'This lab has no more draft slots remaining for the rest of this draft.',
+      );
     });
 
     test('Round 2: SCL selects SecondScl', async ({ sclHeadPage }) => {
@@ -1528,6 +1721,11 @@ test.describe('Draft Lifecycle', () => {
       const response = await responsePromise;
       const responseData = await response.json();
       expect(responseData.type).toBe('success');
+
+      await expectStudentsCallout(
+        sclHeadPage,
+        'The draft is now in the lottery stage. Kindly contact the draft administrators on how to proceed.',
+      );
     });
 
     test('lottery stage shows zero eligible students', async ({ adminPage }) => {
