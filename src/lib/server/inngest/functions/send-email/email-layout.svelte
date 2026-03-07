@@ -24,7 +24,7 @@
           src="{ORIGIN}/drap-logo.png"
           alt="DRAP Logo"
           width="180"
-          height="auto"
+          height="90"
           class="mx-auto mt-4 block"
         />
         <Text class="text-primary-foreground mt-2 text-sm font-medium">
