@@ -70,20 +70,36 @@ export async function load({ locals: { session }, parent }) {
       'draft.round.max': draft.maxRounds,
     });
 
-    const { lab, students, researchers, isDone } =
-      await getLabAndRemainingStudentsInDraftWithLabPreference(db, draft.id, labId);
-    if (typeof lab === 'undefined') {
+    const draftLabResult = await getLabAndRemainingStudentsInDraftWithLabPreference(
+      db,
+      draft.id,
+      labId,
+    );
+    if (typeof draftLabResult === 'undefined') {
       logger.fatal('lab not found');
       error(404);
     }
 
+    const { lab, students, researchers, submissionSource, remainingQuota, autoAcknowledgeReason } =
+      draftLabResult;
     logger.debug('lab and students fetched', {
       'lab.name': lab.name,
       'student.count': students.length,
       'lab.researcher_count': researchers.length,
-      'draft.is_done': isDone,
+      'draft.round.submission_source': submissionSource,
+      'draft.round.remaining_quota': remainingQuota,
+      'draft.round.auto_acknowledge_reason': autoAcknowledgeReason,
     });
-    return { draft, lab, students, researchers, isDone };
+
+    return {
+      draft,
+      lab,
+      students,
+      researchers,
+      submissionSource,
+      remainingQuota,
+      autoAcknowledgeReason,
+    };
   });
 }
 

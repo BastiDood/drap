@@ -707,6 +707,7 @@ export async function getLabAndRemainingStudentsInDraftWithLabPreference(
           and(eq(schema.draftLabQuota.draftId, draftId), eq(schema.draftLabQuota.labId, labId)),
         )
         .then(assertOptional);
+      if (typeof labInfo === 'undefined') return;
 
       const students = await db
         .select({
@@ -762,8 +763,8 @@ export async function getLabAndRemainingStudentsInDraftWithLabPreference(
           ),
         );
 
-      const chosen = await db
-        .select({ createdAt: schema.facultyChoice.createdAt })
+      const choice = await db
+        .select({ userId: schema.facultyChoice.userId })
         .from(schema.facultyChoice)
         .innerJoin(
           schema.draft,
@@ -774,9 +775,29 @@ export async function getLabAndRemainingStudentsInDraftWithLabPreference(
         )
         .where(
           and(eq(schema.facultyChoice.draftId, draftId), eq(schema.facultyChoice.labId, labId)),
-        );
+        )
+        .then(assertOptional);
 
-      return { lab: labInfo, students, researchers, isDone: chosen.length > 0 };
+      // eslint-disable-next-line @typescript-eslint/init-declarations
+      let submissionSource: 'faculty' | 'system' | undefined;
+      if (typeof choice !== 'undefined')
+        submissionSource = choice.userId === null ? 'system' : 'faculty';
+
+      const remainingQuota = labInfo.quota - researchers.length;
+
+      // eslint-disable-next-line @typescript-eslint/init-declarations
+      let autoAcknowledgeReason: 'quota-exhausted' | 'no-preferences' | undefined;
+      if (remainingQuota <= 0) autoAcknowledgeReason = 'quota-exhausted';
+      else if (students.length === 0) autoAcknowledgeReason = 'no-preferences';
+
+      return {
+        lab: labInfo,
+        students,
+        researchers,
+        submissionSource,
+        remainingQuota,
+        autoAcknowledgeReason,
+      };
     },
   );
 }

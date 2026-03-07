@@ -13,16 +13,17 @@
     students,
     researchers,
     lab: { name, quota },
-    isDone,
+    submissionSource,
+    remainingQuota,
+    autoAcknowledgeReason,
   } = $derived(data);
 
   const draftees = new SvelteSet<string>();
-  const remainingQuota = $derived(quota - researchers.length);
   const remainingDraftees = $derived(remainingQuota - draftees.size);
 </script>
 
 {#if currRound === null}
-  <Callout variant="warning">
+  <Callout variant="info">
     The draft is now in review. Lottery assignment has already run, and draft administrators are
     validating results before finalization.
   </Callout>
@@ -36,10 +37,20 @@
     Students are still registering for this draft. Kindly wait for the draft administrators to
     officially open the draft.
   </Callout>
-{:else if isDone}
-  <Callout variant="warning">
-    This lab either has no draft slots remaining or has already submitted their picks for this
-    round. No action is required until the next one.
+{:else if submissionSource === 'faculty'}
+  <Callout variant="success">
+    This lab has already submitted its picks for this round. No action is required until the next
+    one.
+  </Callout>
+{:else if autoAcknowledgeReason === 'quota-exhausted'}
+  <Callout variant="destructive">
+    This lab has no more draft slots remaining for the rest of this draft. No action is required for
+    the rest of this draft.
+  </Callout>
+{:else if autoAcknowledgeReason === 'no-preferences'}
+  <Callout variant="default">
+    No undrafted students have selected this lab in this round. No action is required until the next
+    one.
   </Callout>
 {:else if students.length > 0}
   {@const suffix = getOrdinalSuffix(currRound)}
@@ -65,10 +76,6 @@
     </div>
     <RankingsForm draft={id} {students} drafteeIds={draftees} disabled={remainingDraftees < 0} />
   </div>
-{:else}
-  <Callout variant="warning">
-    No students have selected this lab in this round. No action is required until the next round.
-  </Callout>
 {/if}
 {#if researchers.length > 0}
   <h3 class="scroll-m-20 text-2xl font-semibold tracking-tight">
