@@ -2,70 +2,31 @@
 
 Drizzle ORM with PostgreSQL.
 
-## Module Structure
-
-The database module is split into two files for environment isolation:
-
-| File         | Purpose                                                   |
-| ------------ | --------------------------------------------------------- |
-| `drizzle.ts` | Environment-agnostic helpers, types, and `init()` factory |
-| `index.js`   | Injects `POSTGRES_URL` and exports the singleton `db`     |
-
-This separation keeps `drizzle.ts` testable and reusable without environment coupling.
-
-## Schema Overview
-
-Three schemas organized by domain:
-
-| Schema  | File              | Purpose                             |
-| ------- | ----------------- | ----------------------------------- |
-| `drap`  | `schema/app.ts`   | Core app data (users, labs, drafts) |
-| `auth`  | `schema/auth.ts`  | Session management                  |
-| `email` | `schema/email.ts` | Email sender credentials            |
-
-## Schema Files
-
-- `schema/app.ts` - Main application tables and views
-- `schema/auth.ts` - Session table
-- `schema/email.ts` - Candidate sender and designated sender tables
-- `schema/relation.js` - Drizzle relations
-- `schema/index.js` - Barrel export
-- `schema/custom/` - Custom column types (ulid, tstzrange, bytea)
-
 ## Schema Change Workflow
 
 The data model is expected to be edited directly in the schema files when requirements change.
 
 ```bash
-# After editing the model, generate a migration into `drizzle/`.
-pnpm db:generate --name descriptive-snake-case-migration-name
+# After editing the Drizzle schema, always auto-generate the migration into `drizzle/`.
+pnpm db:generate --name $DESCRIPTIVE_MIGRATION_NAME
 ```
 
+Never hand-write schema migrations.
+
 ```bash
-# Then commit the migration into the database instance.
+# For data-only backfill/transformation migrations that prepare future constraint hardening.
+pnpm db:generate --custom --name $BESPOKE_BACKFILL_NAME
+```
+
+Use `--custom` migrations only for data operations, not for schema diffs that Drizzle can auto-generate.
+
+```bash
+# Then apply generated migration(s) to the database instance.
 pnpm db:migrate
 ```
 
-## User Role Discrimination
-
-Users are discriminated by `is_admin` and `lab_id`:
-
-| `is_admin` | `google_user_id` | `lab_id` | Role               |
-| ---------- | ---------------- | -------- | ------------------ |
-| `false`    | `null`           | `null`   | Invited User       |
-| `false`    | `null`           | `*`      | Invited Researcher |
-| `false`    | `*`              | `null`   | Registered User    |
-| `false`    | `*`              | `*`      | Drafted Researcher |
-| `true`     | `null`           | `null`   | Invited Admin      |
-| `true`     | `null`           | `*`      | Invited Faculty    |
-| `true`     | `*`              | `null`   | Registered Admin   |
-| `true`     | `*`              | `*`      | Registered Faculty |
-
-## Custom Column Types
-
-- **`ulid`** - ULID primary keys (`schema/custom/ulid.ts`)
-- **`tstzrange`** - PostgreSQL timestamp range (`schema/custom/tstzrange.ts`)
-- **`bytea`** - Binary data (`schema/custom/bytea.ts`)
+> [!CAUTION]
+> Order of migrations matters! Always apply auto-generated migrations first, then apply custom migrations, and finally apply any follow-up auto-generated migrations that were enabled by the custom data-only migrations. This is typically the case for data constraint updates that require backfills.
 
 ## Soft Delete Pattern
 
@@ -96,8 +57,7 @@ await db.update(schema.lab).set({ deletedAt: null }).where(eq(schema.lab.id, id)
 - `initialQuota`: defaults to `0` when `initDraft` snapshots active labs; editable only during registration on draft detail
 - `lotteryQuota`: editable only during intervention/lottery setup on draft detail; used by `Run Lottery` round-robin allocation
 
-This keeps finalized-draft reporting independent from later catalog edits (`create`, `archive`,
-`restore`) on `/dashboard/labs`, and ensures those updates do not mutate active-draft snapshots.
+This keeps finalized-draft reporting independent from later catalog edits (`create`, `archive`, `restore`) on `/dashboard/labs`, and ensures those updates do not mutate active-draft snapshots.
 
 ## Draft Phase Sentinels
 

@@ -169,6 +169,13 @@
       "when": 1772448578203,
       "tag": "0023_backfill-active-null-round-to-intervention",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1772524227469,
+      "tag": "0024_add-session-creation-timestamp",
+      "breakpoints": true
     }
   ]
 }

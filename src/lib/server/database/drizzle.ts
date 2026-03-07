@@ -63,19 +63,19 @@ export async function insertDummySession(db: DbConnection, userId: string) {
     span.setAttribute('database.user.id', userId);
     const { sessionId } = await db
       .insert(schema.session)
-      .values({ userId, expiration: sql`now() + interval '1 hour'` })
+      .values({ userId, expiredAt: sql`now() + interval '1 hour'` })
       .returning({ sessionId: schema.session.id })
       .then(assertSingle);
     return sessionId;
   });
 }
 
-export async function insertValidSession(db: DbConnection, userId: string, expiration: Date) {
+export async function insertValidSession(db: DbConnection, userId: string, expiredAt: Date) {
   return await tracer.asyncSpan('insert-valid-session', async span => {
     span.setAttribute('database.user.id', userId);
     const { sessionId } = await db
       .insert(schema.session)
-      .values({ userId, expiration })
+      .values({ userId, expiredAt })
       .returning({ sessionId: schema.session.id })
       .then(assertSingle);
     return sessionId;
@@ -148,7 +148,7 @@ export async function deleteValidSession(db: DbConnection, sessionId: string) {
       .where(eq(schema.session.id, sessionId))
       .returning({
         userId: schema.session.userId,
-        expiration: schema.session.expiration,
+        expiredAt: schema.session.expiredAt,
       })
       .then(assertOptional);
   });

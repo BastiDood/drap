@@ -12,7 +12,8 @@ export const session = auth.table('session', {
     .notNull()
     .primaryKey()
     .default(sql`gen_ulid()`),
-  expiration: timestamp('expiration', { mode: 'date', withTimezone: true }).notNull(),
+  createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+  expiredAt: timestamp('expired_at', { mode: 'date', withTimezone: true }).notNull(),
   userId: ulid('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
