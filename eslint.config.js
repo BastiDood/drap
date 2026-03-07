@@ -1,9 +1,11 @@
 import globals from 'globals';
 import html from '@html-eslint/eslint-plugin';
+import htmlSvelte from '@html-eslint/eslint-plugin-svelte';
 import imsort from '@bastidood/eslint-plugin-imsort';
 import js from '@eslint/js';
 import prettier from 'eslint-config-prettier';
 import svelte from 'eslint-plugin-svelte';
+import svelteParser from 'svelte-eslint-parser';
 import ts from 'typescript-eslint';
 import { defineConfig } from 'eslint/config';
 
@@ -181,6 +183,15 @@ export default defineConfig(
       'symbol-description': 'error',
       yoda: ['warn', 'never', { exceptRange: true }],
     },
+  },
+  {
+    files: ['**/*.svelte'],
+    // @ts-expect-error - htmlSvelte.configs.recommended is not strictly typed
+    extends:
+      typeof htmlSvelte.configs?.recommended === 'undefined'
+        ? []
+        : [htmlSvelte.configs.recommended],
+    languageOptions: { parser: svelteParser },
   },
   {
     files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],

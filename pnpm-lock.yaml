@@ -102,6 +102,9 @@ importers:
       '@html-eslint/eslint-plugin':
         specifier: ^0.58.1
         version: 0.58.1(eslint@10.0.2(jiti@2.6.1))
+      '@html-eslint/eslint-plugin-svelte':
+        specifier: ^0.58.1
+        version: 0.58.1(eslint@10.0.2(jiti@2.6.1))(svelte-eslint-parser@1.6.0(svelte@5.53.7))
       '@opentelemetry/api':
         specifier: ^1.9.0
         version: 1.9.0
@@ -165,6 +168,9 @@ importers:
       svelte-check:
         specifier: ^4.4.4
         version: 4.4.4(picomatch@4.0.3)(svelte@5.53.7)(typescript@5.9.3)
+      svelte-eslint-parser:
+        specifier: ^1.6.0
+        version: 1.6.0(svelte@5.53.7)
       tailwindcss:
         specifier: ^4.2.1
         version: 4.2.1
@@ -720,6 +726,13 @@ packages:
   '@html-eslint/core@0.58.1':
     resolution: {integrity: sha512-GHYDt2Q3ws9aa0/bmMhkv21ExQJnrjKY/iByjdBVp3lBq49wlzIzvAfcx4Bsp+RMV3oPZhzlnLhPpXLuVYt2mQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@html-eslint/eslint-plugin-svelte@0.58.1':
+    resolution: {integrity: sha512-Eq/nlO3eWrjZL8Hk8nOIpgRMwR3G7pCdZI24OiYb2SSB/6aA3JovBR0wntcOgIoTf2lKCToi/9BJZALJ07QI5g==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    peerDependencies:
+      eslint: '>=8.0.0 || ^10.0.0-0'
+      svelte-eslint-parser: ^1.0.0
 
   '@html-eslint/eslint-plugin@0.58.1':
     resolution: {integrity: sha512-aizTTKbNF2sW+lXWP+uWBoo5Ud9xtUkr70+0pYhItwJF0yhRqLQ91PhW+9afC0daymQjn13MunzDPwGPG0seDg==}
@@ -3672,6 +3685,12 @@ snapshots:
     dependencies:
       '@html-eslint/types': 0.58.1
       html-standard: 0.0.13
+
+  '@html-eslint/eslint-plugin-svelte@0.58.1(eslint@10.0.2(jiti@2.6.1))(svelte-eslint-parser@1.6.0(svelte@5.53.7))':
+    dependencies:
+      '@html-eslint/core': 0.58.1
+      eslint: 10.0.2(jiti@2.6.1)
+      svelte-eslint-parser: 1.6.0(svelte@5.53.7)
 
   '@html-eslint/eslint-plugin@0.58.1(eslint@10.0.2(jiti@2.6.1))':
     dependencies:
