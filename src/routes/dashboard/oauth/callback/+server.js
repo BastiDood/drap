@@ -113,7 +113,7 @@ export async function GET({ fetch, cookies, setHeaders, url: { searchParams } })
           const sid = await insertValidSession(db, userId, token.exp);
           logger.debug('valid session inserted', {
             'session.id': sid,
-            'session.expiration': token.exp.toISOString(),
+            'session.expired_at': token.exp.toISOString(),
           });
 
           if (
