@@ -15,12 +15,22 @@ async function expectStudentsCallout(
   page: Page,
   expected: string | RegExp,
   forbidden: (string | RegExp)[] = [],
+  options: {
+    title?: string | RegExp;
+    banner?: string | RegExp;
+  } = {},
 ) {
   await page.goto('/dashboard/students/');
-  const callout = page.getByRole('alert');
-  await expect(callout).toBeVisible();
-  await expect(callout).toContainText(expected);
-  for (const matcher of forbidden) await expect(callout).not.toContainText(matcher);
+  const emptyState = page.locator('[data-slot="empty"]');
+  await expect(emptyState).toBeVisible();
+  if (typeof options.title !== 'undefined') await expect(emptyState).toContainText(options.title);
+  await expect(emptyState).toContainText(expected);
+  for (const matcher of forbidden) await expect(emptyState).not.toContainText(matcher);
+  if (typeof options.banner !== 'undefined') {
+    const statusBanner = page.getByRole('alert');
+    await expect(statusBanner).toHaveAttribute('data-variant', 'info');
+    await expect(statusBanner).toContainText(options.banner);
+  }
 }
 
 test.describe('Draft Lifecycle', () => {
@@ -272,6 +282,11 @@ test.describe('Draft Lifecycle', () => {
       await expectStudentsCallout(
         ndslHeadPage,
         'Students are still registering for this draft. Kindly wait for the draft administrators to officially open the draft.',
+        [],
+        {
+          title: 'Registration Still Open',
+          banner: 'Draft registration is currently open and will close on',
+        },
       );
     });
   });
@@ -920,6 +935,12 @@ test.describe('Draft Lifecycle', () => {
       await expectStudentsCallout(
         ndslHeadPage,
         'The draft is now in the lottery stage. Kindly contact the draft administrators on how to proceed.',
+        [],
+        {
+          title: 'Lottery Stage',
+          banner:
+            'has recently finished the main drafting process. It is currently in the lottery round.',
+        },
       );
     });
   });
@@ -1025,6 +1046,21 @@ test.describe('Draft Lifecycle', () => {
       await expect(adminPage.getByRole('heading', { name: 'Review Phase' })).toBeVisible();
       await expect(adminPage.getByRole('heading', { name: 'Lottery Phase' })).toHaveCount(0);
       await expect(adminPage.getByRole('button', { name: 'Finalize Draft' })).toBeVisible();
+    });
+  });
+
+  test.describe('Faculty Review Phase', () => {
+    test('sees review pending message', async ({ ndslHeadPage }) => {
+      await expectStudentsCallout(
+        ndslHeadPage,
+        'The draft is now in review. Lottery assignment has already run, and draft administrators are validating results before finalization.',
+        [],
+        {
+          title: 'Draft Under Review',
+          banner:
+            'has completed lottery assignment and is now under review by the draft administrators.',
+        },
+      );
     });
   });
 

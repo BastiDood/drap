@@ -1,7 +1,7 @@
 <script lang="ts">
   import { format } from 'date-fns';
 
-  import * as Card from '$lib/components/ui/card';
+  import * as Alert from '$lib/components/ui/alert';
 
   const { data, children } = $props();
   const {
@@ -14,8 +14,8 @@
   const closeTime = $derived(format(registrationClosesAt, 'pp'));
 </script>
 
-<Card.Root>
-  <Card.Content class="prose dark:prose-invert max-w-none pt-6">
+<Alert.Root variant="info">
+  <Alert.Description class="prose dark:prose-invert max-w-none">
     <p>
       {#if currRound === null}
         <strong>Draft #{id}</strong> (which opened last <strong>{startDate}</strong> at
@@ -37,6 +37,6 @@
         {/if}
       {/if}
     </p>
-  </Card.Content>
-</Card.Root>
+  </Alert.Description>
+</Alert.Root>
 {@render children?.()}
