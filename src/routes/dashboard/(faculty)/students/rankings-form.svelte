@@ -19,14 +19,15 @@
   }
 
   interface Props {
-    disabled: boolean;
     draft: schema.Draft['id'];
     students: Student[];
-    drafteeIds: SvelteSet<schema.User['id']>;
     remainingQuota: number;
   }
 
-  let { disabled, draft, students, drafteeIds = $bindable(), remainingQuota }: Props = $props();
+  const { draft, students, remainingQuota }: Props = $props();
+
+  const drafteeIds = new SvelteSet<string>();
+  const disabled = $derived(remainingQuota - drafteeIds.size < 0);
 </script>
 
 <form

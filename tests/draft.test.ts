@@ -1830,6 +1830,11 @@ test.describe('Draft Lifecycle', () => {
       );
     });
 
+    test('ACL head sees lab-not-in-draft message', async ({ aclHeadPage }) => {
+      await aclHeadPage.goto('/dashboard/students');
+      await expect(aclHeadPage.getByText('Lab Excluded from This Draft')).toBeVisible();
+    });
+
     test('archives CSL while Draft #2 is active', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/labs/');
 
