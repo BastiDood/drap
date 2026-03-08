@@ -1143,7 +1143,7 @@ export async function getDesignatedSenderCredentialsForUpdate(db: DrizzleTransac
         refreshTokenIv: schema.candidateSender.refreshTokenIv,
         refreshTokenCipher: schema.candidateSender.refreshTokenCipher,
         scopes: schema.candidateSender.scopes,
-        isValid: lt(schema.candidateSender.expiration, sql`now()`).mapWith(Boolean),
+        isValid: lt(schema.candidateSender.expiredAt, sql`now()`).mapWith(Boolean),
       })
       .from(schema.designatedSender)
       .innerJoin(
@@ -1203,7 +1203,7 @@ export async function updateCandidateSender(
       accessTokenCipher: Buffer.from(encryptedAccessToken.cipher),
       refreshTokenIv: schema.candidateSender.refreshTokenIv,
       refreshTokenCipher: schema.candidateSender.refreshTokenCipher,
-      expiration: sql`now() + make_interval(secs => ${expiresIn})`,
+      expiredAt: sql`now() + make_interval(secs => ${expiresIn})`,
     };
 
     if (typeof refreshToken !== 'undefined') {
@@ -1223,13 +1223,16 @@ export async function updateCandidateSender(
 export async function upsertCandidateSender(
   db: DbConnection,
   userId: string,
-  expiration: Date,
+  expiredAt: Date,
   accessToken: string,
   refreshToken: string,
   scopes: string[],
 ) {
   return await tracer.asyncSpan('upsert-candidate-sender', async span => {
-    span.setAttribute('database.user.id', userId);
+    span.setAttributes({
+      'database.user.id': userId,
+      'database.candidate_sender.expired_at': expiredAt.toISOString(),
+    });
     const [encryptedAccessToken, encryptedRefreshToken] = await Promise.all([
       encryptOAuthSecret(accessToken),
       encryptOAuthSecret(refreshToken),
@@ -1238,7 +1241,7 @@ export async function upsertCandidateSender(
       .insert(schema.candidateSender)
       .values({
         userId,
-        expiration,
+        expiredAt,
         accessTokenIv: Buffer.from(encryptedAccessToken.iv),
         accessTokenCipher: Buffer.from(encryptedAccessToken.cipher),
         refreshTokenIv: Buffer.from(encryptedRefreshToken.iv),
@@ -1249,7 +1252,7 @@ export async function upsertCandidateSender(
         target: schema.candidateSender.userId,
         set: {
           updatedAt: sql`now()`,
-          expiration: sql`excluded.${sql.raw(schema.candidateSender.expiration.name)}`,
+          expiredAt: sql`excluded.${sql.raw(schema.candidateSender.expiredAt.name)}`,
           accessTokenIv: sql`excluded.${sql.raw(schema.candidateSender.accessTokenIv.name)}`,
           accessTokenCipher: sql`excluded.${sql.raw(schema.candidateSender.accessTokenCipher.name)}`,
           refreshTokenIv: sql`excluded.${sql.raw(schema.candidateSender.refreshTokenIv.name)}`,

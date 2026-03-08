@@ -13,7 +13,7 @@ export const candidateSender = email.table('candidate_sender', {
     .references(() => user.id, { onUpdate: 'cascade', onDelete: 'cascade' })
     .primaryKey(),
   scopes: text('scopes').array().notNull().default([]),
-  expiration: timestamp('expiration', { mode: 'date', withTimezone: true }).notNull(),
+  expiredAt: timestamp('expired_at', { mode: 'date', withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true }),
   accessTokenIv: bytea('access_token_iv').notNull(),
