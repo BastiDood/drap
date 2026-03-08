@@ -11,6 +11,7 @@ import {
   updateCandidateSender,
 } from '$lib/server/database/drizzle';
 import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
+import { ENCRYPTION_KEY } from '$lib/server/env/drap/crypto';
 import { GmailScopeError, GoogleOAuthClient } from '$lib/server/google';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
@@ -181,7 +182,7 @@ class RefreshedCredentials {
   static async fromTransaction(db: DrizzleTransaction) {
     return await tracer.asyncSpan('refresh-sender-credentials', async () => {
       logger.trace('getting designated sender credentials...');
-      const sender = await getDesignatedSenderCredentialsForUpdate(db);
+      const sender = await getDesignatedSenderCredentialsForUpdate(db, ENCRYPTION_KEY);
       if (typeof sender === 'undefined') {
         const error = new NonRetriableError('no designated sender configured');
         logger.error('no designated sender configured', error);
@@ -203,6 +204,7 @@ class RefreshedCredentials {
           sender.id,
           refreshed.token.expiresIn,
           client.scopes,
+          ENCRYPTION_KEY,
           client.accessToken,
           sender.refreshToken,
         );

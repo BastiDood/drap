@@ -22,7 +22,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { enumerate, izip } from 'itertools';
 
 import { assertOptional, assertSingle } from '$lib/server/assert';
-import { decryptOAuthSecret, encryptOAuthSecret } from '$lib/crypto/oauth';
+import { decryptSecret, encryptSecret } from '$lib/crypto';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
@@ -1129,7 +1129,10 @@ export async function getCandidateSenders(db: DbConnection) {
  * A designated sender is an admin (i.e., `is_admin=True` and `lab_id=NULL`) with valid
  * OAuth 2.0 credentials with an access token that has not yet expired.
  */
-export async function getDesignatedSenderCredentialsForUpdate(db: DrizzleTransaction) {
+export async function getDesignatedSenderCredentialsForUpdate(
+  db: DrizzleTransaction,
+  encryptionKey: CryptoKey,
+) {
   return await tracer.asyncSpan('get-designated-sender-credentials', async () => {
     const sender = await db
       .select({
@@ -1163,8 +1166,8 @@ export async function getDesignatedSenderCredentialsForUpdate(db: DrizzleTransac
     if (typeof sender === 'undefined') return;
 
     const [accessToken, refreshToken] = await Promise.all([
-      decryptOAuthSecret(sender.accessTokenIv, sender.accessTokenCipher),
-      decryptOAuthSecret(sender.refreshTokenIv, sender.refreshTokenCipher),
+      decryptSecret(encryptionKey, sender.accessTokenIv, sender.accessTokenCipher),
+      decryptSecret(encryptionKey, sender.refreshTokenIv, sender.refreshTokenCipher),
     ]);
 
     return {
@@ -1185,8 +1188,9 @@ export async function updateCandidateSender(
   userId: string,
   expiresIn: number,
   scopes: string[],
+  encryptionKey: CryptoKey,
   accessToken: string,
-  refreshToken?: string,
+  refreshToken: string | undefined,
 ) {
   return await tracer.asyncSpan('update-candidate-sender', async span => {
     span.setAttributes({
@@ -1194,7 +1198,7 @@ export async function updateCandidateSender(
       'database.candidate_sender.expires_in': expiresIn,
     });
 
-    const encryptedAccessToken = await encryptOAuthSecret(accessToken);
+    const encryptedAccessToken = await encryptSecret(encryptionKey, accessToken);
     const update: PgUpdateSetSource<typeof schema.candidateSender> = {
       userId,
       scopes,
@@ -1206,7 +1210,7 @@ export async function updateCandidateSender(
     };
 
     if (typeof refreshToken !== 'undefined') {
-      const { iv, cipher } = await encryptOAuthSecret(refreshToken);
+      const { iv, cipher } = await encryptSecret(encryptionKey, refreshToken);
       update.refreshTokenIv = Buffer.from(iv);
       update.refreshTokenCipher = Buffer.from(cipher);
     }
@@ -1223,6 +1227,7 @@ export async function upsertCandidateSender(
   db: DbConnection,
   userId: string,
   expiredAt: Date,
+  encryptionKey: CryptoKey,
   accessToken: string,
   refreshToken: string,
   scopes: string[],
@@ -1233,8 +1238,8 @@ export async function upsertCandidateSender(
       'database.candidate_sender.expired_at': expiredAt.toISOString(),
     });
     const [encryptedAccessToken, encryptedRefreshToken] = await Promise.all([
-      encryptOAuthSecret(accessToken),
-      encryptOAuthSecret(refreshToken),
+      encryptSecret(encryptionKey, accessToken),
+      encryptSecret(encryptionKey, refreshToken),
     ]);
     const { rowCount } = await db
       .insert(schema.candidateSender)
