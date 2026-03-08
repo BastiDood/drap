@@ -13,7 +13,6 @@ import {
   inArray,
   isNotNull,
   isNull,
-  lt,
   lte,
   or,
   sql,
@@ -1128,7 +1127,7 @@ export async function getCandidateSenders(db: DbConnection) {
 
 /**
  * A designated sender is an admin (i.e., `is_admin=True` and `lab_id=NULL`) with valid
- * OAuth 2.0 credentials such that the access token will not expire in the next five minutes.
+ * OAuth 2.0 credentials with an access token that has not yet expired.
  */
 export async function getDesignatedSenderCredentialsForUpdate(db: DrizzleTransaction) {
   return await tracer.asyncSpan('get-designated-sender-credentials', async () => {
@@ -1143,7 +1142,7 @@ export async function getDesignatedSenderCredentialsForUpdate(db: DrizzleTransac
         refreshTokenIv: schema.candidateSender.refreshTokenIv,
         refreshTokenCipher: schema.candidateSender.refreshTokenCipher,
         scopes: schema.candidateSender.scopes,
-        isValid: lt(schema.candidateSender.expiredAt, sql`now()`).mapWith(Boolean),
+        isValid: gte(schema.candidateSender.expiredAt, sql`now()`).mapWith(Boolean),
       })
       .from(schema.designatedSender)
       .innerJoin(
