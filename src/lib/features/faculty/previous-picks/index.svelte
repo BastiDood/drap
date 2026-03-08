@@ -2,14 +2,13 @@
   import * as Avatar from '$lib/components/ui/avatar';
   import * as Card from '$lib/components/ui/card';
   import * as Tabs from '$lib/components/ui/tabs';
+  import type { schema } from '$lib/server/database/drizzle';
 
-  interface Researcher {
+  interface Researcher extends Pick<
+    schema.User,
+    'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
+  > {
     round: number;
-    email: string;
-    givenName: string;
-    familyName: string;
-    avatarUrl: string | null;
-    studentNumber: bigint | null;
   }
 
   interface Props {
