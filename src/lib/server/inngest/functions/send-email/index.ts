@@ -10,7 +10,7 @@ import {
   type schema,
   updateCandidateSender,
 } from '$lib/server/database/drizzle';
-import { ENABLE_EMAILS } from '$lib/server/env/drap';
+import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
 import { GmailScopeError, GoogleOAuthClient } from '$lib/server/google';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';

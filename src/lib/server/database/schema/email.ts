@@ -2,6 +2,7 @@ import { pgSchema, text, timestamp } from 'drizzle-orm/pg-core';
 
 import { user } from './app';
 
+import { bytea } from './custom/bytea';
 import { ulid } from './custom/ulid';
 
 export const email = pgSchema('email');
@@ -11,12 +12,14 @@ export const candidateSender = email.table('candidate_sender', {
     .notNull()
     .references(() => user.id, { onUpdate: 'cascade', onDelete: 'cascade' })
     .primaryKey(),
-  accessToken: text('access_token').notNull(),
-  refreshToken: text('refresh_token').notNull(),
   scopes: text('scopes').array().notNull().default([]),
   expiration: timestamp('expiration', { mode: 'date', withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true }),
+  accessTokenIv: bytea('access_token_iv').notNull(),
+  accessTokenCipher: bytea('access_token_cipher').notNull(),
+  refreshTokenIv: bytea('refresh_token_iv').notNull(),
+  refreshTokenCipher: bytea('refresh_token_cipher').notNull(),
 });
 export type CandidateSender = typeof candidateSender.$inferSelect;
 export type NewCandidateSender = typeof candidateSender.$inferInsert;

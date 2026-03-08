@@ -1,6 +1,6 @@
 import { fail, strictEqual } from 'node:assert/strict';
 
-import { alias } from 'drizzle-orm/pg-core';
+import { alias, type PgUpdateSetSource } from 'drizzle-orm/pg-core';
 import {
   and,
   asc,
@@ -23,6 +23,7 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { enumerate, izip } from 'itertools';
 
 import { assertOptional, assertSingle } from '$lib/server/assert';
+import { decryptOAuthSecret, encryptOAuthSecret } from '$lib/crypto/oauth';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
@@ -1131,14 +1132,16 @@ export async function getCandidateSenders(db: DbConnection) {
  */
 export async function getDesignatedSenderCredentialsForUpdate(db: DrizzleTransaction) {
   return await tracer.asyncSpan('get-designated-sender-credentials', async () => {
-    return await db
+    const sender = await db
       .select({
         id: schema.user.id,
         email: schema.user.email,
         givenName: schema.user.givenName,
         familyName: schema.user.familyName,
-        accessToken: schema.candidateSender.accessToken,
-        refreshToken: schema.candidateSender.refreshToken,
+        accessTokenIv: schema.candidateSender.accessTokenIv,
+        accessTokenCipher: schema.candidateSender.accessTokenCipher,
+        refreshTokenIv: schema.candidateSender.refreshTokenIv,
+        refreshTokenCipher: schema.candidateSender.refreshTokenCipher,
         scopes: schema.candidateSender.scopes,
         isValid: lt(schema.candidateSender.expiration, sql`now()`).mapWith(Boolean),
       })
@@ -1157,6 +1160,24 @@ export async function getDesignatedSenderCredentialsForUpdate(db: DrizzleTransac
       )
       .for('update')
       .then(assertOptional);
+
+    if (typeof sender === 'undefined') return;
+
+    const [accessToken, refreshToken] = await Promise.all([
+      decryptOAuthSecret(sender.accessTokenIv, sender.accessTokenCipher),
+      decryptOAuthSecret(sender.refreshTokenIv, sender.refreshTokenCipher),
+    ]);
+
+    return {
+      id: sender.id,
+      email: sender.email,
+      givenName: sender.givenName,
+      familyName: sender.familyName,
+      accessToken,
+      refreshToken,
+      scopes: sender.scopes,
+      isValid: sender.isValid,
+    };
   });
 }
 
@@ -1173,15 +1194,27 @@ export async function updateCandidateSender(
       'database.user.id': userId,
       'database.candidate_sender.expires_in': expiresIn,
     });
+
+    const encryptedAccessToken = await encryptOAuthSecret(accessToken);
+    const update: PgUpdateSetSource<typeof schema.candidateSender> = {
+      userId,
+      scopes,
+      accessTokenIv: Buffer.from(encryptedAccessToken.iv),
+      accessTokenCipher: Buffer.from(encryptedAccessToken.cipher),
+      refreshTokenIv: schema.candidateSender.refreshTokenIv,
+      refreshTokenCipher: schema.candidateSender.refreshTokenCipher,
+      expiration: sql`now() + make_interval(secs => ${expiresIn})`,
+    };
+
+    if (typeof refreshToken !== 'undefined') {
+      const { iv, cipher } = await encryptOAuthSecret(refreshToken);
+      update.refreshTokenIv = Buffer.from(iv);
+      update.refreshTokenCipher = Buffer.from(cipher);
+    }
+
     const { rowCount } = await db
       .update(schema.candidateSender)
-      .set({
-        userId,
-        accessToken,
-        scopes,
-        refreshToken: refreshToken ?? schema.candidateSender.refreshToken,
-        expiration: sql`now() + make_interval(secs => ${expiresIn})`,
-      })
+      .set(update)
       .where(eq(schema.candidateSender.userId, userId));
     logger.debug('updated candidate sender', { rowCount });
   });
@@ -1197,16 +1230,30 @@ export async function upsertCandidateSender(
 ) {
   return await tracer.asyncSpan('upsert-candidate-sender', async span => {
     span.setAttribute('database.user.id', userId);
+    const [encryptedAccessToken, encryptedRefreshToken] = await Promise.all([
+      encryptOAuthSecret(accessToken),
+      encryptOAuthSecret(refreshToken),
+    ]);
     const { rowCount } = await db
       .insert(schema.candidateSender)
-      .values({ userId, expiration, accessToken, refreshToken, scopes })
+      .values({
+        userId,
+        expiration,
+        accessTokenIv: Buffer.from(encryptedAccessToken.iv),
+        accessTokenCipher: Buffer.from(encryptedAccessToken.cipher),
+        refreshTokenIv: Buffer.from(encryptedRefreshToken.iv),
+        refreshTokenCipher: Buffer.from(encryptedRefreshToken.cipher),
+        scopes,
+      })
       .onConflictDoUpdate({
         target: schema.candidateSender.userId,
         set: {
           updatedAt: sql`now()`,
           expiration: sql`excluded.${sql.raw(schema.candidateSender.expiration.name)}`,
-          accessToken: sql`excluded.${sql.raw(schema.candidateSender.accessToken.name)}`,
-          refreshToken: sql`excluded.${sql.raw(schema.candidateSender.refreshToken.name)}`,
+          accessTokenIv: sql`excluded.${sql.raw(schema.candidateSender.accessTokenIv.name)}`,
+          accessTokenCipher: sql`excluded.${sql.raw(schema.candidateSender.accessTokenCipher.name)}`,
+          refreshTokenIv: sql`excluded.${sql.raw(schema.candidateSender.refreshTokenIv.name)}`,
+          refreshTokenCipher: sql`excluded.${sql.raw(schema.candidateSender.refreshTokenCipher.name)}`,
           scopes: sql`excluded.${sql.raw(schema.candidateSender.scopes.name)}`,
         },
       });
