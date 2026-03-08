@@ -38,22 +38,24 @@
         <Tabs.Content value={round}>
           <ul class="space-y-1">
             {#each students as { email, givenName, familyName, avatarUrl, studentNumber } (email)}
-              <a
-                href="mailto:{email}"
-                class="bg-muted hover:bg-muted/80 flex items-center gap-3 rounded-md p-2 transition-colors duration-150"
-              >
-                <Avatar.Root class="size-10">
-                  <Avatar.Image src={avatarUrl} alt="{givenName} {familyName}" />
-                  <Avatar.Fallback>{givenName[0]}{familyName[0]}</Avatar.Fallback>
-                </Avatar.Root>
-                <div class="flex grow flex-col">
-                  <strong><span class="uppercase">{familyName}</span>, {givenName}</strong>
-                  {#if studentNumber !== null}
-                    <span class="text-sm opacity-50">{studentNumber}</span>
-                  {/if}
-                  <span class="text-xs opacity-50">{email}</span>
-                </div>
-              </a>
+              <li>
+                <a
+                  href="mailto:{email}"
+                  class="bg-muted hover:bg-muted/80 flex items-center gap-3 rounded-md p-2 transition-colors duration-150"
+                >
+                  <Avatar.Root class="size-10">
+                    <Avatar.Image src={avatarUrl} alt="{givenName} {familyName}" />
+                    <Avatar.Fallback>{givenName[0]}{familyName[0]}</Avatar.Fallback>
+                  </Avatar.Root>
+                  <div class="flex grow flex-col">
+                    <strong><span class="uppercase">{familyName}</span>, {givenName}</strong>
+                    {#if studentNumber !== null}
+                      <span class="text-sm opacity-50">{studentNumber}</span>
+                    {/if}
+                    <span class="text-xs opacity-50">{email}</span>
+                  </div>
+                </a>
+              </li>
             {/each}
           </ul>
         </Tabs.Content>
