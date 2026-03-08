@@ -9,6 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "prepare": "svelte-kit sync",
+    "encryption:generate": "node ./scripts/generate-encryption-key.js",
     "fmt": "prettier . --experimental-cli --check --cache-location .prettiercache",
     "fmt:fix": "prettier . --experimental-cli --write --cache-location .prettiercache",
     "lint": "pnpm run --workspace-root --parallel /^lint:/",
