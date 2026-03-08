@@ -102,7 +102,7 @@
       </li>
     {/each}
   </ul>
-  <div class="flex items-center gap-3">
+  <div id="selection-progress" class="flex items-center gap-3">
     <Progress value={drafteeIds.size} max={remainingQuota} />
     <span class="text-muted-foreground text-sm whitespace-nowrap tabular-nums">
       {drafteeIds.size} / {remainingQuota} slots

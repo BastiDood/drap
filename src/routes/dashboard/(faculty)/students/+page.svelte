@@ -100,7 +100,7 @@
         </Card.Title>
       </Card.Header>
       <Card.Content>
-        <p class="text-2xl font-semibold tabular-nums">{quota}</p>
+        <p id="stat-total-quota" class="text-2xl font-semibold tabular-nums">{quota}</p>
       </Card.Content>
     </Card.Root>
     <Card.Root variant="soft" class={remainingTonal}>
@@ -118,7 +118,7 @@
         </Card.Title>
       </Card.Header>
       <Card.Content>
-        <p class="text-2xl font-semibold tabular-nums">{remainingQuota}</p>
+        <p id="stat-remaining" class="text-2xl font-semibold tabular-nums">{remainingQuota}</p>
       </Card.Content>
     </Card.Root>
     <Card.Root variant="soft" class="preset-tonal-accent col-span-2 sm:col-span-1">
@@ -136,7 +136,7 @@
         </Card.Title>
       </Card.Header>
       <Card.Content>
-        <p class="text-2xl font-semibold tabular-nums">{researchers.length}</p>
+        <p id="stat-drafted" class="text-2xl font-semibold tabular-nums">{researchers.length}</p>
       </Card.Content>
     </Card.Root>
   </div>
@@ -183,7 +183,7 @@
   {:else if students.length > 0}
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
       {#if currRound > 1 && researchers.length > 0}
-        <Card.Root variant="soft">
+        <Card.Root id="previous-picks" variant="soft">
           <Card.Header>
             <Card.Title>Previous Picks</Card.Title>
           </Card.Header>
