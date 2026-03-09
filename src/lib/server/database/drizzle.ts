@@ -1190,7 +1190,7 @@ export async function updateCandidateSender(
   scopes: string[],
   encryptionKey: CryptoKey,
   accessToken: string,
-  refreshToken: string | undefined,
+  refreshToken?: string | undefined,
 ) {
   return await tracer.asyncSpan('update-candidate-sender', async span => {
     span.setAttributes({
