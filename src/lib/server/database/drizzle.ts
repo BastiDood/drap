@@ -629,6 +629,13 @@ export async function getActiveDraft(db: DbConnection) {
   });
 }
 
+export async function lockLabCatalogForMutation(db: DrizzleTransaction) {
+  return await tracer.asyncSpan(
+    'lock-lab-catalog-for-mutation',
+    async () => await db.execute(sql`LOCK TABLE ${schema.lab} IN ROW EXCLUSIVE MODE`),
+  );
+}
+
 export async function getDraftByIdForShare(db: DrizzleTransaction, id: bigint) {
   return await tracer.asyncSpan('get-draft-by-id-for-share', async span => {
     span.setAttribute('database.draft.id', id.toString());
@@ -1005,6 +1012,10 @@ export async function initDraft(
 ) {
   return await tracer.asyncSpan('init-draft', async span => {
     span.setAttribute('database.draft.max_rounds', maxRounds);
+
+    // Blocks further modifications to the lab catalog until the end of the transaction.
+    await db.execute(sql`LOCK TABLE ${schema.lab} IN SHARE MODE`);
+
     const draft = await db
       .insert(schema.draft)
       .values({ maxRounds, registrationClosesAt })

@@ -8,6 +8,7 @@ import {
   getActiveDraftForShare,
   getLabRegistry,
   insertNewLab,
+  lockLabCatalogForMutation,
   restoreLab,
 } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
@@ -87,6 +88,7 @@ export const actions = {
 
       await db.transaction(
         async db => {
+          await lockLabCatalogForMutation(db);
           const draft = await getActiveDraftForShare(db);
           if (typeof draft !== 'undefined' && draft.currRound === 0) {
             logger.fatal('cannot mutate lab catalog during registration');
@@ -122,6 +124,7 @@ export const actions = {
 
       await db.transaction(
         async db => {
+          await lockLabCatalogForMutation(db);
           const draft = await getActiveDraftForShare(db);
           if (typeof draft !== 'undefined' && draft.currRound === 0) {
             logger.fatal('cannot mutate lab catalog during registration');
@@ -157,6 +160,7 @@ export const actions = {
 
       await db.transaction(
         async db => {
+          await lockLabCatalogForMutation(db);
           const draft = await getActiveDraftForShare(db);
           if (typeof draft !== 'undefined' && draft.currRound === 0) {
             logger.fatal('cannot mutate lab catalog during registration');
