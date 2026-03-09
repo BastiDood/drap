@@ -629,6 +629,60 @@ export async function getActiveDraft(db: DbConnection) {
   });
 }
 
+export async function getDraftByIdForShare(db: DrizzleTransaction, id: bigint) {
+  return await tracer.asyncSpan('get-draft-by-id-for-share', async span => {
+    span.setAttribute('database.draft.id', id.toString());
+    return await db
+      .select({
+        currRound: schema.draft.currRound,
+        maxRounds: schema.draft.maxRounds,
+        registrationClosesAt: schema.draft.registrationClosesAt,
+        activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
+        activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
+      })
+      .from(schema.draft)
+      .where(eq(schema.draft.id, id))
+      .for('share')
+      .then(assertOptional);
+  });
+}
+
+export async function getActiveDraftForShare(db: DrizzleTransaction) {
+  return await tracer.asyncSpan('get-active-draft-for-share', async () => {
+    return await db
+      .select({
+        id: schema.draft.id,
+        currRound: schema.draft.currRound,
+        maxRounds: schema.draft.maxRounds,
+        registrationClosesAt: schema.draft.registrationClosesAt,
+        activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
+        activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
+      })
+      .from(schema.draft)
+      .where(sql`upper_inf(${schema.draft.activePeriod})`)
+      .for('share')
+      .then(assertOptional);
+  });
+}
+
+export async function getActiveDraftForUpdate(db: DrizzleTransaction) {
+  return await tracer.asyncSpan('get-active-draft-for-update', async () => {
+    return await db
+      .select({
+        id: schema.draft.id,
+        currRound: schema.draft.currRound,
+        maxRounds: schema.draft.maxRounds,
+        registrationClosesAt: schema.draft.registrationClosesAt,
+        activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
+        activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
+      })
+      .from(schema.draft)
+      .where(sql`upper_inf(${schema.draft.activePeriod})`)
+      .for('update')
+      .then(assertOptional);
+  });
+}
+
 export async function hasActiveDraft(db: DbConnection) {
   return await tracer.asyncSpan('has-active-draft', async () => {
     const result = await db
@@ -817,7 +871,10 @@ export async function getLabAndRemainingStudentsInDraftWithLabPreference(
 }
 
 /** Typically invoked from within a transaction. */
-export async function autoAcknowledgeLabsWithoutPreferences(db: DbConnection, draftId: bigint) {
+export async function autoAcknowledgeLabsWithoutPreferences(
+  db: DrizzleTransaction,
+  draftId: bigint,
+) {
   return await tracer.asyncSpan('auto-acknowledge-labs-without-preferences', async span => {
     span.setAttribute('database.draft.id', draftId.toString());
     // Define the draft CTE
@@ -887,27 +944,25 @@ export async function autoAcknowledgeLabsWithoutPreferences(db: DbConnection, dr
         .groupBy(preferredSubquery.labId),
     );
 
-    await db.transaction(async txn => {
-      const toAcknowledge = await txn
-        .with(draftsCte, draftedCte, preferredCte)
-        .select({
-          draftId: draftsCte.draftId,
-          round: draftsCte.currRound,
-          labId: schema.draftLabQuota.labId,
-        })
-        .from(draftsCte)
-        .innerJoin(schema.draftLabQuota, eq(draftsCte.draftId, schema.draftLabQuota.draftId))
-        .leftJoin(draftedCte, eq(schema.draftLabQuota.labId, draftedCte.labId))
-        .leftJoin(preferredCte, eq(schema.draftLabQuota.labId, preferredCte.labId))
-        .where(
-          or(
-            gte(sql`coalesce(${draftedCte.draftees}, 0)`, schema.draftLabQuota.initialQuota),
-            eq(sql`coalesce(${preferredCte.preferrers}, 0)`, 0),
-          ),
-        );
+    const toAcknowledge = await db
+      .with(draftsCte, draftedCte, preferredCte)
+      .select({
+        draftId: draftsCte.draftId,
+        round: draftsCte.currRound,
+        labId: schema.draftLabQuota.labId,
+      })
+      .from(draftsCte)
+      .innerJoin(schema.draftLabQuota, eq(draftsCte.draftId, schema.draftLabQuota.draftId))
+      .leftJoin(draftedCte, eq(schema.draftLabQuota.labId, draftedCte.labId))
+      .leftJoin(preferredCte, eq(schema.draftLabQuota.labId, preferredCte.labId))
+      .where(
+        or(
+          gte(sql`coalesce(${draftedCte.draftees}, 0)`, schema.draftLabQuota.initialQuota),
+          eq(sql`coalesce(${preferredCte.preferrers}, 0)`, 0),
+        ),
+      );
 
-      for (const row of toAcknowledge) await txn.insert(schema.facultyChoice).values(row);
-    });
+    for (const row of toAcknowledge) await db.insert(schema.facultyChoice).values(row);
   });
 }
 
@@ -943,32 +998,34 @@ export async function getLabQuotaAndSelectedStudentCountInDraft(
   });
 }
 
-export async function initDraft(db: DbConnection, maxRounds: number, registrationClosesAt: Date) {
+export async function initDraft(
+  db: DrizzleTransaction,
+  maxRounds: number,
+  registrationClosesAt: Date,
+) {
   return await tracer.asyncSpan('init-draft', async span => {
     span.setAttribute('database.draft.max_rounds', maxRounds);
-    return await db.transaction(async db => {
-      const draft = await db
-        .insert(schema.draft)
-        .values({ maxRounds, registrationClosesAt })
-        .returning({
-          id: schema.draft.id,
-          activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
-        })
-        .then(assertSingle);
+    const draft = await db
+      .insert(schema.draft)
+      .values({ maxRounds, registrationClosesAt })
+      .returning({
+        id: schema.draft.id,
+        activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
+      })
+      .then(assertSingle);
 
-      const labs = await db.select({ labId: schema.activeLabView.id }).from(schema.activeLabView);
-      if (labs.length > 0)
-        await db.insert(schema.draftLabQuota).values(
-          labs.map(
-            ({ labId }): Pick<schema.NewDraftLabQuota, 'draftId' | 'labId'> => ({
-              draftId: draft.id,
-              labId,
-            }),
-          ),
-        );
+    const labs = await db.select({ labId: schema.activeLabView.id }).from(schema.activeLabView);
+    if (labs.length > 0)
+      await db.insert(schema.draftLabQuota).values(
+        labs.map(
+          ({ labId }): Pick<schema.NewDraftLabQuota, 'draftId' | 'labId'> => ({
+            draftId: draft.id,
+            labId,
+          }),
+        ),
+      );
 
-      return draft;
-    });
+    return draft;
   });
 }
 
@@ -1041,7 +1098,7 @@ export async function beginDraftReview(db: DbConnection, draftId: bigint) {
 }
 
 export async function insertStudentRanking(
-  db: DbConnection,
+  db: DrizzleTransaction,
   draftId: bigint,
   userId: string,
   labs: string[],
@@ -1050,17 +1107,15 @@ export async function insertStudentRanking(
   return await tracer.asyncSpan('insert-student-ranking', async span => {
     span.setAttribute('database.draft.id', draftId.toString());
     span.setAttribute('database.user.id', userId);
-    await db.transaction(async txn => {
-      await txn
-        .insert(schema.studentRank)
-        .values({ draftId, userId })
-        .onConflictDoNothing({ target: [schema.studentRank.draftId, schema.studentRank.userId] });
+    await db
+      .insert(schema.studentRank)
+      .values({ draftId, userId })
+      .onConflictDoNothing({ target: [schema.studentRank.draftId, schema.studentRank.userId] });
 
-      for (const [index, [labId, remark]] of enumerate(izip(labs, remarks)))
-        await txn
-          .insert(schema.studentRankLab)
-          .values({ draftId, userId, labId, index: BigInt(index + 1), remark });
-    });
+    for (const [index, [labId, remark]] of enumerate(izip(labs, remarks)))
+      await db
+        .insert(schema.studentRankLab)
+        .values({ draftId, userId, labId, index: BigInt(index + 1), remark });
   });
 }
 
@@ -1336,7 +1391,7 @@ export async function upsertDesignatedSender(db: DbConnection, userId: string) {
  * @returns The current draft based on the `draftId` provided.
  */
 export async function insertFacultyChoice(
-  db: DbConnection,
+  db: DrizzleTransaction,
   draftId: bigint,
   labId: string,
   facultyUserId: string,
@@ -1389,7 +1444,7 @@ export async function insertFacultyChoice(
 
 /** Typically invoked from within a transaction. */
 export async function insertLotteryChoices(
-  db: DbConnection,
+  db: DrizzleTransaction,
   draftId: bigint,
   adminUserId: string,
   assignmentUserIdToLabPairs: (readonly [string, string])[],
@@ -1707,7 +1762,7 @@ export async function updateUserRole(
   });
 }
 
-interface TestUserOptions {
+export interface TestUserOptions {
   email: string;
   googleUserId: string;
   givenName: string;
@@ -1722,7 +1777,7 @@ interface TestUserOptions {
  * Combines upsertOpenIdUser + updateUserRole for test fixtures.
  */
 export async function upsertTestUser(
-  db: DbConnection,
+  db: DrizzleTransaction,
   { email, googleUserId, givenName, familyName, avatarUrl = '', isAdmin, labId }: TestUserOptions,
 ) {
   const { id: userId } = await upsertOpenIdUser(

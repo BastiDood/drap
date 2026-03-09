@@ -139,7 +139,7 @@ export async function GET({ fetch, cookies, setHeaders, url: { searchParams } })
 
           return { hasExtendedScope, expires: token.exp, sid };
         },
-        { isolationLevel: 'repeatable read' },
+        { isolationLevel: 'read committed' },
       );
     },
   );

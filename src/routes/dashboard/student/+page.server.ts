@@ -5,7 +5,7 @@ import { error, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/database';
 import {
   getActiveDraft,
-  getDraftById,
+  getDraftByIdForShare,
   getDraftLabQuotaLabIds,
   getDraftLabRegistry,
   getLabById,
@@ -223,39 +223,12 @@ export const actions = {
 
       // Zero preferences allowed - student goes directly to lottery
       const draftId = BigInt(draftIdField);
-      const draft = await getDraftById(db, draftId);
-      if (typeof draft === 'undefined') {
-        logger.warn('cannot find the target draft');
-        error(404);
-      }
-
-      const { currRound, maxRounds, registrationClosesAt } = draft;
-      logger.debug('max rounds for target draft determined', { 'draft.round.max': maxRounds });
-      if (currRound !== 0) {
-        logger.warn('cannot submit rankings to an ongoing draft', {
-          'draft.round.current': currRound,
-          'draft.round.max': maxRounds,
-        });
-        error(403);
-      }
-
-      if (registrationClosesAt < new Date()) {
-        logger.warn('attempt to submit rankings after registration closed', {
-          'draft.registration.closes_at': registrationClosesAt.toISOString(),
-        });
-        error(403);
-      }
-
-      if (labs.length > maxRounds) {
-        logger.warn('lab rankings exceed max round', { 'ranking.lab_count': labs.length });
-        error(400);
-      }
-
       const duplicateLabIds = new Set<string>();
       const uniqueLabIds = new Set<string>();
       for (const labId of labs)
         if (uniqueLabIds.has(labId)) duplicateLabIds.add(labId);
         else uniqueLabIds.add(labId);
+
       if (duplicateLabIds.size > 0) {
         logger.warn('submitted duplicate lab rankings', {
           'draft.id': draftId.toString(),
@@ -265,20 +238,55 @@ export const actions = {
         error(400);
       }
 
-      const snapshotLabIds = new Set(await getDraftLabQuotaLabIds(db, draftId));
-      const unknownLabIds = Array.from(uniqueLabIds).filter(labId => !snapshotLabIds.has(labId));
-      if (unknownLabIds.length > 0) {
-        logger.warn('submitted rankings with labs outside draft snapshot', {
-          'draft.id': draftId.toString(),
-          'ranking.lab_count': labs.length,
-          'ranking.snapshot_lab_count': snapshotLabIds.size,
-          'ranking.unknown_lab_count': unknownLabIds.length,
-          'ranking.unknown_lab_ids': unknownLabIds,
-        });
-        error(400);
-      }
+      await db.transaction(
+        async db => {
+          const draft = await getDraftByIdForShare(db, draftId);
+          if (typeof draft === 'undefined') {
+            logger.warn('cannot find the target draft');
+            error(404);
+          }
 
-      await insertStudentRanking(db, draftId, user.id, labs, remarks);
+          const { currRound, maxRounds, registrationClosesAt } = draft;
+          logger.debug('max rounds for target draft determined', { 'draft.round.max': maxRounds });
+          if (currRound !== 0) {
+            logger.warn('cannot submit rankings to an ongoing draft', {
+              'draft.round.current': currRound,
+              'draft.round.max': maxRounds,
+            });
+            error(403);
+          }
+
+          if (registrationClosesAt < new Date()) {
+            logger.warn('attempt to submit rankings after registration closed', {
+              'draft.registration.closes_at': registrationClosesAt.toISOString(),
+            });
+            error(403);
+          }
+
+          if (labs.length > maxRounds) {
+            logger.warn('lab rankings exceed max round', { 'ranking.lab_count': labs.length });
+            error(400);
+          }
+
+          const snapshotLabIds = new Set(await getDraftLabQuotaLabIds(db, draftId));
+          const unknownLabIds = Array.from(uniqueLabIds).filter(
+            labId => !snapshotLabIds.has(labId),
+          );
+          if (unknownLabIds.length > 0) {
+            logger.warn('submitted rankings with labs outside draft snapshot', {
+              'draft.id': draftId.toString(),
+              'ranking.lab_count': labs.length,
+              'ranking.snapshot_lab_count': snapshotLabIds.size,
+              'ranking.unknown_lab_count': unknownLabIds.length,
+              'ranking.unknown_lab_ids': unknownLabIds,
+            });
+            error(400);
+          }
+
+          await insertStudentRanking(db, draftId, user.id, labs, remarks);
+        },
+        { isolationLevel: 'read committed' },
+      );
       logger.info('lab rankings inserted');
     });
   },

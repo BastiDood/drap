@@ -9,7 +9,7 @@ import {
   autoAcknowledgeLabsWithoutPreferences,
   beginDraftReview,
   concludeDraft,
-  getActiveDraft,
+  getActiveDraftForUpdate,
   getDraftAssignmentRecords,
   getDraftById,
   getDraftLabQuotaLabIds,
@@ -225,15 +225,30 @@ export const actions = {
       logger.debug('starting draft', { 'draft.id': draft });
 
       const draftId = BigInt(draft);
-      const studentCount = await getStudentCountInDraft(db, draftId);
-      if (studentCount <= 0) {
-        logger.warn('no students in draft');
-        return fail(497);
-      }
-
       const roundsToNotify: (number | null)[] = [];
-      await db.transaction(
+      const started = await db.transaction(
         async db => {
+          const activeDraft = await getActiveDraftForUpdate(db);
+          if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
+            logger.warn('attempt to start non-active draft', { 'draft.id': draftId.toString() });
+            error(403);
+          }
+
+          if (activeDraft.currRound !== 0) {
+            logger.warn('attempt to start draft outside registration phase', {
+              'draft.id': draftId.toString(),
+              'draft.round.current': activeDraft.currRound,
+              'draft.round.max': activeDraft.maxRounds,
+            });
+            error(403);
+          }
+
+          const studentCount = await getStudentCountInDraft(db, draftId);
+          if (studentCount <= 0) {
+            logger.warn('no students in draft');
+            return false;
+          }
+
           while (true) {
             const draftRound = await incrementDraftRound(db, draftId);
             assert(typeof draftRound !== 'undefined', 'cannot start a non-existent draft');
@@ -256,9 +271,13 @@ export const actions = {
               break;
             }
           }
+
+          return true;
         },
-        { isolationLevel: 'repeatable read' },
+        { isolationLevel: 'read committed' },
       );
+
+      if (!started) return fail(497);
 
       // Dispatch notifications for all rounds that were started
       const facultyAndStaff = await getFacultyAndStaff(db);
@@ -308,14 +327,6 @@ export const actions = {
       }
 
       const draftId = BigInt(draft);
-      const activeDraft = await getActiveDraft(db);
-      if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
-        logger.warn('attempt to update quota snapshots for non-active draft', {
-          'draft.id': draftId.toString(),
-        });
-        error(403);
-      }
-
       const pairs = mapQuotaPairs(data);
       if (pairs.length === 0) {
         logger.debug('no draft quota snapshot updates provided', {
@@ -325,48 +336,61 @@ export const actions = {
         return;
       }
 
-      const snapshotLabIds = new Set(await getDraftLabQuotaLabIds(db, draftId));
-      const unknownLabIds = getUnknownLabIds(
-        pairs.map(([labId]) => labId),
-        snapshotLabIds,
-      );
-      if (unknownLabIds.length > 0) {
-        logger.error('attempt to update draft quota snapshots with unknown labs', void 0, {
-          'draft.id': draftId.toString(),
-          'quota.kind': kind,
-          'quota.snapshot_lab_count': snapshotLabIds.size,
-          'quota.submitted_lab_count': pairs.length,
-          'quota.unknown_lab_count': unknownLabIds.length,
-          'quota.unknown_lab_ids': unknownLabIds,
-        });
-        error(400);
-      }
+      await db.transaction(
+        async db => {
+          const activeDraft = await getActiveDraftForUpdate(db);
+          if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
+            logger.warn('attempt to update quota snapshots for non-active draft', {
+              'draft.id': draftId.toString(),
+            });
+            error(403);
+          }
 
-      switch (kind) {
-        case 'initial':
-          if (activeDraft.currRound !== 0) {
-            logger.warn('attempt to update initial snapshots outside registration', {
+          const snapshotLabIds = new Set(await getDraftLabQuotaLabIds(db, draftId));
+          const unknownLabIds = getUnknownLabIds(
+            pairs.map(([labId]) => labId),
+            snapshotLabIds,
+          );
+          if (unknownLabIds.length > 0) {
+            logger.error('attempt to update draft quota snapshots with unknown labs', void 0, {
               'draft.id': draftId.toString(),
-              'draft.round.current': activeDraft.currRound,
+              'quota.kind': kind,
+              'quota.snapshot_lab_count': snapshotLabIds.size,
+              'quota.submitted_lab_count': pairs.length,
+              'quota.unknown_lab_count': unknownLabIds.length,
+              'quota.unknown_lab_ids': unknownLabIds,
             });
-            error(403);
+            error(400);
           }
-          await updateDraftInitialLabQuotas(db, draftId, pairs);
-          break;
-        case 'lottery':
-          if (activeDraft.currRound !== activeDraft.maxRounds + 1) {
-            logger.warn('attempt to update lottery snapshots outside intervention phase', {
-              'draft.id': draftId.toString(),
-              'draft.round.current': activeDraft.currRound,
-              'draft.round.max': activeDraft.maxRounds,
-            });
-            error(403);
+
+          switch (kind) {
+            case 'initial':
+              if (activeDraft.currRound !== 0) {
+                logger.warn('attempt to update initial snapshots outside registration', {
+                  'draft.id': draftId.toString(),
+                  'draft.round.current': activeDraft.currRound,
+                });
+                error(403);
+              }
+              await updateDraftInitialLabQuotas(db, draftId, pairs);
+              break;
+            case 'lottery':
+              if (activeDraft.currRound !== activeDraft.maxRounds + 1) {
+                logger.warn('attempt to update lottery snapshots outside intervention phase', {
+                  'draft.id': draftId.toString(),
+                  'draft.round.current': activeDraft.currRound,
+                  'draft.round.max': activeDraft.maxRounds,
+                });
+                error(403);
+              }
+              await updateDraftLotteryLabQuotas(db, draftId, pairs);
+              break;
+            default:
+              throw new Error(`invalid quota kind: ${kind}`);
           }
-          await updateDraftLotteryLabQuotas(db, draftId, pairs);
-          break;
-        default:
-          throw new Error(`invalid quota kind: ${kind}`);
-      }
+        },
+        { isolationLevel: 'read committed' },
+      );
 
       logger.info('draft quota snapshots updated', {
         'draft.id': draftId.toString(),
@@ -405,22 +429,6 @@ export const actions = {
       }
 
       const draftId = BigInt(draft);
-      const activeDraft = await getActiveDraft(db);
-
-      if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
-        logger.warn('attempt to intervene non-active draft', { 'draft.id': draftId.toString() });
-        error(403);
-      }
-
-      if (activeDraft.currRound !== activeDraft.maxRounds + 1) {
-        logger.warn('attempt to intervene outside intervention rounds', {
-          'draft.id': draftId.toString(),
-          'draft.round.current': activeDraft.currRound,
-          'draft.round.max': activeDraft.maxRounds,
-        });
-        error(403);
-      }
-
       logger.debug('intervening draft', { 'draft.id': draft });
       data.delete('draft');
 
@@ -430,24 +438,48 @@ export const actions = {
         return;
       }
 
-      const snapshotLabIds = new Set(await getDraftLabQuotaLabIds(db, draftId));
-      const unknownLabIds = getUnknownLabIds(
-        pairs.map(([, labId]) => labId),
-        snapshotLabIds,
-      );
-      if (unknownLabIds.length > 0) {
-        logger.error('attempt to intervene draft with unknown labs', void 0, {
-          'draft.id': draftId.toString(),
-          'draft.pair_count': pairs.length,
-          'draft.snapshot_lab_count': snapshotLabIds.size,
-          'draft.unknown_lab_count': unknownLabIds.length,
-          'draft.unknown_lab_ids': unknownLabIds,
-        });
-        error(400);
-      }
-
       logger.debug('intervening draft with pairs', { 'draft.pair_count': pairs.length });
-      const result = await insertLotteryChoices(db, draftId, user.id, pairs, 'intervention');
+      const result = await db.transaction(
+        async db => {
+          const activeDraft = await getActiveDraftForUpdate(db);
+
+          if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
+            logger.warn('attempt to intervene non-active draft', {
+              'draft.id': draftId.toString(),
+            });
+            error(403);
+          }
+
+          if (activeDraft.currRound !== activeDraft.maxRounds + 1) {
+            logger.warn('attempt to intervene outside intervention rounds', {
+              'draft.id': draftId.toString(),
+              'draft.round.current': activeDraft.currRound,
+              'draft.round.max': activeDraft.maxRounds,
+            });
+            error(403);
+          }
+
+          const snapshotLabIds = new Set(await getDraftLabQuotaLabIds(db, draftId));
+          const unknownLabIds = getUnknownLabIds(
+            pairs.map(([, labId]) => labId),
+            snapshotLabIds,
+          );
+          if (unknownLabIds.length > 0) {
+            logger.error('attempt to intervene draft with unknown labs', void 0, {
+              'draft.id': draftId.toString(),
+              'draft.pair_count': pairs.length,
+              'draft.snapshot_lab_count': snapshotLabIds.size,
+              'draft.unknown_lab_count': unknownLabIds.length,
+              'draft.unknown_lab_ids': unknownLabIds,
+            });
+            error(400);
+          }
+
+          return await insertLotteryChoices(db, draftId, user.id, pairs, 'intervention');
+        },
+        { isolationLevel: 'read committed' },
+      );
+
       if (typeof result === 'undefined') {
         logger.error('draft must exist prior to lottery in intervention');
         error(404);
@@ -510,26 +542,28 @@ export const actions = {
       }
 
       const draftId = BigInt(draft);
-      const activeDraft = await getActiveDraft(db);
-      if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
-        logger.warn('attempt to conclude non-active draft', { 'draft.id': draftId.toString() });
-        error(403);
-      }
-
-      if (activeDraft.currRound !== activeDraft.maxRounds + 1) {
-        logger.warn('attempt to conclude outside intervention rounds', {
-          'draft.id': draftId.toString(),
-          'draft.round.current': activeDraft.currRound,
-          'draft.round.max': activeDraft.maxRounds,
-        });
-        error(403);
-      }
-
       logger.debug('running lottery and entering review', { 'draft.id': draft });
 
       try {
         await db.transaction(
           async db => {
+            const activeDraft = await getActiveDraftForUpdate(db);
+            if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
+              logger.warn('attempt to conclude non-active draft', {
+                'draft.id': draftId.toString(),
+              });
+              error(403);
+            }
+
+            if (activeDraft.currRound !== activeDraft.maxRounds + 1) {
+              logger.warn('attempt to conclude outside intervention rounds', {
+                'draft.id': draftId.toString(),
+                'draft.round.current': activeDraft.currRound,
+                'draft.round.max': activeDraft.maxRounds,
+              });
+              error(403);
+            }
+
             const snapshots = await getDraftLabQuotaSnapshots(db, draftId);
             const schedule = Array.from(
               roundrobin(
@@ -574,7 +608,7 @@ export const actions = {
               error(404);
             }
           },
-          { isolationLevel: 'repeatable read' },
+          { isolationLevel: 'read committed' },
         );
         logger.info('draft review started');
       } catch (err) {
@@ -613,26 +647,27 @@ export const actions = {
       }
 
       const draftId = BigInt(draft);
-      const activeDraft = await getActiveDraft(db);
-
-      if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
-        logger.warn('attempt to finalize non-active draft', { 'draft.id': draftId.toString() });
-        error(403);
-      }
-
-      if (activeDraft.currRound !== null) {
-        logger.warn('attempt to finalize outside review phase', {
-          'draft.id': draftId.toString(),
-          'draft.round.current': activeDraft.currRound,
-          'draft.round.max': activeDraft.maxRounds,
-        });
-        error(403);
-      }
-
       logger.debug('finalizing draft', { 'draft.id': draft });
+
       let userAssignments: { userId: string; labId: string }[] = [];
       await db.transaction(
         async db => {
+          const activeDraft = await getActiveDraftForUpdate(db);
+
+          if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
+            logger.warn('attempt to finalize non-active draft', { 'draft.id': draftId.toString() });
+            error(403);
+          }
+
+          if (activeDraft.currRound !== null) {
+            logger.warn('attempt to finalize outside review phase', {
+              'draft.id': draftId.toString(),
+              'draft.round.current': activeDraft.currRound,
+              'draft.round.max': activeDraft.maxRounds,
+            });
+            error(403);
+          }
+
           const finalizedAt = await concludeDraft(db, draftId);
           logger.info('draft finalized and closed', {
             'draft.finalized_at': finalizedAt.toISOString(),
@@ -642,7 +677,7 @@ export const actions = {
           logger.debug('draft results synced', { 'draft.result_count': results.length });
           userAssignments = results;
         },
-        { isolationLevel: 'repeatable read' },
+        { isolationLevel: 'read committed' },
       );
 
       const [facultyAndStaff, assignments] = await Promise.all([

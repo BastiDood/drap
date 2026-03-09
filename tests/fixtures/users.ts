@@ -1,8 +1,10 @@
 import { mergeTests, type Page } from '@playwright/test';
 
 import {
+  type DrizzleDatabase,
   deleteValidSession,
   insertDummySession,
+  type TestUserOptions,
   upsertTestUser,
 } from '$lib/server/database/drizzle';
 
@@ -12,13 +14,19 @@ import { testLabs } from './labs';
 // Student fixtures with behavior-based names for E2E testing
 // Each student has a specific role in the draft lifecycle tests
 
+async function createTestUser(database: DrizzleDatabase, options: TestUserOptions) {
+  return await database.transaction(async db => await upsertTestUser(db, options), {
+    isolationLevel: 'read committed',
+  });
+}
+
 const testEagerDraftee = testLabs.extend<
   { eagerDrafteePage: Page },
   { eagerDrafteeUserId: string }
 >({
   eagerDrafteeUserId: [
     async ({ database, labs: _ }, use) => {
-      const { id: userId } = await upsertTestUser(database, {
+      const { id: userId } = await createTestUser(database, {
         email: 'eager.student@up.edu.ph',
         googleUserId: 'test-eager-student',
         givenName: 'Eager',
@@ -57,7 +65,7 @@ const testPatientCandidate = testLabs.extend<
 >({
   patientCandidateUserId: [
     async ({ database, labs: _ }, use) => {
-      const { id: userId } = await upsertTestUser(database, {
+      const { id: userId } = await createTestUser(database, {
         email: 'patient.student@up.edu.ph',
         googleUserId: 'test-patient-student',
         givenName: 'Patient',
@@ -96,7 +104,7 @@ const testPersistentHopeful = testLabs.extend<
 >({
   persistentHopefulUserId: [
     async ({ database, labs: _ }, use) => {
-      const { id: userId } = await upsertTestUser(database, {
+      const { id: userId } = await createTestUser(database, {
         email: 'persistent.student@up.edu.ph',
         googleUserId: 'test-persistent-student',
         givenName: 'Persistent',
@@ -135,7 +143,7 @@ const testUnluckyFullRanker = testLabs.extend<
 >({
   unluckyFullRankerUserId: [
     async ({ database, labs: _ }, use) => {
-      const { id: userId } = await upsertTestUser(database, {
+      const { id: userId } = await createTestUser(database, {
         email: 'unlucky.student@up.edu.ph',
         googleUserId: 'test-unlucky-student',
         givenName: 'Unlucky',
@@ -174,7 +182,7 @@ const testPartialToDrafted = testLabs.extend<
 >({
   partialToDraftedUserId: [
     async ({ database, labs: _ }, use) => {
-      const { id: userId } = await upsertTestUser(database, {
+      const { id: userId } = await createTestUser(database, {
         email: 'partial-drafted.student@up.edu.ph',
         googleUserId: 'test-partial-drafted-student',
         givenName: 'Partial',
@@ -213,7 +221,7 @@ const testPartialToLottery = testLabs.extend<
 >({
   partialToLotteryUserId: [
     async ({ database, labs: _ }, use) => {
-      const { id: userId } = await upsertTestUser(database, {
+      const { id: userId } = await createTestUser(database, {
         email: 'partial-lottery.student@up.edu.ph',
         googleUserId: 'test-partial-lottery-student',
         givenName: 'Partial',
@@ -252,7 +260,7 @@ const testNoRankStudent = testLabs.extend<
 >({
   noRankStudentUserId: [
     async ({ database, labs: _ }, use) => {
-      const { id: userId } = await upsertTestUser(database, {
+      const { id: userId } = await createTestUser(database, {
         email: 'no-rank.student@up.edu.ph',
         googleUserId: 'test-no-rank-student',
         givenName: 'NoRank',
@@ -291,7 +299,7 @@ const testIdleBystander = testLabs.extend<
 >({
   idleBystanderUserId: [
     async ({ database, labs: _ }, use) => {
-      const { id: userId } = await upsertTestUser(database, {
+      const { id: userId } = await createTestUser(database, {
         email: 'idle.student@up.edu.ph',
         googleUserId: 'test-idle-student',
         givenName: 'Idle',
@@ -330,7 +338,7 @@ const testLateRegistrant = testLabs.extend<
 >({
   lateRegistrantUserId: [
     async ({ database, labs: _ }, use) => {
-      const { id: userId } = await upsertTestUser(database, {
+      const { id: userId } = await createTestUser(database, {
         email: 'late.student@up.edu.ph',
         googleUserId: 'test-late-student',
         givenName: 'Late',
@@ -369,7 +377,7 @@ const testSecondRoundNdslFirstChoice = testLabs.extend<
 >({
   secondRoundNdslFirstChoiceUserId: [
     async ({ database, labs: _ }, use) => {
-      const { id: userId } = await upsertTestUser(database, {
+      const { id: userId } = await createTestUser(database, {
         email: 'second-ndsl-first-choice.student@up.edu.ph',
         googleUserId: 'test-second-ndsl-first-choice-student',
         givenName: 'SecondNdsl',
@@ -411,7 +419,7 @@ const testSecondRoundCslFirstChoice = testLabs.extend<
 >({
   secondRoundCslFirstChoiceUserId: [
     async ({ database, labs: _ }, use) => {
-      const { id: userId } = await upsertTestUser(database, {
+      const { id: userId } = await createTestUser(database, {
         email: 'second-csl-first-choice.student@up.edu.ph',
         googleUserId: 'test-second-csl-first-choice-student',
         givenName: 'SecondCsl',
@@ -450,7 +458,7 @@ const testSecondRoundSclSecondChoice = testLabs.extend<
 >({
   secondRoundSclSecondChoiceUserId: [
     async ({ database, labs: _ }, use) => {
-      const { id: userId } = await upsertTestUser(database, {
+      const { id: userId } = await createTestUser(database, {
         email: 'second-scl-second-choice.student@up.edu.ph',
         googleUserId: 'test-second-scl-second-choice-student',
         givenName: 'SecondScl',
@@ -492,7 +500,7 @@ const testSnapshotGuardStudent = testLabs.extend<
 >({
   snapshotGuardStudentUserId: [
     async ({ database, labs: _ }, use) => {
-      const { id: userId } = await upsertTestUser(database, {
+      const { id: userId } = await createTestUser(database, {
         email: 'snapshot-guard.student@up.edu.ph',
         googleUserId: 'test-snapshot-guard-student',
         givenName: 'Snapshot',
@@ -528,7 +536,7 @@ const testSnapshotGuardStudent = testLabs.extend<
 const testNdslHead = testLabs.extend<{ ndslHeadPage: Page }, { ndslHeadUserId: string }>({
   ndslHeadUserId: [
     async ({ database, labs: _ }, use) => {
-      const { id: userId } = await upsertTestUser(database, {
+      const { id: userId } = await createTestUser(database, {
         email: 'ndsl@up.edu.ph',
         googleUserId: 'test-ndsl-head',
         givenName: 'NDSL',
@@ -564,7 +572,7 @@ const testNdslHead = testLabs.extend<{ ndslHeadPage: Page }, { ndslHeadUserId: s
 const testCslHead = testLabs.extend<{ cslHeadPage: Page }, { cslHeadUserId: string }>({
   cslHeadUserId: [
     async ({ database, labs: _ }, use) => {
-      const { id: userId } = await upsertTestUser(database, {
+      const { id: userId } = await createTestUser(database, {
         email: 'csl@up.edu.ph',
         googleUserId: 'test-csl-head',
         givenName: 'CSL',
@@ -600,7 +608,7 @@ const testCslHead = testLabs.extend<{ cslHeadPage: Page }, { cslHeadUserId: stri
 const testSclHead = testLabs.extend<{ sclHeadPage: Page }, { sclHeadUserId: string }>({
   sclHeadUserId: [
     async ({ database, labs: _ }, use) => {
-      const { id: userId } = await upsertTestUser(database, {
+      const { id: userId } = await createTestUser(database, {
         email: 'scl@up.edu.ph',
         googleUserId: 'test-scl-head',
         givenName: 'SCL',
@@ -636,7 +644,7 @@ const testSclHead = testLabs.extend<{ sclHeadPage: Page }, { sclHeadUserId: stri
 const testCvmilHead = testLabs.extend<{ cvmilHeadPage: Page }, { cvmilHeadUserId: string }>({
   cvmilHeadUserId: [
     async ({ database, labs: _ }, use) => {
-      const { id: userId } = await upsertTestUser(database, {
+      const { id: userId } = await createTestUser(database, {
         email: 'cvmil@up.edu.ph',
         googleUserId: 'test-cvmil-head',
         givenName: 'CVMIL',
@@ -672,7 +680,7 @@ const testCvmilHead = testLabs.extend<{ cvmilHeadPage: Page }, { cvmilHeadUserId
 const testAclHead = testLabs.extend<{ aclHeadPage: Page }, { aclHeadUserId: string }>({
   aclHeadUserId: [
     async ({ database, labs: _ }, use) => {
-      const { id: userId } = await upsertTestUser(database, {
+      const { id: userId } = await createTestUser(database, {
         email: 'acl@up.edu.ph',
         googleUserId: 'test-acl-head',
         givenName: 'ACL',
@@ -708,7 +716,7 @@ const testAclHead = testLabs.extend<{ aclHeadPage: Page }, { aclHeadUserId: stri
 const testAdmin = testDatabase.extend<{ adminPage: Page }, { adminUserId: string }>({
   adminUserId: [
     async ({ database }, use) => {
-      const { id: userId } = await upsertTestUser(database, {
+      const { id: userId } = await createTestUser(database, {
         email: 'admin@up.edu.ph',
         googleUserId: 'test-admin',
         givenName: 'Draft',
