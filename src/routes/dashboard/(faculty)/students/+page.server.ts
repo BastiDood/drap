@@ -76,8 +76,8 @@ export async function load({ locals: { session }, parent }) {
       labId,
     );
     if (typeof draftLabResult === 'undefined') {
-      logger.fatal('lab not found');
-      error(404);
+      logger.warn('lab not in draft snapshot', { lab: labId });
+      return { draft };
     }
 
     const { lab, students, researchers, submissionSource, remainingQuota, autoAcknowledgeReason } =
@@ -93,12 +93,14 @@ export async function load({ locals: { session }, parent }) {
 
     return {
       draft,
-      lab,
-      students,
-      researchers,
-      submissionSource,
-      remainingQuota,
-      autoAcknowledgeReason,
+      info: {
+        lab,
+        students,
+        researchers,
+        submissionSource,
+        remainingQuota,
+        autoAcknowledgeReason,
+      },
     };
   });
 }

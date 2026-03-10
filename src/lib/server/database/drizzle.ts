@@ -58,6 +58,18 @@ function coerceNullableDate(value: unknown) {
   return value === null ? null : coerceDate(value);
 }
 
+function coerceNumber(value: unknown) {
+  if (typeof value === 'number') return value;
+  throw new CoercionError('expected a number');
+}
+
+export class CoercionError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CoercionError';
+  }
+}
+
 export async function insertDummySession(db: DbConnection, userId: string) {
   return await tracer.asyncSpan('insert-dummy-session', async span => {
     span.setAttribute('database.user.id', userId);
@@ -748,6 +760,7 @@ export async function getLabAndRemainingStudentsInDraftWithLabPreference(
 
       const researchers = await db
         .select({
+          round: sql`${schema.facultyChoiceUser.round}`.mapWith(coerceNumber),
           email: schema.user.email,
           givenName: schema.user.givenName,
           familyName: schema.user.familyName,
@@ -760,6 +773,7 @@ export async function getLabAndRemainingStudentsInDraftWithLabPreference(
           and(
             eq(schema.facultyChoiceUser.draftId, draftId),
             eq(schema.facultyChoiceUser.labId, labId),
+            isNotNull(schema.facultyChoiceUser.round),
           ),
         );
 

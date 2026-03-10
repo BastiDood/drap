@@ -1,11 +1,14 @@
 <script lang="ts">
+  import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
   import { SvelteSet } from 'svelte/reactivity';
   import { toast } from 'svelte-sonner';
 
   import * as Avatar from '$lib/components/ui/avatar';
+  import * as Popover from '$lib/components/ui/popover';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
+  import { Progress } from '$lib/components/ui/progress';
   import type { schema } from '$lib/server/database/drizzle';
 
   interface Student extends Pick<
@@ -16,13 +19,15 @@
   }
 
   interface Props {
-    disabled: boolean;
     draft: schema.Draft['id'];
     students: Student[];
-    drafteeIds: SvelteSet<schema.User['id']>;
+    remainingQuota: number;
   }
 
-  let { disabled, draft, students, drafteeIds = $bindable() }: Props = $props();
+  const { draft, students, remainingQuota }: Props = $props();
+
+  const drafteeIds = new SvelteSet<string>();
+  const disabled = $derived(remainingQuota - drafteeIds.size < 0);
 </script>
 
 <form
@@ -59,7 +64,6 @@
   {#each drafteeIds as id (id)}
     <input type="hidden" name="students" value={id} />
   {/each}
-  <Button type="submit" class="w-full" {disabled}>Submit</Button>
   <ul class="space-y-1">
     {#each students as { id, email, givenName, familyName, avatarUrl, studentNumber, remark } (id)}
       {@const selected = drafteeIds.has(id)}
@@ -99,4 +103,22 @@
       </li>
     {/each}
   </ul>
+  <div id="selection-progress" class="flex items-center gap-3">
+    <Progress value={drafteeIds.size} max={remainingQuota} />
+    <span class="text-muted-foreground text-sm whitespace-nowrap tabular-nums">
+      {drafteeIds.size} / {remainingQuota} slots
+    </span>
+  </div>
+  <div class="flex items-center gap-2">
+    <Button type="submit" class="grow" {disabled}>Submit</Button>
+    <Popover.Root>
+      <Popover.Trigger>
+        <CircleHelpIcon class="text-muted-foreground size-4" />
+      </Popover.Trigger>
+      <Popover.Content class="text-sm">
+        Empty submissions allowed. All lab heads must submit before the next round auto-starts.
+        Everyone is notified on round advance.
+      </Popover.Content>
+    </Popover.Root>
+  </div>
 </form>
