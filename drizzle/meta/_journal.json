@@ -176,6 +176,20 @@
       "when": 1772524227469,
       "tag": "0024_add-session-creation-timestamp",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1773002237613,
+      "tag": "0025_truncate-candidate-senders-for-encryption",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1773003048833,
+      "tag": "0026_encrypt-oauth-sender-tokens",
+      "breakpoints": true
     }
   ]
 }

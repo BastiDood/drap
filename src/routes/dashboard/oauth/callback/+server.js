@@ -8,6 +8,7 @@ import { parse } from 'valibot';
 import * as GOOGLE from '$lib/server/env/google';
 import { AuthorizationCode, IdToken, TokenResponse } from '$lib/server/models/oauth';
 import { db } from '$lib/server/database';
+import { ENCRYPTION_KEY } from '$lib/server/env/drap/crypto';
 import {
   insertValidSession,
   upsertCandidateSender,
@@ -122,7 +123,15 @@ export async function GET({ fetch, cookies, setHeaders, url: { searchParams } })
             isAdmin &&
             labId === null
           ) {
-            await upsertCandidateSender(db, userId, token.exp, access_token, refresh_token, scope);
+            await upsertCandidateSender(
+              db,
+              userId,
+              token.exp,
+              ENCRYPTION_KEY,
+              access_token,
+              refresh_token,
+              scope,
+            );
             logger.debug('amending credential scope for candidate sender', {
               'oauth.scopes': scope,
             });

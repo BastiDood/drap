@@ -59,6 +59,8 @@ services:
     ports:
       - 3000:3000
     environment:
+      DRAP_ENABLE_EMAILS: 1
+      DRAP_ENCRYPTION_KEY: ${DRAP_ENCRYPTION_KEY:?required}
       ORIGIN: ${ORIGIN:?required}
       PUBLIC_ORIGIN: ${ORIGIN:?required}
       POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD:?required}@postgres:5432/postgres

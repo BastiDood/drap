@@ -28,6 +28,9 @@ jobs:
       # OpenTelemetry
       OTEL_SDK_DISABLED: true
 
+      # DRAP
+      DRAP_ENCRYPTION_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6

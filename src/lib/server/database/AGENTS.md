@@ -69,6 +69,10 @@ Use `currRound` and `activePeriod` together:
 - `currRound = null`: review (lottery already executed, pending finalization)
 - `upper(activePeriod) IS NOT NULL`: draft is finalized
 
+## OAuth Token Encryption
+
+Sensitive OAuth sender tokens in `email.candidate_sender` are assumed to be encrypted at the application layer with AES-256-GCM before they are written to the database. These are opaque `BYTEA` values as far as the database is concerned.
+
 ## Query Function Patterns
 
 ### Tracer Wrapping
