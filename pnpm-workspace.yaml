@@ -13,9 +13,7 @@ engineStrict: true
 minimumReleaseAge: 1440 # 1 Day
 
 minimumReleaseAgeExclude:
-  - '@html-eslint/eslint-plugin@0.57.1'
-  - '@html-eslint/parser@0.57.1'
-  - '@sveltejs/kit@2.53.2'
+  - 'svelte@5.53.11'
 
 strictDepBuilds: true
 
