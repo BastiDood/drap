@@ -1,5 +1,6 @@
 import { Buffer } from 'node:buffer';
 import { ok } from 'node:assert/strict';
+import { timingSafeEqual } from 'node:crypto';
 
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { error, redirect } from '@sveltejs/kit';
@@ -76,8 +77,9 @@ export async function GET({ fetch, cookies, setHeaders, url: { searchParams } })
       ok(token.email_verified);
 
       // Validate nonce against the cookie
-      const nonce = Buffer.from(nonceCookie, 'base64url');
-      if (Buffer.from(token.nonce, 'base64url').compare(nonce) !== 0) {
+      const cookieNonce = Buffer.from(nonceCookie, 'base64url');
+      const tokenNonce = Buffer.from(token.nonce, 'base64url');
+      if (!timingSafeEqual(tokenNonce, cookieNonce)) {
         logger.error('nonce mismatch');
         error(400, 'Invalid nonce.');
       }
