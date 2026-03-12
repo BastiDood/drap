@@ -72,11 +72,6 @@ export const actions = {
     }
 
     return await tracer.asyncSpan('action.init', async () => {
-      if (await hasActiveDraft(db)) {
-        logger.warn('attempt to init draft while active draft exists');
-        error(409, 'An active draft already exists');
-      }
-
       const data = await request.formData();
       const { rounds, closesAt } = v.parse(
         InitFormData,
@@ -87,7 +82,16 @@ export const actions = {
         'draft.registration.closes_at': closesAt.toISOString(),
       });
 
-      const draft = await initDraft(db, rounds, closesAt);
+      const draft = await db.transaction(
+        async db => {
+          if (await hasActiveDraft(db)) {
+            logger.warn('attempt to init draft while active draft exists');
+            error(409, 'An active draft already exists');
+          }
+          return await initDraft(db, rounds, closesAt);
+        },
+        { isolationLevel: 'read committed' },
+      );
       logger.info('draft initialized', {
         'draft.id': draft.id.toString(),
         'draft.active_period_start': draft.activePeriodStart.toISOString(),

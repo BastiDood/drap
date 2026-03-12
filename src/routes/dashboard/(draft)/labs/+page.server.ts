@@ -5,9 +5,10 @@ import { error, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/database';
 import {
   deleteLab,
-  getActiveDraft,
+  getActiveDraftForShare,
   getLabRegistry,
   insertNewLab,
+  lockLabCatalogForMutation,
   restoreLab,
 } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
@@ -85,13 +86,18 @@ export const actions = {
       const { labId, name } = v.parse(LabFormData, decode(data));
       logger.debug('creating lab', { labId, name });
 
-      const draft = await getActiveDraft(db);
-      if (typeof draft !== 'undefined' && draft.currRound === 0) {
-        logger.fatal('cannot mutate lab catalog during registration');
-        error(403, 'Cannot modify labs while draft registration is ongoing.');
-      }
-
-      await insertNewLab(db, labId, name);
+      await db.transaction(
+        async db => {
+          await lockLabCatalogForMutation(db);
+          const draft = await getActiveDraftForShare(db);
+          if (typeof draft !== 'undefined' && draft.currRound === 0) {
+            logger.fatal('cannot mutate lab catalog during registration');
+            error(403, 'Cannot modify labs while draft registration is ongoing.');
+          }
+          await insertNewLab(db, labId, name);
+        },
+        { isolationLevel: 'read committed' },
+      );
       logger.info('lab created', { labId, name });
     });
   },
@@ -116,13 +122,18 @@ export const actions = {
       const { archive: labId } = v.parse(ArchiveFormData, decode(data));
       logger.debug('archiving lab', { labId });
 
-      const draft = await getActiveDraft(db);
-      if (typeof draft !== 'undefined' && draft.currRound === 0) {
-        logger.fatal('cannot mutate lab catalog during registration');
-        error(403, 'Cannot modify labs while draft registration is ongoing.');
-      }
-
-      await deleteLab(db, labId);
+      await db.transaction(
+        async db => {
+          await lockLabCatalogForMutation(db);
+          const draft = await getActiveDraftForShare(db);
+          if (typeof draft !== 'undefined' && draft.currRound === 0) {
+            logger.fatal('cannot mutate lab catalog during registration');
+            error(403, 'Cannot modify labs while draft registration is ongoing.');
+          }
+          await deleteLab(db, labId);
+        },
+        { isolationLevel: 'read committed' },
+      );
       logger.info('lab archived');
     });
   },
@@ -147,13 +158,18 @@ export const actions = {
       const { restore: labId } = v.parse(RestoreFormData, decode(data));
       logger.debug('restoring lab', { labId });
 
-      const draft = await getActiveDraft(db);
-      if (typeof draft !== 'undefined' && draft.currRound === 0) {
-        logger.fatal('cannot mutate lab catalog during registration');
-        error(403, 'Cannot modify labs while draft registration is ongoing.');
-      }
-
-      await restoreLab(db, labId);
+      await db.transaction(
+        async db => {
+          await lockLabCatalogForMutation(db);
+          const draft = await getActiveDraftForShare(db);
+          if (typeof draft !== 'undefined' && draft.currRound === 0) {
+            logger.fatal('cannot mutate lab catalog during registration');
+            error(403, 'Cannot modify labs while draft registration is ongoing.');
+          }
+          await restoreLab(db, labId);
+        },
+        { isolationLevel: 'read committed' },
+      );
       logger.info('lab restored');
     });
   },

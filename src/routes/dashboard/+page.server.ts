@@ -263,7 +263,7 @@ export const actions = {
                   logger.warn('dummy session swapped', { 'session.id': session.id });
                 }
               },
-              { isolationLevel: 'repeatable read' },
+              { isolationLevel: 'read committed' },
             );
 
             redirect(303, '/dashboard/');

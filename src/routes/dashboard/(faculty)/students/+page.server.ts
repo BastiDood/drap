@@ -6,7 +6,7 @@ import { error, redirect } from '@sveltejs/kit';
 
 import {
   autoAcknowledgeLabsWithoutPreferences,
-  getActiveDraft,
+  getActiveDraftForUpdate,
   getFacultyAndStaff,
   getLabAndRemainingStudentsInDraftWithLabPreference,
   getLabById,
@@ -133,45 +133,50 @@ export const actions = {
       logger.debug('students submitted', { students });
 
       const draftId = BigInt(draft);
-      const activeDraft = await getActiveDraft(db);
-      if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
-        logger.warn('attempt to submit rankings for non-active draft', {
-          'draft.id': draftId.toString(),
-        });
-        error(403);
-      }
-      if (
-        activeDraft.currRound === null ||
-        activeDraft.currRound <= 0 ||
-        activeDraft.currRound > activeDraft.maxRounds
-      ) {
-        logger.warn('attempt to submit rankings outside regular rounds', {
-          'draft.id': draftId.toString(),
-          'draft.round.current': activeDraft.currRound,
-          'draft.round.max': activeDraft.maxRounds,
-        });
-        error(403);
-      }
-
-      const { quota, selected } = await getLabQuotaAndSelectedStudentCountInDraft(db, draftId, lab);
-      assert(typeof quota !== 'undefined');
-
-      const total = selected + students.length;
-      if (total > quota) {
-        logger.warn('total students exceeds quota', {
-          'student.total': total,
-          'lab.quota': quota,
-        });
-        error(403);
-      }
-
-      logger.debug('total students still within quota', {
-        'student.total': total,
-        'lab.quota': quota,
-      });
-
       const { submittedRound, roundsToNotify } = await db.transaction(
         async db => {
+          const activeDraft = await getActiveDraftForUpdate(db);
+          if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
+            logger.warn('attempt to submit rankings for non-active draft', {
+              'draft.id': draftId.toString(),
+            });
+            error(403);
+          }
+
+          if (
+            activeDraft.currRound === null ||
+            activeDraft.currRound <= 0 ||
+            activeDraft.currRound > activeDraft.maxRounds
+          ) {
+            logger.warn('attempt to submit rankings outside regular rounds', {
+              'draft.id': draftId.toString(),
+              'draft.round.current': activeDraft.currRound,
+              'draft.round.max': activeDraft.maxRounds,
+            });
+            error(403);
+          }
+
+          const { quota, selected } = await getLabQuotaAndSelectedStudentCountInDraft(
+            db,
+            draftId,
+            lab,
+          );
+          assert(typeof quota !== 'undefined');
+
+          const total = selected + students.length;
+          if (total > quota) {
+            logger.warn('total students exceeds quota', {
+              'student.total': total,
+              'lab.quota': quota,
+            });
+            error(403);
+          }
+
+          logger.debug('total students still within quota', {
+            'student.total': total,
+            'lab.quota': quota,
+          });
+
           const draft = await insertFacultyChoice(db, draftId, lab, faculty, students);
           if (typeof draft === 'undefined') {
             logger.fatal('draft must exist prior to faculty choice submission');
@@ -215,7 +220,7 @@ export const actions = {
 
           return { submittedRound, roundsToNotify };
         },
-        { isolationLevel: 'repeatable read' },
+        { isolationLevel: 'read committed' },
       );
 
       // Dispatch notifications after successful transaction
