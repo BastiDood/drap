@@ -117,7 +117,8 @@
 
                     return async ({ update, result }) => {
                       await update();
-                      if (result.type === 'success') toast.success('Student removed from allowlist.');
+                      if (result.type === 'success')
+                        toast.success('Student removed from allowlist.');
                     };
                   }}
                 >
