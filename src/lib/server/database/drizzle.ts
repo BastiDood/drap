@@ -1898,7 +1898,7 @@ export async function getUserByEmail(db: DbConnection, email: string) {
       .select(columns)
       .from(schema.user)
       .where(eq(schema.user.email, email))
-      .then(assertSingle);
+      .then(assertOptional);
   });
 }
 
