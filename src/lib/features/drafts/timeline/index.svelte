@@ -110,6 +110,7 @@
   const lotteryStatus: Status = $derived.by(() => {
     switch (currentPhase) {
       case 'registration':
+      case 'registrationClosed':
       case 'regular':
         return 'pending';
       case 'intervention':
