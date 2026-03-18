@@ -6,6 +6,7 @@
   import type {
     Draft,
     DraftFinalizedBreakdown,
+    DraftRegistrationAllowlistEntry,
     FacultyChoiceRecord,
     Lab,
     Student,
@@ -17,11 +18,18 @@
   import LotteryActive from './lottery/active.svelte';
   import LotteryCompleted from './lottery/completed.svelte';
   import RegistrationActive from './registration/active.svelte';
+  import RegistrationClosed from './registration/closed.svelte';
   import RegistrationCompleted from './registration/completed.svelte';
   import RegularPhase from './regular/index.svelte';
   import SummaryPhase from './summary/index.svelte';
 
-  type Phase = 'registration' | 'regular' | 'intervention' | 'review' | 'finalized';
+  type Phase =
+    | 'registration'
+    | 'registrationClosed'
+    | 'regular'
+    | 'intervention'
+    | 'review'
+    | 'finalized';
 
   interface Props {
     draftId: bigint;
@@ -31,9 +39,11 @@
     selected: Student[];
     records: FacultyChoiceRecord[];
     finalized: DraftFinalizedBreakdown;
+    allowlist: DraftRegistrationAllowlistEntry[];
   }
 
-  const { draftId, draft, labs, available, selected, records, finalized }: Props = $props();
+  const { draftId, draft, labs, available, selected, records, finalized, allowlist }: Props =
+    $props();
 
   const allStudents = $derived([...available, ...selected]);
 
@@ -41,7 +51,11 @@
   const currentPhase = $derived.by(() => {
     if (draft.activePeriodEnd !== null) return 'finalized';
     if (draft.currRound === null) return 'review';
-    if (draft.currRound === 0) return 'registration';
+    if (draft.currRound === 0) {
+      if (draft.registrationClosesAt <= new Date()) return 'registrationClosed';
+
+      return 'registration';
+    }
     if (draft.currRound !== null && draft.currRound > draft.maxRounds) return 'intervention';
     return 'regular';
   });
@@ -50,6 +64,8 @@
   function getPhaseLabel(phase: Phase) {
     switch (phase) {
       case 'registration':
+        return 'Registration';
+      case 'registrationClosed':
         return 'Registration';
       case 'regular':
         return `Round ${draft.currRound} of ${draft.maxRounds}` as const;
@@ -65,15 +81,22 @@
   }
 
   // Status per phase
-  const registrationStatus: Status = $derived(
-    currentPhase === 'registration' ? 'active' : 'completed',
-  );
+  const registrationStatus: Status = $derived.by(() => {
+    switch (currentPhase) {
+      case 'registration':
+      case 'registrationClosed':
+        return 'active';
+      default:
+        return 'completed';
+    }
+  });
 
   const regularStatus: Status = $derived.by(() => {
     switch (currentPhase) {
       case 'regular':
         return 'active';
       case 'registration':
+      case 'registrationClosed':
         return 'pending';
       case 'intervention':
       case 'review':
@@ -180,7 +203,7 @@
     {/if}
 
     <!-- Regular Rounds -->
-    {#if currentPhase !== 'registration'}
+    {#if currentPhase !== 'registration' && currentPhase !== 'registrationClosed'}
       <Step title="Regular Rounds" status={regularStatus} defaultOpen={currentPhase === 'regular'}>
         {#snippet metadata()}
           <span class="text-muted-foreground text-sm">
@@ -205,7 +228,7 @@
     <Step
       title="Registration"
       status={registrationStatus}
-      defaultOpen={currentPhase === 'registration'}
+      defaultOpen={currentPhase === 'registration' || currentPhase === 'registrationClosed'}
       last
     >
       {#snippet metadata()}
@@ -213,6 +236,13 @@
       {/snippet}
       {#if currentPhase === 'registration'}
         <RegistrationActive {draftId} students={allStudents} snapshots={finalized.snapshots} />
+      {:else if currentPhase === 'registrationClosed'}
+        <RegistrationClosed
+          {draftId}
+          students={allStudents}
+          snapshots={finalized.snapshots}
+          {allowlist}
+        />
       {:else}
         <RegistrationCompleted students={allStudents} />
       {/if}

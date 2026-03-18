@@ -11,6 +11,7 @@ import {
   getLabById,
   getStudentRankings,
   insertStudentRanking,
+  isUserInAllowlist,
   type schema,
 } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
@@ -152,6 +153,21 @@ export async function load({ locals: { session } }) {
         };
       }
 
+      // Check if user is in allowlist
+      const isInAllowlist = await isUserInAllowlist(db, draft.id, user.id);
+
+      if (isInAllowlist) {
+        logger.debug('registration is closed but student is in allowlist');
+        const availableLabs = await getDraftLabRegistry(db, draftId);
+        return {
+          user: baseUser,
+          draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
+          availableLabs: availableLabs.map(({ id, name }) => ({ id, name })),
+          lab,
+          isInAllowlist,
+        };
+      }
+
       // Registration closed but currRound still 0 (waiting for draft to start)
       // REGISTRATION_CLOSED: user missed registration
       logger.debug('registration closed, user missed registration');
@@ -256,7 +272,8 @@ export const actions = {
             error(403);
           }
 
-          if (registrationClosesAt < new Date()) {
+          const isInAllowlist = await isUserInAllowlist(db, draftId, user.id);
+          if (registrationClosesAt < new Date() && !isInAllowlist) {
             logger.warn('attempt to submit rankings after registration closed', {
               'draft.registration.closes_at': registrationClosesAt.toISOString(),
             });

@@ -1802,3 +1802,133 @@ export async function upsertTestUser(
   await updateUserRole(db, userId, isAdmin, labId);
   return { id: userId, isAdmin, labId };
 }
+
+export async function getAllowlistByDraft(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-allowlist-by-draft', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    return await db
+      .select({
+        draftId: schema.draftRegistrationAllowlist.draftId,
+        studentUserId: schema.draftRegistrationAllowlist.studentUserId,
+        email: schema.draftRegistrationAllowlist.email,
+        adminUserId: schema.draftRegistrationAllowlist.adminUserId,
+        adminGivenName: schema.user.givenName,
+        adminFamilyName: schema.user.familyName,
+        adminEmail: schema.user.email,
+        createdAt: schema.draftRegistrationAllowlist.createdAt,
+      })
+      .from(schema.draftRegistrationAllowlist)
+      .innerJoin(schema.user, eq(schema.draftRegistrationAllowlist.adminUserId, schema.user.id))
+      .leftJoin(
+        schema.studentRank,
+        and(
+          eq(schema.draftRegistrationAllowlist.draftId, schema.studentRank.draftId),
+          eq(schema.draftRegistrationAllowlist.studentUserId, schema.studentRank.userId),
+        ),
+      )
+      .where(eq(schema.draftRegistrationAllowlist.draftId, draftId))
+      .orderBy(desc(schema.draftRegistrationAllowlist.createdAt));
+  });
+}
+
+export async function addToAllowlist(
+  db: DrizzleTransaction,
+  draftId: bigint,
+  studentUserId: string,
+  email: string,
+  adminUserId: string,
+) {
+  return await tracer.asyncSpan('add-to-allowlist', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    span.setAttribute('database.user.id', studentUserId);
+    span.setAttribute('database.user.id', adminUserId);
+    return await db
+      .insert(schema.draftRegistrationAllowlist)
+      .values({ draftId, studentUserId, email, adminUserId })
+      .onConflictDoNothing({
+        target: [
+          schema.draftRegistrationAllowlist.draftId,
+          schema.draftRegistrationAllowlist.studentUserId,
+        ],
+      });
+  });
+}
+
+export async function removeFromAllowlist(
+  db: DrizzleTransaction,
+  draftId: bigint,
+  studentUserId: string,
+) {
+  return await tracer.asyncSpan('remove-from-allowlist', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    return await db
+      .delete(schema.draftRegistrationAllowlist)
+      .where(
+        and(
+          eq(schema.draftRegistrationAllowlist.draftId, draftId),
+          eq(schema.draftRegistrationAllowlist.studentUserId, studentUserId),
+        ),
+      );
+  });
+}
+
+export async function isUserInAllowlist(db: DbConnection, draftId: bigint, studentUserId: string) {
+  return await tracer.asyncSpan('is-user-in-allowlist', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    span.setAttribute('database.user.id', studentUserId);
+    const result = await db
+      .select({ studentUserId: schema.draftRegistrationAllowlist.studentUserId })
+      .from(schema.draftRegistrationAllowlist)
+      .where(
+        and(
+          eq(schema.draftRegistrationAllowlist.draftId, draftId),
+          eq(schema.draftRegistrationAllowlist.studentUserId, studentUserId),
+        ),
+      )
+      .then(assertOptional);
+    return typeof result !== 'undefined';
+  });
+}
+
+export async function getUserByEmail(db: DbConnection, email: string) {
+  return await tracer.asyncSpan('get-user-by-email', async span => {
+    span.setAttribute('database.user.email', email);
+    const { email: _, ...columns } = getTableColumns(schema.user);
+    return await db
+      .select(columns)
+      .from(schema.user)
+      .where(eq(schema.user.email, email))
+      .then(assertSingle);
+  });
+}
+
+export async function isRegisteredOrAssignedInDraft(
+  db: DbConnection,
+  draftId: bigint,
+  email: string,
+) {
+  return await tracer.asyncSpan('is-registered-or-assigned-in-draft', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    span.setAttribute('database.user.email', email);
+
+    // Check studentRank (submitted rankings)
+    const registeredResult = await db
+      .select({ userId: schema.studentRank.userId })
+      .from(schema.studentRank)
+      .innerJoin(schema.user, eq(schema.studentRank.userId, schema.user.id))
+      .where(and(eq(schema.studentRank.draftId, draftId), eq(schema.user.email, email)))
+      .then(assertOptional);
+
+    if (typeof registeredResult !== 'undefined') return true;
+
+    // Check facultyChoiceUser (assigned to lab)
+    const assignedResult = await db
+      .select({ studentUserId: schema.facultyChoiceUser.studentUserId })
+      .from(schema.facultyChoiceUser)
+      .innerJoin(schema.user, eq(schema.facultyChoiceUser.studentUserId, schema.user.id))
+      .where(and(eq(schema.facultyChoiceUser.draftId, draftId), eq(schema.user.email, email)))
+      .then(assertOptional);
+
+    return typeof assignedResult !== 'undefined';
+  });
+}

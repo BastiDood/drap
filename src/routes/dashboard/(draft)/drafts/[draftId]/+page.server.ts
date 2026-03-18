@@ -6,10 +6,12 @@ import { error, fail } from '@sveltejs/kit';
 import { repeat, roundrobin, zip } from 'itertools';
 
 import {
+  addToAllowlist,
   autoAcknowledgeLabsWithoutPreferences,
   beginDraftReview,
   concludeDraft,
   getActiveDraftForUpdate,
+  getAllowlistByDraft,
   getDraftAssignmentRecords,
   getDraftById,
   getDraftLabQuotaLabIds,
@@ -20,10 +22,14 @@ import {
   getPendingLabCountInDraft,
   getStudentCountInDraft,
   getStudentsInDraftTaggedByLab,
+  getUserByEmail,
   getUserById,
   incrementDraftRound,
   insertLotteryChoices,
+  isRegisteredOrAssignedInDraft,
+  isUserInAllowlist,
   randomizeRemainingStudents,
+  removeFromAllowlist,
   syncResultsToUsers,
   updateDraftInitialLabQuotas,
   updateDraftLotteryLabQuotas,
@@ -82,11 +88,12 @@ export async function load({ params, locals: { session } }) {
       error(404);
     }
 
-    const [students, records, assignments, quotaSnapshots] = await Promise.all([
+    const [students, records, assignments, quotaSnapshots, allowlist] = await Promise.all([
       getStudentsInDraftTaggedByLab(db, draftId),
       getFacultyChoiceRecords(db, draftId),
       getDraftAssignmentRecords(db, draftId),
       getDraftLabQuotaSnapshots(db, draftId),
+      getAllowlistByDraft(db, draftId),
     ]);
     const labs = quotaSnapshots.map(({ labId, labName, initialQuota }) => ({
       id: labId,
@@ -154,6 +161,7 @@ export async function load({ params, locals: { session } }) {
           undraftedAfterRegular,
         },
       },
+      allowlist,
     };
   });
 }
@@ -720,6 +728,94 @@ export const actions = {
             userName: `${assignedUser.givenName} ${assignedUser.familyName}`,
           },
         });
+      }
+    });
+  },
+
+  async allowlist({ params, locals: { session }, request }) {
+    if (typeof session?.user === 'undefined') error(401);
+
+    const { user } = session;
+    if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
+      logger.error('invalid user', void 0, {
+        'user.is_admin': user.isAdmin,
+        'user.google_id': user.googleUserId,
+        'user.lab_id': user.labId,
+      });
+      error(403);
+    }
+
+    return await tracer.asyncSpan('action.allowlist', async () => {
+      const data = await request.formData();
+      const intent = data.get('intent');
+
+      if (intent === 'add') {
+        const email = data.get('email');
+        if (typeof email !== 'string' || email.length === 0) error(400);
+
+        const draftId = BigInt(params.draftId);
+        const targetUser = await getUserByEmail(db, email);
+        if (typeof targetUser === 'undefined')
+          return fail(400, { message: 'User with this email not found.' });
+
+        // Check if targetUser is already in allowlist
+        const isInAllowlist = await isUserInAllowlist(db, draftId, targetUser.id);
+        if (isInAllowlist) return { success: true, status: 'already_in_allowlist' as const };
+
+        // Check if targetUser is already registered or already has a lab
+        const isRegisteredOrAssigned = await isRegisteredOrAssignedInDraft(db, draftId, email);
+        if (isRegisteredOrAssigned) return { success: true, status: 'already_registered' as const };
+
+        await db.transaction(async db => {
+          const activeDraft = await getActiveDraftForUpdate(db);
+          if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
+            logger.error('invalid draft', void 0);
+            error(403);
+          }
+
+          if (activeDraft.currRound !== 0) {
+            logger.error('draft already started');
+            error(403);
+          }
+
+          await addToAllowlist(db, draftId, targetUser.id, email, user.id);
+        });
+
+        logger.info('student added to allowlist', {
+          'draft.id': params.draftId,
+          email,
+          'admin.id': user.id,
+        });
+
+        return { success: true, status: 'added' as const };
+      } else if (intent === 'remove') {
+        const studentUserId = data.get('studentUserId');
+        const draftId = data.get('draftId');
+        if (typeof studentUserId !== 'string' || typeof draftId !== 'string') {
+          logger.error('wrong type');
+          error(400);
+        }
+
+        await db.transaction(async db => {
+          const activeDraft = await getActiveDraftForUpdate(db);
+          if (typeof activeDraft === 'undefined' || activeDraft.id !== BigInt(draftId)) error(403);
+
+          if (activeDraft.currRound !== 0) {
+            logger.error('draft already started');
+            error(403);
+          }
+
+          await removeFromAllowlist(db, BigInt(draftId), studentUserId);
+        });
+
+        logger.info('student removed from allowlist', {
+          'draft.id': draftId,
+          studentUserId,
+          'admin.id': user.id,
+        });
+      } else {
+        logger.error('no intent');
+        error(400);
       }
     });
   },

@@ -62,3 +62,12 @@ export interface DraftFinalizedBreakdown {
     undraftedAfterRegular: Student[];
   };
 }
+
+export interface DraftRegistrationAllowlistEntry extends Pick<
+  schema.DraftRegistrationAllowlist,
+  'draftId' | 'studentUserId' | 'email' | 'createdAt' | 'adminUserId'
+> {
+  adminGivenName: string;
+  adminFamilyName: string;
+  adminEmail: string;
+}
