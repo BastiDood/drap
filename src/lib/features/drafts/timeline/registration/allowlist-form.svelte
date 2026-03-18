@@ -122,7 +122,6 @@
                     };
                   }}
                 >
-                  <input type="hidden" name="draftId" value={draftId} />
                   <input type="hidden" name="intent" value="remove" />
                   <input type="hidden" name="studentUserId" value={entry.studentUserId} />
                   <Button type="submit" variant="ghost" size="icon">

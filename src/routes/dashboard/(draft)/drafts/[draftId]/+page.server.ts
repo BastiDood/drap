@@ -790,8 +790,8 @@ export const actions = {
         return { success: true, status: 'added' as const };
       } else if (intent === 'remove') {
         const studentUserId = data.get('studentUserId');
-        const draftId = data.get('draftId');
-        if (typeof studentUserId !== 'string' || typeof draftId !== 'string') {
+        const draftId = BigInt(params.draftId);
+        if (typeof studentUserId !== 'string') {
           logger.error('wrong type');
           error(400);
         }
@@ -809,7 +809,7 @@ export const actions = {
         });
 
         logger.info('student removed from allowlist', {
-          'draft.id': draftId,
+          'draft.id': params.draftId,
           studentUserId,
           'admin.id': user.id,
         });
