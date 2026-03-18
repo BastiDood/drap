@@ -126,7 +126,7 @@ export const draftRegistrationAllowlist = app.table(
     studentUserId: ulid('student_user_id')
       .notNull()
       .references(() => user.id, { onUpdate: 'cascade' }),
-    email: text('email').notNull().unique(),
+    email: text('email').notNull(),
     adminUserId: ulid('admin_user_id')
       .notNull()
       .references(() => user.id, { onUpdate: 'cascade' }),
