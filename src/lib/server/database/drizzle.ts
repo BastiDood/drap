@@ -1840,8 +1840,8 @@ export async function addToAllowlist(
 ) {
   return await tracer.asyncSpan('add-to-allowlist', async span => {
     span.setAttribute('database.draft.id', draftId.toString());
-    span.setAttribute('database.user.id', studentUserId);
-    span.setAttribute('database.admin.id', adminUserId);
+    span.setAttribute('database.user.student_id', studentUserId);
+    span.setAttribute('database.user.admin_id', adminUserId);
     return await db
       .insert(schema.draftRegistrationAllowlist)
       .values({ draftId, studentUserId, email, adminUserId })
