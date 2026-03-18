@@ -115,9 +115,9 @@
                   use:enhance={({ submitter }) => {
                     if (submitter instanceof HTMLButtonElement) submitter.disabled = true;
 
-                    return async ({ update }) => {
+                    return async ({ update, result }) => {
                       await update();
-                      toast.success('Student removed from allowlist.');
+                      if (result.type === 'success') toast.success('Student removed from allowlist.');
                     };
                   }}
                 >
