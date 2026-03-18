@@ -135,7 +135,7 @@
         Started {format(draft.activePeriodStart, 'PPP')} &middot; {getPhaseLabel(currentPhase)}
       </p>
     </div>
-    {#if currentPhase !== 'registration'}
+    {#if currentPhase !== 'registration' && currentPhase !== 'registrationClosed'}
       <div class="flex gap-2">
         <Button
           href={resolve(`/dashboard/drafts/${draftId}/students.csv`)}
