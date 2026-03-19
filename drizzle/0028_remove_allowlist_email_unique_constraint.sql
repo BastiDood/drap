@@ -1,1 +1,0 @@
-ALTER TABLE "drap"."draft_registration_allowlist" DROP CONSTRAINT "draft_registration_allowlist_email_unique";
