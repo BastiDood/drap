@@ -7,7 +7,6 @@ import { Tracer } from '$lib/server/telemetry/tracer';
 
 const SERVICE_NAME = 'inngest.functions.cleanup-sessions';
 const tracer = Tracer.byName(SERVICE_NAME);
-const BATCH_SIZE = 1000;
 const RETENTION_DAYS = 30;
 
 export const cleanupSessions = inngest.createFunction(
@@ -15,23 +14,9 @@ export const cleanupSessions = inngest.createFunction(
   { cron: '0 0 * * *' },
   async () =>
     await tracer.asyncSpan('cleanup-sessions', async () => {
-      let deletedTotal = 0;
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - RETENTION_DAYS);
 
-      while (true) {
-        const cutoff = new Date();
-        cutoff.setDate(cutoff.getDate() - RETENTION_DAYS);
-
-        const deleted = await db
-          .delete(session)
-          .where(lt(session.expiredAt, cutoff))
-          .returning({ id: session.id })
-          .then(rows => rows.length);
-
-        deletedTotal += deleted;
-
-        if (deleted < BATCH_SIZE) break;
-      }
-
-      return { deletedTotal };
+      await db.delete(session).where(lt(session.expiredAt, cutoff));
     }),
 );
