@@ -176,7 +176,7 @@ export const sendEmail = inngest.createFunction(
               throw cause;
             }
           } else {
-            logger.warn('emails disabled during dry run');
+            throw new NonRetriableError('emails disabled during dry run');
           }
 
           // TODO: Log the result of the bulk operation.
