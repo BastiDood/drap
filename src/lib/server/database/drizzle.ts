@@ -1842,7 +1842,7 @@ export async function addToAllowlist(
     span.setAttribute('database.draft.id', draftId.toString());
     span.setAttribute('database.user.student_id', studentUserId);
     span.setAttribute('database.user.admin_id', adminUserId);
-    return await db
+    const result = await db
       .insert(schema.draftRegistrationAllowlist)
       .values({ draftId, studentUserId, email, adminUserId })
       .onConflictDoNothing({
@@ -1851,6 +1851,8 @@ export async function addToAllowlist(
           schema.draftRegistrationAllowlist.studentUserId,
         ],
       });
+      span.setAttribute('database.row_count', result.rowCount ?? 0);
+      return result.rowCount;
   });
 }
 

@@ -27,7 +27,6 @@ import {
   incrementDraftRound,
   insertLotteryChoices,
   isRegisteredOrAssignedInDraft,
-  isUserInAllowlist,
   randomizeRemainingStudents,
   removeFromAllowlist,
   syncResultsToUsers,
@@ -758,15 +757,7 @@ export const actions = {
         if (typeof targetUser === 'undefined')
           return fail(400, { message: 'User with this email not found.' });
 
-        // Check if targetUser is already in allowlist
-        const isInAllowlist = await isUserInAllowlist(db, draftId, targetUser.id);
-        if (isInAllowlist) return { success: true, status: 'already_in_allowlist' as const };
-
-        // Check if targetUser is already registered or already has a lab
-        const isRegisteredOrAssigned = await isRegisteredOrAssignedInDraft(db, draftId, email);
-        if (isRegisteredOrAssigned) return { success: true, status: 'already_registered' as const };
-
-        await db.transaction(async db => {
+        const rowCount = await db.transaction(async db => {
           const activeDraft = await getActiveDraftForUpdate(db);
           if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
             logger.error('invalid draft', void 0);
@@ -778,8 +769,15 @@ export const actions = {
             error(403);
           }
 
-          await addToAllowlist(db, draftId, targetUser.id, email, user.id);
+          // Check if targetUser is already registered or already has a lab
+          const isRegisteredOrAssigned = await isRegisteredOrAssignedInDraft(db, draftId, email);
+          if (isRegisteredOrAssigned) return -1 ;
+
+          return await addToAllowlist(db, draftId, targetUser.id, email, user.id);
         });
+
+        if (rowCount === -1) return { success: true, status: 'already_registered' as const };
+        if (rowCount === 0) return { success: true, status: 'already_in_allowlist' as const };
 
         logger.info('student added to allowlist', {
           'draft.id': params.draftId,
