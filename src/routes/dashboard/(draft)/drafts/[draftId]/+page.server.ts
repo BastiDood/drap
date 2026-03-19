@@ -38,6 +38,13 @@ import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
+const enum AllowlistAddResult {
+  UserNotFound = -2,
+  AlreadyRegistered = -1,
+  AlreadyInAllowlist = 0,
+  Added,
+}
+
 const DraftActionFormData = v.object({
   draft: v.pipe(v.string(), v.minLength(1)),
 });
@@ -778,7 +785,7 @@ export const actions = {
 
     const draftId = BigInt(params.draftId);
 
-    const rowCount = await db.transaction(async db => {
+    const result = await db.transaction(async db => {
       const activeDraft = await getActiveDraftForUpdate(db);
       if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
         logger.error('invalid draft', void 0);
@@ -791,18 +798,18 @@ export const actions = {
       }
 
       const targetUser = await getUserByEmail(db, email);
-      if (typeof targetUser === 'undefined') return -2;
+      if (typeof targetUser === 'undefined') return AllowlistAddResult.UserNotFound;
 
       // Check if targetUser is already registered or already has a lab
       const isRegisteredOrAssigned = await isRegisteredOrAssignedInDraft(db, draftId, targetUser.id);
-      if (isRegisteredOrAssigned) return -1;
+      if (isRegisteredOrAssigned) return AllowlistAddResult.AlreadyRegistered;
 
       return await addToAllowlist(db, draftId, targetUser.id, user.id);
     });
 
-    if (rowCount === -2) return fail(400, { message: 'User with this email not found.' });
-    if (rowCount === -1) return { success: true, status: 'already_registered' as const };
-    if (rowCount === 0) return { success: true, status: 'already_in_allowlist' as const };
+    if (result === AllowlistAddResult.UserNotFound) return fail(400, { message: 'User with this email not found.' });
+    if (result === AllowlistAddResult.AlreadyRegistered) return { success: true, status: 'already_registered' as const };
+    if (result === AllowlistAddResult.AlreadyInAllowlist) return { success: true, status: 'already_in_allowlist' as const };
 
     logger.info('student added to allowlist', {
       'draft.id': params.draftId,
