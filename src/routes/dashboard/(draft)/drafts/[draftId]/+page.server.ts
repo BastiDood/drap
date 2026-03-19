@@ -161,6 +161,7 @@ export async function load({ params, locals: { session } }) {
         },
       },
       allowlist,
+      requestedAt: new Date(),
     };
   });
 }
