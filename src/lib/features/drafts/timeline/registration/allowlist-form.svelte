@@ -38,9 +38,9 @@
   <form
     method="post"
     action="/dashboard/drafts/{draftId}/?/allowlist"
-    use:enhance={({ formData }) => {
+    use:enhance={({ formData, cancel }) => {
       const emailValue = formData.get('email');
-      if (typeof emailValue !== 'string' || emailValue.length === 0) return;
+      if (typeof emailValue !== 'string' || emailValue.length === 0) return cancel();
 
       adding = true;
       return async ({ update, result }) => {
