@@ -744,11 +744,14 @@ export const actions = {
   },
 
   async allowlist({ params, locals: { session }, request }) {
-    if (typeof session?.user === 'undefined') error(401);
+    if (typeof session?.user === 'undefined') {
+      logger.fatal('attempt to modify allowlist without session');
+      error(401);
+    }
 
     const { user } = session;
     if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-      logger.error('invalid user', void 0, {
+      logger.fatal('invalid user', void 0, {
         'user.is_admin': user.isAdmin,
         'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
