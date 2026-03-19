@@ -17,7 +17,7 @@ export const cleanupSessions = inngest.createFunction(
     await tracer.asyncSpan('cleanup-sessions', async () => {
       const { rowCount } = await db
         .delete(session)
-        .where(lt(session.expiredAt, sql`now() - interval '30 days'`))
+        .where(lt(session.expiredAt, sql`now() - interval '30 days'`));
       logger.info('sessions cleaned up', { count: rowCount });
     }),
 );
