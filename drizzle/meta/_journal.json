@@ -190,6 +190,13 @@
       "when": 1773003048833,
       "tag": "0026_encrypt-oauth-sender-tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1773899079204,
+      "tag": "0027_index-session-expired-at",
+      "breakpoints": true
     }
   ]
 }
