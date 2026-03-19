@@ -41,6 +41,7 @@
     "date-fns": "^4.1.0",
     "decode-formdata": "^0.9.0",
     "drizzle-orm": "^0.45.1",
+    "email-addresses": "^5.0.0",
     "http-parser-js": "^0.5.10",
     "http-raw-request": "^2.0.2",
     "inngest": "^3.52.7",

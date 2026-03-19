@@ -47,6 +47,9 @@ importers:
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.1(@opentelemetry/api@1.9.0)(@types/pg@8.18.0)(pg@8.20.0)
+      email-addresses:
+        specifier: ^5.0.0
+        version: 5.0.0
       http-parser-js:
         specifier: ^0.5.10
         version: 0.5.10
@@ -2107,6 +2110,9 @@ packages:
         optional: true
       sqlite3:
         optional: true
+
+  email-addresses@5.0.0:
+    resolution: {integrity: sha512-4OIPYlA6JXqtVn8zpHpGiI7vE6EQOAg16aGnDMIAlZVinnoZ8208tW1hAbjWydgN/4PLTT9q+O1K6AH/vALJGw==}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -5188,6 +5194,8 @@ snapshots:
       '@opentelemetry/api': 1.9.0
       '@types/pg': 8.18.0
       pg: 8.20.0
+
+  email-addresses@5.0.0: {}
 
   emoji-regex@8.0.0: {}
 
