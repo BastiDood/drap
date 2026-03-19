@@ -1806,19 +1806,23 @@ export async function upsertTestUser(
 export async function getAllowlistByDraft(db: DbConnection, draftId: bigint) {
   return await tracer.asyncSpan('get-allowlist-by-draft', async span => {
     span.setAttribute('database.draft.id', draftId.toString());
+    const student = alias(schema.user, 'student');
+    const admin = alias(schema.user, 'admin');
     return await db
       .select({
         draftId: schema.draftRegistrationAllowlist.draftId,
         studentUserId: schema.draftRegistrationAllowlist.studentUserId,
-        email: schema.draftRegistrationAllowlist.email,
+        studentEmail: student.email,
         adminUserId: schema.draftRegistrationAllowlist.adminUserId,
-        adminGivenName: schema.user.givenName,
-        adminFamilyName: schema.user.familyName,
-        adminEmail: schema.user.email,
+        adminGivenName: admin.givenName,
+        adminFamilyName: admin.familyName,
+        adminEmail: admin.email,
         createdAt: schema.draftRegistrationAllowlist.createdAt,
+        submittedAt: schema.studentRank.createdAt
       })
       .from(schema.draftRegistrationAllowlist)
-      .innerJoin(schema.user, eq(schema.draftRegistrationAllowlist.adminUserId, schema.user.id))
+      .innerJoin(admin, eq(schema.draftRegistrationAllowlist.adminUserId, admin.id))
+      .innerJoin(student, eq(schema.draftRegistrationAllowlist.studentUserId, student.id))
       .leftJoin(
         schema.studentRank,
         and(
@@ -1835,7 +1839,6 @@ export async function addToAllowlist(
   db: DrizzleTransaction,
   draftId: bigint,
   studentUserId: string,
-  email: string,
   adminUserId: string,
 ) {
   return await tracer.asyncSpan('add-to-allowlist', async span => {
@@ -1844,7 +1847,7 @@ export async function addToAllowlist(
     span.setAttribute('database.user.admin_id', adminUserId);
     const result = await db
       .insert(schema.draftRegistrationAllowlist)
-      .values({ draftId, studentUserId, email, adminUserId })
+      .values({ draftId, studentUserId, adminUserId })
       .onConflictDoNothing({
         target: [
           schema.draftRegistrationAllowlist.draftId,
@@ -1907,18 +1910,18 @@ export async function getUserByEmail(db: DbConnection, email: string) {
 export async function isRegisteredOrAssignedInDraft(
   db: DbConnection,
   draftId: bigint,
-  email: string,
+  userId: string,
 ) {
   return await tracer.asyncSpan('is-registered-or-assigned-in-draft', async span => {
     span.setAttribute('database.draft.id', draftId.toString());
-    span.setAttribute('database.user.email', email);
+    span.setAttribute('database.user.id', userId);
 
     // Check studentRank (submitted rankings)
     const registeredResult = await db
       .select({ userId: schema.studentRank.userId })
       .from(schema.studentRank)
       .innerJoin(schema.user, eq(schema.studentRank.userId, schema.user.id))
-      .where(and(eq(schema.studentRank.draftId, draftId), eq(schema.user.email, email)))
+      .where(and(eq(schema.studentRank.draftId, draftId), eq(schema.user.id, userId)))
       .then(assertOptional);
 
     if (typeof registeredResult !== 'undefined') return true;
@@ -1928,7 +1931,7 @@ export async function isRegisteredOrAssignedInDraft(
       .select({ studentUserId: schema.facultyChoiceUser.studentUserId })
       .from(schema.facultyChoiceUser)
       .innerJoin(schema.user, eq(schema.facultyChoiceUser.studentUserId, schema.user.id))
-      .where(and(eq(schema.facultyChoiceUser.draftId, draftId), eq(schema.user.email, email)))
+      .where(and(eq(schema.facultyChoiceUser.draftId, draftId), eq(schema.user.id, userId)))
       .then(assertOptional);
 
     return typeof assignedResult !== 'undefined';

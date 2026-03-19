@@ -1,0 +1,1 @@
+ALTER TABLE "drap"."draft_registration_allowlist" DROP COLUMN "email";

@@ -96,6 +96,7 @@
         <TableHeader>
           <TableRow>
             <TableHead>Student Email</TableHead>
+            <TableHead>Submitted At</TableHead>
             <TableHead>Added By</TableHead>
             <TableHead>Added At</TableHead>
             <TableHead class="w-10"></TableHead>
@@ -104,7 +105,14 @@
         <TableBody>
           {#each allowlist as entry (entry.studentUserId)}
             <TableRow>
-              <TableCell class="font-medium">{entry.email}</TableCell>
+              <TableCell class="font-medium">{entry.studentEmail}</TableCell>
+              <TableCell class="text-muted-foreground">
+                {#if entry.submittedAt}
+                  {format(entry.submittedAt, 'PPp')}
+                {:else}
+                  Not yet
+                {/if}
+              </TableCell>
               <TableCell>{entry.adminEmail}</TableCell>
               <TableCell class="text-muted-foreground">
                 {format(entry.createdAt, 'PPp')}

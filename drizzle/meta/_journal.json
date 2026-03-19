@@ -209,6 +209,13 @@
       "when": 1773847205013,
       "tag": "0028_remove_allowlist_email_unique_constraint",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1773926200709,
+      "tag": "0029_brief_darkhawk",
+      "breakpoints": true
     }
   ]
 }

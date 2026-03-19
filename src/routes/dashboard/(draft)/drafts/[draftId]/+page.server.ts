@@ -798,10 +798,10 @@ export const actions = {
           if (typeof targetUser === 'undefined') return -2;
 
           // Check if targetUser is already registered or already has a lab
-          const isRegisteredOrAssigned = await isRegisteredOrAssignedInDraft(db, draftId, email);
+          const isRegisteredOrAssigned = await isRegisteredOrAssignedInDraft(db, draftId, targetUser.id);
           if (isRegisteredOrAssigned) return -1;
 
-          return await addToAllowlist(db, draftId, targetUser.id, email, user.id);
+          return await addToAllowlist(db, draftId, targetUser.id, user.id);
         });
 
         if (rowCount === -2) return fail(400, { message: 'User with this email not found.' });

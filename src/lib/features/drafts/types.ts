@@ -65,9 +65,11 @@ export interface DraftFinalizedBreakdown {
 
 export interface DraftRegistrationAllowlistEntry extends Pick<
   schema.DraftRegistrationAllowlist,
-  'draftId' | 'studentUserId' | 'email' | 'createdAt' | 'adminUserId'
+  'draftId' | 'studentUserId' | 'createdAt' | 'adminUserId'
 > {
+  studentEmail: string;
   adminGivenName: string;
   adminFamilyName: string;
   adminEmail: string;
+  submittedAt: Date | null;
 }
