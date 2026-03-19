@@ -772,7 +772,7 @@ export const actions = {
         if (parsed === null) return fail(400, { message: 'Invalid email address.' });
         const { draft, email } = parsed;
 
-          if (draft !== params.draftId) {
+        if (draft !== params.draftId) {
           logger.warn('draft id mismatch', {
             'draft.form_id': draft,
             'draft.param_id': params.draftId,
@@ -795,7 +795,7 @@ export const actions = {
           }
 
           const targetUser = await getUserByEmail(db, email);
-          if (typeof targetUser === 'undefined') return -2
+          if (typeof targetUser === 'undefined') return -2;
 
           // Check if targetUser is already registered or already has a lab
           const isRegisteredOrAssigned = await isRegisteredOrAssignedInDraft(db, draftId, email);
