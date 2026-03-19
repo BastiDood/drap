@@ -171,12 +171,10 @@ type UserId = v.InferOutput<typeof UserId>;
 
 const AllowlistAddFormData = v.object({
   draft: v.pipe(v.string(), v.minLength(1)),
-  intent: v.literal('add'),
   email: v.pipe(v.string(), v.email()),
 });
 
 const AllowlistRemoveFormData = v.object({
-  intent: v.literal('remove'),
   studentUserId: UserId,
 });
 
@@ -743,9 +741,83 @@ export const actions = {
     });
   },
 
-  async allowlist({ params, locals: { session }, request }) {
+  allowlistAdd: async ({ params, locals: { session }, request }) => {
     if (typeof session?.user === 'undefined') {
-      logger.fatal('attempt to modify allowlist without session');
+      logger.fatal('attempt to add to allowlist without session');
+      error(401);
+    }
+    
+    const { user } = session;
+    if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
+      logger.fatal('invalid user', void 0, {
+        'user.is_admin': user.isAdmin,
+        'user.google_id': user.googleUserId,
+        'user.lab_id': user.labId,
+      });
+      error(403);
+    }
+
+    const data = await request.formData();
+    function parseAllowlistAddFormData(data: FormData) {
+      try {
+        return v.parse(AllowlistAddFormData, decode(data));
+      } catch {
+        return null;
+      }
+    }
+
+    const parsed = parseAllowlistAddFormData(data);
+    if (parsed === null) return fail(400, { message: 'Invalid email address.' });
+    const { draft, email } = parsed;
+
+    if (draft !== params.draftId) {
+      logger.warn('draft id mismatch', {
+        'draft.form_id': draft,
+        'draft.param_id': params.draftId,
+      });
+      error(400);
+    }
+
+    const draftId = BigInt(params.draftId);
+
+    const rowCount = await db.transaction(async db => {
+      const activeDraft = await getActiveDraftForUpdate(db);
+      if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
+        logger.error('invalid draft', void 0);
+        error(403);
+      }
+
+      if (activeDraft.currRound !== 0) {
+        logger.error('draft already started');
+        error(403);
+      }
+
+      const targetUser = await getUserByEmail(db, email);
+      if (typeof targetUser === 'undefined') return -2;
+
+      // Check if targetUser is already registered or already has a lab
+      const isRegisteredOrAssigned = await isRegisteredOrAssignedInDraft(db, draftId, targetUser.id);
+      if (isRegisteredOrAssigned) return -1;
+
+      return await addToAllowlist(db, draftId, targetUser.id, user.id);
+    });
+
+    if (rowCount === -2) return fail(400, { message: 'User with this email not found.' });
+    if (rowCount === -1) return { success: true, status: 'already_registered' as const };
+    if (rowCount === 0) return { success: true, status: 'already_in_allowlist' as const };
+
+    logger.info('student added to allowlist', {
+      'draft.id': params.draftId,
+      email,
+      'admin.id': user.id,
+    });
+
+    return { success: true, status: 'added' as const };
+  },
+
+  allowlistRemove: async ({ params, locals: { session }, request }) => {
+    if (typeof session?.user === 'undefined') {
+      logger.fatal('attempt to remove from allowlist without session');
       error(401);
     }
 
@@ -759,101 +831,37 @@ export const actions = {
       error(403);
     }
 
-    return await tracer.asyncSpan('action.allowlist', async () => {
-      const data = await request.formData();
-      const intent = data.get('intent');
+    const data = await request.formData();
 
-      if (intent === 'add') {
-        function parseAllowlistAddFormData(data: FormData) {
-          try {
-            return v.parse(AllowlistAddFormData, decode(data));
-          } catch {
-            return null;
-          }
-        }
-
-        const parsed = parseAllowlistAddFormData(data);
-        if (parsed === null) return fail(400, { message: 'Invalid email address.' });
-        const { draft, email } = parsed;
-
-        if (draft !== params.draftId) {
-          logger.warn('draft id mismatch', {
-            'draft.form_id': draft,
-            'draft.param_id': params.draftId,
-          });
-          error(400);
-        }
-
-        const draftId = BigInt(params.draftId);
-
-        const rowCount = await db.transaction(async db => {
-          const activeDraft = await getActiveDraftForUpdate(db);
-          if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
-            logger.error('invalid draft', void 0);
-            error(403);
-          }
-
-          if (activeDraft.currRound !== 0) {
-            logger.error('draft already started');
-            error(403);
-          }
-
-          const targetUser = await getUserByEmail(db, email);
-          if (typeof targetUser === 'undefined') return -2;
-
-          // Check if targetUser is already registered or already has a lab
-          const isRegisteredOrAssigned = await isRegisteredOrAssignedInDraft(db, draftId, targetUser.id);
-          if (isRegisteredOrAssigned) return -1;
-
-          return await addToAllowlist(db, draftId, targetUser.id, user.id);
-        });
-
-        if (rowCount === -2) return fail(400, { message: 'User with this email not found.' });
-        if (rowCount === -1) return { success: true, status: 'already_registered' as const };
-        if (rowCount === 0) return { success: true, status: 'already_in_allowlist' as const };
-
-        logger.info('student added to allowlist', {
-          'draft.id': params.draftId,
-          email,
-          'admin.id': user.id,
-        });
-
-        return { success: true, status: 'added' as const };
-      } else if (intent === 'remove') {
-        function parseAllowlistRemoveFormData(data: FormData) {
-          try {
-            return v.parse(AllowlistRemoveFormData, decode(data));
-          } catch {
-            return null;
-          }
-        }
-
-        const parsed = parseAllowlistRemoveFormData(data);
-        if (parsed === null) return fail(400, { message: 'Invalid student user ID.' });
-        const { studentUserId } = parsed;
-        const draftId = BigInt(params.draftId);
-
-        await db.transaction(async db => {
-          const activeDraft = await getActiveDraftForUpdate(db);
-          if (typeof activeDraft === 'undefined' || activeDraft.id !== BigInt(draftId)) error(403);
-
-          if (activeDraft.currRound !== 0) {
-            logger.error('draft already started');
-            error(403);
-          }
-
-          await removeFromAllowlist(db, BigInt(draftId), studentUserId);
-        });
-
-        logger.info('student removed from allowlist', {
-          'draft.id': params.draftId,
-          studentUserId,
-          'admin.id': user.id,
-        });
-      } else {
-        logger.error('no intent');
-        error(400);
+    function parseAllowlistRemoveFormData(data: FormData) {
+      try {
+        return v.parse(AllowlistRemoveFormData, decode(data));
+      } catch {
+        return null;
       }
+    }
+
+    const parsed = parseAllowlistRemoveFormData(data);
+    if (parsed === null) return fail(400, { message: 'Invalid student user ID.' });
+    const { studentUserId } = parsed;
+    const draftId = BigInt(params.draftId);
+
+    await db.transaction(async db => {
+      const activeDraft = await getActiveDraftForUpdate(db);
+      if (typeof activeDraft === 'undefined' || activeDraft.id !== BigInt(draftId)) error(403);
+
+      if (activeDraft.currRound !== 0) {
+        logger.error('draft already started');
+        error(403);
+      }
+
+      await removeFromAllowlist(db, BigInt(draftId), studentUserId);
+    });
+
+    logger.info('student removed from allowlist', {
+      'draft.id': params.draftId,
+      studentUserId,
+      'admin.id': user.id,
     });
   },
 };

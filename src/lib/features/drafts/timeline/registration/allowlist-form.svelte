@@ -37,7 +37,7 @@
 
   <form
     method="post"
-    action="/dashboard/drafts/{draftId}/?/allowlist"
+    action="/dashboard/drafts/{draftId}/?/allowlistAdd"
     use:enhance={({ formData, cancel }) => {
       const emailValue = formData.get('email');
       if (typeof emailValue !== 'string' || emailValue.length === 0) return cancel();
@@ -71,7 +71,6 @@
     }}
   >
     <input type="hidden" name="draft" value={draftId} />
-    <input type="hidden" name="intent" value="add" />
     <div class="flex gap-2">
       <div class="flex-1">
         <Label for="allowlist-email" class="sr-only">Student Email</Label>
@@ -120,7 +119,7 @@
               <TableCell>
                 <form
                   method="post"
-                  action="/dashboard/drafts/{draftId}/?/allowlist"
+                  action="/dashboard/drafts/{draftId}/?/allowlistRemove"
                   use:enhance={({ submitter }) => {
                     assert(submitter !== null);
                     assert(submitter instanceof HTMLButtonElement);
@@ -134,7 +133,6 @@
                     };
                   }}
                 >
-                  <input type="hidden" name="intent" value="remove" />
                   <input type="hidden" name="studentUserId" value={entry.studentUserId} />
                   <Button type="submit" variant="ghost" size="icon">
                     <TrashIcon class="text-destructive size-4" />
