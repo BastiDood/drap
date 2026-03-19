@@ -1,8 +1,9 @@
-import { inngest } from '$lib/server/inngest/client';
-import { db } from '$lib/server/database';
-import { schema } from '$lib/server/database/drizzle';
-import { Tracer } from '$lib/server/telemetry/tracer';
 import { lt } from 'drizzle-orm';
+
+import { db } from '$lib/server/database';
+import { inngest } from '$lib/server/inngest/client';
+import { session } from '$lib/server/database/schema/auth';
+import { Tracer } from '$lib/server/telemetry/tracer';
 
 const SERVICE_NAME = 'inngest.functions.cleanup-sessions';
 const tracer = Tracer.byName(SERVICE_NAME);
@@ -21,9 +22,9 @@ export const cleanupSessions = inngest.createFunction(
         cutoff.setDate(cutoff.getDate() - RETENTION_DAYS);
 
         const deleted = await db
-          .delete(schema.session)
-          .where(lt(schema.session.expiredAt, cutoff))
-          .returning({ id: schema.session.id })
+          .delete(session)
+          .where(lt(session.expiredAt, cutoff))
+          .returning({ id: session.id })
           .then(rows => rows.length);
 
         deletedTotal += deleted;
