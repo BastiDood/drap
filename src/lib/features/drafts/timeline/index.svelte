@@ -52,9 +52,7 @@
     if (draft.activePeriodEnd !== null) return 'finalized';
     if (draft.currRound === null) return 'review';
     if (draft.currRound === 0) {
-      if (draft.registrationClosesAt <= new Date()) return 'registration-closed';
-
-      return 'registration';
+      return draft.registrationClosesAt <= new Date() ? 'registration-closed' : 'registration';
     }
     if (draft.currRound !== null && draft.currRound > draft.maxRounds) return 'intervention';
     return 'regular';
