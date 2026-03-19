@@ -25,7 +25,7 @@
 
   type Phase =
     | 'registration'
-    | 'registrationClosed'
+    | 'registration-closed'
     | 'regular'
     | 'intervention'
     | 'review'
@@ -52,7 +52,7 @@
     if (draft.activePeriodEnd !== null) return 'finalized';
     if (draft.currRound === null) return 'review';
     if (draft.currRound === 0) {
-      if (draft.registrationClosesAt <= new Date()) return 'registrationClosed';
+      if (draft.registrationClosesAt <= new Date()) return 'registration-closed';
 
       return 'registration';
     }
@@ -65,7 +65,7 @@
     switch (phase) {
       case 'registration':
         return 'Registration';
-      case 'registrationClosed':
+      case 'registration-closed':
         return 'Registration';
       case 'regular':
         return `Round ${draft.currRound} of ${draft.maxRounds}` as const;
@@ -84,7 +84,7 @@
   const registrationStatus: Status = $derived.by(() => {
     switch (currentPhase) {
       case 'registration':
-      case 'registrationClosed':
+      case 'registration-closed':
         return 'active';
       default:
         return 'completed';
@@ -96,7 +96,7 @@
       case 'regular':
         return 'active';
       case 'registration':
-      case 'registrationClosed':
+      case 'registration-closed':
         return 'pending';
       case 'intervention':
       case 'review':
@@ -110,7 +110,7 @@
   const lotteryStatus: Status = $derived.by(() => {
     switch (currentPhase) {
       case 'registration':
-      case 'registrationClosed':
+      case 'registration-closed':
       case 'regular':
         return 'pending';
       case 'intervention':
@@ -135,7 +135,7 @@
         Started {format(draft.activePeriodStart, 'PPP')} &middot; {getPhaseLabel(currentPhase)}
       </p>
     </div>
-    {#if currentPhase !== 'registration' && currentPhase !== 'registrationClosed'}
+    {#if currentPhase !== 'registration' && currentPhase !== 'registration-closed'}
       <div class="flex gap-2">
         <Button
           href={resolve(`/dashboard/drafts/${draftId}/students.csv`)}
@@ -204,7 +204,7 @@
     {/if}
 
     <!-- Regular Rounds -->
-    {#if currentPhase !== 'registration' && currentPhase !== 'registrationClosed'}
+    {#if currentPhase !== 'registration' && currentPhase !== 'registration-closed'}
       <Step title="Regular Rounds" status={regularStatus} defaultOpen={currentPhase === 'regular'}>
         {#snippet metadata()}
           <span class="text-muted-foreground text-sm">
@@ -229,7 +229,7 @@
     <Step
       title="Registration"
       status={registrationStatus}
-      defaultOpen={currentPhase === 'registration' || currentPhase === 'registrationClosed'}
+      defaultOpen={currentPhase === 'registration' || currentPhase === 'registration-closed'}
       last
     >
       {#snippet metadata()}
@@ -237,7 +237,7 @@
       {/snippet}
       {#if currentPhase === 'registration'}
         <RegistrationActive {draftId} students={allStudents} snapshots={finalized.snapshots} />
-      {:else if currentPhase === 'registrationClosed'}
+      {:else if currentPhase === 'registration-closed'}
         <RegistrationClosed
           {draftId}
           students={allStudents}
