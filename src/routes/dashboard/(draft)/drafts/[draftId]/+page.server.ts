@@ -806,7 +806,6 @@ export const actions = {
       } else if (intent === 'remove') {
         const { studentUserId } = v.parse(AllowlistRemoveFormData, decode(data));
         const draftId = BigInt(params.draftId);
-        if (studentUserId === 'undefined') error(400);
 
         await db.transaction(async db => {
           const activeDraft = await getActiveDraftForUpdate(db);
