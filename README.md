@@ -283,7 +283,7 @@ nu ./scripts/test-playwright.nu production
 </details>
 
 > [!CAUTION]
-> If running from `pnpm docker:dev`, make sure to specify `INNGEST_DEV=1` in one of the environment files. This configures the production-mode `pnpm preview` server to bypass the Inngest secrets validation (per `inngest dev`). Without this, the tests will fail due to the Inngest client failing to sign its dispatched events.
+> In Inngest SDK v4, local development is no longer inferred automatically. Set `INNGEST_DEV=http://localhost:8288` only for host-run app processes that should talk to the local Inngest dev server, such as `pnpm preview` during Playwright/CI and optional host-run local Inngest testing. The Docker `--sdk-url` values such as `http://host.docker.internal:5173/api/inngest` and `http://host.docker.internal:4173/api/inngest` still point the Inngest dev server back to the app's handler.
 
 ## Acknowledgements
 
