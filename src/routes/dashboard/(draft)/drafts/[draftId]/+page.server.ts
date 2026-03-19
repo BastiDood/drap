@@ -758,15 +758,22 @@ export const actions = {
     }
 
     const data = await request.formData();
-    function parseAllowlistAddFormData(data: FormData) {
-      try {
-        return v.parse(AllowlistAddFormData, decode(data));
-      } catch {
-        return null;
+    const payload = decode(data);
+
+    let parsed: v.InferOutput<typeof AllowlistAddFormData>;
+    try {
+      parsed = v.parse(AllowlistAddFormData, payload);
+    } catch (error) {
+      if (error instanceof v.ValiError) {
+        logger.fatal('Invalid email address', error, {
+          'form.issues': error.issues,
+        });
+        return fail(400, { message: 'Invalid email address.' });
       }
+      throw error;
     }
 
-    const parsed = parseAllowlistAddFormData(data);
+
     if (parsed === null) return fail(400, { message: 'Invalid email address.' });
     const { draft, email } = parsed;
 
@@ -832,16 +839,21 @@ export const actions = {
     }
 
     const data = await request.formData();
+    const payload = decode(data);
 
-    function parseAllowlistRemoveFormData(data: FormData) {
-      try {
-        return v.parse(AllowlistRemoveFormData, decode(data));
-      } catch {
-        return null;
+    let parsed: v.InferOutput<typeof AllowlistRemoveFormData>;
+    try {
+      parsed = v.parse(AllowlistRemoveFormData, payload);
+    } catch (error) {
+      if (error instanceof v.ValiError) {
+        logger.fatal('invalid  student user ID', error, {
+          'form.issues': error.issues,
+        });
+        return fail(400, { message: 'Invalid student user ID.' });
       }
+      throw error;
     }
 
-    const parsed = parseAllowlistRemoveFormData(data);
     if (parsed === null) return fail(400, { message: 'Invalid student user ID.' });
     const { studentUserId } = parsed;
     const draftId = BigInt(params.draftId);
