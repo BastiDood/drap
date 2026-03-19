@@ -771,7 +771,7 @@ export const actions = {
 
           // Check if targetUser is already registered or already has a lab
           const isRegisteredOrAssigned = await isRegisteredOrAssignedInDraft(db, draftId, email);
-          if (isRegisteredOrAssigned) return -1 ;
+          if (isRegisteredOrAssigned) return -1;
 
           return await addToAllowlist(db, draftId, targetUser.id, email, user.id);
         });
