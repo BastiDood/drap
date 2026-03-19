@@ -157,7 +157,7 @@ export async function load({ locals: { session } }) {
       const isInAllowlist = await isUserInAllowlist(db, draft.id, user.id);
 
       if (isInAllowlist) {
-        logger.debug('registration is closed but student is in allowlist');
+        logger.warn('registration is closed but student is in allowlist');
         const availableLabs = await getDraftLabRegistry(db, draftId);
         return {
           user: baseUser,
