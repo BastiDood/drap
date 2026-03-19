@@ -44,7 +44,7 @@
     "email-addresses": "^5.0.0",
     "http-parser-js": "^0.5.10",
     "http-raw-request": "^2.0.2",
-    "inngest": "^3.52.7",
+    "inngest": "^4.0.1",
     "itertools": "^2.6.0",
     "jose": "^6.2.1",
     "mimetext": "^3.0.28",
