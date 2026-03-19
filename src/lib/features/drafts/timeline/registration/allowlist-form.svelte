@@ -3,6 +3,7 @@
   import { format } from 'date-fns';
   import { toast } from 'svelte-sonner';
 
+  import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import type { DraftRegistrationAllowlistEntry } from '$lib/features/drafts/types';
   import { enhance } from '$app/forms';
@@ -113,9 +114,12 @@
                   method="post"
                   action="/dashboard/drafts/{draftId}/?/allowlist"
                   use:enhance={({ submitter }) => {
-                    if (submitter instanceof HTMLButtonElement) submitter.disabled = true;
+                    assert(submitter !== null);
+                    assert(submitter instanceof HTMLButtonElement);
+                    submitter.disabled = true;
 
                     return async ({ update, result }) => {
+                      submitter.disabled = false;
                       await update();
                       if (result.type === 'success')
                         toast.success('Student removed from allowlist.');
