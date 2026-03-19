@@ -1818,7 +1818,7 @@ export async function getAllowlistByDraft(db: DbConnection, draftId: bigint) {
         adminFamilyName: admin.familyName,
         adminEmail: admin.email,
         createdAt: schema.draftRegistrationAllowlist.createdAt,
-        submittedAt: schema.studentRank.createdAt
+        submittedAt: schema.studentRank.createdAt,
       })
       .from(schema.draftRegistrationAllowlist)
       .innerJoin(admin, eq(schema.draftRegistrationAllowlist.adminUserId, admin.id))
