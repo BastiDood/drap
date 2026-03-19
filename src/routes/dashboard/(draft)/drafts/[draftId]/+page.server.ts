@@ -168,6 +168,17 @@ export async function load({ params, locals: { session } }) {
 const UserId = v.pipe(v.string(), v.ulid());
 type UserId = v.InferOutput<typeof UserId>;
 
+const AllowlistAddFormData = v.object({
+  draft: v.pipe(v.string(), v.minLength(1)),
+  intent: v.literal('add'),
+  email: v.pipe(v.string(), v.email()),
+});
+
+const AllowlistRemoveFormData = v.object({
+  intent: v.literal('remove'),
+  studentUserId: UserId,
+});
+
 function* mapRowTuples(data: FormData) {
   for (const [userId, lab] of data.entries()) {
     if (lab instanceof File || lab.length === 0) continue;
@@ -749,8 +760,14 @@ export const actions = {
       const intent = data.get('intent');
 
       if (intent === 'add') {
-        const email = data.get('email');
-        if (typeof email !== 'string' || email.length === 0) error(400);
+        const { draft, email } = v.parse(AllowlistAddFormData, decode(data));
+        if (draft !== params.draftId) {
+          logger.warn('draft id mismatch', {
+            'draft.form_id': draft,
+            'draft.param_id': params.draftId,
+          });
+          error(400);
+        }
 
         const draftId = BigInt(params.draftId);
         const targetUser = await getUserByEmail(db, email);
@@ -787,12 +804,9 @@ export const actions = {
 
         return { success: true, status: 'added' as const };
       } else if (intent === 'remove') {
-        const studentUserId = data.get('studentUserId');
+        const { studentUserId } = v.parse(AllowlistRemoveFormData, decode(data));
         const draftId = BigInt(params.draftId);
-        if (typeof studentUserId !== 'string') {
-          logger.error('wrong type');
-          error(400);
-        }
+        if (studentUserId === 'undefined') error(400);
 
         await db.transaction(async db => {
           const activeDraft = await getActiveDraftForUpdate(db);
