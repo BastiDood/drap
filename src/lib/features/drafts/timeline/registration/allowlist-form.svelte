@@ -70,7 +70,6 @@
       };
     }}
   >
-    <input type="hidden" name="draft" value={draftId} />
     <div class="flex gap-2">
       <div class="flex-1">
         <Label for="allowlist-email" class="sr-only">Student Email</Label>

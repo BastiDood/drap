@@ -170,7 +170,6 @@ const UserId = v.pipe(v.string(), v.ulid());
 type UserId = v.InferOutput<typeof UserId>;
 
 const AllowlistAddFormData = v.object({
-  draft: v.pipe(v.string(), v.minLength(1)),
   email: v.pipe(v.string(), v.email()),
 });
 
@@ -775,15 +774,7 @@ export const actions = {
 
 
     if (parsed === null) return fail(400, { message: 'Invalid email address.' });
-    const { draft, email } = parsed;
-
-    if (draft !== params.draftId) {
-      logger.warn('draft id mismatch', {
-        'draft.form_id': draft,
-        'draft.param_id': params.draftId,
-      });
-      error(400);
-    }
+    const { email } = parsed;
 
     const draftId = BigInt(params.draftId);
 
