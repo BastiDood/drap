@@ -83,13 +83,12 @@ At runtime, the server requires the following environment variables to be presen
 > [!IMPORTANT]
 > The OAuth redirect URI is computed as `${ORIGIN}/dashboard/oauth/callback`.
 
-The following variables are optional in development, but _highly_ recommended in the production environment for [OpenTelemetry](#opentelemetry-instrumentation) integration. The standard environment variables are supported, such as (but not limited to):
+The following variables are optional in development, but _highly_ recommended in production for [local telemetry with OpenObserve](#local-telemetry-with-openobserve). Traces use OTLP over HTTP by default, so in most cases you only need to configure the exporter endpoint and any required headers:
 
 | **Name**                      | **Description**                                                                         | **Recommended**                                                |
 | ----------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | The base OTLP endpoint URL for exporting logs, metrics, and traces.                     | `http://localhost:5080/api/default`                            |
 | `OTEL_EXPORTER_OTLP_HEADERS`  | Extra percent-encoded HTTP headers used for exporting telemetry (e.g., authentication). | `Authorization=Basic%20YWRtaW5AZXhhbXBsZS5jb206cGFzc3dvcmQ%3D` |
-| `OTEL_EXPORTER_OTLP_PROTOCOL` | The underlying exporter protocol (e.g., JSON, Protobufs, gRPC, etc.).                   | `http/protobuf`                                                |
 
 > [!NOTE]
 > The "recommended" values are only applicable to the development environment with OpenObserve running in the background. See the [`compose.yaml`] for more details on the OpenObserve configuration.
@@ -225,11 +224,10 @@ To enable full observability in local development:
    ```bash
    pnpm docker:dev
    ```
-2. Export the OTEL environment variables before running the dev server:
+2. Export the OTLP endpoint and headers before running the dev server. Trace export uses OTLP over HTTP automatically:
    ```bash
    export OTEL_EXPORTER_OTLP_ENDPOINT='http://localhost:5080/api/default'
    export OTEL_EXPORTER_OTLP_HEADERS='Authorization=Basic%20YWRtaW5AZXhhbXBsZS5jb206cGFzc3dvcmQ%3D'
-   export OTEL_EXPORTER_OTLP_PROTOCOL='http/protobuf'
    pnpm dev
    ```
 3. View traces and logs at `http://localhost:5080`.

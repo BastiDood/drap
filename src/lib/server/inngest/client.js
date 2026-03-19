@@ -1,3 +1,4 @@
+import { extendedTracesMiddleware } from 'inngest/experimental';
 import { Inngest } from 'inngest';
 
 import { Logger } from '$lib/server/telemetry/logger';
@@ -8,5 +9,6 @@ export const inngest = new Inngest({
   appVersion: version,
   optimizeParallelism: true,
   checkpointing: true,
+  middleware: [extendedTracesMiddleware({ behaviour: 'off' })],
   logger: Logger.byName('inngest'),
 });
