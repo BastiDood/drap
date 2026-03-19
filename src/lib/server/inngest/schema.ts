@@ -1,4 +1,5 @@
 import * as v from 'valibot';
+import { eventType } from 'inngest';
 
 export const RoundStartedEvent = v.object({
   draftId: v.number(),
@@ -50,3 +51,23 @@ export const UserAssignedEvent = v.object({
   userName: v.string(),
 });
 export type UserAssignedEvent = v.InferOutput<typeof UserAssignedEvent>;
+
+export const roundStartedEvent = eventType('draft/round.started', {
+  schema: RoundStartedEvent,
+});
+
+export const roundSubmittedEvent = eventType('draft/round.submitted', {
+  schema: RoundSubmittedEvent,
+});
+
+export const lotteryInterventionEvent = eventType('draft/lottery.intervened', {
+  schema: LotteryInterventionEvent,
+});
+
+export const draftFinalizedEvent = eventType('draft/draft.finalized', {
+  schema: DraftFinalizedEvent,
+});
+
+export const userAssignedEvent = eventType('draft/user.assigned', {
+  schema: UserAssignedEvent,
+});

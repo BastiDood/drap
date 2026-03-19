@@ -8,7 +8,14 @@ import { error, fail, redirect } from '@sveltejs/kit';
 
 import { db } from '$lib/server/database';
 import { dev } from '$app/environment';
-import type { DraftFinalizedEvent } from '$lib/server/inngest/schema';
+import {
+  type DraftFinalizedEvent,
+  draftFinalizedEvent,
+  lotteryInterventionEvent,
+  roundStartedEvent,
+  roundSubmittedEvent,
+  userAssignedEvent,
+} from '$lib/server/inngest/schema';
 import {
   getLabById,
   getUserNameByEmail,
@@ -310,15 +317,14 @@ export const actions = {
                   }
                   throw err;
                 }
-                await inngest.send({
-                  name: parsed.event,
-                  data: {
+                await inngest.send(
+                  roundStartedEvent.create({
                     draftId: parsed.draftId,
                     round: parsed.round,
                     recipientEmail: parsed.recipientEmail,
                     recipientName: `${givenName} ${familyName}`,
-                  },
-                });
+                  }),
+                );
                 break;
               }
               case 'draft/round.submitted': {
@@ -333,16 +339,15 @@ export const actions = {
                   }
                   throw err;
                 }
-                await inngest.send({
-                  name: parsed.event,
-                  data: {
+                await inngest.send(
+                  roundSubmittedEvent.create({
                     draftId: parsed.draftId,
                     round: parsed.round,
                     labId: parsed.labId,
                     labName,
                     recipientEmail: parsed.recipientEmail,
-                  },
-                });
+                  }),
+                );
                 break;
               }
               case 'draft/lottery.intervened': {
@@ -388,9 +393,8 @@ export const actions = {
                   throw err;
                 }
 
-                await inngest.send({
-                  name: parsed.event,
-                  data: {
+                await inngest.send(
+                  lotteryInterventionEvent.create({
                     draftId: parsed.draftId,
                     labId: parsed.labId,
                     labName,
@@ -398,8 +402,8 @@ export const actions = {
                     studentEmail: parsed.studentEmail,
                     recipientEmail: parsed.recipientEmail,
                     recipientName: `${recipientGivenName} ${recipientFamilyName}`,
-                  },
-                });
+                  }),
+                );
                 break;
               }
               case 'draft/draft.finalized': {
@@ -458,15 +462,14 @@ export const actions = {
                   });
                 }
 
-                await inngest.send({
-                  name: parsed.event,
-                  data: {
+                await inngest.send(
+                  draftFinalizedEvent.create({
                     draftId: parsed.draftId,
                     recipientEmail: parsed.recipientEmail,
                     recipientName: `${givenName} ${familyName}`,
                     lotteryAssignments,
-                  },
-                });
+                  }),
+                );
                 break;
               }
               case 'draft/user.assigned': {
@@ -497,15 +500,14 @@ export const actions = {
                   throw err;
                 }
 
-                await inngest.send({
-                  name: parsed.event,
-                  data: {
+                await inngest.send(
+                  userAssignedEvent.create({
                     labId: parsed.labId,
                     labName,
                     userEmail: parsed.userEmail,
                     userName: `${userGivenName} ${userFamilyName}`,
-                  },
-                });
+                  }),
+                );
                 break;
               }
               default:

@@ -29,6 +29,12 @@ import {
   updateDraftLotteryLabQuotas,
 } from '$lib/server/database/drizzle';
 import { db } from '$lib/server/database';
+import {
+  draftFinalizedEvent,
+  lotteryInterventionEvent,
+  roundStartedEvent,
+  userAssignedEvent,
+} from '$lib/server/inngest/schema';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
@@ -283,15 +289,14 @@ export const actions = {
       const facultyAndStaff = await getFacultyAndStaff(db);
       await inngest.send(
         roundsToNotify.flatMap(round =>
-          facultyAndStaff.map(({ email, givenName, familyName }) => ({
-            name: 'draft/round.started' as const,
-            data: {
+          facultyAndStaff.map(({ email, givenName, familyName }) =>
+            roundStartedEvent.create({
               draftId: Number(draftId),
               round,
               recipientEmail: email,
               recipientName: `${givenName} ${familyName}`,
-            },
-          })),
+            }),
+          ),
         ),
       );
       logger.info('draft officially started');
@@ -493,9 +498,8 @@ export const actions = {
           getUserById(db, studentUserId),
         ]);
         await inngest.send(
-          facultyAndStaff.map(({ email, givenName, familyName }) => ({
-            name: 'draft/lottery.intervened' as const,
-            data: {
+          facultyAndStaff.map(({ email, givenName, familyName }) =>
+            lotteryInterventionEvent.create({
               draftId: Number(draftId),
               labId,
               labName,
@@ -503,8 +507,8 @@ export const actions = {
               studentEmail: student.email,
               recipientEmail: email,
               recipientName: `${givenName} ${familyName}`,
-            },
-          })),
+            }),
+          ),
         );
       }
 
@@ -695,15 +699,14 @@ export const actions = {
         }));
 
       await inngest.send(
-        facultyAndStaff.map(({ email, givenName, familyName }) => ({
-          name: 'draft/draft.finalized' as const,
-          data: {
+        facultyAndStaff.map(({ email, givenName, familyName }) =>
+          draftFinalizedEvent.create({
             draftId: Number(draftId),
             recipientEmail: email,
             recipientName: `${givenName} ${familyName}`,
             lotteryAssignments,
-          },
-        })),
+          }),
+        ),
       );
 
       for (const { userId, labId } of userAssignments) {
@@ -711,15 +714,14 @@ export const actions = {
           getLabById(db, labId),
           getUserById(db, userId),
         ]);
-        await inngest.send({
-          name: 'draft/user.assigned' as const,
-          data: {
+        await inngest.send(
+          userAssignedEvent.create({
             labId,
             labName,
             userEmail: assignedUser.email,
             userName: `${assignedUser.givenName} ${assignedUser.familyName}`,
-          },
-        });
+          }),
+        );
       }
     });
   },

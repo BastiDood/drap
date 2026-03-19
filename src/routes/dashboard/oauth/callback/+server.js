@@ -2,7 +2,7 @@ import { Buffer } from 'node:buffer';
 import { timingSafeEqual } from 'node:crypto';
 
 import addresses from 'email-addresses';
-import { createRemoteJWKSet, jwtVerify } from 'jose';
+import { createRemoteJWKSet, customFetch, jwksCache, jwtVerify } from 'jose';
 import { error, redirect } from '@sveltejs/kit';
 import { parse } from 'valibot';
 
@@ -18,14 +18,20 @@ import {
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
-const fetchJwks = createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'));
 const GMAIL_SEND_SCOPE = 'https://www.googleapis.com/auth/gmail.send';
 
 const SERVICE_NAME = 'routes.dashboard.oauth.callback';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
+/** Hoisted to the top level so that {@linkcode createRemoteJWKSet} can reuse it. */
+const GOOGLE_JWKS_CACHE = Object.create(null);
 export async function GET({ fetch, cookies, setHeaders, url: { searchParams } }) {
+  const fetchJwks = createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'), {
+    [jwksCache]: GOOGLE_JWKS_CACHE,
+    [customFetch]: fetch,
+  });
+
   setHeaders({ 'Cache-Control': 'no-store' });
 
   const nonceCookie = cookies.get('nonce');
