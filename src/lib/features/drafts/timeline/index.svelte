@@ -63,7 +63,6 @@
   function getPhaseLabel(phase: Phase) {
     switch (phase) {
       case 'registration':
-        return 'Registration';
       case 'registration-closed':
         return 'Registration';
       case 'regular':
