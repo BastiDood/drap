@@ -1,5 +1,4 @@
 import { Buffer } from 'node:buffer';
-import { ok } from 'node:assert/strict';
 import { timingSafeEqual } from 'node:crypto';
 
 import { createRemoteJWKSet, jwtVerify } from 'jose';
@@ -39,7 +38,7 @@ export async function GET({ fetch, cookies, setHeaders, url: { searchParams } })
 
   const code = searchParams.get('code');
   if (code === null) {
-    logger.error('missing authorization code');
+    logger.fatal('missing authorization code');
     error(400, 'Authorization code is missing.');
   }
 
@@ -74,14 +73,20 @@ export async function GET({ fetch, cookies, setHeaders, url: { searchParams } })
       });
 
       const token = parse(IdToken, payload);
-      ok(token.email_verified);
+      if (!token.email_verified) {
+        logger.fatal('email not verified', void 0, { 'google.email': token.email });
+        error(500, 'Email not verified.');
+      }
 
       // Validate nonce against the cookie
       const cookieNonce = Buffer.from(nonceCookie, 'base64url');
       const tokenNonce = Buffer.from(token.nonce, 'base64url');
       if (!timingSafeEqual(tokenNonce, cookieNonce)) {
-        logger.error('nonce mismatch');
-        error(400, 'Invalid nonce.');
+        logger.fatal('nonce mismatch', void 0, {
+          'nonce.cookie': nonceCookie,
+          'nonce.token': token.nonce,
+        });
+        error(500, 'Nonce mismatch encountered.');
       }
 
       // Derive hasExtendedScope from the token response's scope field.
