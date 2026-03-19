@@ -786,14 +786,14 @@ export const actions = {
     const draftId = BigInt(params.draftId);
 
     const result = await db.transaction(async db => {
-      const activeDraft = await getActiveDraftForUpdate(db);
-      if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
-        logger.error('invalid draft', void 0);
-        error(403);
+      const draft = await getDraftById(db, draftId)
+      if (typeof draft === 'undefined') {
+        logger.error('draft not found', void 0, { 'draft.id': draftId.toString() });
+        error(404);
       }
 
-      if (activeDraft.currRound !== 0) {
-        logger.fatal('draft already started');
+      if (draft.currRound !== 0) {
+        logger.error('draft already started', void 0, { 'draft.id': draftId.toString() });
         error(403);
       }
 
@@ -857,15 +857,18 @@ export const actions = {
     const draftId = BigInt(params.draftId);
 
     await db.transaction(async db => {
-      const activeDraft = await getActiveDraftForUpdate(db);
-      if (typeof activeDraft === 'undefined' || activeDraft.id !== BigInt(draftId)) error(403);
-
-      if (activeDraft.currRound !== 0) {
-        logger.error('draft already started');
-        error(403);
+      const draft = await getDraftById(db, draftId)
+      if (typeof draft === 'undefined') {
+        logger.error('draft not found', void 0, { 'draft.id': draftId.toString() });
+        error(404);
       }
 
-      await removeFromAllowlist(db, BigInt(draftId), studentUserId);
+      if (draft.currRound !== 0) {
+        logger.error('draft already started', void 0, { 'draft.id': draftId.toString() });
+        error(403);
+      }
+      
+      await removeFromAllowlist(db, draftId, studentUserId);
     });
 
     logger.info('student removed from allowlist', {
