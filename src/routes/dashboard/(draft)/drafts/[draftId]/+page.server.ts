@@ -786,7 +786,7 @@ export const actions = {
       }
 
       if (activeDraft.currRound !== 0) {
-        logger.error('draft already started');
+        logger.fatal('draft already started');
         error(403);
       }
 
