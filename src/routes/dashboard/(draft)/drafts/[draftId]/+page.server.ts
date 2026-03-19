@@ -760,16 +760,19 @@ export const actions = {
       const intent = data.get('intent');
 
       if (intent === 'add') {
-        let draft: string;
-        let email: string;
-
-        try {
-          ({ draft, email } = v.parse(AllowlistAddFormData, decode(data)));
-        } catch (_e) {
-          return fail(400, { message: "Invalid email address" })
+        function parseAllowlistAddFormData(data: FormData) {
+          try {
+            return v.parse(AllowlistAddFormData, decode(data));
+          } catch {
+            return null;
+          }
         }
 
-        if (draft !== params.draftId) {
+        const parsed = parseAllowlistAddFormData(data);
+        if (parsed === null) return fail(400, { message: 'Invalid email address.' });
+        const { draft, email } = parsed;
+
+          if (draft !== params.draftId) {
           logger.warn('draft id mismatch', {
             'draft.form_id': draft,
             'draft.param_id': params.draftId,
@@ -813,12 +816,17 @@ export const actions = {
 
         return { success: true, status: 'added' as const };
       } else if (intent === 'remove') {
-        let studentUserId: string;
-        try {
-          ({ studentUserId } = v.parse(AllowlistRemoveFormData, decode(data)));
-        } catch (_e) {
-          return fail(400, { message: "Invalid Student user id." });
+        function parseAllowlistRemoveFormData(data: FormData) {
+          try {
+            return v.parse(AllowlistRemoveFormData, decode(data));
+          } catch {
+            return null;
+          }
         }
+
+        const parsed = parseAllowlistRemoveFormData(data);
+        if (parsed === null) return fail(400, { message: 'Invalid student user ID.' });
+        const { studentUserId } = parsed;
         const draftId = BigInt(params.draftId);
 
         await db.transaction(async db => {
