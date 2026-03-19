@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer';
 import { timingSafeEqual } from 'node:crypto';
 
+import addresses from 'email-addresses';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 import { error, redirect } from '@sveltejs/kit';
 import { parse } from 'valibot';
@@ -78,6 +79,29 @@ export async function GET({ fetch, cookies, setHeaders, url: { searchParams } })
         error(500, 'Email not verified.');
       }
 
+      // Validate UP email address
+      const email = addresses.parseOneAddress(token.email);
+      if (email === null) {
+        logger.fatal('invalid email address from Google');
+        error(500, 'Invalid email address provided by Google.');
+      }
+
+      switch (email.type) {
+        case 'mailbox':
+          if (email.domain !== 'up.edu.ph') {
+            logger.fatal('email address from external organization detected', void 0, {
+              'google.email': token.email,
+            });
+            error(500, 'Email address is not a UP email address.');
+          }
+          break;
+        default:
+          logger.fatal('invalid email address type from Google', void 0, {
+            'google.email': token.email,
+          });
+          error(500, 'Invalid email address type provided by Google.');
+      }
+
       // Validate nonce against the cookie
       const cookieNonce = Buffer.from(nonceCookie, 'base64url');
       const tokenNonce = Buffer.from(token.nonce, 'base64url');
@@ -86,7 +110,7 @@ export async function GET({ fetch, cookies, setHeaders, url: { searchParams } })
           'nonce.cookie': nonceCookie,
           'nonce.token': token.nonce,
         });
-        error(500, 'Nonce mismatch encountered.');
+        error(400, 'Nonce mismatch encountered.');
       }
 
       // Derive hasExtendedScope from the token response's scope field.
