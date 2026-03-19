@@ -760,7 +760,15 @@ export const actions = {
       const intent = data.get('intent');
 
       if (intent === 'add') {
-        const { draft, email } = v.parse(AllowlistAddFormData, decode(data));
+        let draft: string;
+        let email: string;
+
+        try {
+          ({ draft, email } = v.parse(AllowlistAddFormData, decode(data)));
+        } catch (_e) {
+          return fail(400, { message: "Invalid email address" })
+        }
+
         if (draft !== params.draftId) {
           logger.warn('draft id mismatch', {
             'draft.form_id': draft,
@@ -770,9 +778,6 @@ export const actions = {
         }
 
         const draftId = BigInt(params.draftId);
-        const targetUser = await getUserByEmail(db, email);
-        if (typeof targetUser === 'undefined')
-          return fail(400, { message: 'User with this email not found.' });
 
         const rowCount = await db.transaction(async db => {
           const activeDraft = await getActiveDraftForUpdate(db);
@@ -786,6 +791,9 @@ export const actions = {
             error(403);
           }
 
+          const targetUser = await getUserByEmail(db, email);
+          if (typeof targetUser === 'undefined') return -2
+
           // Check if targetUser is already registered or already has a lab
           const isRegisteredOrAssigned = await isRegisteredOrAssignedInDraft(db, draftId, email);
           if (isRegisteredOrAssigned) return -1;
@@ -793,6 +801,7 @@ export const actions = {
           return await addToAllowlist(db, draftId, targetUser.id, email, user.id);
         });
 
+        if (rowCount === -2) return fail(400, { message: 'User with this email not found.' });
         if (rowCount === -1) return { success: true, status: 'already_registered' as const };
         if (rowCount === 0) return { success: true, status: 'already_in_allowlist' as const };
 
@@ -804,7 +813,12 @@ export const actions = {
 
         return { success: true, status: 'added' as const };
       } else if (intent === 'remove') {
-        const { studentUserId } = v.parse(AllowlistRemoveFormData, decode(data));
+        let studentUserId: string;
+        try {
+          ({ studentUserId } = v.parse(AllowlistRemoveFormData, decode(data)));
+        } catch (_e) {
+          return fail(400, { message: "Invalid Student user id." });
+        }
         const draftId = BigInt(params.draftId);
 
         await db.transaction(async db => {
