@@ -2,9 +2,10 @@
   import { createColumnHelper, getCoreRowModel, getFilteredRowModel, getSortedRowModel, type ColumnFiltersState, type SortingState } from '@tanstack/table-core';
 
   import * as Table from '$lib/components/ui/table';
-  import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table';
+  import { createSvelteTable, FlexRender, renderComponent } from '$lib/components/ui/data-table';
 
   import type { Student } from '$lib/features/drafts/types';
+  import SortByHeader from './sort-by-header.svelte';
 
   interface Props {
     data: Student[];
@@ -18,19 +19,28 @@
   const columns = [
     columnHelper.accessor(({ studentNumber }) => studentNumber, {
       id: 'studentNumber',
-      header: 'Student Number',
+      header: header => renderComponent(SortByHeader, {
+        header: 'Student Number',
+        onclick: header.column.getToggleSortingHandler(),
+      }),
       cell: info => info.getValue(),
     }),
 
     columnHelper.accessor(({ familyName, givenName }) => `${familyName.toUpperCase()}, ${givenName}`, {
       id: 'name',
-      header: 'Name',
+      header: header => renderComponent(SortByHeader, {
+        header: 'Name',
+        onclick: header.column.getToggleSortingHandler(),
+      }),
       cell: info => info.getValue(),
     }),
 
     columnHelper.accessor(({ email }) => email, {
       id: 'email',
-      header: 'Email',
+      header: header => renderComponent(SortByHeader, {
+        header: 'Email',
+        onclick: header.column.getToggleSortingHandler(),
+      }),
       cell: info => info.getValue(),
     }),
 
