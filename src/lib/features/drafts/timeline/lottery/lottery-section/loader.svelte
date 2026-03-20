@@ -1,7 +1,7 @@
 <script lang="ts">
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
   import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
-  import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
+  import { createQuery, useQueryClient } from '@tanstack/svelte-query';
   import { error } from '@sveltejs/kit';
   import { toast } from 'svelte-sonner';
 
@@ -51,16 +51,8 @@
 
   // Invalidate cache and update available draftees
   const queryClient = useQueryClient();
-
-  const mutation = createMutation(() => ({
-    mutationFn: fetchDrafteeList,
-    onSuccess() {
-      queryClient.invalidateQueries({ queryKey: ['available-before-lottery', draftId.toString()] });
-    },
-  }));
-
   function invalidateAvailableDrafteeListCache() {
-    mutation.mutate();
+    queryClient.invalidateQueries({ queryKey: ['available-before-lottery', draftId.toString()] });
   }
 </script>
 
