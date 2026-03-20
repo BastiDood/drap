@@ -64,7 +64,7 @@ export const sendEmail = inngest.createFunction(
   },
   async ({ events, step }) =>
     await step.run(
-      'send-emails',
+      { id: 'send-emails', name: 'Send Emails' },
       async () =>
         await tracer.asyncSpan('send-emails', async () => {
           // Always obtain the freshest credentials per retry.
