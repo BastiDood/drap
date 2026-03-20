@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createColumnHelper, getCoreRowModel } from '@tanstack/table-core';
+  import { createColumnHelper, getCoreRowModel, getSortedRowModel, type SortingState } from '@tanstack/table-core';
 
   import * as Table from '$lib/components/ui/table';
   import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table';
@@ -47,13 +47,29 @@
     }),
   ];
 
+  // Store table states
+  let sorting: SortingState = $state([]);
+
   // This only initializes lazily on load.
   // We put it here so that we don't needlessly initialize state
   // in the `pending` case and the `error` case.
   const table = $derived(createSvelteTable({
     data,
     columns,
+
+    // Normal state
     getCoreRowModel: getCoreRowModel(),
+
+    // Sorted state
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: (updater) => {
+      sorting = typeof updater === 'function' ? updater(sorting) : updater;
+    },
+
+    // List of table states
+    state: {
+      sorting,
+    }
   }));
 </script>
 
