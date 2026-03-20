@@ -88,8 +88,7 @@ export async function load({ params, locals: { session } }) {
       error(404);
     }
 
-    const [students, studentCount, records, assignments, quotaSnapshots] = await Promise.all([
-      getStudentsInDraftTaggedByLab(db, draftId),
+    const [studentCount, records, assignments, quotaSnapshots] = await Promise.all([
       getStudentCountInDraft(db, draftId),
       getFacultyChoiceRecords(db, draftId),
       getDraftAssignmentRecords(db, draftId),
@@ -111,9 +110,6 @@ export async function load({ params, locals: { session } }) {
       else if (assignment.round > 0 && assignment.round <= draft.maxRounds)
         regularDrafted.push(assignment);
       else if (assignment.round === draft.maxRounds + 1) interventionDrafted.push(assignment);
-
-    const regularDraftedIds = new Set(regularDrafted.map(({ id }) => id));
-    const undraftedAfterRegular = students.filter(({ id }) => !regularDraftedIds.has(id));
 
     let initialQuota = 0;
     let finalizedQuota = 0;
@@ -151,7 +147,6 @@ export async function load({ params, locals: { session } }) {
           regularDrafted,
           interventionDrafted,
           lotteryDrafted,
-          undraftedAfterRegular,
         },
       },
     };
