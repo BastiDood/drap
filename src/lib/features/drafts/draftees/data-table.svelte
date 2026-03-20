@@ -1,7 +1,10 @@
 <script lang="ts">
   import { createColumnHelper, getCoreRowModel, getFilteredRowModel, getSortedRowModel, type ColumnFiltersState, type SortingState } from '@tanstack/table-core';
 
+  import { Badge } from '$lib/components/ui/badge';
+  import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
   import * as Table from '$lib/components/ui/table';
+  import { Button } from '$lib/components/ui/button';
   import { createSvelteTable, FlexRender, renderComponent } from '$lib/components/ui/data-table';
 
   import type { Student } from '$lib/features/drafts/types';
@@ -50,6 +53,7 @@
       id: 'labId',
       header: 'Designated Lab',
       cell: info => renderComponent(DesignatedLab, { labId: info.getValue() }),
+      filterFn: 'equalsString',
     }),
 
     columnHelper.accessor(({ labs }) => labs, {
@@ -62,6 +66,11 @@
   // Store table states
   let sorting: SortingState = $state([]);
   let columnFilters: ColumnFiltersState = $state([]);
+
+  // Get all possible labs for filtering
+  const designatedLabFilters = $derived([... new Set(data.map(({ labId }) => labId))].filter(labId => labId !== null));
+  $effect(() => { designatedLabFilters.sort(); });
+  let designatedLabFilterValue = $state('');
 
   // This only initializes lazily on load.
   // We put it here so that we don't needlessly initialize state
@@ -92,6 +101,44 @@
     }
   }));
 </script>
+
+<!-- Filter Buttons -->
+<div class="flex items-center justify-end gap-2 mx-4 mb-4">
+  <!-- Designated Labs -->
+  {#if designatedLabFilters.length > 0}
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger>
+        <Button variant="outline" class={designatedLabFilterValue === '' ? '' : 'border-secondary text-secondary'}>
+          Designated Lab: {designatedLabFilterValue === '' ? 'All' : designatedLabFilterValue.toUpperCase()}
+        </Button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Content>
+        <DropdownMenu.Item onclick={() => {
+          designatedLabFilterValue = '';
+          table.getColumn('labId')?.setFilterValue(designatedLabFilterValue);
+        }}>
+          Clear Filter
+        </DropdownMenu.Item>
+        {#each designatedLabFilters as filter}
+          <DropdownMenu.Item onclick={() => {
+            designatedLabFilterValue = (designatedLabFilterValue === filter) ? '' : filter;
+            table.getColumn('labId')?.setFilterValue(designatedLabFilterValue);
+          }}>
+            {#if designatedLabFilterValue === filter}
+              <Badge variant="outline" class="border-primary bg-primary/10 text-xs uppercase mr-1">
+                {filter.toUpperCase()}
+              </Badge>
+            {:else}
+              <Badge variant="outline" class="border-muted bg-muted/10 text-xs uppercase mr-1">
+                {filter.toUpperCase()}
+              </Badge>
+            {/if}
+          </DropdownMenu.Item>
+        {/each}
+      </DropdownMenu.Content>
+    </DropdownMenu.Root>
+  {/if}
+</div>
 
 <!-- Table -->
 <div class="mx-4 rounded-sm">
