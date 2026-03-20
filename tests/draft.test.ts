@@ -1937,6 +1937,7 @@ test.describe('Draft Lifecycle', () => {
     test('lottery stage shows zero eligible students', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
       await expect(adminPage.getByRole('heading', { name: 'Lottery Phase' })).toBeVisible();
+      await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
       await expect(
         adminPage.getByText('Congratulations! All participants have been drafted.'),
       ).toBeVisible();
@@ -1960,6 +1961,7 @@ test.describe('Draft Lifecycle', () => {
   test.describe('Second Draft — Lottery And Finalization', () => {
     test('sets lottery snapshots to zero for Draft #2', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
+      await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
       const editor = adminPage.locator('#draft-quota-editor-lottery');
       await expect(editor).toBeVisible();
 
