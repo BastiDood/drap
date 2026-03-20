@@ -1,7 +1,6 @@
 <script lang="ts" module>
   export interface Props {
     draftId: string;
-    onCountChange?: (count: number) => void;
   }
 </script>
 
@@ -13,7 +12,7 @@
 
   import AllowlistForm from './form.svelte';
 
-  const { draftId, onCountChange }: Props = $props();
+  const { draftId }: Props = $props();
 
   const query = $derived(createFetchDraftAllowlistQuery(draftId));
 </script>
@@ -25,5 +24,5 @@
 {:else if query.isError}
   <Empty>Uh oh! An error has occurred.</Empty>
 {:else}
-  <AllowlistForm {draftId} allowlist={query.data} {onCountChange} />
+  <AllowlistForm {draftId} allowlist={query.data} />
 {/if}

@@ -17,13 +17,6 @@
   }
 
   const { draftId, studentCount, allowlistCount, snapshots }: Props = $props();
-
-  let allowlistCountOverride = $state<number | null>(null);
-  const currentAllowlistCount = $derived(allowlistCountOverride ?? allowlistCount);
-
-  function handleCountChange(count: number) {
-    allowlistCountOverride = count;
-  }
 </script>
 
 <div class="space-y-4">
@@ -59,7 +52,6 @@
 
   <AllowlistDialog
     {draftId}
-    allowlistCount={currentAllowlistCount}
-    onCountChange={handleCountChange}
+    {allowlistCount}
   />
 </div>

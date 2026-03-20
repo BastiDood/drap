@@ -24,10 +24,9 @@
   interface Props {
     allowlist: DraftRegistrationAllowlistEntry[];
     draftId: string;
-    onCountChange?: (count: number) => void;
   }
 
-  const { allowlist, draftId, onCountChange }: Props = $props();
+  const { allowlist, draftId }: Props = $props();
   const queryClient = useQueryClient();
 
   async function invalidateDraft() {
@@ -54,9 +53,8 @@
         submitter.disabled = false;
         await update();
 
-        if (result.type === 'success' && result.data) {
-          const data = result.data as { status?: string };
-          switch (data.status) {
+        if (result.type === 'success' && typeof result.data !== 'undefined') {
+          switch (result.data.status) {
             case 'already-in-allowlist':
               toast.info('Student is already in the allowlist');
               break;
@@ -68,7 +66,6 @@
               break;
             case 'added':
               toast.success('Student added to allowlist');
-              onCountChange?.(allowlist.length + 1);
               break;
             default:
               throw new Error('unreachable');
@@ -138,7 +135,6 @@
                       switch (result.type) {
                         case 'success':
                           toast.success('Student removed from allowlist.');
-                          onCountChange?.(allowlist.length - 1);
                           await invalidateDraft();
                           break;
                         default:

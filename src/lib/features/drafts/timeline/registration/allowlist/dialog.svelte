@@ -2,7 +2,6 @@
   export interface Props {
     draftId: string;
     allowlistCount: number;
-    onCountChange?: (count: number) => void;
   }
 </script>
 
@@ -14,7 +13,7 @@
 
   import AllowlistContent from './content.svelte';
 
-  const { draftId, allowlistCount, onCountChange }: Props = $props();
+  const { draftId, allowlistCount }: Props = $props();
 
   let open = $state(false);
 
@@ -56,7 +55,7 @@
       </Dialog.Description>
     </Dialog.Header>
     {#if open}
-      <AllowlistContent {draftId} {onCountChange} />
+      <AllowlistContent {draftId} />
     {/if}
   </Dialog.Content>
 </Dialog.Root>
