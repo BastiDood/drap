@@ -1,22 +1,14 @@
 <script lang="ts">
-  import {
-    type ColumnFiltersState,
-    createColumnHelper,
-    getCoreRowModel,
-    getFilteredRowModel,
-    getSortedRowModel,
-    type SortingState,
-  } from '@tanstack/table-core';
+  import { type ColumnFiltersState, createColumnHelper, getCoreRowModel, getFilteredRowModel, getSortedRowModel, type SortingState } from '@tanstack/table-core';
 
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
   import * as Table from '$lib/components/ui/table';
   import PreferredLab from '$lib/users/preferred-lab.svelte';
+  import SortByHeader from '$lib/features/drafts/draftees/sort-by-header.svelte';
   import { Badge } from '$lib/components/ui/badge';
   import { Button } from '$lib/components/ui/button';
   import { createSvelteTable, FlexRender, renderComponent } from '$lib/components/ui/data-table';
   import type { Lab, Student } from '$lib/features/drafts/types';
-
-  import SortByHeader from '$lib/features/drafts/draftees/sort-by-header.svelte';
 
   import ManualLabSelection from './manual-lab-selection.svelte';
 

@@ -1,8 +1,7 @@
 <script lang="ts">
+  import Draftees from '$lib/features/drafts/draftees/index.svelte';
   import { Button } from '$lib/components/ui/button';
   import type { DraftFinalizedBreakdown, Lab } from '$lib/features/drafts/types';
-
-  import Draftees from '$lib/features/drafts/draftees/index.svelte';
 
   import ConcludeForm from './conclude-form.svelte';
 

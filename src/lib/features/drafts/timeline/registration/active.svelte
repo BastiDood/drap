@@ -2,10 +2,9 @@
   import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
 
   import * as Alert from '$lib/components/ui/alert';
+  import Draftees from '$lib/features/drafts/draftees/index.svelte';
   import { Button } from '$lib/components/ui/button';
   import type { DraftFinalizedBreakdown } from '$lib/features/drafts/types';
-
-  import Draftees from '$lib/features/drafts/draftees/index.svelte';
 
   import QuotaSnapshotForm from '../quota-snapshot-form.svelte';
 
