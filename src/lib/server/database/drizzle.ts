@@ -1,5 +1,4 @@
-import { assert } from 'node:console';
-import { fail, strictEqual } from 'node:assert/strict';
+import assert, { fail, strictEqual } from 'node:assert/strict';
 
 import { alias, type PgUpdateSetSource } from 'drizzle-orm/pg-core';
 import {
