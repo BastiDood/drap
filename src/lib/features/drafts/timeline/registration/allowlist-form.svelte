@@ -26,7 +26,6 @@
   const { allowlist, draftId }: Props = $props();
 
   let email = $state('');
-  let adding = $state(false);
 </script>
 
 <section class="space-y-4">
@@ -38,13 +37,15 @@
   <form
     method="post"
     action="/dashboard/drafts/{draftId}/?/add-to-allowlist"
-    use:enhance={({ formData, cancel }) => {
+    use:enhance={({ formData, cancel, submitter }) => {
       const emailValue = formData.get('email');
       if (typeof emailValue !== 'string' || emailValue.length === 0) return cancel();
 
-      adding = true;
+      assert(submitter !== null);
+      assert(submitter instanceof HTMLButtonElement);
+      submitter.disabled = true;
       return async ({ update, result }) => {
-        adding = false;
+        submitter.disabled = false;
         await update();
 
         if (result.type === 'success' && result.data) {
@@ -82,8 +83,8 @@
           required
         />
       </div>
-      <Button type="submit" disabled={adding}>
-        {adding ? 'Adding...' : 'Add to Allowlist'}
+      <Button type="submit">
+        Add to Allowlist
       </Button>
     </div>
   </form>
