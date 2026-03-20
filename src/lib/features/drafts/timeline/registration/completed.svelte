@@ -18,9 +18,15 @@
     </p>
   </div>
   <div class="flex items-center justify-center">
-    <Draftees {draftId} queryKey="final-registered-students" customTextOnEmpty="No students have registered.">
+    <Draftees
+      {draftId}
+      queryKey="final-registered-students"
+      customTextOnEmpty="No students have registered."
+    >
       {#snippet trigger()}
-        <Button variant="outline" class="border-primary text-primary">See Registered Students</Button>
+        <Button variant="outline" class="border-primary text-primary"
+          >See Registered Students</Button
+        >
       {/snippet}
     </Draftees>
   </div>

@@ -18,12 +18,10 @@
 
 <Drawer.Root>
   <Drawer.Trigger>
-    <Button variant="outline" class="border-warning text-warning">
-      Eligible for Lottery
-    </Button>
+    <Button variant="outline" class="border-warning text-warning">Eligible for Lottery</Button>
   </Drawer.Trigger>
   <Drawer.Content class="min-h-screen">
-    <div class="overflow-auto pb-40 px-8">
+    <div class="overflow-auto px-8 pb-40">
       <!-- Put QuotaSnapshotForm in Drawer -->
       <QuotaSnapshotForm {draftId} mode="lottery" {snapshots} />
 

@@ -1,9 +1,6 @@
 <script lang="ts">
   import { Button } from '$lib/components/ui/button';
-  import type {
-    DraftFinalizedBreakdown,
-    Lab,
-  } from '$lib/features/drafts/types';
+  import type { DraftFinalizedBreakdown, Lab } from '$lib/features/drafts/types';
 
   import Draftees from '../../draftees/index.svelte';
 
@@ -29,9 +26,9 @@
     </p>
     <ul>
       <li>
-        The <strong>"Eligible for Lottery"</strong> section features a list of the remaining undrafted
-        students. Administrators may negotiate with the lab heads on how to manually assign and distribute
-        these students fairly among interested labs.
+        The <strong>"Eligible for Lottery"</strong> section features a list of the remaining
+        undrafted students. Administrators may negotiate with the lab heads on how to manually
+        assign and distribute these students fairly among interested labs.
 
         <div class="flex justify-center">
           <!-- Eligible for Lottery -->
@@ -39,8 +36,9 @@
         </div>
       </li>
       <li>
-        Meanwhile, the <strong>"Already Drafted"</strong> section features an <em>immutable</em> list
-        of students who have already been drafted into their respective labs. These are considered final.
+        Meanwhile, the <strong>"Already Drafted"</strong> section features an <em>immutable</em>
+        list of students who have already been drafted into their respective labs. These are
+        considered final.
 
         <div class="flex justify-center">
           <!-- Already Drafted -->

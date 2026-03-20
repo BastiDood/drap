@@ -39,9 +39,15 @@
         </section>
         <QuotaSnapshotForm {draftId} mode="initial" {snapshots} />
         <div class="flex items-center justify-center">
-          <Draftees {draftId} queryKey="already-registered-students" customTextOnEmpty="No students have registered yet.">
+          <Draftees
+            {draftId}
+            queryKey="already-registered-students"
+            customTextOnEmpty="No students have registered yet."
+          >
             {#snippet trigger()}
-              <Button variant="outline" class="border-accent text-accent">See Registered Students</Button>
+              <Button variant="outline" class="border-accent text-accent"
+                >See Registered Students</Button
+              >
             {/snippet}
           </Draftees>
         </div>

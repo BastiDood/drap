@@ -6,10 +6,7 @@
   import { Button } from '$lib/components/ui/button';
   import * as Tabs from '$lib/components/ui/tabs';
 
-  import type {
-    FacultyChoiceRecord,
-    Lab,
-  } from '$lib/features/drafts/types';
+  import type { FacultyChoiceRecord, Lab } from '$lib/features/drafts/types';
 
   import Draftees from '../../draftees/index.svelte';
   import LabRoundSummary from './lab-round-summary.svelte';
@@ -51,12 +48,22 @@
   </Tabs.List>
   <Tabs.Content value="students">
     <div class="flex items-center justify-around">
-      <Draftees {draftId} queryKey="pending-selection" mustShowDrafted={false} customTextOnEmpty="No available draftees.">
+      <Draftees
+        {draftId}
+        queryKey="pending-selection"
+        mustShowDrafted={false}
+        customTextOnEmpty="No available draftees."
+      >
         {#snippet trigger()}
           <Button variant="outline" class="border-warning text-warning">Pending Selection</Button>
         {/snippet}
       </Draftees>
-      <Draftees {draftId} queryKey="already-drafted" mustShowDrafted={true} customTextOnEmpty="No drafted students yet.">
+      <Draftees
+        {draftId}
+        queryKey="already-drafted"
+        mustShowDrafted={true}
+        customTextOnEmpty="No drafted students yet."
+      >
         {#snippet trigger()}
           <Button variant="outline" class="border-primary text-primary">Already Drafted</Button>
         {/snippet}

@@ -17,7 +17,16 @@
     customTextOnEmpty?: string;
   }
 
-  const { trigger, draftId, round, lab, queryKey, mustShowDrafted, mustShowInterest, customTextOnEmpty }: Props = $props();
+  const {
+    trigger,
+    draftId,
+    round,
+    lab,
+    queryKey,
+    mustShowDrafted,
+    mustShowInterest,
+    customTextOnEmpty,
+  }: Props = $props();
 </script>
 
 <Drawer.Root>
@@ -25,8 +34,16 @@
     {@render trigger()}
   </Drawer.Trigger>
   <Drawer.Content class="min-h-screen">
-    <div class="overflow-auto pb-40 px-8">
-      <Loader {draftId} {round} {lab} {queryKey} {mustShowDrafted} {mustShowInterest} {customTextOnEmpty} />
+    <div class="overflow-auto px-8 pb-40">
+      <Loader
+        {draftId}
+        {round}
+        {lab}
+        {queryKey}
+        {mustShowDrafted}
+        {mustShowInterest}
+        {customTextOnEmpty}
+      />
     </div>
   </Drawer.Content>
 </Drawer.Root>

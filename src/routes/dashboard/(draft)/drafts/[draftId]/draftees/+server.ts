@@ -1,7 +1,7 @@
-import { json } from "@sveltejs/kit";
+import { json } from '@sveltejs/kit';
 
-import { db } from "$lib/server/database";
-import { getStudentsInDraftTaggedByLab } from "$lib/server/database/drizzle";
+import { db } from '$lib/server/database';
+import { getStudentsInDraftTaggedByLab } from '$lib/server/database/drizzle';
 import type { SerializableStudent } from '$lib/features/drafts/types';
 
 export async function GET({ params }) {
@@ -10,7 +10,7 @@ export async function GET({ params }) {
   const draftees = await getStudentsInDraftTaggedByLab(db, draftId);
 
   // Make data JSON-serializable
-  const serializableDrafteeList = draftees.map((draftee) => {
+  const serializableDrafteeList = draftees.map(draftee => {
     return {
       ...draftee,
 
