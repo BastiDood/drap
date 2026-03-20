@@ -9,13 +9,15 @@
   interface Props {
     trigger: Snippet;
     draftId: bigint;
+    round?: number;
     lab?: Lab;
     queryKey: string;
     mustShowDrafted?: boolean;
+    mustShowInterest?: boolean;
     customTextOnEmpty?: string;
   }
 
-  const { trigger, draftId, queryKey, mustShowDrafted, customTextOnEmpty }: Props = $props();
+  const { trigger, draftId, round, lab, queryKey, mustShowDrafted, mustShowInterest, customTextOnEmpty }: Props = $props();
 </script>
 
 <Drawer.Root>
@@ -24,7 +26,7 @@
   </Drawer.Trigger>
   <Drawer.Content class="min-h-screen">
     <div class="overflow-auto pb-40 px-8">
-      <Loader {draftId} {lab} {queryKey} {mustShowDrafted} {customTextOnEmpty} />
+      <Loader {draftId} {round} {lab} {queryKey} {mustShowDrafted} {mustShowInterest} {customTextOnEmpty} />
     </div>
   </Drawer.Content>
 </Drawer.Root>

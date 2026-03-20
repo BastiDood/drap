@@ -10,13 +10,15 @@
 
   interface Props {
     draftId: bigint;
+    round?: number;
     lab?: Lab;
     queryKey: string;
     mustShowDrafted?: boolean;
+    mustShowInterest?: boolean;
     customTextOnEmpty?: string;
   }
 
-  const { draftId, lab, queryKey, mustShowDrafted, customTextOnEmpty }: Props = $props()
+  const { draftId, round, lab, queryKey, mustShowDrafted, mustShowInterest, customTextOnEmpty }: Props = $props()
 
   // This only triggers on mount of the parent.
   const { isPending, isError, data } = $derived(createQuery(() => ({
@@ -49,7 +51,20 @@
 
       // still available for lab draft
       else if (mustShowDrafted === false) {
-        return data.filter(({ labId }) => labId === null);
+        const available = data.filter(({ labId }) => labId === null);
+
+        // interested in a lab
+        if (lab !== undefined) {
+          if (round !== undefined) {
+            // later
+            if (mustShowInterest === true) return available.filter(d => d.labs.slice(round).includes(lab.id))
+            
+            // or right now
+            return available.filter(d => d.labs[round - 1] === lab.id);
+          }
+        }
+
+        return available;
       }
 
       // Return everything
