@@ -1,9 +1,14 @@
 <script lang="ts">
+  import { enhance } from "$app/forms";
+  import { toast } from "svelte-sonner";
   import { createQuery } from "@tanstack/svelte-query";
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
+  import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
 
+  import { Button } from "$lib/components/ui/button";
   import Empty from '$lib/components/ui/empty/empty.svelte';
 
+  import { assert } from "$lib/assert";
   import type { Lab, Student, SerializableStudent } from "$lib/features/drafts/types";
 
   import DataTable from './data-table.svelte';
@@ -46,8 +51,40 @@
   <Empty>Uh oh! An error has occurred.</Empty>
 {:else}
   {#if data.length > 0}
-    <!-- Wrap in a component so we can lazily mount the table state. -->
-    <DataTable {data} {labs} />
+    <form
+      method="post"
+      action="/dashboard/drafts/{draftId}/?/intervene"
+      class="space-y-4"
+      use:enhance={({ submitter, cancel }) => {
+        // eslint-disable-next-line no-alert
+        if (!confirm('Are you sure you want to apply these interventions?')) {
+          cancel();
+          return;
+        }
+        assert(submitter !== null);
+        assert(submitter instanceof HTMLButtonElement);
+        submitter.disabled = true;
+        return async ({ update, result }) => {
+          submitter.disabled = false;
+          await update();
+          if (result.type === 'success') toast.success('Successfully applied the interventions.');
+        };
+      }}
+    >
+      <!-- Wrap in a component so we can lazily mount the table state. -->
+      <DataTable {data} {labs} />
+
+      <input type="hidden" name="draft" value={draftId} />
+      <Button
+        type="submit"
+        variant="outline"
+        size="lg"
+        class="border-warning bg-warning/10 text-warning hover:bg-warning/20 w-full shadow-lg"
+      >
+        <ShieldAlertIcon class="size-6" />
+        <span>Apply Interventions</span>
+      </Button>
+    </form>
   {:else}
     <p class="prose dark:prose-invert max-w-none">
       Congratulations! All participants have been drafted. No action is needed here.
