@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { createColumnHelper, getCoreRowModel, getSortedRowModel, type SortingState } from '@tanstack/table-core';
+  import { createColumnHelper, getCoreRowModel, getFilteredRowModel, getSortedRowModel, type ColumnFiltersState, type SortingState } from '@tanstack/table-core';
 
   import * as Table from '$lib/components/ui/table';
   import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table';
@@ -49,6 +49,7 @@
 
   // Store table states
   let sorting: SortingState = $state([]);
+  let columnFilters: ColumnFiltersState = $state([]);
 
   // This only initializes lazily on load.
   // We put it here so that we don't needlessly initialize state
@@ -65,10 +66,17 @@
     onSortingChange: (updater) => {
       sorting = typeof updater === 'function' ? updater(sorting) : updater;
     },
+    
+    // Filtered state
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnFiltersChange: (updater) => {
+      columnFilters = typeof updater === 'function' ? updater(columnFilters) : updater;
+    },
 
     // List of table states
     state: {
       sorting,
+      columnFilters,
     }
   }));
 </script>
