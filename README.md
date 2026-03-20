@@ -83,13 +83,12 @@ At runtime, the server requires the following environment variables to be presen
 > [!IMPORTANT]
 > The OAuth redirect URI is computed as `${ORIGIN}/dashboard/oauth/callback`.
 
-The following variables are optional in development, but _highly_ recommended in the production environment for [OpenTelemetry](#opentelemetry-instrumentation) integration. The standard environment variables are supported, such as (but not limited to):
+The following variables are optional in development, but _highly_ recommended in production for [local telemetry with OpenObserve](#local-telemetry-with-openobserve). Traces use OTLP over HTTP by default, so in most cases you only need to configure the exporter endpoint and any required headers:
 
 | **Name**                      | **Description**                                                                         | **Recommended**                                                |
 | ----------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | The base OTLP endpoint URL for exporting logs, metrics, and traces.                     | `http://localhost:5080/api/default`                            |
 | `OTEL_EXPORTER_OTLP_HEADERS`  | Extra percent-encoded HTTP headers used for exporting telemetry (e.g., authentication). | `Authorization=Basic%20YWRtaW5AZXhhbXBsZS5jb206cGFzc3dvcmQ%3D` |
-| `OTEL_EXPORTER_OTLP_PROTOCOL` | The underlying exporter protocol (e.g., JSON, Protobufs, gRPC, etc.).                   | `http/protobuf`                                                |
 
 > [!NOTE]
 > The "recommended" values are only applicable to the development environment with OpenObserve running in the background. See the [`compose.yaml`] for more details on the OpenObserve configuration.
@@ -225,11 +224,10 @@ To enable full observability in local development:
    ```bash
    pnpm docker:dev
    ```
-2. Export the OTEL environment variables before running the dev server:
+2. Export the OTLP endpoint and headers before running the dev server. Trace export uses OTLP over HTTP automatically:
    ```bash
    export OTEL_EXPORTER_OTLP_ENDPOINT='http://localhost:5080/api/default'
    export OTEL_EXPORTER_OTLP_HEADERS='Authorization=Basic%20YWRtaW5AZXhhbXBsZS5jb206cGFzc3dvcmQ%3D'
-   export OTEL_EXPORTER_OTLP_PROTOCOL='http/protobuf'
    pnpm dev
    ```
 3. View traces and logs at `http://localhost:5080`.
@@ -283,7 +281,7 @@ nu ./scripts/test-playwright.nu production
 </details>
 
 > [!CAUTION]
-> If running from `pnpm docker:dev`, make sure to specify `INNGEST_DEV=1` in one of the environment files. This configures the production-mode `pnpm preview` server to bypass the Inngest secrets validation (per `inngest dev`). Without this, the tests will fail due to the Inngest client failing to sign its dispatched events.
+> In Inngest SDK v4, local development is no longer inferred automatically. Set `INNGEST_DEV=http://localhost:8288` only for host-run app processes that should talk to the local Inngest dev server, such as `pnpm preview` during Playwright/CI and optional host-run local Inngest testing. The Docker `--sdk-url` values such as `http://host.docker.internal:5173/api/inngest` and `http://host.docker.internal:4173/api/inngest` still point the Inngest dev server back to the app's handler.
 
 ## Acknowledgements
 

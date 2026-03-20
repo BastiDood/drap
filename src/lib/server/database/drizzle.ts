@@ -1853,6 +1853,18 @@ export async function getAllowlistByDraft(db: DbConnection, draftId: bigint) {
   });
 }
 
+export async function getAllowlistCountByDraft(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-allowlist-count-by-draft', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    const { result } = await db
+      .select({ result: count(schema.draftRegistrationAllowlist.studentUserId) })
+      .from(schema.draftRegistrationAllowlist)
+      .where(eq(schema.draftRegistrationAllowlist.draftId, draftId))
+      .then(assertSingle);
+    return result;
+  });
+}
+
 export async function addToAllowlist(
   db: DrizzleTransaction,
   draftId: bigint,

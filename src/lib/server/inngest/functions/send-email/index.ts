@@ -5,6 +5,13 @@ import { NonRetriableError } from 'inngest';
 
 import { db } from '$lib/server/database';
 import {
+  DraftFinalizedEvent,
+  LotteryInterventionEvent,
+  RoundStartedEvent,
+  RoundSubmittedEvent,
+  UserAssignedEvent,
+} from '$lib/server/inngest/schema';
+import {
   type DrizzleTransaction,
   getDesignatedSenderCredentialsForUpdate,
   type schema,
@@ -43,17 +50,21 @@ const renderer = new Renderer({
 });
 
 export const sendEmail = inngest.createFunction(
-  { id: 'send-email', name: 'Send Email', batchEvents: { maxSize: 100, timeout: '10s' } },
-  [
-    { event: 'draft/round.started' },
-    { event: 'draft/round.submitted' },
-    { event: 'draft/lottery.intervened' },
-    { event: 'draft/draft.finalized' },
-    { event: 'draft/user.assigned' },
-  ],
+  {
+    id: 'send-email',
+    name: 'Send Email',
+    batchEvents: { maxSize: 100, timeout: '10s' },
+    triggers: [
+      RoundStartedEvent,
+      RoundSubmittedEvent,
+      LotteryInterventionEvent,
+      DraftFinalizedEvent,
+      UserAssignedEvent,
+    ],
+  },
   async ({ events, step }) =>
     await step.run(
-      'send-emails',
+      { id: 'send-emails', name: 'Send Emails' },
       async () =>
         await tracer.asyncSpan('send-emails', async () => {
           // Always obtain the freshest credentials per retry.
@@ -165,7 +176,7 @@ export const sendEmail = inngest.createFunction(
               throw cause;
             }
           } else {
-            logger.warn('emails disabled during dry run');
+            throw new NonRetriableError('emails disabled during dry run');
           }
 
           // TODO: Log the result of the bulk operation.

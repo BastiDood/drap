@@ -3,45 +3,50 @@
 
   import * as Alert from '$lib/components/ui/alert';
   import QuotaSnapshotForm from '$lib/features/drafts/timeline/quota-snapshot-form.svelte';
-  import type {
-    DraftFinalizedBreakdown,
-    DraftRegistrationAllowlistEntry,
-    Student,
-  } from '$lib/features/drafts/types';
+  import RegisteredDraftees from '$lib/features/drafts/draftees/registered/index.svelte';
+  import type { DraftFinalizedBreakdown } from '$lib/features/drafts/types';
 
-  import AllowlistForm from './allowlist-form.svelte';
+  import AllowlistDialog from './allowlist-dialog.svelte';
   import StartForm from './start-form.svelte';
-  import StudentList from './student-list.svelte';
 
   interface Props {
-    draftId: bigint;
-    students: Student[];
+    draftId: string;
+    studentCount: number;
+    allowlistCount: number;
     snapshots: DraftFinalizedBreakdown['snapshots'];
-    allowlist: DraftRegistrationAllowlistEntry[];
   }
 
-  const { draftId, students, snapshots, allowlist }: Props = $props();
+  const { draftId, studentCount, allowlistCount, snapshots }: Props = $props();
+
+  let allowlistCountOverride = $state<number | null>(null);
+  const currentAllowlistCount = $derived(allowlistCountOverride ?? allowlistCount);
+
+  function handleCountChange(count: number) {
+    allowlistCountOverride = count;
+  }
 </script>
 
 <div class="space-y-4">
-  {#if students.length > 0}
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
-      <div class="space-y-4">
-        <section class="prose dark:prose-invert">
-          <h3>Registered Students</h3>
-          <p>
-            Registration has closed. There are currently <strong>{students.length}</strong> students who
-            registered for this draft.
-          </p>
-          <p>
-            Use the allowlist below to grant additional students access to submit their rankings
-            before starting the draft.
-          </p>
-        </section>
-        <QuotaSnapshotForm {draftId} mode="initial" {snapshots} />
-        <StartForm {draftId} />
+  {#if studentCount > 0}
+    <div class="space-y-4">
+      <section class="prose dark:prose-invert">
+        <h3>Registered Students</h3>
+        <p>
+          Registration has closed. There are currently <strong>{studentCount}</strong> students who
+          registered for this draft.
+        </p>
+        <p>
+          Use the allowlist to grant additional students access to submit their rankings before
+          starting the draft.
+        </p>
+      </section>
+      <QuotaSnapshotForm {draftId} mode="initial" {snapshots} />
+      <div class="flex items-center justify-center">
+        <RegisteredDraftees {draftId} variant="primary">
+          No students have registered for this draft.
+        </RegisteredDraftees>
       </div>
-      <StudentList {students} />
+      <StartForm {draftId} />
     </div>
   {:else}
     <Alert.Root variant="info">
@@ -52,7 +57,9 @@
     </Alert.Root>
   {/if}
 
-  <hr class="border-border" />
-
-  <AllowlistForm {draftId} {allowlist} />
+  <AllowlistDialog
+    {draftId}
+    allowlistCount={currentAllowlistCount}
+    onCountChange={handleCountChange}
+  />
 </div>

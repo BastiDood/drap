@@ -56,6 +56,11 @@ async function expectStudentsCallout(
   }
 }
 
+async function expectVisibleButtons(page: Page, labels: string[]) {
+  for (const label of labels)
+    await expect(page.getByRole('button', { name: label }).first()).toBeVisible();
+}
+
 test.describe('Draft Lifecycle', () => {
   test.describe.configure({ mode: 'serial' });
 
@@ -572,6 +577,7 @@ test.describe('Draft Lifecycle', () => {
       await adminPage.goto('/dashboard/drafts/1/');
       await expect(adminPage.getByText('There are currently')).toBeVisible();
       await expect(adminPage.getByText(/\b8\b/u).first()).toBeVisible();
+      await expectVisibleButtons(adminPage, ['See Registered Students']);
     });
 
     test('shows initial snapshot quotas as placeholders', async ({ adminPage }) => {
@@ -672,6 +678,14 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('Round 1 — 1st choice', () => {
+    test('admin draft page shows regular loader labels', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+      await expectVisibleButtons(adminPage, ['Pending Selection', 'Already Drafted']);
+
+      await adminPage.getByRole('tab', { name: 'Laboratories' }).click();
+      await expectVisibleButtons(adminPage, ['See Members', 'See Preferred', 'See Interested']);
+    });
+
     test.describe('NDSL', () => {
       test('before submission: full quota, no Previous Picks, progress bar at zero', async ({
         ndslHeadPage,
@@ -1062,6 +1076,17 @@ test.describe('Draft Lifecycle', () => {
       await expect(page.getByText(/lottery stage/u)).toBeVisible();
     });
 
+    test('admin lottery page shows loader labels and intervention action', async ({
+      adminPage,
+    }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+      await expect(adminPage.getByRole('heading', { name: 'Lottery Phase' })).toBeVisible();
+      await expectVisibleButtons(adminPage, ['Eligible for Lottery', 'Already Drafted']);
+
+      await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
+      await expect(adminPage.getByRole('button', { name: 'Apply Interventions' })).toBeVisible();
+    });
+
     test('detail page shows ordered round events', async ({ page }) => {
       await page.goto('/history/1/');
       await expect(page.getByText('lottery stage')).toBeVisible();
@@ -1102,11 +1127,6 @@ test.describe('Draft Lifecycle', () => {
     test('draft enters lottery phase', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
       await expect(adminPage.getByRole('heading', { name: 'Lottery Phase' })).toBeVisible();
-    });
-
-    test('sees remaining students in lottery', async ({ adminPage }) => {
-      await adminPage.goto('/dashboard/drafts/1/');
-      await expect(adminPage.getByText('Eligible for Lottery (4)')).toBeVisible();
     });
   });
 
@@ -1161,6 +1181,7 @@ test.describe('Draft Lifecycle', () => {
   test.describe('Manual Intervention', () => {
     test('assigns first eligible student to a lab', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
+      await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
       const interventionForm = adminPage.locator('form[action*="intervene"]');
       await expect(interventionForm).toBeVisible();
 
@@ -1175,17 +1196,13 @@ test.describe('Draft Lifecycle', () => {
       const responseData = await response.json();
       expect(responseData.type).toBe('success');
     });
-
-    test('eligible count drops to 3', async ({ adminPage }) => {
-      await adminPage.goto('/dashboard/drafts/1/');
-      await expect(adminPage.getByText('Eligible for Lottery (3)')).toBeVisible();
-    });
   });
 
   test.describe('Adjust Quotas for Remaining Students', () => {
     test.describe('lottery snapshot updates', () => {
       test('partially updates lottery snapshots', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/drafts/1/');
+        await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
         const editor = adminPage.locator('#draft-quota-editor-lottery');
         await expect(editor).toBeVisible();
 
@@ -1206,6 +1223,7 @@ test.describe('Draft Lifecycle', () => {
 
       test('shows committed placeholders after lottery snapshot update', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/drafts/1/');
+        await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
         const editor = adminPage.locator('#draft-quota-editor-lottery');
         await expect(editor).toBeVisible();
 
@@ -1299,13 +1317,14 @@ test.describe('Draft Lifecycle', () => {
     test.describe('drafted sections', () => {
       test('are ordered as regular then intervention then lottery', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/drafts/1/');
+        await adminPage.waitForLoadState('networkidle');
 
         const sectionIds = await adminPage
           .locator(
             '#section-regular-drafted, #section-intervention-drafted, #section-lottery-drafted',
           )
           .evaluateAll(nodes => nodes.map(node => node.id));
-        expect(sectionIds).toEqual([
+        await expect(sectionIds).toEqual([
           'section-regular-drafted',
           'section-intervention-drafted',
           'section-lottery-drafted',
@@ -1944,7 +1963,8 @@ test.describe('Draft Lifecycle', () => {
     test('lottery stage shows zero eligible students', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
       await expect(adminPage.getByRole('heading', { name: 'Lottery Phase' })).toBeVisible();
-      await expect(adminPage.getByText('Eligible for Lottery (0)')).toBeVisible();
+      await expectVisibleButtons(adminPage, ['Eligible for Lottery']);
+      await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
       await expect(
         adminPage.getByText('Congratulations! All participants have been drafted.'),
       ).toBeVisible();
@@ -1968,6 +1988,7 @@ test.describe('Draft Lifecycle', () => {
   test.describe('Second Draft — Lottery And Finalization', () => {
     test('sets lottery snapshots to zero for Draft #2', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
+      await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
       const editor = adminPage.locator('#draft-quota-editor-lottery');
       await expect(editor).toBeVisible();
 

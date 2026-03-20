@@ -1,3 +1,4 @@
+import { cron } from 'inngest';
 import { lt, sql } from 'drizzle-orm';
 
 import { db } from '$lib/server/database';
@@ -11,13 +12,21 @@ const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
 export const cleanupSessions = inngest.createFunction(
-  { id: 'cleanup-sessions', name: 'Cleanup Sessions' },
-  { cron: '0 0 * * *' },
-  async () =>
-    await tracer.asyncSpan('cleanup-sessions', async () => {
-      const { rowCount } = await db
-        .delete(session)
-        .where(lt(session.expiredAt, sql`now() - interval '30 days'`));
-      logger.info('sessions cleaned up', { count: rowCount });
-    }),
+  {
+    id: 'cleanup-sessions',
+    name: 'Cleanup Sessions',
+    triggers: [cron('0 0 * * *')],
+  },
+  async ({ step }) =>
+    await step.run(
+      { id: 'delete-expired-sessions', name: 'Delete Expired Sessions' },
+      async () =>
+        await tracer.asyncSpan('delete-expired-sessions', async () => {
+          const { rowCount } = await db
+            .delete(session)
+            .where(lt(session.expiredAt, sql`now() - interval '30 days'`));
+          logger.info('sessions cleaned up', { count: rowCount });
+          return rowCount;
+        }),
+    ),
 );

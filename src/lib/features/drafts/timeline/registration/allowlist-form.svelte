@@ -3,6 +3,7 @@
   import UsersIcon from '@lucide/svelte/icons/users';
   import { format } from 'date-fns';
   import { toast } from 'svelte-sonner';
+  import { useQueryClient } from '@tanstack/svelte-query'; // eslint-disable-line no-restricted-imports
 
   import * as Empty from '$lib/components/ui/empty';
   import { assert } from '$lib/assert';
@@ -11,21 +12,22 @@
   import { enhance } from '$app/forms';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
-  import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-  } from '$lib/components/ui/table';
+  import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '$lib/components/ui/table';
 
   interface Props {
     allowlist: DraftRegistrationAllowlistEntry[];
-    draftId: bigint;
+    draftId: string;
+    onCountChange?: (count: number) => void;
   }
 
-  const { allowlist, draftId }: Props = $props();
+  const { allowlist, draftId, onCountChange }: Props = $props();
+  const queryClient = useQueryClient();
+
+  async function invalidateDraft() {
+    await queryClient.invalidateQueries({
+      queryKey: ['drafts', draftId],
+    });
+  }
 </script>
 
 <section class="space-y-4">
@@ -48,21 +50,23 @@
         if (result.type === 'success' && result.data) {
           const data = result.data as { status?: string };
           switch (data.status) {
-            case 'already_in_allowlist':
+            case 'already-in-allowlist':
               toast.info('Student is already in the allowlist');
               break;
-            case 'already_registered':
+            case 'already-registered':
               toast.info('Student is already registered');
               break;
-            case 'not_a_student':
+            case 'not-a-student':
               toast.info('User is not a student');
               break;
             case 'added':
               toast.success('Student added to allowlist');
+              onCountChange?.(allowlist.length + 1);
               break;
             default:
               throw new Error('unreachable');
           }
+          await invalidateDraft();
         } else if (result.type === 'failure' && result.status === 400) {
           const data = result.data as { message?: string } | undefined;
           toast.error(data?.message ?? 'Failed to add to allowlist.');
@@ -127,6 +131,8 @@
                       switch (result.type) {
                         case 'success':
                           toast.success('Student removed from allowlist.');
+                          onCountChange?.(allowlist.length - 1);
+                          await invalidateDraft();
                           break;
                         default:
                           break;

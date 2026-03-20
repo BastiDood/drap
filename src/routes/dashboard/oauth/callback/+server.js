@@ -1,8 +1,8 @@
 import { Buffer } from 'node:buffer';
-import { ok } from 'node:assert/strict';
 import { timingSafeEqual } from 'node:crypto';
 
-import { createRemoteJWKSet, jwtVerify } from 'jose';
+import addresses from 'email-addresses';
+import { createRemoteJWKSet, customFetch, jwksCache, jwtVerify } from 'jose';
 import { error, redirect } from '@sveltejs/kit';
 import { parse } from 'valibot';
 
@@ -18,14 +18,20 @@ import {
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
-const fetchJwks = createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'));
 const GMAIL_SEND_SCOPE = 'https://www.googleapis.com/auth/gmail.send';
 
 const SERVICE_NAME = 'routes.dashboard.oauth.callback';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
+/** Hoisted to the top level so that {@linkcode createRemoteJWKSet} can reuse it. */
+const GOOGLE_JWKS_CACHE = Object.create(null);
 export async function GET({ fetch, cookies, setHeaders, url: { searchParams } }) {
+  const fetchJwks = createRemoteJWKSet(new URL('https://www.googleapis.com/oauth2/v3/certs'), {
+    [jwksCache]: GOOGLE_JWKS_CACHE,
+    [customFetch]: fetch,
+  });
+
   setHeaders({ 'Cache-Control': 'no-store' });
 
   const nonceCookie = cookies.get('nonce');
@@ -39,7 +45,7 @@ export async function GET({ fetch, cookies, setHeaders, url: { searchParams } })
 
   const code = searchParams.get('code');
   if (code === null) {
-    logger.error('missing authorization code');
+    logger.fatal('missing authorization code');
     error(400, 'Authorization code is missing.');
   }
 
@@ -74,14 +80,43 @@ export async function GET({ fetch, cookies, setHeaders, url: { searchParams } })
       });
 
       const token = parse(IdToken, payload);
-      ok(token.email_verified);
+      if (!token.email_verified) {
+        logger.fatal('email not verified', void 0, { 'google.email': token.email });
+        error(500, 'Email not verified.');
+      }
+
+      // Validate UP email address
+      const email = addresses.parseOneAddress(token.email);
+      if (email === null) {
+        logger.fatal('invalid email address from Google');
+        error(500, 'Invalid email address provided by Google.');
+      }
+
+      switch (email.type) {
+        case 'mailbox':
+          if (email.domain !== 'up.edu.ph') {
+            logger.fatal('email address from external organization detected', void 0, {
+              'google.email': token.email,
+            });
+            error(500, 'Email address is not a UP email address.');
+          }
+          break;
+        default:
+          logger.fatal('invalid email address type from Google', void 0, {
+            'google.email': token.email,
+          });
+          error(500, 'Invalid email address type provided by Google.');
+      }
 
       // Validate nonce against the cookie
       const cookieNonce = Buffer.from(nonceCookie, 'base64url');
       const tokenNonce = Buffer.from(token.nonce, 'base64url');
       if (!timingSafeEqual(tokenNonce, cookieNonce)) {
-        logger.error('nonce mismatch');
-        error(400, 'Invalid nonce.');
+        logger.fatal('nonce mismatch', void 0, {
+          'nonce.cookie': nonceCookie,
+          'nonce.token': token.nonce,
+        });
+        error(400, 'Nonce mismatch encountered.');
       }
 
       // Derive hasExtendedScope from the token response's scope field.

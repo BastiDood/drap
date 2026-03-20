@@ -6,10 +6,8 @@
   import type {
     Draft,
     DraftFinalizedBreakdown,
-    DraftRegistrationAllowlistEntry,
     FacultyChoiceRecord,
     Lab,
-    Student,
   } from '$lib/features/drafts/types';
   import { resolve } from '$app/paths';
 
@@ -35,27 +33,24 @@
     draftId: bigint;
     draft: Draft;
     labs: Lab[];
-    available: Student[];
-    selected: Student[];
+    studentCount: number;
     records: FacultyChoiceRecord[];
     finalized: DraftFinalizedBreakdown;
-    allowlist: DraftRegistrationAllowlistEntry[];
+    allowlistCount: number;
     requestedAt: Date;
   }
 
   const {
-    draftId,
+    draftId: rawDraftId,
     draft,
     labs,
-    available,
-    selected,
+    studentCount,
     records,
     finalized,
-    allowlist,
+    allowlistCount,
     requestedAt,
   }: Props = $props();
-
-  const allStudents = $derived([...available, ...selected]);
+  const draftId = $derived(rawDraftId.toString());
 
   // Determine current phase
   const currentPhase = $derived.by(() => {
@@ -63,7 +58,6 @@
     if (draft.currRound === null) return 'review';
     if (draft.currRound === 0)
       return draft.registrationClosesAt <= requestedAt ? 'registration-closed' : 'registration';
-
     if (draft.currRound !== null && draft.currRound > draft.maxRounds) return 'intervention';
     return 'regular';
   });
@@ -182,7 +176,7 @@
         <SummaryPhase
           {draftId}
           {draft}
-          students={allStudents}
+          totalStudents={studentCount}
           {labs}
           {finalized}
           isReview={currentPhase === 'review'}
@@ -198,13 +192,12 @@
         defaultOpen={currentPhase === 'intervention' || currentPhase === 'review'}
       >
         {#if currentPhase === 'intervention'}
-          <LotteryActive {draftId} {labs} {available} {selected} snapshots={finalized.snapshots} />
+          <LotteryActive {draftId} {labs} snapshots={finalized.snapshots} />
         {:else}
           <LotteryCompleted
-            {selected}
+            {draftId}
             lotteryDrafted={finalized.sections.lotteryDrafted}
             isReview={currentPhase === 'review'}
-            {draftId}
           />
         {/if}
       </Step>
@@ -221,9 +214,9 @@
           </span>
         {/snippet}
         {#if draft.currRound !== null && draft.currRound > 0 && draft.currRound <= draft.maxRounds}
-          <RegularPhase round={draft.currRound} {labs} {records} {available} {selected} />
+          <RegularPhase {draftId} round={draft.currRound} {labs} {records} />
         {:else if currentPhase === 'review' || currentPhase === 'finalized'}
-          <RegularPhase round={draft.maxRounds} {labs} {records} {available} {selected} />
+          <RegularPhase {draftId} round={draft.maxRounds} {labs} {records} />
         {:else}
           <p class="text-muted-foreground">
             Regular rounds have been completed. {draft.maxRounds} rounds were executed.
@@ -240,19 +233,19 @@
       last
     >
       {#snippet metadata()}
-        <span class="text-muted-foreground text-sm">{allStudents.length} students</span>
+        <span class="text-muted-foreground text-sm">{studentCount} students</span>
       {/snippet}
       {#if currentPhase === 'registration'}
-        <RegistrationActive {draftId} students={allStudents} snapshots={finalized.snapshots} />
+        <RegistrationActive {draftId} {studentCount} snapshots={finalized.snapshots} />
       {:else if currentPhase === 'registration-closed'}
         <RegistrationClosed
           {draftId}
-          students={allStudents}
+          {studentCount}
+          {allowlistCount}
           snapshots={finalized.snapshots}
-          {allowlist}
         />
       {:else}
-        <RegistrationCompleted students={allStudents} />
+        <RegistrationCompleted {draftId} {studentCount} />
       {/if}
     </Step>
   </div>

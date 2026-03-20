@@ -1,6 +1,7 @@
 <script lang="ts">
   import ArrowUpFromLineIcon from '@lucide/svelte/icons/arrow-up-from-line';
   import CheckCircle2Icon from '@lucide/svelte/icons/check-circle-2';
+  import Loader2Icon from '@lucide/svelte/icons/loader-2';
   import SparklesIcon from '@lucide/svelte/icons/sparkles';
   import { format } from 'date-fns';
 
@@ -8,25 +9,36 @@
   import * as Card from '$lib/components/ui/card';
   import StudentCard from '$lib/users/student.svelte';
   import { Button } from '$lib/components/ui/button';
-  import type { Draft, DraftFinalizedBreakdown, Lab, Student } from '$lib/features/drafts/types';
+  import { createFetchDrafteesQuery } from '$lib/queries/fetch-draftees';
+  import type { Draft, DraftFinalizedBreakdown, Lab } from '$lib/features/drafts/types';
+  import { Empty } from '$lib/components/ui/empty';
   import { resolve } from '$app/paths';
 
   interface Props {
-    draftId: bigint;
+    draftId: string;
     draft: Pick<Draft, 'activePeriodStart' | 'activePeriodEnd' | 'maxRounds'>;
-    students: Student[];
+    totalStudents: number;
     labs: Lab[];
     finalized: DraftFinalizedBreakdown;
     isReview: boolean;
   }
 
-  const { draftId, draft, students, labs, finalized, isReview }: Props = $props();
+  const { draftId, draft, totalStudents, labs, finalized, isReview }: Props = $props();
 
-  const totalStudents = $derived(students.length);
-  const assignedStudents = $derived(students.filter(s => s.labId !== null).length);
+  const assignedStudents = $derived(
+    finalized.sections.regularDrafted.length +
+      finalized.sections.interventionDrafted.length +
+      finalized.sections.lotteryDrafted.length,
+  ); // Get from snapshots
   const participatingLabs = $derived(
     finalized.snapshots.length > 0 ? finalized.snapshots.length : labs.length,
   );
+
+  const regularDraftedIds = $derived(
+    new Set(finalized.sections.regularDrafted.map(({ id }) => id)),
+  );
+
+  const query = $derived(createFetchDrafteesQuery(draftId));
 </script>
 
 <div class="space-y-4">
@@ -90,7 +102,9 @@
         <Card.Title>Finalized Quota</Card.Title>
       </Card.Header>
       <Card.Content>
-        <p id="quota-finalized" class="text-2xl font-semibold">{finalized.quota.finalizedQuota}</p>
+        <p id="quota-finalized" class="text-2xl font-semibold">
+          {finalized.quota.finalizedQuota}
+        </p>
       </Card.Content>
     </Card.Root>
   </div>
@@ -142,20 +156,31 @@
       </Card.Header>
       <Card.Content class="space-y-2">
         <div class="grid grid-cols-1 gap-2 lg:grid-cols-2">
-          <div id="section-undrafted-after-regular" class="space-y-2">
-            <p class="text-sm font-medium">
-              Undrafted After Regular ({finalized.sections.undraftedAfterRegular.length})
-            </p>
-            {#if finalized.sections.undraftedAfterRegular.length > 0}
-              {#each finalized.sections.undraftedAfterRegular as { id, ...student } (id)}
-                <StudentCard user={{ ...student, labs: [], labId: null }} />
-              {/each}
-            {:else}
-              <p class="text-muted-foreground text-sm">
-                All students were drafted during regular rounds.
+          {#if query.isPending}
+            <div class="flex h-full items-center justify-center">
+              <Loader2Icon class="size-20 animate-spin" />
+            </div>
+          {:else if query.isError}
+            <Empty>Uh oh! An error has occurred.</Empty>
+          {:else}
+            {@const undraftedAfterRegular = query.data.filter(
+              ({ id }) => !regularDraftedIds.has(id),
+            )}
+            <div id="section-undrafted-after-regular" class="space-y-2">
+              <p class="text-sm font-medium">
+                Undrafted After Regular ({undraftedAfterRegular.length})
               </p>
-            {/if}
-          </div>
+              {#if undraftedAfterRegular.length > 0}
+                {#each undraftedAfterRegular as { id, ...student } (id)}
+                  <StudentCard user={{ ...student, labs: [], labId: null }} />
+                {/each}
+              {:else}
+                <p class="text-muted-foreground text-sm">
+                  All students were drafted during regular rounds.
+                </p>
+              {/if}
+            </div>
+          {/if}
 
           <div id="section-intervention-assignments" class="space-y-2">
             <p class="text-sm font-medium">
