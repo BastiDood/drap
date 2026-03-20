@@ -144,9 +144,11 @@
       </Empty.Media>
       <Empty.Header>
         <Empty.Title>No students on the allowlist</Empty.Title>
-        <Empty.Description>
-          Add students above to allow them to register after the deadline.
-        </Empty.Description>
+        <Empty.Content>
+          <Button variant="outline" size="sm" href="#allowlist-email">
+            Add a student
+          </Button>
+        </Empty.Content>
       </Empty.Header>
     </Empty.Root>
   {/if}
