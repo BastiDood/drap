@@ -30,7 +30,7 @@
   // This only triggers on mount of the parent.
   const { isPending, isError, data } = $derived(
     createQuery(() => ({
-      queryKey: [queryKey],
+      queryKey: [queryKey, draftId.toString()],
       async queryFn() {
         const response = await fetch(`/dashboard/drafts/${draftId}/draftees`);
         const serializedData = (await response.json()) as SerializableStudent[];

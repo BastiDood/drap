@@ -51,7 +51,7 @@
     data: undraftedAfterRegular,
   } = $derived(
     createQuery(() => ({
-      queryKey: ['undrafted-after-regular'],
+      queryKey: ['undrafted-after-regular', draftId.toString()],
       async queryFn() {
         const response = await fetch(`/dashboard/drafts/${draftId}/draftees`);
         const serializedData = (await response.json()) as SerializableStudent[];
