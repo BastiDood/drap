@@ -214,6 +214,19 @@ export default defineConfig(
             'Refactor the code so that side effects are performed in the event handlers themselves, not in effect synchronization. This is incorrect and poor practice that leads to buggy reactivity patterns. Avoid `$effect` at all costs!',
         },
       ],
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@tanstack/svelte-query',
+              importNames: ['useQueryClient'],
+              message:
+                'Obtain the `QueryClient` from the query/mutation callback context instead of relying on closure captures.',
+            },
+          ],
+        },
+      ],
     },
   },
 );
