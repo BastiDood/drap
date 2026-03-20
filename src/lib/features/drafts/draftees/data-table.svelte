@@ -5,6 +5,8 @@
   import { createSvelteTable, FlexRender, renderComponent } from '$lib/components/ui/data-table';
 
   import type { Student } from '$lib/features/drafts/types';
+  import DesignatedLab from '$lib/users/designated-lab.svelte';
+  import PreferredLab from '$lib/users/preferred-lab.svelte';
   import SortByHeader from './sort-by-header.svelte';
 
   interface Props {
@@ -47,13 +49,13 @@
     columnHelper.accessor(({ labId }) => labId, {
       id: 'labId',
       header: 'Designated Lab',
-      cell: info => info.getValue(),
+      cell: info => renderComponent(DesignatedLab, { labId: info.getValue() }),
     }),
 
     columnHelper.accessor(({ labs }) => labs, {
       id: 'labs',
       header: 'Lab Preferences',
-      cell: info => info.getValue(),
+      cell: info => renderComponent(PreferredLab, { labs: info.getValue() }),
     }),
   ];
 
