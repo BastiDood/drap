@@ -1,18 +1,18 @@
 <script lang="ts">
+  import { Button } from '$lib/components/ui/button';
   import * as Card from '$lib/components/ui/card';
-  import Student from '$lib/users/student.svelte';
-  import type { DraftAssignmentRecord, Student as StudentType } from '$lib/features/drafts/types';
+  import type { DraftAssignmentRecord } from '$lib/features/drafts/types';
 
+  import Draftees from '../../draftees/index.svelte';
   import FinalizeForm from './finalize-form.svelte';
 
   interface Props {
     draftId: bigint;
-    selected: StudentType[];
     lotteryDrafted: DraftAssignmentRecord[];
     isReview: boolean;
   }
 
-  const { draftId, selected, lotteryDrafted, isReview }: Props = $props();
+  const { draftId, lotteryDrafted, isReview }: Props = $props();
 </script>
 
 <div class="grid grid-cols-1 gap-4 md:grid-cols-[auto_1fr]">
@@ -48,17 +48,12 @@
         </p>
       </Card.Content>
     </Card.Root>
-    <Card.Root variant="soft">
-      <Card.Header>
-        <Card.Title>Already Drafted ({selected.length})</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <ul class="space-y-1">
-          {#each selected as { id, ...user } (id)}
-            <li><Student {user} /></li>
-          {/each}
-        </ul>
-      </Card.Content>
-    </Card.Root>
+    <div class="flex justify-center">
+      <Draftees {draftId} queryKey="lottery-completed" mustShowDrafted={true}>
+        {#snippet trigger()}
+          <Button variant="outline" class="border-primary text-primary">Already Drafted</Button>
+        {/snippet}
+      </Draftees>
+    </div>
   </div>
 </div>

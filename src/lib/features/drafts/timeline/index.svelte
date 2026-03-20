@@ -170,7 +170,6 @@
           <LotteryActive {draftId} {labs} snapshots={finalized.snapshots} />
         {:else}
           <LotteryCompleted
-            {selected}
             lotteryDrafted={finalized.sections.lotteryDrafted}
             isReview={currentPhase === 'review'}
             {draftId}
