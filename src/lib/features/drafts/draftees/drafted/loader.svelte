@@ -31,6 +31,6 @@
   </div>
 {:else if query.isError}
   <Empty>Uh oh! An error has occurred.</Empty>
-{:else if typeof query.data !== 'undefined'}
+{:else}
   <DataTable data={query.data} {children} />
 {/if}

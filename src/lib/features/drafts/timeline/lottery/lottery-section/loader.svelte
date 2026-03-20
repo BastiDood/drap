@@ -30,43 +30,41 @@
   </div>
 {:else if query.isError}
   <Empty>Uh oh! An error has occurred.</Empty>
-{:else if typeof query.data !== 'undefined'}
-  {#if query.data.length > 0}
-    <form
-      method="post"
-      action="/dashboard/drafts/{draftId}/?/intervene"
-      class="space-y-4"
-      use:enhance={({ submitter, cancel }) => {
-        // eslint-disable-next-line no-alert
-        if (!confirm('Are you sure you want to apply these interventions?')) {
-          cancel();
-          return;
-        }
-        assert(submitter !== null);
-        assert(submitter instanceof HTMLButtonElement);
-        submitter.disabled = true;
-        return async ({ update, result }) => {
-          submitter.disabled = false;
-          await update();
-          if (result.type === 'success') toast.success('Successfully applied the interventions.');
-          await query.refetch();
-        };
-      }}
+{:else if query.data.length > 0}
+  <form
+    method="post"
+    action="/dashboard/drafts/{draftId}/?/intervene"
+    class="space-y-4"
+    use:enhance={({ submitter, cancel }) => {
+      // eslint-disable-next-line no-alert
+      if (!confirm('Are you sure you want to apply these interventions?')) {
+        cancel();
+        return;
+      }
+      assert(submitter !== null);
+      assert(submitter instanceof HTMLButtonElement);
+      submitter.disabled = true;
+      return async ({ update, result }) => {
+        submitter.disabled = false;
+        await update();
+        if (result.type === 'success') toast.success('Successfully applied the interventions.');
+        await query.refetch();
+      };
+    }}
+  >
+    <!-- Wrap in a component so we can lazily mount the table state. -->
+    <DataTable data={query.data} {labs} />
+    <input type="hidden" name="draft" value={draftId} />
+    <Button
+      type="submit"
+      variant="outline"
+      size="lg"
+      class="border-warning bg-warning/10 text-warning hover:bg-warning/20 w-full shadow-lg"
     >
-      <!-- Wrap in a component so we can lazily mount the table state. -->
-      <DataTable data={query.data} {labs} />
-      <input type="hidden" name="draft" value={draftId} />
-      <Button
-        type="submit"
-        variant="outline"
-        size="lg"
-        class="border-warning bg-warning/10 text-warning hover:bg-warning/20 w-full shadow-lg"
-      >
-        <ShieldAlertIcon class="size-6" />
-        <span>Apply Interventions</span>
-      </Button>
-    </form>
-  {/if}
+      <ShieldAlertIcon class="size-6" />
+      <span>Apply Interventions</span>
+    </Button>
+  </form>
 {:else}
   <p class="prose dark:prose-invert max-w-none">
     Congratulations! All participants have been drafted. No action is needed here.

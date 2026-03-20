@@ -169,7 +169,7 @@
             </div>
           {:else if query.isError}
             <Empty>Uh oh! An error has occurred.</Empty>
-          {:else if typeof query.data !== 'undefined'}
+          {:else}
             <div id="section-undrafted-after-regular" class="space-y-2">
               <p class="text-sm font-medium">
                 Undrafted After Regular ({undraftedAfterRegular.length})
