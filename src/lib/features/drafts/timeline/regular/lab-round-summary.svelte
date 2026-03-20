@@ -1,10 +1,11 @@
 <script lang="ts">
   import Draftees from '$lib/features/drafts/draftees/index.svelte';
   import { Badge } from '$lib/components/ui/badge';
+  import { Button } from '$lib/components/ui/button';
   import type { Lab } from '$lib/features/drafts/types';
 
   interface Props {
-    draftId: bigint;
+    draftId: string;
     round: number;
     lab: Lab;
   }
@@ -28,56 +29,41 @@
   {/if}
   <div class="flex items-center gap-1">
     <!-- Members -->
-    <Draftees
-      {draftId}
-      {lab}
-      queryKey={`round-${round}-${lab.name}-members`}
-      mustShowDrafted={true}
-    >
-      {#snippet trigger()}
-        <Badge
+    <Draftees {draftId} {lab} mustShowDrafted>
+      {#snippet trigger(props)}
+        <Button
           variant="outline"
           class="border-primary bg-primary/10 h-fit font-mono text-xs uppercase"
+          {...props}
         >
           See Members
-        </Badge>
+        </Button>
       {/snippet}
     </Draftees>
 
     <!-- Preferred -->
-    <Draftees
-      {draftId}
-      {round}
-      {lab}
-      queryKey={`round-${round}-${lab.name}-preferred`}
-      mustShowDrafted={false}
-    >
-      {#snippet trigger()}
-        <Badge
+    <Draftees {draftId} {round} {lab} mustShowDrafted={false}>
+      {#snippet trigger(props)}
+        <Button
           variant="outline"
           class="border-accent bg-accent/10 h-fit font-mono text-xs uppercase"
+          {...props}
         >
           See Preferred
-        </Badge>
+        </Button>
       {/snippet}
     </Draftees>
 
     <!-- Interested -->
-    <Draftees
-      {draftId}
-      {round}
-      {lab}
-      queryKey={`round-${round}-${lab.name}-interested`}
-      mustShowDrafted={false}
-      mustShowInterest={true}
-    >
-      {#snippet trigger()}
-        <Badge
+    <Draftees {draftId} {round} {lab} mustShowDrafted={false} mustShowInterest>
+      {#snippet trigger(props)}
+        <Button
           variant="outline"
           class="border-secondary bg-secondary/10 h-fit font-mono text-xs uppercase"
+          {...props}
         >
           See Interested
-        </Badge>
+        </Button>
       {/snippet}
     </Draftees>
   </div>

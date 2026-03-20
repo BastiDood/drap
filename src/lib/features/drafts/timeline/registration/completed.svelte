@@ -3,7 +3,7 @@
   import { Button } from '$lib/components/ui/button';
 
   interface Props {
-    draftId: bigint;
+    draftId: string;
     studentCount: number;
   }
 
@@ -17,13 +17,9 @@
     </p>
   </div>
   <div class="flex items-center justify-center">
-    <Draftees
-      {draftId}
-      queryKey="final-registered-students"
-      customTextOnEmpty="No students have registered."
-    >
-      {#snippet trigger()}
-        <Button variant="outline" class="border-primary text-primary"
+    <Draftees {draftId} customTextOnEmpty="No students have registered.">
+      {#snippet trigger(props)}
+        <Button variant="outline" class="border-primary text-primary" {...props}
           >See Registered Students</Button
         >
       {/snippet}

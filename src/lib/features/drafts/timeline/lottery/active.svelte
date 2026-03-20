@@ -42,9 +42,11 @@
 
         <div class="flex justify-center">
           <!-- Already Drafted -->
-          <Draftees {draftId} queryKey="already-drafted-before-lottery" mustShowDrafted={true}>
-            {#snippet trigger()}
-              <Button variant="outline" class="border-primary text-primary">Already Drafted</Button>
+          <Draftees draftId={draftId.toString()} mustShowDrafted>
+            {#snippet trigger(props)}
+              <Button variant="outline" class="border-primary text-primary" {...props}
+                >Already Drafted</Button
+              >
             {/snippet}
           </Draftees>
         </div>

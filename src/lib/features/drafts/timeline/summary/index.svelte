@@ -3,25 +3,22 @@
   import CheckCircle2Icon from '@lucide/svelte/icons/check-circle-2';
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
   import SparklesIcon from '@lucide/svelte/icons/sparkles';
-  import { createQuery } from '@tanstack/svelte-query';
   import { format } from 'date-fns';
 
   import * as Alert from '$lib/components/ui/alert';
   import * as Card from '$lib/components/ui/card';
   import StudentCard from '$lib/users/student.svelte';
   import { Button } from '$lib/components/ui/button';
-  import type {
-    Draft,
-    DraftFinalizedBreakdown,
-    Lab,
-    SerializableStudent,
-    Student,
-  } from '$lib/features/drafts/types';
+  import {
+    createFetchDrafteesQuery,
+    selectUndraftedAfterRegular,
+  } from '$lib/queries/fetch-draftees';
+  import type { Draft, DraftFinalizedBreakdown, Lab } from '$lib/features/drafts/types';
   import { Empty } from '$lib/components/ui/empty';
   import { resolve } from '$app/paths';
 
   interface Props {
-    draftId: bigint;
+    draftId: string;
     draft: Pick<Draft, 'activePeriodStart' | 'activePeriodEnd' | 'maxRounds'>;
     totalStudents: number;
     labs: Lab[];
@@ -44,34 +41,10 @@
     new Set(finalized.sections.regularDrafted.map(({ id }) => id)),
   );
 
-  // Only loads when this component mounts
-  const {
-    isPending,
-    isError,
-    data: undraftedAfterRegular,
-  } = $derived(
-    createQuery(() => ({
-      queryKey: ['undrafted-after-regular', draftId.toString()],
-      async queryFn() {
-        const response = await fetch(`/dashboard/drafts/${draftId}/draftees`);
-        if (!response.ok) throw new Error('Failed to fetch draftee list.');
+  const query = $derived(createFetchDrafteesQuery(draftId));
 
-        const serializedData = (await response.json()) as SerializableStudent[];
-        if (typeof serializedData === 'undefined') return [];
-
-        const data = serializedData.map(draftee => {
-          return {
-            ...draftee,
-
-            // Revert non-serializable attributes to original data types
-            studentNumber: draftee.studentNumber === null ? null : BigInt(draftee.studentNumber),
-          };
-        }) as Student[];
-
-        // Return undrafted after regular
-        return data.filter(({ id }) => !regularDraftedIds.has(id));
-      },
-    })),
+  const undraftedAfterRegular = $derived(
+    selectUndraftedAfterRegular(query.data ?? [], regularDraftedIds),
   );
 </script>
 
@@ -190,13 +163,13 @@
       </Card.Header>
       <Card.Content class="space-y-2">
         <div class="grid grid-cols-1 gap-2 lg:grid-cols-2">
-          {#if isPending}
+          {#if query.isPending}
             <div class="flex h-full items-center justify-center">
               <Loader2Icon class="size-20 animate-spin" />
             </div>
-          {:else if isError}
+          {:else if query.isError}
             <Empty>Uh oh! An error has occurred.</Empty>
-          {:else}
+          {:else if typeof query.data !== 'undefined'}
             <div id="section-undrafted-after-regular" class="space-y-2">
               <p class="text-sm font-medium">
                 Undrafted After Regular ({undraftedAfterRegular.length})

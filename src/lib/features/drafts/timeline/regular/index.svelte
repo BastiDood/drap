@@ -14,7 +14,7 @@
   type TabType = 'students' | 'labs' | 'logs';
 
   interface Props {
-    draftId: bigint;
+    draftId: string;
     round: number;
     labs: Lab[];
     records: FacultyChoiceRecord[];
@@ -47,24 +47,18 @@
   </Tabs.List>
   <Tabs.Content value="students">
     <div class="flex items-center justify-around">
-      <Draftees
-        {draftId}
-        queryKey="pending-selection"
-        mustShowDrafted={false}
-        customTextOnEmpty="No available draftees."
-      >
-        {#snippet trigger()}
-          <Button variant="outline" class="border-warning text-warning">Pending Selection</Button>
+      <Draftees {draftId} mustShowDrafted={false} customTextOnEmpty="No available draftees.">
+        {#snippet trigger(props)}
+          <Button variant="outline" class="border-warning text-warning" {...props}
+            >Pending Selection</Button
+          >
         {/snippet}
       </Draftees>
-      <Draftees
-        {draftId}
-        queryKey="already-drafted"
-        mustShowDrafted={true}
-        customTextOnEmpty="No drafted students yet."
-      >
-        {#snippet trigger()}
-          <Button variant="outline" class="border-primary text-primary">Already Drafted</Button>
+      <Draftees {draftId} mustShowDrafted customTextOnEmpty="No drafted students yet.">
+        {#snippet trigger(props)}
+          <Button variant="outline" class="border-primary text-primary" {...props}
+            >Already Drafted</Button
+          >
         {/snippet}
       </Draftees>
     </div>

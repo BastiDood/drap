@@ -2,7 +2,7 @@
   import type { DraftFinalizedBreakdown } from '$lib/features/drafts/types';
 
   export interface Props {
-    draftId: bigint;
+    draftId: string;
     mode: 'initial' | 'lottery';
     snapshots: DraftFinalizedBreakdown['snapshots'];
   }

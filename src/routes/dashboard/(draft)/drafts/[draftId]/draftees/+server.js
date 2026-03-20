@@ -1,9 +1,9 @@
-import { error, json } from '@sveltejs/kit';
+import * as devalue from 'devalue';
+import { error } from '@sveltejs/kit';
 
 import { db } from '$lib/server/database';
 import { getStudentsInDraftTaggedByLab } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
-import type { SerializableStudent } from '$lib/features/drafts/types';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 const SERVICE_NAME = 'routes.dashboard.admin.drafts.draftees';
@@ -35,28 +35,18 @@ export async function GET({ params, locals: { session } }) {
     span.setAttributes({
       'session.id': sessionId,
       'session.user.id': userId,
-      'draft.id': params.draftId,
     });
 
     const draftId = BigInt(params.draftId);
-
     const draftees = await getStudentsInDraftTaggedByLab(db, draftId);
-
-    // Make data JSON-serializable
-    const serializableDrafteeList = draftees.map(draftee => {
-      return {
-        ...draftee,
-
-        // Reassign non-serializable attributes
-        studentNumber: draftee.studentNumber === null ? null : draftee.studentNumber.toString(),
-      };
-    }) as SerializableStudent[];
 
     logger.debug('draftees fetched', {
       'draft.id': draftId.toString(),
-      'draftee-list.length': serializableDrafteeList.length,
+      'draftees.count': draftees.length,
     });
 
-    return json(serializableDrafteeList);
+    return new Response(devalue.stringify(draftees), {
+      headers: { 'Content-Type': 'application/json' },
+    });
   });
 }

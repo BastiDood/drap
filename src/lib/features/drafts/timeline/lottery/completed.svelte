@@ -7,7 +7,7 @@
   import FinalizeForm from './finalize-form.svelte';
 
   interface Props {
-    draftId: bigint;
+    draftId: string;
     lotteryDrafted: DraftAssignmentRecord[];
     isReview: boolean;
   }
@@ -49,9 +49,11 @@
       </Card.Content>
     </Card.Root>
     <div class="flex justify-center">
-      <Draftees {draftId} queryKey="lottery-completed" mustShowDrafted={true}>
-        {#snippet trigger()}
-          <Button variant="outline" class="border-primary text-primary">Already Drafted</Button>
+      <Draftees {draftId} mustShowDrafted>
+        {#snippet trigger(props)}
+          <Button variant="outline" class="border-primary text-primary" {...props}
+            >Already Drafted</Button
+          >
         {/snippet}
       </Draftees>
     </div>

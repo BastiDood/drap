@@ -11,7 +11,7 @@
   import StartForm from './start-form.svelte';
 
   interface Props {
-    draftId: bigint;
+    draftId: string;
     studentCount: number;
     snapshots: DraftFinalizedBreakdown['snapshots'];
   }
@@ -39,13 +39,9 @@
         </section>
         <QuotaSnapshotForm {draftId} mode="initial" {snapshots} />
         <div class="flex items-center justify-center">
-          <Draftees
-            {draftId}
-            queryKey="already-registered-students"
-            customTextOnEmpty="No students have registered yet."
-          >
-            {#snippet trigger()}
-              <Button variant="outline" class="border-accent text-accent"
+          <Draftees {draftId} customTextOnEmpty="No students have registered yet.">
+            {#snippet trigger(props)}
+              <Button variant="outline" class="border-accent text-accent" {...props}
                 >See Registered Students</Button
               >
             {/snippet}

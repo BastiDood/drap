@@ -1,105 +1,71 @@
 <script lang="ts">
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
   import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
-  import { createQuery, useQueryClient } from '@tanstack/svelte-query';
   import { toast } from 'svelte-sonner';
 
   import Empty from '$lib/components/ui/empty/empty.svelte';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
+  import { createFetchDrafteesQuery, selectAvailable } from '$lib/queries/fetch-draftees';
   import { enhance } from '$app/forms';
-  import type { Lab, SerializableStudent, Student } from '$lib/features/drafts/types';
+  import type { Lab } from '$lib/features/drafts/types';
 
   import DataTable from './data-table.svelte';
 
   interface Props {
-    draftId: bigint;
+    draftId: string;
     labs: Pick<Lab, 'id' | 'name'>[];
   }
 
   const { draftId, labs }: Props = $props();
 
-  // The fetch function
-  async function fetchDrafteeList() {
-    const response = await fetch(`/dashboard/drafts/${draftId}/draftees`);
-    if (!response.ok) throw new Error('Failed to fetch draftee list.');
-
-    const serializedData = (await response.json()) as SerializableStudent[];
-    if (typeof serializedData === 'undefined') return [];
-
-    const data = serializedData.map(draftee => {
-      return {
-        ...draftee,
-
-        // Revert non-serializable attributes to original data types
-        studentNumber: draftee.studentNumber === null ? null : BigInt(draftee.studentNumber),
-      };
-    }) as Student[];
-
-    // Return only those who are not yet drafted
-    return data.filter(({ labId }) => labId === null);
-  }
-
-  // This only triggers on mount of the parent.
-  const { isPending, isError, data } = $derived(
-    createQuery(() => ({
-      queryKey: ['available-before-lottery', draftId.toString()],
-      queryFn: fetchDrafteeList,
-    })),
-  );
-
-  // Invalidate cache and update available draftees
-  const queryClient = useQueryClient();
-  function invalidateAvailableDrafteeListCache() {
-    queryClient.invalidateQueries({ queryKey: ['available-before-lottery', draftId.toString()] });
-    queryClient.invalidateQueries({
-      queryKey: ['already-drafted-before-lottery', draftId.toString()],
-    });
-  }
+  const query = $derived(createFetchDrafteesQuery(draftId));
 </script>
 
-{#if isPending}
+{#if query.isPending}
   <div class="flex h-full items-center justify-center">
     <Loader2Icon class="size-20 animate-spin" />
   </div>
-{:else if isError}
+{:else if query.isError}
   <Empty>Uh oh! An error has occurred.</Empty>
-{:else if data.length > 0}
-  <form
-    method="post"
-    action="/dashboard/drafts/{draftId}/?/intervene"
-    class="space-y-4"
-    use:enhance={({ submitter, cancel }) => {
-      // eslint-disable-next-line no-alert
-      if (!confirm('Are you sure you want to apply these interventions?')) {
-        cancel();
-        return;
-      }
-      assert(submitter !== null);
-      assert(submitter instanceof HTMLButtonElement);
-      submitter.disabled = true;
-      return async ({ update, result }) => {
-        submitter.disabled = false;
-        await update();
-        if (result.type === 'success') toast.success('Successfully applied the interventions.');
-        invalidateAvailableDrafteeListCache();
-      };
-    }}
-  >
-    <!-- Wrap in a component so we can lazily mount the table state. -->
-    <DataTable {data} {labs} />
-
-    <input type="hidden" name="draft" value={draftId} />
-    <Button
-      type="submit"
-      variant="outline"
-      size="lg"
-      class="border-warning bg-warning/10 text-warning hover:bg-warning/20 w-full shadow-lg"
+{:else if typeof query.data !== 'undefined'}
+  {@const data = selectAvailable(query.data ?? [])}
+  {#if data.length > 0}
+    <form
+      method="post"
+      action="/dashboard/drafts/{draftId}/?/intervene"
+      class="space-y-4"
+      use:enhance={({ submitter, cancel }) => {
+        // eslint-disable-next-line no-alert
+        if (!confirm('Are you sure you want to apply these interventions?')) {
+          cancel();
+          return;
+        }
+        assert(submitter !== null);
+        assert(submitter instanceof HTMLButtonElement);
+        submitter.disabled = true;
+        return async ({ update, result }) => {
+          submitter.disabled = false;
+          await update();
+          if (result.type === 'success') toast.success('Successfully applied the interventions.');
+          await query.refetch();
+        };
+      }}
     >
-      <ShieldAlertIcon class="size-6" />
-      <span>Apply Interventions</span>
-    </Button>
-  </form>
+      <!-- Wrap in a component so we can lazily mount the table state. -->
+      <DataTable {data} {labs} />
+      <input type="hidden" name="draft" value={draftId} />
+      <Button
+        type="submit"
+        variant="outline"
+        size="lg"
+        class="border-warning bg-warning/10 text-warning hover:bg-warning/20 w-full shadow-lg"
+      >
+        <ShieldAlertIcon class="size-6" />
+        <span>Apply Interventions</span>
+      </Button>
+    </form>
+  {/if}
 {:else}
   <p class="prose dark:prose-invert max-w-none">
     Congratulations! All participants have been drafted. No action is needed here.
