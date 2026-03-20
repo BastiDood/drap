@@ -12,6 +12,13 @@ export interface Student extends Pick<
   labs: string[];
 }
 
+export interface SerializableStudent extends Pick<
+  Student,
+  'id' | 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'labId' | 'labs'
+> {
+  studentNumber: string | null;
+}
+
 export interface FacultyChoiceRecord extends Pick<
   schema.FacultyChoice,
   'draftId' | 'round' | 'labId' | 'createdAt' | 'userId'
