@@ -29,12 +29,12 @@
     labs: Lab[];
     available: Student[];
     selected: Student[];
+    studentCount: number;
     records: FacultyChoiceRecord[];
     finalized: DraftFinalizedBreakdown;
   }
 
-  const { draftId, draft, labs, available, selected, records, finalized }: Props = $props();
-
+  const { draftId, draft, labs, available, selected, studentCount, records, finalized }: Props = $props();
   const allStudents = $derived([...available, ...selected]);
 
   // Determine current phase
@@ -209,7 +209,7 @@
       last
     >
       {#snippet metadata()}
-        <span class="text-muted-foreground text-sm">{allStudents.length} students</span>
+        <span class="text-muted-foreground text-sm">{studentCount} students</span>
       {/snippet}
       {#if currentPhase === 'registration'}
         <RegistrationActive {draftId} students={allStudents} snapshots={finalized.snapshots} />
