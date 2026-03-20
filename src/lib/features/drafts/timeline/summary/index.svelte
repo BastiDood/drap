@@ -4,6 +4,7 @@
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
   import SparklesIcon from '@lucide/svelte/icons/sparkles';
   import { createQuery } from '@tanstack/svelte-query';
+  import { error } from '@sveltejs/kit';
   import { format } from 'date-fns';
 
   import * as Alert from '$lib/components/ui/alert';
@@ -54,6 +55,8 @@
       queryKey: ['undrafted-after-regular', draftId.toString()],
       async queryFn() {
         const response = await fetch(`/dashboard/drafts/${draftId}/draftees`);
+        if (!response.ok) error(500);
+
         const serializedData = (await response.json()) as SerializableStudent[];
         if (typeof serializedData === 'undefined') return [];
 
