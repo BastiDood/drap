@@ -1,7 +1,6 @@
 <script lang="ts">
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
   import { createQuery } from '@tanstack/svelte-query';
-  import { error } from '@sveltejs/kit';
 
   import Empty from '$lib/components/ui/empty/empty.svelte';
   import type { Lab, SerializableStudent, Student } from '$lib/features/drafts/types';
@@ -34,7 +33,7 @@
       queryKey: [queryKey, draftId.toString()],
       async queryFn() {
         const response = await fetch(`/dashboard/drafts/${draftId}/draftees`);
-        if (!response.ok) error(500);
+        if (!response.ok) throw new Error('Failed to fetch draftee list.');
 
         const serializedData = (await response.json()) as SerializableStudent[];
         if (typeof serializedData === 'undefined') return [];

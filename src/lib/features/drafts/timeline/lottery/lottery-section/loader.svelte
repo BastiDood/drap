@@ -2,7 +2,6 @@
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
   import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
   import { createQuery, useQueryClient } from '@tanstack/svelte-query';
-  import { error } from '@sveltejs/kit';
   import { toast } from 'svelte-sonner';
 
   import Empty from '$lib/components/ui/empty/empty.svelte';
@@ -23,7 +22,7 @@
   // The fetch function
   async function fetchDrafteeList() {
     const response = await fetch(`/dashboard/drafts/${draftId}/draftees`);
-    if (!response.ok) error(500);
+    if (!response.ok) throw new Error('Failed to fetch draftee list.');
 
     const serializedData = (await response.json()) as SerializableStudent[];
     if (typeof serializedData === 'undefined') return [];
