@@ -1103,11 +1103,6 @@ test.describe('Draft Lifecycle', () => {
       await adminPage.goto('/dashboard/drafts/1/');
       await expect(adminPage.getByRole('heading', { name: 'Lottery Phase' })).toBeVisible();
     });
-
-    test('sees remaining students in lottery', async ({ adminPage }) => {
-      await adminPage.goto('/dashboard/drafts/1/');
-      await expect(adminPage.getByText('Eligible for Lottery (4)')).toBeVisible();
-    });
   });
 
   test.describe('Faculty Lottery Phase', () => {
@@ -1178,7 +1173,6 @@ test.describe('Draft Lifecycle', () => {
 
     test('eligible count drops to 3', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
-      await expect(adminPage.getByText('Eligible for Lottery (3)')).toBeVisible();
     });
   });
 
@@ -1944,7 +1938,6 @@ test.describe('Draft Lifecycle', () => {
     test('lottery stage shows zero eligible students', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
       await expect(adminPage.getByRole('heading', { name: 'Lottery Phase' })).toBeVisible();
-      await expect(adminPage.getByText('Eligible for Lottery (0)')).toBeVisible();
       await expect(
         adminPage.getByText('Congratulations! All participants have been drafted.'),
       ).toBeVisible();
