@@ -7,7 +7,7 @@
   import Loader from './loader.svelte';
 
   interface Props {
-    draftId: bigint;
+    draftId: string;
     labs: Pick<Lab, 'id' | 'name'>[];
     snapshots: DraftFinalizedBreakdown['snapshots'];
   }
@@ -17,15 +17,17 @@
 
 <Drawer.Root>
   <Drawer.Trigger>
-    <Button variant="outline" class="border-warning text-warning">Eligible for Lottery</Button>
+    {#snippet child({ props })}
+      <Button variant="outline" class="border-warning text-warning" {...props}>
+        Eligible for Lottery
+      </Button>
+    {/snippet}
   </Drawer.Trigger>
   <Drawer.Content class="min-h-screen">
     <div class="overflow-auto px-8 pb-40">
       <!-- Put QuotaSnapshotForm in Drawer -->
       <QuotaSnapshotForm {draftId} mode="lottery" {snapshots} />
-
       <hr class="my-8" />
-
       <!-- Actual Intervention Form -->
       <Loader {draftId} {labs} />
     </div>

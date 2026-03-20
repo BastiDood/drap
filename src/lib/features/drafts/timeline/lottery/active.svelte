@@ -7,7 +7,7 @@
   import LotterySection from './lottery-section/index.svelte';
 
   interface Props {
-    draftId: bigint;
+    draftId: string;
     labs: Pick<Lab, 'id' | 'name'>[];
     snapshots: DraftFinalizedBreakdown['snapshots'];
   }
@@ -41,7 +41,7 @@
 
         <div class="flex justify-center">
           <!-- Already Drafted -->
-          <DraftedDraftees draftId={draftId.toString()} />
+          <DraftedDraftees {draftId} />
         </div>
       </li>
     </ul>
