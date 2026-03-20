@@ -1,3 +1,5 @@
+import assert from 'node:assert/strict';
+
 import Renderer, { toPlainText } from 'better-svelte-email/render';
 import type { ComponentProps } from 'svelte';
 import { createMimeMessage } from 'mimetext/node';
@@ -19,6 +21,7 @@ import {
 } from '$lib/server/database/drizzle';
 import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
 import { ENCRYPTION_KEY } from '$lib/server/env/drap/crypto';
+import type { GmailBatchSendResult } from '$lib/server/google/http';
 import { GmailScopeError, GoogleOAuthClient } from '$lib/server/google';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
@@ -53,7 +56,7 @@ export const sendEmail = inngest.createFunction(
   {
     id: 'send-email',
     name: 'Send Email',
-    batchEvents: { maxSize: 100, timeout: '10s' },
+    batchEvents: { maxSize: 50, timeout: '5s' },
     triggers: [
       RoundStartedEvent,
       RoundSubmittedEvent,
@@ -73,8 +76,9 @@ export const sendEmail = inngest.createFunction(
             { isolationLevel: 'read uncommitted' },
           );
 
-          const messages = await Promise.all(
-            events.map(async event => {
+          const eventsById = new Map(events.map(event => [event.id, event] as const));
+          const messageEntries = await Promise.all(
+            Array.from(eventsById.values(), async event => {
               /* eslint-disable @typescript-eslint/init-declarations */
               let recipient: string;
               let subject: string;
@@ -162,27 +166,78 @@ export const sendEmail = inngest.createFunction(
                 encoding: 'base64',
                 data: Buffer.from(html, 'utf-8').toString('base64'),
               });
-              return mime;
+              return [event.id, mime] as const;
             }),
           );
 
           if (ENABLE_EMAILS) {
-            logger.debug('sending email...');
+            const messages = new Map(messageEntries);
+            logger.debug('sending emails', { 'messages.count': messages.size });
+
+            // eslint-disable-next-line @typescript-eslint/init-declarations
+            let results: Map<string, GmailBatchSendResult>;
             try {
-              await client.sendEmails(messages);
+              results = await client.sendEmails(messages);
             } catch (cause) {
               if (cause instanceof GmailScopeError)
                 throw new NonRetriableError('missing gmail scopes', { cause });
               throw cause;
             }
+
+            let successCount = 0;
+            let failureCount = 0;
+            const retryableEvents: (typeof events)[number][] = [];
+            for (const [contentId, result] of results) {
+              const event = eventsById.get(contentId);
+              assert(typeof event !== 'undefined', 'missing event for gmail batch result');
+
+              if (result.ok) {
+                ++successCount;
+                logger.info('gmail batch email sent successfully', {
+                  'email.batch.content_id': contentId,
+                  'email.message.id': result.value.id,
+                  'email.message.thread_id': result.value.threadId,
+                  'email.message.internal_date': result.value.internalDate,
+                  'email.message.label_ids': result.value.labelIds,
+                });
+              } else {
+                ++failureCount;
+                const retryable = isRetryableBatchStatus(result.status);
+                if (retryable) retryableEvents.push(event);
+                logger.error('gmail batch email failed', void 0, {
+                  'email.batch.content_id': contentId,
+                  'error.gmail.response.status': result.status,
+                  'error.gmail.response.body': result.body,
+                  'error.retryable': retryable,
+                });
+              }
+            }
+
+            logger.info('gmail batch email completed', {
+              'messages.count': messages.size,
+              'messages.success_count': successCount,
+              'messages.failure_count': failureCount,
+              'messages.retryable_failure_count': retryableEvents.length,
+            });
           } else {
             throw new NonRetriableError('emails disabled during dry run');
           }
-
-          // TODO: Log the result of the bulk operation.
         }),
     ),
 );
+
+export function isRetryableBatchStatus(status: number) {
+  switch (status) {
+    case 429:
+    case 500:
+    case 502:
+    case 503:
+    case 504:
+      return true;
+    default:
+      return false;
+  }
+}
 
 class RefreshedCredentials {
   private constructor(
