@@ -2,6 +2,7 @@
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
   import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
   import { toast } from 'svelte-sonner';
+  import { useQueryClient } from '@tanstack/svelte-query'; // eslint-disable-line no-restricted-imports
 
   import Empty from '$lib/components/ui/empty/empty.svelte';
   import { assert } from '$lib/assert';
@@ -18,6 +19,7 @@
   }
 
   const { draftId, labs }: Props = $props();
+  const queryClient = useQueryClient();
 
   const query = $derived(
     createFetchDrafteesQuery(draftId, students => students.filter(({ labId }) => labId === null)),
@@ -47,8 +49,12 @@
       return async ({ update, result }) => {
         submitter.disabled = false;
         await update();
-        if (result.type === 'success') toast.success('Successfully applied the interventions.');
-        await query.refetch();
+        if (result.type === 'success') {
+          toast.success('Successfully applied the interventions.');
+          await queryClient.invalidateQueries({
+            queryKey: ['drafts', draftId],
+          });
+        }
       };
     }}
   >

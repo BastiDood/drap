@@ -5,8 +5,8 @@ import { fetchDraftees } from './http';
 
 export function createFetchDrafteesQuery(draftId: string, select?: (data: Draftees) => Draftees) {
   return createQuery(() => ({
-    queryKey: ['drafts', 'fetch-draftees', draftId] as const,
-    async queryFn({ queryKey: [, , id] }) {
+    queryKey: ['drafts', draftId, 'draftees'] as const,
+    async queryFn({ queryKey: [, id] }) {
       return await fetchDraftees(id);
     },
     select,
