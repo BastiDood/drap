@@ -1952,7 +1952,6 @@ export async function isRegisteredOrAssignedInDraft(
       .where(and(eq(schema.studentRank.draftId, draftId), eq(schema.user.id, userId)))
       .then(assertOptional);
 
-
     if (typeof registeredResult !== 'undefined') {
       logger.debug('registered', { 'student_rank.user_id': registeredResult.userId });
       return true;
