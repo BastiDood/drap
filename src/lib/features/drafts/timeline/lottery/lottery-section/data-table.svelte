@@ -7,15 +7,17 @@
   import { Button } from '$lib/components/ui/button';
   import { createSvelteTable, FlexRender, renderComponent } from '$lib/components/ui/data-table';
 
-  import type { Student } from '$lib/features/drafts/types';
+  import type { Lab, Student } from '$lib/features/drafts/types';
+  import ManualLabSelection from './manual-lab-selection.svelte';
   import PreferredLab from '$lib/users/preferred-lab.svelte'
   import SortByHeader from '../../../draftees/sort-by-header.svelte';
 
   interface Props {
     data: Student[];
+    labs: Pick<Lab, 'id' | 'name'>[];
   }
 
-  const { data }: Props = $props();
+  const { data, labs }: Props = $props();
 
   // Shape the table columns
   const columnHelper = createColumnHelper<Student>();
@@ -52,6 +54,12 @@
       header: 'Lab Preferences',
       cell: info => renderComponent(PreferredLab, { labs: info.getValue() }),
       filterFn: 'arrIncludesSome',
+    }),
+
+    columnHelper.accessor(({ id }) => id, {
+      id: 'apply-intervention',
+      header: 'Apply Intervention?',
+      cell: info => renderComponent(ManualLabSelection, { labs, studentId: info.getValue() }),
     }),
   ];
 
