@@ -214,7 +214,7 @@
       {#if currentPhase === 'registration'}
         <RegistrationActive {draftId} {studentCount} snapshots={finalized.snapshots} />
       {:else}
-        <RegistrationCompleted {draftId} students={allStudents} />
+        <RegistrationCompleted {draftId} {studentCount} />
       {/if}
     </Step>
   </div>

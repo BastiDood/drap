@@ -1,22 +1,20 @@
 <script lang="ts">
   import { Button } from '$lib/components/ui/button';
 
-  import type { Student } from '$lib/features/drafts/types';
-
   import Draftees from '../../draftees/index.svelte';
 
   interface Props {
     draftId: bigint;
-    students: Student[];
+    studentCount: number;
   }
 
-  const { draftId, students }: Props = $props();
+  const { draftId, studentCount }: Props = $props();
 </script>
 
 <div class="space-y-4">
   <div class="prose dark:prose-invert">
     <p>
-      <strong>{students.length}</strong> students registered for this draft before registration closed.
+      <strong>{studentCount}</strong> students registered for this draft before registration closed.
     </p>
   </div>
   <div class="flex items-center justify-center">
