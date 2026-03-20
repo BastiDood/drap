@@ -1,10 +1,10 @@
 import { error, json } from '@sveltejs/kit';
 
 import { db } from '$lib/server/database';
-import { getStudentsInDraftTaggedByLab } from '$lib/server/database/drizzle'
+import { getStudentsInDraftTaggedByLab } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
-import { Tracer } from '$lib/server/telemetry/tracer';;
 import type { SerializableStudent } from '$lib/features/drafts/types';
+import { Tracer } from '$lib/server/telemetry/tracer';
 
 const SERVICE_NAME = 'routes.dashboard.admin.drafts.draftees';
 const logger = Logger.byName(SERVICE_NAME);
