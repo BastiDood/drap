@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Button } from '$lib/components/ui/button';
 
-  import Draftees from '../../draftees/index.svelte';
+  import Draftees from '$lib/features/drafts/draftees/index.svelte';
 
   interface Props {
     draftId: bigint;

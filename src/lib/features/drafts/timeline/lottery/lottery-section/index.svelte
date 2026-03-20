@@ -3,7 +3,7 @@
   import { Button } from '$lib/components/ui/button';
   import type { DraftFinalizedBreakdown, Lab } from '$lib/features/drafts/types';
 
-  import QuotaSnapshotForm from '../../quota-snapshot-form.svelte';
+  import QuotaSnapshotForm from '$lib/features/drafts/timeline/quota-snapshot-form.svelte';
 
   import Loader from './loader.svelte';
 

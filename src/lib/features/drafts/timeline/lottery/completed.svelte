@@ -3,7 +3,7 @@
   import { Button } from '$lib/components/ui/button';
   import type { DraftAssignmentRecord } from '$lib/features/drafts/types';
 
-  import Draftees from '../../draftees/index.svelte';
+  import Draftees from '$lib/features/drafts/draftees/index.svelte';
 
   import FinalizeForm from './finalize-form.svelte';
 

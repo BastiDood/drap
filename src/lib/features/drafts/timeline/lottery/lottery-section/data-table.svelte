@@ -16,7 +16,7 @@
   import { createSvelteTable, FlexRender, renderComponent } from '$lib/components/ui/data-table';
   import type { Lab, Student } from '$lib/features/drafts/types';
 
-  import SortByHeader from '../../../draftees/sort-by-header.svelte';
+  import SortByHeader from '$lib/features/drafts/draftees/sort-by-header.svelte';
 
   import ManualLabSelection from './manual-lab-selection.svelte';
 
