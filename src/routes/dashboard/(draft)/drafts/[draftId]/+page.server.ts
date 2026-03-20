@@ -40,9 +40,10 @@ import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 const enum AllowlistAddResult {
-  UserNotFound = -2,
-  AlreadyRegistered = -1,
-  AlreadyInAllowlist = 0,
+  UserNotFound,
+  AlreadyRegistered,
+  AlreadyInAllowlist,
+  NotAStudent
 }
 
 const DraftActionFormData = v.object({
@@ -802,6 +803,7 @@ export const actions = {
 
           const targetUser = await getUserByEmail(db, email);
           if (typeof targetUser === 'undefined') return AllowlistAddResult.UserNotFound;
+          if (targetUser.isAdmin || targetUser.studentNumber === null) return AllowlistAddResult.NotAStudent;
 
           // Check if targetUser is already registered or already has a lab
           const isRegisteredOrAssigned = await isRegisteredOrAssignedInDraft(
@@ -826,6 +828,9 @@ export const actions = {
         case AllowlistAddResult.AlreadyInAllowlist:
           logger.warn('user already in allowlist');
           return { success: true, status: 'already_in_allowlist' as const };
+        case AllowlistAddResult.NotAStudent:
+          logger.warn('user is not a student');
+          return { success: true, status: 'not_a_student' as const };
         default:
           logger.info('student added to allowlist', {
             'draft.id': params.draftId,

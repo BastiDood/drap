@@ -54,6 +54,9 @@
             case 'already_registered':
               toast.info('Student is already registered');
               break;
+            case 'not_a_student':
+              toast.info('User is not a student');
+              break;
             case 'added':
               toast.success('Student added to allowlist');
               break;
