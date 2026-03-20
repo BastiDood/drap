@@ -809,7 +809,7 @@ export const actions = {
         if (isRegisteredOrAssigned) return AllowlistAddResult.AlreadyRegistered;
 
         return await addToAllowlist(db, draftId, targetUser.id, user.id);
-      });
+      }, { isolationLevel: 'read committed' });
 
       switch (result) {
         case AllowlistAddResult.UserNotFound:
@@ -883,7 +883,7 @@ export const actions = {
         }
 
         await removeFromAllowlist(db, draftId, studentUserId);
-      });
+      }, { isolationLevel: 'read committed' });
 
       logger.info('student removed from allowlist', {
         'draft.id': params.draftId,
