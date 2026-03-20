@@ -10,5 +10,6 @@ export const inngest = new Inngest({
   optimizeParallelism: true,
   checkpointing: true,
   middleware: [extendedTracesMiddleware({ behaviour: 'off' })],
-  logger: Logger.byName('inngest'),
+  logger: Logger.byName('inngest-main'),
+  internalLogger: Logger.byName('inngest-internal'),
 });
