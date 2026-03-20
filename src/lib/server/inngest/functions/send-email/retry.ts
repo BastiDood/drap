@@ -31,13 +31,12 @@ export const sendEmailFallback = inngest.createFunction(
       UserAssignedFallbackEmailEvent,
     ],
   },
-  async ({ event, step }) =>
+  async ({ event, step }) => {
+    if (!ENABLE_EMAILS) throw new NonRetriableError('emails disabled during dry run');
     await step.run(
       { id: 'send-email-fallback', name: 'Send Email Fallback' },
       async () =>
         await tracer.asyncSpan('send-email-fallback', async span => {
-          if (!ENABLE_EMAILS) throw new NonRetriableError('emails disabled during dry run');
-
           switch (event.name) {
             case 'draft/round.started.email.fallback':
             case 'draft/round.submitted.email.fallback':
@@ -64,12 +63,6 @@ export const sendEmailFallback = inngest.createFunction(
             });
             return result;
           } catch (cause) {
-            logger.error(
-              'gmail single-send email failed',
-              cause instanceof Error ? cause : void 0,
-              {},
-            );
-
             if (cause instanceof GmailScopeError)
               throw new NonRetriableError('missing gmail scopes', { cause });
             if (cause instanceof GmailError && !isRetryableGmailStatus(cause.status))
@@ -79,5 +72,6 @@ export const sendEmailFallback = inngest.createFunction(
             throw cause;
           }
         }),
-    ),
+    );
+  },
 );

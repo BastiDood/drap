@@ -60,14 +60,11 @@ export const sendBatchedEmails = inngest.createFunction(
     ],
   },
   async ({ events, step }) => {
+    if (!ENABLE_EMAILS) throw new NonRetriableError('emails disabled during dry run');
     const followupEvents = await step.run(
       { id: 'send-emails', name: 'Send Emails' },
       async () =>
         await tracer.asyncSpan('send-emails', async () => {
-          if (!ENABLE_EMAILS) throw new NonRetriableError('emails disabled during dry run');
-
-          const { client, sender } = await getRefreshedCredentials();
-
           const eventsById = new Map(
             events.map(event => {
               switch (event.name) {
@@ -82,6 +79,8 @@ export const sendBatchedEmails = inngest.createFunction(
               }
             }),
           );
+
+          const { client, sender } = await getRefreshedCredentials();
 
           const messageEntries = await Promise.all(
             Array.from(
