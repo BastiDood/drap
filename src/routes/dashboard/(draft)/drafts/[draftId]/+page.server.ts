@@ -115,10 +115,6 @@ export async function load({ params, locals: { session } }) {
     const regularDraftedIds = new Set(regularDrafted.map(({ id }) => id));
     const undraftedAfterRegular = students.filter(({ id }) => !regularDraftedIds.has(id));
 
-    const { available = [], selected = [] } = Object.groupBy(students, ({ labId }) =>
-      labId === null ? 'available' : 'selected',
-    );
-
     let initialQuota = 0;
     let finalizedQuota = 0;
     for (const quota of quotaSnapshots) {
@@ -130,8 +126,6 @@ export async function load({ params, locals: { session } }) {
       'draft.id': draftId.toString(),
       'draft.round.current': draft.currRound,
       'draft.round.max': draft.maxRounds,
-      'draft.student.available_count': available.length,
-      'draft.student.selected_count': selected.length,
       'draft.summary.regular_count': regularDrafted.length,
       'draft.summary.intervention_count': interventionDrafted.length,
       'draft.summary.lottery_count': lotteryDrafted.length,
@@ -141,8 +135,6 @@ export async function load({ params, locals: { session } }) {
       draftId,
       draft: { id: draftId, ...draft },
       labs,
-      available,
-      selected,
       studentCount,
       records,
       finalized: {
