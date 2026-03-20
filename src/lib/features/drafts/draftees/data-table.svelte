@@ -1,0 +1,103 @@
+<script lang="ts">
+  import { createColumnHelper, getCoreRowModel } from '@tanstack/table-core';
+
+  import * as Table from '$lib/components/ui/table';
+  import { createSvelteTable, FlexRender } from '$lib/components/ui/data-table';
+
+  import type { Student } from '$lib/features/drafts/types';
+
+  interface Props {
+    data: Student[];
+    customTextOnEmpty?: string;
+  }
+
+  const { data, customTextOnEmpty }: Props = $props();
+
+  // Shape the table columns
+  const columnHelper = createColumnHelper<Student>();
+  const columns = [
+    columnHelper.accessor(({ studentNumber }) => studentNumber, {
+      id: 'studentNumber',
+      header: 'Student Number',
+      cell: info => info.getValue(),
+    }),
+
+    columnHelper.accessor(({ familyName, givenName }) => `${familyName.toUpperCase()}, ${givenName}`, {
+      id: 'name',
+      header: 'Name',
+      cell: info => info.getValue(),
+    }),
+
+    columnHelper.accessor(({ email }) => email, {
+      id: 'email',
+      header: 'Email',
+      cell: info => info.getValue(),
+    }),
+
+    columnHelper.accessor(({ labId }) => labId, {
+      id: 'labId',
+      header: 'Designated Lab',
+      cell: info => info.getValue(),
+    }),
+
+    columnHelper.accessor(({ labs }) => labs, {
+      id: 'labs',
+      header: 'Lab Preferences',
+      cell: info => info.getValue(),
+    }),
+  ];
+
+  // This only initializes lazily on load.
+  // We put it here so that we don't needlessly initialize state
+  // in the `pending` case and the `error` case.
+  const table = $derived(createSvelteTable({
+    data,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  }));
+</script>
+
+<!-- Table -->
+<div class="mx-4 rounded-sm">
+  <Table.Root>
+    <!-- Header Row -->
+    <Table.Header>
+      {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
+        <Table.Row>
+          {#each headerGroup.headers as header (header.id)}
+            <Table.Head colspan={header.colSpan}>
+              {#if !header.isPlaceholder}
+                <FlexRender
+                  content={header.column.columnDef.header}
+                  context={header.getContext()}
+                />
+              {/if}
+            </Table.Head>
+          {/each}
+        </Table.Row>
+      {/each}
+    </Table.Header>
+
+    <!-- Table Rows -->
+    <Table.Body>
+      {#each table.getRowModel().rows as row (row.id)}
+        <Table.Row>
+          {#each row.getVisibleCells() as cell (cell.id)}
+            <Table.Cell>
+              <FlexRender
+                content={cell.column.columnDef.cell}
+                context={cell.getContext()}
+              />
+            </Table.Cell>
+          {/each}
+        </Table.Row>
+      {:else}
+        <Table.Row>
+          <Table.Cell colspan={columns.length}>
+            <p class="text-center my-8 text-xl">{customTextOnEmpty ?? ''}</p>
+          </Table.Cell>
+        </Table.Row>
+      {/each}
+    </Table.Body>
+  </Table.Root>
+</div>

@@ -6,12 +6,15 @@
 
   import type { Student, SerializableStudent } from "$lib/features/drafts/types";
 
+  import DataTable from './data-table.svelte';
+
   interface Props {
     draftId: bigint;
     queryKey: string;
+    customTextOnEmpty?: string;
   }
 
-  const { draftId, queryKey }: Props = $props()
+  const { draftId, queryKey, customTextOnEmpty }: Props = $props()
 
   // This only triggers on mount of the parent.
   const { isPending, isError, data } = $derived(createQuery(() => ({
@@ -39,5 +42,8 @@
   </div>
 {:else if isError}
   <Empty>Uh oh! An error has occurred.</Empty>
+{:else}
+  <!-- Wrap in a component so we can lazily mount the table state. -->
+  <DataTable {data} {customTextOnEmpty} />
 {/if}
 
