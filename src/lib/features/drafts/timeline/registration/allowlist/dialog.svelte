@@ -12,7 +12,7 @@
   import * as Dialog from '$lib/components/ui/dialog';
   import { Button } from '$lib/components/ui/button';
 
-  import AllowlistContent from './allowlist-content.svelte';
+  import AllowlistContent from './content.svelte';
 
   const { draftId, allowlistCount, onCountChange }: Props = $props();
 

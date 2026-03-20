@@ -11,7 +11,7 @@
   import Empty from '$lib/components/ui/empty/empty.svelte';
   import { createFetchDraftAllowlistQuery } from '$lib/queries/fetch-draft-allowlist';
 
-  import AllowlistForm from './allowlist-form.svelte';
+  import AllowlistForm from './form.svelte';
 
   const { draftId, onCountChange }: Props = $props();
 

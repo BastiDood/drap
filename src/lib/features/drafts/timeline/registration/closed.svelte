@@ -6,8 +6,8 @@
   import RegisteredDraftees from '$lib/features/drafts/draftees/registered/index.svelte';
   import type { DraftFinalizedBreakdown } from '$lib/features/drafts/types';
 
-  import AllowlistDialog from './allowlist-dialog.svelte';
   import StartForm from './start-form.svelte';
+  import { AllowlistDialog } from './allowlist';
 
   interface Props {
     draftId: string;
