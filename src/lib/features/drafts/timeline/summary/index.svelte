@@ -1,14 +1,17 @@
 <script lang="ts">
   import ArrowUpFromLineIcon from '@lucide/svelte/icons/arrow-up-from-line';
   import CheckCircle2Icon from '@lucide/svelte/icons/check-circle-2';
+  import Loader2Icon from '@lucide/svelte/icons/loader-2';
   import SparklesIcon from '@lucide/svelte/icons/sparkles';
   import { format } from 'date-fns';
+  import { createQuery } from '@tanstack/svelte-query';
 
   import * as Alert from '$lib/components/ui/alert';
   import * as Card from '$lib/components/ui/card';
   import StudentCard from '$lib/users/student.svelte';
   import { Button } from '$lib/components/ui/button';
-  import type { Draft, DraftFinalizedBreakdown, Lab } from '$lib/features/drafts/types';
+  import { Empty } from '$lib/components/ui/empty';
+  import type { Draft, DraftFinalizedBreakdown, Lab, SerializableStudent, Student } from '$lib/features/drafts/types';
   import { resolve } from '$app/paths';
 
   interface Props {
@@ -26,8 +29,39 @@
   const participatingLabs = $derived(
     finalized.snapshots.length > 0 ? finalized.snapshots.length : labs.length,
   );
+
+  const regularDraftedIds = $derived(new Set(finalized.sections.regularDrafted.map(({ id }) => id)));
+
+  // Only loads when this component mounts
+  const { isPending, isError, data: undraftedAfterRegular } = $derived(createQuery(() => ({
+    queryKey: ['undrafted-after-regular'],
+    queryFn: async () => {
+      const response = await fetch(`/dashboard/drafts/${draftId}/draftees`);
+      const serializedData = await response.json() as SerializableStudent[];
+      if (serializedData === undefined) return [];
+
+      const data = (serializedData.map((draftee) => {
+        return {
+          ...draftee,
+
+          // Revert non-serializable attributes to original data types
+          studentNumber: draftee.studentNumber === null ? null : BigInt(draftee.studentNumber),
+        }
+      })) as Student[];
+
+      // Return undrafted after regular
+      return data.filter(({ id }) => !regularDraftedIds.has(id));
+    }
+  })));
 </script>
 
+{#if isPending}
+  <div class="flex items-center justify-center h-full">
+    <Loader2Icon class="size-20 animate-spin" />
+  </div>
+{:else if isError}
+  <Empty>Uh oh! An error has occurred.</Empty>
+{:else}
 <div class="space-y-4">
   {#if isReview}
     <Alert.Root variant="warning">
@@ -143,10 +177,10 @@
         <div class="grid grid-cols-1 gap-2 lg:grid-cols-2">
           <div id="section-undrafted-after-regular" class="space-y-2">
             <p class="text-sm font-medium">
-              Undrafted After Regular ({finalized.sections.undraftedAfterRegular.length})
+              Undrafted After Regular ({undraftedAfterRegular.length})
             </p>
-            {#if finalized.sections.undraftedAfterRegular.length > 0}
-              {#each finalized.sections.undraftedAfterRegular as { id, ...student } (id)}
+            {#if undraftedAfterRegular.length > 0}
+              {#each undraftedAfterRegular as { id, ...student } (id)}
                 <StudentCard user={{ ...student, labs: [], labId: null }} />
               {/each}
             {:else}
@@ -217,3 +251,4 @@
     </Button>
   </div>
 </div>
+{/if}
