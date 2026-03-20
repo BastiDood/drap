@@ -37,7 +37,7 @@
 
   <form
     method="post"
-    action="/dashboard/drafts/{draftId}/?/allowlistAdd"
+    action="/dashboard/drafts/{draftId}/?/add-to-allowlist"
     use:enhance={({ formData, cancel }) => {
       const emailValue = formData.get('email');
       if (typeof emailValue !== 'string' || emailValue.length === 0) return cancel();
@@ -118,7 +118,7 @@
               <TableCell>
                 <form
                   method="post"
-                  action="/dashboard/drafts/{draftId}/?/allowlistRemove"
+                  action="/dashboard/drafts/{draftId}/?/remove-from-allowlist"
                   use:enhance={({ submitter }) => {
                     assert(submitter !== null);
                     assert(submitter instanceof HTMLButtonElement);

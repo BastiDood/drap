@@ -746,7 +746,7 @@ export const actions = {
     });
   },
 
-  async allowlistAdd({ params, locals: { session }, request }) {
+  async 'add-to-allowlist'({ params, locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
       logger.fatal('attempt to add to allowlist without session');
       error(401);
@@ -829,7 +829,7 @@ export const actions = {
     });
   },
 
-  async allowlistRemove({ params, locals: { session }, request }) {
+  async 'remove-from-allowlist'({ params, locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
       logger.fatal('attempt to remove from allowlist without session');
       error(401);
