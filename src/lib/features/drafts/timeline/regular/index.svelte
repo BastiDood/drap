@@ -3,19 +3,16 @@
   import GraduationCapIcon from '@lucide/svelte/icons/graduation-cap';
   import PaperclipIcon from '@lucide/svelte/icons/paperclip';
 
-  import * as Accordion from '$lib/components/ui/accordion';
   import { Button } from '$lib/components/ui/button';
   import * as Tabs from '$lib/components/ui/tabs';
-  import Student from '$lib/users/student.svelte';
 
   import type {
     FacultyChoiceRecord,
     Lab,
-    Student as StudentType,
   } from '$lib/features/drafts/types';
 
   import Draftees from '../../draftees/index.svelte';
-  import LabAccordionItem from './lab-accordion-item.svelte';
+  import LabRoundSummary from './lab-round-summary.svelte';
   import SystemLogsTab from './system-logs-tab.svelte';
 
   type TabType = 'students' | 'labs' | 'logs';
@@ -25,11 +22,9 @@
     round: number;
     labs: Lab[];
     records: FacultyChoiceRecord[];
-    available: StudentType[];
-    selected: StudentType[];
   }
 
-  const { draftId, round, labs, records, available, selected }: Props = $props();
+  const { draftId, round, labs, records }: Props = $props();
 
   let group: TabType = $state('students');
 </script>
@@ -69,11 +64,9 @@
     </div>
   </Tabs.Content>
   <Tabs.Content value="labs">
-    <Accordion.Root type="multiple">
-      {#each labs as lab (lab.id)}
-        <LabAccordionItem {lab} {round} {available} {selected} />
-      {/each}
-    </Accordion.Root>
+    {#each labs as lab}
+      <LabRoundSummary {draftId} {round} {lab} />
+    {/each}
   </Tabs.Content>
   <Tabs.Content value="logs">
     <SystemLogsTab {records} />

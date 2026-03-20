@@ -190,9 +190,9 @@
           </span>
         {/snippet}
         {#if draft.currRound !== null && draft.currRound > 0 && draft.currRound <= draft.maxRounds}
-          <RegularPhase {draftId} round={draft.currRound} {labs} {records} {available} {selected} />
+          <RegularPhase {draftId} round={draft.currRound} {labs} {records} />
         {:else if currentPhase === 'review' || currentPhase === 'finalized'}
-          <RegularPhase {draftId} round={draft.maxRounds} {labs} {records} {available} {selected} />
+          <RegularPhase {draftId} round={draft.maxRounds} {labs} {records} />
         {:else}
           <p class="text-muted-foreground">
             Regular rounds have been completed. {draft.maxRounds} rounds were executed.
