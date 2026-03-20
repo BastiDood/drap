@@ -264,11 +264,7 @@
   </div>
 
   <div class="flex flex-row gap-2">
-    <Button
-      href={resolve(`/dashboard/drafts/${draftId}/students.csv`)}
-      download
-      variant="outline"
-    >
+    <Button href={resolve(`/dashboard/drafts/${draftId}/students.csv`)} download variant="outline">
       <ArrowUpFromLineIcon class="size-5" />
       <span>Export Student Ranks</span>
     </Button>
