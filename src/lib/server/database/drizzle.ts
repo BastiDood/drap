@@ -27,6 +27,7 @@ import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 import * as schema from './schema';
+import { assert } from 'node:console';
 
 // Ensures that no database details are leaked at runtime.
 export type { schema };
@@ -1874,6 +1875,7 @@ export async function addToAllowlist(
           schema.draftRegistrationAllowlist.studentUserId,
         ],
       });
+    assert(result.rowCount !== null);
     logger.debug('added to allowlist', { rowCount: result.rowCount });
     return result.rowCount;
   });
