@@ -5,11 +5,11 @@ import { NonRetriableError } from 'inngest';
 
 import { db } from '$lib/server/database';
 import {
-  draftFinalizedEvent,
-  lotteryInterventionEvent,
-  roundStartedEvent,
-  roundSubmittedEvent,
-  userAssignedEvent,
+  DraftFinalizedEvent,
+  LotteryInterventionEvent,
+  RoundStartedEvent,
+  RoundSubmittedEvent,
+  UserAssignedEvent,
 } from '$lib/server/inngest/schema';
 import {
   type DrizzleTransaction,
@@ -55,11 +55,11 @@ export const sendEmail = inngest.createFunction(
     name: 'Send Email',
     batchEvents: { maxSize: 100, timeout: '10s' },
     triggers: [
-      roundStartedEvent,
-      roundSubmittedEvent,
-      lotteryInterventionEvent,
-      draftFinalizedEvent,
-      userAssignedEvent,
+      RoundStartedEvent,
+      RoundSubmittedEvent,
+      LotteryInterventionEvent,
+      DraftFinalizedEvent,
+      UserAssignedEvent,
     ],
   },
   async ({ events, step }) =>

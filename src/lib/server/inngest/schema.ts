@@ -1,73 +1,63 @@
 import * as v from 'valibot';
 import { eventType } from 'inngest';
 
-export const RoundStartedEvent = v.object({
-  draftId: v.number(),
-  round: v.nullable(v.number()),
-  recipientEmail: v.string(),
-  recipientName: v.string(),
+export const RoundStartedEvent = eventType('draft/round.started', {
+  schema: v.object({
+    draftId: v.number(),
+    round: v.nullable(v.number()),
+    recipientEmail: v.string(),
+    recipientName: v.string(),
+  }),
 });
-export type RoundStartedEvent = v.InferOutput<typeof RoundStartedEvent>;
+export type RoundStartedSchema = v.InferOutput<typeof RoundStartedEvent.schema>;
 
-export const RoundSubmittedEvent = v.object({
-  draftId: v.number(),
-  round: v.number(),
-  labId: v.string(),
-  labName: v.string(),
-  recipientEmail: v.string(),
+export const RoundSubmittedEvent = eventType('draft/round.submitted', {
+  schema: v.object({
+    draftId: v.number(),
+    round: v.number(),
+    labId: v.string(),
+    labName: v.string(),
+    recipientEmail: v.string(),
+  }),
 });
-export type RoundSubmittedEvent = v.InferOutput<typeof RoundSubmittedEvent>;
+export type RoundSubmittedSchema = v.InferOutput<typeof RoundSubmittedEvent.schema>;
 
-export const LotteryInterventionEvent = v.object({
-  draftId: v.number(),
-  labId: v.string(),
-  labName: v.string(),
-  studentName: v.string(),
-  studentEmail: v.string(),
-  recipientEmail: v.string(),
-  recipientName: v.string(),
+export const LotteryInterventionEvent = eventType('draft/lottery.intervened', {
+  schema: v.object({
+    draftId: v.number(),
+    labId: v.string(),
+    labName: v.string(),
+    studentName: v.string(),
+    studentEmail: v.string(),
+    recipientEmail: v.string(),
+    recipientName: v.string(),
+  }),
 });
-export type LotteryInterventionEvent = v.InferOutput<typeof LotteryInterventionEvent>;
+export type LotteryInterventionSchema = v.InferOutput<typeof LotteryInterventionEvent.schema>;
 
-export const DraftFinalizedEvent = v.object({
-  draftId: v.number(),
-  recipientEmail: v.string(),
-  recipientName: v.string(),
-  lotteryAssignments: v.array(
-    v.object({
-      labId: v.string(),
-      labName: v.string(),
-      studentName: v.string(),
-      studentEmail: v.string(),
-    }),
-  ),
+export const DraftFinalizedEvent = eventType('draft/draft.finalized', {
+  schema: v.object({
+    draftId: v.number(),
+    recipientEmail: v.string(),
+    recipientName: v.string(),
+    lotteryAssignments: v.array(
+      v.object({
+        labId: v.string(),
+        labName: v.string(),
+        studentName: v.string(),
+        studentEmail: v.string(),
+      }),
+    ),
+  }),
 });
-export type DraftFinalizedEvent = v.InferOutput<typeof DraftFinalizedEvent>;
+export type DraftFinalizedSchema = v.InferOutput<typeof DraftFinalizedEvent.schema>;
 
-export const UserAssignedEvent = v.object({
-  labId: v.string(),
-  labName: v.string(),
-  userEmail: v.string(),
-  userName: v.string(),
+export const UserAssignedEvent = eventType('draft/user.assigned', {
+  schema: v.object({
+    labId: v.string(),
+    labName: v.string(),
+    userEmail: v.string(),
+    userName: v.string(),
+  }),
 });
-export type UserAssignedEvent = v.InferOutput<typeof UserAssignedEvent>;
-
-export const roundStartedEvent = eventType('draft/round.started', {
-  schema: RoundStartedEvent,
-});
-
-export const roundSubmittedEvent = eventType('draft/round.submitted', {
-  schema: RoundSubmittedEvent,
-});
-
-export const lotteryInterventionEvent = eventType('draft/lottery.intervened', {
-  schema: LotteryInterventionEvent,
-});
-
-export const draftFinalizedEvent = eventType('draft/draft.finalized', {
-  schema: DraftFinalizedEvent,
-});
-
-export const userAssignedEvent = eventType('draft/user.assigned', {
-  schema: UserAssignedEvent,
-});
+export type UserAssignedSchema = v.InferOutput<typeof UserAssignedEvent.schema>;

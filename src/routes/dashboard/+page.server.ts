@@ -9,12 +9,12 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/database';
 import { dev } from '$app/environment';
 import {
-  type DraftFinalizedEvent,
-  draftFinalizedEvent,
-  lotteryInterventionEvent,
-  roundStartedEvent,
-  roundSubmittedEvent,
-  userAssignedEvent,
+  DraftFinalizedEvent,
+  type DraftFinalizedSchema,
+  LotteryInterventionEvent,
+  RoundStartedEvent,
+  RoundSubmittedEvent,
+  UserAssignedEvent,
 } from '$lib/server/inngest/schema';
 import {
   getLabById,
@@ -318,7 +318,7 @@ export const actions = {
                   throw err;
                 }
                 await inngest.send(
-                  roundStartedEvent.create({
+                  RoundStartedEvent.create({
                     draftId: parsed.draftId,
                     round: parsed.round,
                     recipientEmail: parsed.recipientEmail,
@@ -340,7 +340,7 @@ export const actions = {
                   throw err;
                 }
                 await inngest.send(
-                  roundSubmittedEvent.create({
+                  RoundSubmittedEvent.create({
                     draftId: parsed.draftId,
                     round: parsed.round,
                     labId: parsed.labId,
@@ -394,7 +394,7 @@ export const actions = {
                 }
 
                 await inngest.send(
-                  lotteryInterventionEvent.create({
+                  LotteryInterventionEvent.create({
                     draftId: parsed.draftId,
                     labId: parsed.labId,
                     labName,
@@ -421,7 +421,7 @@ export const actions = {
                   throw err;
                 }
 
-                const lotteryAssignments: DraftFinalizedEvent['lotteryAssignments'] = [];
+                const lotteryAssignments: DraftFinalizedSchema['lotteryAssignments'] = [];
                 for (const { labId, studentEmail } of parsed.lotteryAssignments) {
                   // eslint-disable-next-line @typescript-eslint/init-declarations
                   let labName: string;
@@ -463,7 +463,7 @@ export const actions = {
                 }
 
                 await inngest.send(
-                  draftFinalizedEvent.create({
+                  DraftFinalizedEvent.create({
                     draftId: parsed.draftId,
                     recipientEmail: parsed.recipientEmail,
                     recipientName: `${givenName} ${familyName}`,
@@ -501,7 +501,7 @@ export const actions = {
                 }
 
                 await inngest.send(
-                  userAssignedEvent.create({
+                  UserAssignedEvent.create({
                     labId: parsed.labId,
                     labName,
                     userEmail: parsed.userEmail,
