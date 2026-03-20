@@ -89,7 +89,7 @@ export const actions = {
         return;
       }
 
-      logger.warn('admin email was already invited before');
+      logger.fatal('admin email was already invited before');
       return fail(409);
     });
   },
@@ -122,7 +122,7 @@ export const actions = {
         return;
       }
 
-      logger.warn('faculty email was already invited before');
+      logger.fatal('faculty email was already invited before');
       return fail(409);
     });
   },

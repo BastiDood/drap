@@ -191,7 +191,13 @@ function mapQuotaPairs(data: FormData) {
     if (key === 'draft' || key === 'kind') continue;
     if (value instanceof File || value.length === 0) continue;
     const quota = Number.parseInt(value, 10);
-    if (!Number.isFinite(quota) || quota < 0) error(400);
+    if (!Number.isFinite(quota) || quota < 0) {
+      logger.fatal('invalid quota input', void 0, {
+        'draft.quota.field': key,
+        'draft.quota.value': value,
+      });
+      error(400);
+    }
     pairs.push([key, quota]);
   }
   return pairs;
@@ -247,12 +253,14 @@ export const actions = {
         async db => {
           const activeDraft = await getActiveDraftForUpdate(db);
           if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
-            logger.warn('attempt to start non-active draft', { 'draft.id': draftId.toString() });
+            logger.fatal('attempt to start non-active draft', void 0, {
+              'draft.id': draftId.toString(),
+            });
             error(403);
           }
 
           if (activeDraft.currRound !== 0) {
-            logger.warn('attempt to start draft outside registration phase', {
+            logger.fatal('attempt to start draft outside registration phase', void 0, {
               'draft.id': draftId.toString(),
               'draft.round.current': activeDraft.currRound,
               'draft.round.max': activeDraft.maxRounds,
@@ -294,7 +302,12 @@ export const actions = {
         { isolationLevel: 'read committed' },
       );
 
-      if (!started) return fail(497);
+      if (!started) {
+        logger.fatal('cannot start draft without students', void 0, {
+          'draft.id': draftId.toString(),
+        });
+        return fail(497);
+      }
 
       // Dispatch notifications for all rounds that were started
       const facultyAndStaff = await getFacultyAndStaff(db);
@@ -441,7 +454,7 @@ export const actions = {
 
       // Validate draftId matches URL param
       if (draft !== params.draftId) {
-        logger.warn('draft id mismatch', {
+        logger.fatal('draft id mismatch', void 0, {
           'draft.form_id': draft,
           'draft.param_id': params.draftId,
         });
@@ -464,7 +477,7 @@ export const actions = {
           const activeDraft = await getActiveDraftForUpdate(db);
 
           if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
-            logger.warn('attempt to intervene non-active draft', {
+            logger.fatal('attempt to intervene non-active draft', void 0, {
               'draft.id': draftId.toString(),
             });
             error(403);
@@ -501,7 +514,7 @@ export const actions = {
       );
 
       if (typeof result === 'undefined') {
-        logger.error('draft must exist prior to lottery in intervention');
+        logger.fatal('draft must exist prior to lottery in intervention');
         error(404);
       }
 
@@ -553,7 +566,7 @@ export const actions = {
 
       // Validate draftId matches URL param
       if (draft !== params.draftId) {
-        logger.warn('draft id mismatch', {
+        logger.fatal('draft id mismatch', void 0, {
           'draft.form_id': draft,
           'draft.param_id': params.draftId,
         });
@@ -568,14 +581,14 @@ export const actions = {
           async db => {
             const activeDraft = await getActiveDraftForUpdate(db);
             if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
-              logger.warn('attempt to conclude non-active draft', {
+              logger.fatal('attempt to conclude non-active draft', void 0, {
                 'draft.id': draftId.toString(),
               });
               error(403);
             }
 
             if (activeDraft.currRound !== activeDraft.maxRounds + 1) {
-              logger.warn('attempt to conclude outside intervention rounds', {
+              logger.fatal('attempt to conclude outside intervention rounds', void 0, {
                 'draft.id': draftId.toString(),
                 'draft.round.current': activeDraft.currRound,
                 'draft.round.max': activeDraft.maxRounds,
@@ -613,7 +626,7 @@ export const actions = {
 
               const result = await insertLotteryChoices(db, draftId, user.id, pairs, 'lottery');
               if (typeof result === 'undefined') {
-                logger.error('draft must exist prior to draft finalization');
+                logger.fatal('draft must exist prior to draft finalization');
                 error(404);
               }
             } else {
@@ -623,7 +636,7 @@ export const actions = {
 
             const review = await beginDraftReview(db, draftId);
             if (typeof review === 'undefined') {
-              logger.error('draft must exist prior to entering review');
+              logger.fatal('draft must exist prior to entering review');
               error(404);
             }
           },
@@ -631,7 +644,10 @@ export const actions = {
         );
         logger.info('draft review started');
       } catch (err) {
-        if (err === ZIP_NOT_EQUAL) return fail(403);
+        if (err === ZIP_NOT_EQUAL) {
+          logger.fatal('cannot conclude draft because schedule and quota mismatched');
+          return fail(403);
+        }
         throw err;
       }
     });
@@ -674,12 +690,14 @@ export const actions = {
           const activeDraft = await getActiveDraftForUpdate(db);
 
           if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
-            logger.warn('attempt to finalize non-active draft', { 'draft.id': draftId.toString() });
+            logger.fatal('attempt to finalize non-active draft', void 0, {
+              'draft.id': draftId.toString(),
+            });
             error(403);
           }
 
           if (activeDraft.currRound !== null) {
-            logger.warn('attempt to finalize outside review phase', {
+            logger.fatal('attempt to finalize outside review phase', void 0, {
               'draft.id': draftId.toString(),
               'draft.round.current': activeDraft.currRound,
               'draft.round.max': activeDraft.maxRounds,
