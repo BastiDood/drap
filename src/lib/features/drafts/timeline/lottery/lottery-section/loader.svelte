@@ -54,11 +54,11 @@
 
   const mutation = createMutation(() => ({
     mutationFn: fetchDrafteeList,
-    onSuccess: () => {
+    onSuccess() {
       queryClient.invalidateQueries({ queryKey: ['available-before-lottery', draftId.toString()] });
     },
   }));
-  
+
   function invalidateAvailableDrafteeListCache() {
     mutation.mutate();
   }
