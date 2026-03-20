@@ -2,6 +2,7 @@
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
   import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
   import { createQuery } from '@tanstack/svelte-query';
+  import { error } from '@sveltejs/kit';
   import { toast } from 'svelte-sonner';
 
   import Empty from '$lib/components/ui/empty/empty.svelte';
@@ -25,6 +26,8 @@
       queryKey: ['available-before-lottery', draftId.toString()],
       async queryFn() {
         const response = await fetch(`/dashboard/drafts/${draftId}/draftees`);
+        if (!response.ok) error(500);
+
         const serializedData = (await response.json()) as SerializableStudent[];
         if (typeof serializedData === 'undefined') return [];
 
