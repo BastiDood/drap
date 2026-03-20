@@ -31,7 +31,8 @@
     finalized: DraftFinalizedBreakdown;
   }
 
-  const { draftId, draft, labs, studentCount, records, finalized }: Props = $props();
+  const { draftId: rawDraftId, draft, labs, studentCount, records, finalized }: Props = $props();
+  const draftId = $derived(rawDraftId.toString());
 
   // Determine current phase
   const currentPhase = $derived.by(() => {
@@ -166,9 +167,9 @@
           <LotteryActive {draftId} {labs} snapshots={finalized.snapshots} />
         {:else}
           <LotteryCompleted
+            {draftId}
             lotteryDrafted={finalized.sections.lotteryDrafted}
             isReview={currentPhase === 'review'}
-            {draftId}
           />
         {/if}
       </Step>
