@@ -8,22 +8,21 @@
   import * as Card from '$lib/components/ui/card';
   import StudentCard from '$lib/users/student.svelte';
   import { Button } from '$lib/components/ui/button';
-  import type { Draft, DraftFinalizedBreakdown, Lab, Student } from '$lib/features/drafts/types';
+  import type { Draft, DraftFinalizedBreakdown, Lab } from '$lib/features/drafts/types';
   import { resolve } from '$app/paths';
 
   interface Props {
     draftId: bigint;
     draft: Pick<Draft, 'activePeriodStart' | 'activePeriodEnd' | 'maxRounds'>;
-    students: Student[];
     totalStudents: number;
     labs: Lab[];
     finalized: DraftFinalizedBreakdown;
     isReview: boolean;
   }
 
-  const { draftId, draft, students, totalStudents, labs, finalized, isReview }: Props = $props();
+  const { draftId, draft, totalStudents, labs, finalized, isReview }: Props = $props();
 
-  const assignedStudents = $derived(students.filter(s => s.labId !== null).length);
+  const assignedStudents = $derived(finalized.sections.regularDrafted.length + finalized.sections.interventionDrafted.length + finalized.sections.lotteryDrafted.length); // Get from snapshots
   const participatingLabs = $derived(
     finalized.snapshots.length > 0 ? finalized.snapshots.length : labs.length,
   );

@@ -27,15 +27,12 @@
     draftId: bigint;
     draft: Draft;
     labs: Lab[];
-    available: Student[];
-    selected: Student[];
     studentCount: number;
     records: FacultyChoiceRecord[];
     finalized: DraftFinalizedBreakdown;
   }
 
-  const { draftId, draft, labs, available, selected, studentCount, records, finalized }: Props = $props();
-  const allStudents = $derived([...available, ...selected]);
+  const { draftId, draft, labs, studentCount, records, finalized }: Props = $props();
 
   // Determine current phase
   const currentPhase = $derived.by(() => {
@@ -151,7 +148,6 @@
         <SummaryPhase
           {draftId}
           {draft}
-          students={allStudents}
           totalStudents={studentCount}
           {labs}
           {finalized}
