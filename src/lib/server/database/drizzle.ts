@@ -1952,13 +1952,11 @@ export async function isRegisteredOrAssignedInDraft(
       .where(and(eq(schema.studentRank.draftId, draftId), eq(schema.user.id, userId)))
       .then(assertOptional);
 
-    logger.debug('checked student rank', {
-      'draft.id': draftId.toString(),
-      'user.id': userId,
-      'student_rank.found': typeof registeredResult !== 'undefined',
-    });
 
-    if (typeof registeredResult !== 'undefined') return true;
+    if (typeof registeredResult !== 'undefined') {
+      logger.debug('registered', { 'student_rank.user_id': registeredResult.userId });
+      return true;
+    }
 
     // Check facultyChoiceUser (assigned to lab)
     const assignedResult = await db
@@ -1968,12 +1966,12 @@ export async function isRegisteredOrAssignedInDraft(
       .where(and(eq(schema.facultyChoiceUser.draftId, draftId), eq(schema.user.id, userId)))
       .then(assertOptional);
 
-    logger.debug('checked faculty choice', {
-      'draft.id': draftId.toString(),
-      'user.id': userId,
-      'faculty_choice.found': typeof assignedResult !== 'undefined',
-    });
+    if (typeof assignedResult !== 'undefined') {
+      logger.debug('assigned', { 'faculty_choice.student_user_id': assignedResult.studentUserId });
+      return true;
+    }
 
-    return typeof assignedResult !== 'undefined';
+    logger.debug('not registered or assigned');
+    return false;
   });
 }
