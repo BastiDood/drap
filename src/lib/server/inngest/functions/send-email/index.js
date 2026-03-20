@@ -1,2 +1,2 @@
-export { retryEmail } from './retry';
-export { sendEmails } from './batch';
+export { sendBatchedEmails } from './batch';
+export { sendEmailFallback } from './retry';

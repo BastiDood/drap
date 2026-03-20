@@ -4,13 +4,24 @@ import { createMimeMessage } from 'mimetext/node';
 import { NonRetriableError } from 'inngest';
 
 import { db } from '$lib/server/database';
+import type {
+  DraftFinalizedBatchEmailSchema,
+  DraftFinalizedFallbackEmailSchema,
+  LotteryInterventionBatchEmailSchema,
+  LotteryInterventionFallbackEmailSchema,
+  RoundStartedBatchEmailSchema,
+  RoundStartedFallbackEmailSchema,
+  RoundSubmittedBatchEmailSchema,
+  RoundSubmittedFallbackEmailSchema,
+  UserAssignedBatchEmailSchema,
+  UserAssignedFallbackEmailSchema,
+} from '$lib/server/inngest/schema';
 import {
   type DrizzleTransaction,
   getDesignatedSenderCredentialsForUpdate,
   type schema,
   updateCandidateSender,
 } from '$lib/server/database/drizzle';
-import type { EmailSingleSendRequestedSchema } from '$lib/server/inngest/schema';
 import { ENCRYPTION_KEY } from '$lib/server/env/drap/crypto';
 import { GoogleOAuthClient } from '$lib/server/google';
 import { Logger } from '$lib/server/telemetry/logger';
@@ -27,6 +38,20 @@ const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
 type SenderIdentity = Pick<schema.User, 'email' | 'givenName' | 'familyName'>;
+type RenderableEmailEvent =
+  | { name: 'draft/round.started.email.batch'; data: RoundStartedBatchEmailSchema }
+  | { name: 'draft/round.started.email.fallback'; data: RoundStartedFallbackEmailSchema }
+  | { name: 'draft/round.submitted.email.batch'; data: RoundSubmittedBatchEmailSchema }
+  | { name: 'draft/round.submitted.email.fallback'; data: RoundSubmittedFallbackEmailSchema }
+  | { name: 'draft/lottery.intervened.email.batch'; data: LotteryInterventionBatchEmailSchema }
+  | {
+      name: 'draft/lottery.intervened.email.fallback';
+      data: LotteryInterventionFallbackEmailSchema;
+    }
+  | { name: 'draft/draft.finalized.email.batch'; data: DraftFinalizedBatchEmailSchema }
+  | { name: 'draft/draft.finalized.email.fallback'; data: DraftFinalizedFallbackEmailSchema }
+  | { name: 'draft/user.assigned.email.batch'; data: UserAssignedBatchEmailSchema }
+  | { name: 'draft/user.assigned.email.fallback'; data: UserAssignedFallbackEmailSchema };
 
 // Resolved hex equivalents of the oklch design tokens from `app.css` :root.
 const renderer = new Renderer({
@@ -43,10 +68,7 @@ const renderer = new Renderer({
   },
 });
 
-export async function createEmailMessage(
-  event: EmailSingleSendRequestedSchema,
-  sender: SenderIdentity,
-) {
+export async function createEmailMessage(event: RenderableEmailEvent, sender: SenderIdentity) {
   /* eslint-disable @typescript-eslint/init-declarations */
   let recipient: string;
   let subject: string;
@@ -54,7 +76,8 @@ export async function createEmailMessage(
   /* eslint-enable @typescript-eslint/init-declarations */
 
   switch (event.name) {
-    case 'draft/round.started':
+    case 'draft/round.started.email.batch':
+    case 'draft/round.started.email.fallback':
       recipient = event.data.recipientEmail;
       subject =
         event.data.round === null
@@ -67,7 +90,8 @@ export async function createEmailMessage(
         } satisfies ComponentProps<typeof RoundStarted>,
       });
       break;
-    case 'draft/round.submitted':
+    case 'draft/round.submitted.email.batch':
+    case 'draft/round.submitted.email.fallback':
       recipient = event.data.recipientEmail;
       subject = `[DRAP] Acknowledgement from ${event.data.labId.toUpperCase()} for Round #${event.data.round} of Draft #${event.data.draftId}`;
       html = await renderer.render(RoundSubmitted, {
@@ -78,7 +102,8 @@ export async function createEmailMessage(
         } satisfies ComponentProps<typeof RoundSubmitted>,
       });
       break;
-    case 'draft/lottery.intervened':
+    case 'draft/lottery.intervened.email.batch':
+    case 'draft/lottery.intervened.email.fallback':
       recipient = event.data.recipientEmail;
       subject = `[DRAP] Lottery Intervention for ${event.data.labId.toUpperCase()} in Draft #${event.data.draftId}`;
       html = await renderer.render(LotteryIntervened, {
@@ -90,7 +115,8 @@ export async function createEmailMessage(
         } satisfies ComponentProps<typeof LotteryIntervened>,
       });
       break;
-    case 'draft/draft.finalized':
+    case 'draft/draft.finalized.email.batch':
+    case 'draft/draft.finalized.email.fallback':
       recipient = event.data.recipientEmail;
       subject = `[DRAP] Draft #${event.data.draftId} Finalized`;
       html = await renderer.render(DraftFinalized, {
@@ -100,7 +126,8 @@ export async function createEmailMessage(
         } satisfies ComponentProps<typeof DraftFinalized>,
       });
       break;
-    case 'draft/user.assigned':
+    case 'draft/user.assigned.email.batch':
+    case 'draft/user.assigned.email.fallback':
       recipient = event.data.userEmail;
       subject = `[DRAP] Assigned to ${event.data.labId.toUpperCase()}`;
       html = await renderer.render(UserAssigned, {

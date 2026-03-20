@@ -3,12 +3,16 @@ import assert from 'node:assert/strict';
 import { NonRetriableError } from 'inngest';
 
 import {
-  DraftFinalizedEvent,
-  EmailSingleSendRequestedEvent,
-  LotteryInterventionEvent,
-  RoundStartedEvent,
-  RoundSubmittedEvent,
-  UserAssignedEvent,
+  DraftFinalizedBatchEmailEvent,
+  DraftFinalizedFallbackEmailEvent,
+  LotteryInterventionBatchEmailEvent,
+  LotteryInterventionFallbackEmailEvent,
+  RoundStartedBatchEmailEvent,
+  RoundStartedFallbackEmailEvent,
+  RoundSubmittedBatchEmailEvent,
+  RoundSubmittedFallbackEmailEvent,
+  UserAssignedBatchEmailEvent,
+  UserAssignedFallbackEmailEvent,
 } from '$lib/server/inngest/schema';
 import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
 import type { GmailBatchSendResult } from '$lib/server/google/http';
@@ -23,7 +27,7 @@ const SERVICE_NAME = 'inngest.functions.send-email';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
-const MAX_BATCH_RETRY_ATTEMPT = 3;
+const MAX_BATCH_ATTEMPT = 2;
 
 interface EventCreateOptions {
   ts?: number;
@@ -31,24 +35,28 @@ interface EventCreateOptions {
 }
 
 type FollowupEvent =
-  | ReturnType<typeof RoundStartedEvent.create>
-  | ReturnType<typeof RoundSubmittedEvent.create>
-  | ReturnType<typeof LotteryInterventionEvent.create>
-  | ReturnType<typeof DraftFinalizedEvent.create>
-  | ReturnType<typeof UserAssignedEvent.create>
-  | ReturnType<typeof EmailSingleSendRequestedEvent.create>;
+  | ReturnType<typeof RoundStartedBatchEmailEvent.create>
+  | ReturnType<typeof RoundStartedFallbackEmailEvent.create>
+  | ReturnType<typeof RoundSubmittedBatchEmailEvent.create>
+  | ReturnType<typeof RoundSubmittedFallbackEmailEvent.create>
+  | ReturnType<typeof LotteryInterventionBatchEmailEvent.create>
+  | ReturnType<typeof LotteryInterventionFallbackEmailEvent.create>
+  | ReturnType<typeof DraftFinalizedBatchEmailEvent.create>
+  | ReturnType<typeof DraftFinalizedFallbackEmailEvent.create>
+  | ReturnType<typeof UserAssignedBatchEmailEvent.create>
+  | ReturnType<typeof UserAssignedFallbackEmailEvent.create>;
 
-export const sendEmails = inngest.createFunction(
+export const sendBatchedEmails = inngest.createFunction(
   {
     id: 'send-email',
     name: 'Send Email',
     batchEvents: { maxSize: 50, timeout: '5s' },
     triggers: [
-      RoundStartedEvent,
-      RoundSubmittedEvent,
-      LotteryInterventionEvent,
-      DraftFinalizedEvent,
-      UserAssignedEvent,
+      RoundStartedBatchEmailEvent,
+      RoundSubmittedBatchEmailEvent,
+      LotteryInterventionBatchEmailEvent,
+      DraftFinalizedBatchEmailEvent,
+      UserAssignedBatchEmailEvent,
     ],
   },
   async ({ events, step }) => {
@@ -63,11 +71,11 @@ export const sendEmails = inngest.createFunction(
           const eventsById = new Map(
             events.map(event => {
               switch (event.name) {
-                case 'draft/round.started':
-                case 'draft/round.submitted':
-                case 'draft/lottery.intervened':
-                case 'draft/draft.finalized':
-                case 'draft/user.assigned':
+                case 'draft/round.started.email.batch':
+                case 'draft/round.submitted.email.batch':
+                case 'draft/lottery.intervened.email.batch':
+                case 'draft/draft.finalized.email.batch':
+                case 'draft/user.assigned.email.batch':
                   return [event.id, event] as const;
                 default:
                   throw new NonRetriableError(`unexpected event type: ${event.name}`);
@@ -102,7 +110,7 @@ export const sendEmails = inngest.createFunction(
           let successCount = 0;
           let failureCount = 0;
           let retryCount = 0;
-          let singleSendCount = 0;
+          let fallbackCount = 0;
           const followupEvents: FollowupEvent[] = [];
 
           for (const [contentId, result] of results) {
@@ -126,39 +134,51 @@ export const sendEmails = inngest.createFunction(
             ++failureCount;
             const retryable = isRetryableGmailStatus(result.status);
 
-            if (retryable && attempt < MAX_BATCH_RETRY_ATTEMPT) {
+            if (retryable && attempt < MAX_BATCH_ATTEMPT) {
               const nextAttempt = attempt + 1;
               const options: EventCreateOptions = {};
               if (typeof event.ts !== 'undefined') options.ts = event.ts;
               if (typeof event.v !== 'undefined') options.v = event.v;
               ++retryCount;
               switch (event.name) {
-                case 'draft/round.started':
+                case 'draft/round.started.email.batch':
                   followupEvents.push(
-                    RoundStartedEvent.create({ ...event.data, attempt: nextAttempt }, options),
-                  );
-                  break;
-                case 'draft/round.submitted':
-                  followupEvents.push(
-                    RoundSubmittedEvent.create({ ...event.data, attempt: nextAttempt }, options),
-                  );
-                  break;
-                case 'draft/lottery.intervened':
-                  followupEvents.push(
-                    LotteryInterventionEvent.create(
+                    RoundStartedBatchEmailEvent.create(
                       { ...event.data, attempt: nextAttempt },
                       options,
                     ),
                   );
                   break;
-                case 'draft/draft.finalized':
+                case 'draft/round.submitted.email.batch':
                   followupEvents.push(
-                    DraftFinalizedEvent.create({ ...event.data, attempt: nextAttempt }, options),
+                    RoundSubmittedBatchEmailEvent.create(
+                      { ...event.data, attempt: nextAttempt },
+                      options,
+                    ),
                   );
                   break;
-                case 'draft/user.assigned':
+                case 'draft/lottery.intervened.email.batch':
                   followupEvents.push(
-                    UserAssignedEvent.create({ ...event.data, attempt: nextAttempt }, options),
+                    LotteryInterventionBatchEmailEvent.create(
+                      { ...event.data, attempt: nextAttempt },
+                      options,
+                    ),
+                  );
+                  break;
+                case 'draft/draft.finalized.email.batch':
+                  followupEvents.push(
+                    DraftFinalizedBatchEmailEvent.create(
+                      { ...event.data, attempt: nextAttempt },
+                      options,
+                    ),
+                  );
+                  break;
+                case 'draft/user.assigned.email.batch':
+                  followupEvents.push(
+                    UserAssignedBatchEmailEvent.create(
+                      { ...event.data, attempt: nextAttempt },
+                      options,
+                    ),
                   );
                   break;
                 default:
@@ -168,60 +188,48 @@ export const sendEmails = inngest.createFunction(
               const options: EventCreateOptions = {};
               if (typeof event.ts !== 'undefined') options.ts = event.ts;
               if (typeof event.v !== 'undefined') options.v = event.v;
-              ++singleSendCount;
+              ++fallbackCount;
               switch (event.name) {
-                case 'draft/round.started': {
+                case 'draft/round.started.email.batch': {
                   const { attempt: _, ...data } = event.data;
                   followupEvents.push(
-                    EmailSingleSendRequestedEvent.create(
-                      { id: event.id, name: event.name, data },
+                    RoundStartedFallbackEmailEvent.create({ id: event.id, ...data }, options),
+                  );
+                  break;
+                }
+                case 'draft/round.submitted.email.batch': {
+                  const { attempt: _, ...data } = event.data;
+                  followupEvents.push(
+                    RoundSubmittedFallbackEmailEvent.create({ id: event.id, ...data }, options),
+                  );
+                  break;
+                }
+                case 'draft/lottery.intervened.email.batch': {
+                  const { attempt: _, ...data } = event.data;
+                  followupEvents.push(
+                    LotteryInterventionFallbackEmailEvent.create(
+                      { id: event.id, ...data },
                       options,
                     ),
                   );
                   break;
                 }
-                case 'draft/round.submitted': {
+                case 'draft/draft.finalized.email.batch': {
                   const { attempt: _, ...data } = event.data;
                   followupEvents.push(
-                    EmailSingleSendRequestedEvent.create(
-                      { id: event.id, name: event.name, data },
-                      options,
-                    ),
+                    DraftFinalizedFallbackEmailEvent.create({ id: event.id, ...data }, options),
                   );
                   break;
                 }
-                case 'draft/lottery.intervened': {
+                case 'draft/user.assigned.email.batch': {
                   const { attempt: _, ...data } = event.data;
                   followupEvents.push(
-                    EmailSingleSendRequestedEvent.create(
-                      { id: event.id, name: event.name, data },
-                      options,
-                    ),
-                  );
-                  break;
-                }
-                case 'draft/draft.finalized': {
-                  const { attempt: _, ...data } = event.data;
-                  followupEvents.push(
-                    EmailSingleSendRequestedEvent.create(
-                      { id: event.id, name: event.name, data },
-                      options,
-                    ),
-                  );
-                  break;
-                }
-                case 'draft/user.assigned': {
-                  const { attempt: _, ...data } = event.data;
-                  followupEvents.push(
-                    EmailSingleSendRequestedEvent.create(
-                      { id: event.id, name: event.name, data },
-                      options,
-                    ),
+                    UserAssignedFallbackEmailEvent.create({ id: event.id, ...data }, options),
                   );
                   break;
                 }
                 default:
-                  throw new Error('unreachable single-send event type');
+                  throw new Error('unreachable fallback event type');
               }
             }
 
@@ -231,8 +239,8 @@ export const sendEmails = inngest.createFunction(
               'error.gmail.response.status': result.status,
               'error.gmail.response.body': result.body,
               'error.retryable': retryable,
-              'email.retry.scheduled': retryable && attempt < MAX_BATCH_RETRY_ATTEMPT,
-              'email.single_send.scheduled': !retryable || attempt >= MAX_BATCH_RETRY_ATTEMPT,
+              'email.retry.scheduled': retryable && attempt < MAX_BATCH_ATTEMPT,
+              'email.fallback.scheduled': !retryable || attempt >= MAX_BATCH_ATTEMPT,
             });
           }
 
@@ -241,7 +249,7 @@ export const sendEmails = inngest.createFunction(
             'messages.success_count': successCount,
             'messages.failure_count': failureCount,
             'messages.retryable_failure_count': retryCount,
-            'messages.single_send_failure_count': singleSendCount,
+            'messages.fallback_count': fallbackCount,
           });
 
           return followupEvents;

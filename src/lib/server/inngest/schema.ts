@@ -3,7 +3,7 @@ import { eventType } from 'inngest';
 
 const EmailAttempt = v.optional(v.pipe(v.number(), v.integer(), v.minValue(0)));
 
-export const RoundStartedEvent = eventType('draft/round.started', {
+export const RoundStartedBatchEmailEvent = eventType('draft/round.started.email.batch', {
   schema: v.object({
     draftId: v.number(),
     round: v.nullable(v.number()),
@@ -12,9 +12,22 @@ export const RoundStartedEvent = eventType('draft/round.started', {
     attempt: EmailAttempt,
   }),
 });
-export type RoundStartedSchema = v.InferOutput<typeof RoundStartedEvent.schema>;
+export type RoundStartedBatchEmailSchema = v.InferOutput<typeof RoundStartedBatchEmailEvent.schema>;
 
-export const RoundSubmittedEvent = eventType('draft/round.submitted', {
+export const RoundStartedFallbackEmailEvent = eventType('draft/round.started.email.fallback', {
+  schema: v.object({
+    id: v.string(),
+    draftId: v.number(),
+    round: v.nullable(v.number()),
+    recipientEmail: v.string(),
+    recipientName: v.string(),
+  }),
+});
+export type RoundStartedFallbackEmailSchema = v.InferOutput<
+  typeof RoundStartedFallbackEmailEvent.schema
+>;
+
+export const RoundSubmittedBatchEmailEvent = eventType('draft/round.submitted.email.batch', {
   schema: v.object({
     draftId: v.number(),
     round: v.number(),
@@ -24,23 +37,63 @@ export const RoundSubmittedEvent = eventType('draft/round.submitted', {
     attempt: EmailAttempt,
   }),
 });
-export type RoundSubmittedSchema = v.InferOutput<typeof RoundSubmittedEvent.schema>;
+export type RoundSubmittedBatchEmailSchema = v.InferOutput<
+  typeof RoundSubmittedBatchEmailEvent.schema
+>;
 
-export const LotteryInterventionEvent = eventType('draft/lottery.intervened', {
+export const RoundSubmittedFallbackEmailEvent = eventType('draft/round.submitted.email.fallback', {
   schema: v.object({
+    id: v.string(),
     draftId: v.number(),
+    round: v.number(),
     labId: v.string(),
     labName: v.string(),
-    studentName: v.string(),
-    studentEmail: v.string(),
     recipientEmail: v.string(),
-    recipientName: v.string(),
-    attempt: EmailAttempt,
   }),
 });
-export type LotteryInterventionSchema = v.InferOutput<typeof LotteryInterventionEvent.schema>;
+export type RoundSubmittedFallbackEmailSchema = v.InferOutput<
+  typeof RoundSubmittedFallbackEmailEvent.schema
+>;
 
-export const DraftFinalizedEvent = eventType('draft/draft.finalized', {
+export const LotteryInterventionBatchEmailEvent = eventType(
+  'draft/lottery.intervened.email.batch',
+  {
+    schema: v.object({
+      draftId: v.number(),
+      labId: v.string(),
+      labName: v.string(),
+      studentName: v.string(),
+      studentEmail: v.string(),
+      recipientEmail: v.string(),
+      recipientName: v.string(),
+      attempt: EmailAttempt,
+    }),
+  },
+);
+export type LotteryInterventionBatchEmailSchema = v.InferOutput<
+  typeof LotteryInterventionBatchEmailEvent.schema
+>;
+
+export const LotteryInterventionFallbackEmailEvent = eventType(
+  'draft/lottery.intervened.email.fallback',
+  {
+    schema: v.object({
+      id: v.string(),
+      draftId: v.number(),
+      labId: v.string(),
+      labName: v.string(),
+      studentName: v.string(),
+      studentEmail: v.string(),
+      recipientEmail: v.string(),
+      recipientName: v.string(),
+    }),
+  },
+);
+export type LotteryInterventionFallbackEmailSchema = v.InferOutput<
+  typeof LotteryInterventionFallbackEmailEvent.schema
+>;
+
+export const DraftFinalizedBatchEmailEvent = eventType('draft/draft.finalized.email.batch', {
   schema: v.object({
     draftId: v.number(),
     recipientEmail: v.string(),
@@ -56,9 +109,31 @@ export const DraftFinalizedEvent = eventType('draft/draft.finalized', {
     attempt: EmailAttempt,
   }),
 });
-export type DraftFinalizedSchema = v.InferOutput<typeof DraftFinalizedEvent.schema>;
+export type DraftFinalizedBatchEmailSchema = v.InferOutput<
+  typeof DraftFinalizedBatchEmailEvent.schema
+>;
 
-export const UserAssignedEvent = eventType('draft/user.assigned', {
+export const DraftFinalizedFallbackEmailEvent = eventType('draft/draft.finalized.email.fallback', {
+  schema: v.object({
+    id: v.string(),
+    draftId: v.number(),
+    recipientEmail: v.string(),
+    recipientName: v.string(),
+    lotteryAssignments: v.array(
+      v.object({
+        labId: v.string(),
+        labName: v.string(),
+        studentName: v.string(),
+        studentEmail: v.string(),
+      }),
+    ),
+  }),
+});
+export type DraftFinalizedFallbackEmailSchema = v.InferOutput<
+  typeof DraftFinalizedFallbackEmailEvent.schema
+>;
+
+export const UserAssignedBatchEmailEvent = eventType('draft/user.assigned.email.batch', {
   schema: v.object({
     labId: v.string(),
     labName: v.string(),
@@ -67,37 +142,17 @@ export const UserAssignedEvent = eventType('draft/user.assigned', {
     attempt: EmailAttempt,
   }),
 });
-export type UserAssignedSchema = v.InferOutput<typeof UserAssignedEvent.schema>;
+export type UserAssignedBatchEmailSchema = v.InferOutput<typeof UserAssignedBatchEmailEvent.schema>;
 
-export const EmailSingleSendRequestedEvent = eventType('draft/email.single-send.requested', {
-  schema: v.variant('name', [
-    v.object({
-      id: v.string(),
-      name: v.literal('draft/round.started'),
-      data: v.omit(RoundStartedEvent.schema, ['attempt']),
-    }),
-    v.object({
-      id: v.string(),
-      name: v.literal('draft/round.submitted'),
-      data: v.omit(RoundSubmittedEvent.schema, ['attempt']),
-    }),
-    v.object({
-      id: v.string(),
-      name: v.literal('draft/lottery.intervened'),
-      data: v.omit(LotteryInterventionEvent.schema, ['attempt']),
-    }),
-    v.object({
-      id: v.string(),
-      name: v.literal('draft/draft.finalized'),
-      data: v.omit(DraftFinalizedEvent.schema, ['attempt']),
-    }),
-    v.object({
-      id: v.string(),
-      name: v.literal('draft/user.assigned'),
-      data: v.omit(UserAssignedEvent.schema, ['attempt']),
-    }),
-  ]),
+export const UserAssignedFallbackEmailEvent = eventType('draft/user.assigned.email.fallback', {
+  schema: v.object({
+    id: v.string(),
+    labId: v.string(),
+    labName: v.string(),
+    userEmail: v.string(),
+    userName: v.string(),
+  }),
 });
-export type EmailSingleSendRequestedSchema = v.InferOutput<
-  typeof EmailSingleSendRequestedEvent.schema
+export type UserAssignedFallbackEmailSchema = v.InferOutput<
+  typeof UserAssignedFallbackEmailEvent.schema
 >;

@@ -19,7 +19,10 @@ import {
 import { db } from '$lib/server/database';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
-import { RoundStartedEvent, RoundSubmittedEvent } from '$lib/server/inngest/schema';
+import {
+  RoundStartedBatchEmailEvent,
+  RoundSubmittedBatchEmailEvent,
+} from '$lib/server/inngest/schema';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 const RankingsFormData = v.object({
@@ -232,7 +235,7 @@ export const actions = {
       ]);
 
       const roundSubmittedEvents = staffEmails.map(email =>
-        RoundSubmittedEvent.create({
+        RoundSubmittedBatchEmailEvent.create({
           draftId: Number(draftId),
           round: submittedRound,
           labId: lab,
@@ -243,7 +246,7 @@ export const actions = {
 
       const roundStartedEvents = roundsToNotify.flatMap(round =>
         facultyAndStaff.map(({ email, givenName, familyName }) =>
-          RoundStartedEvent.create({
+          RoundStartedBatchEmailEvent.create({
             draftId: Number(draftId),
             round,
             recipientEmail: email,
