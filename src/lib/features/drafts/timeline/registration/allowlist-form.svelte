@@ -24,8 +24,6 @@
   }
 
   const { allowlist, draftId }: Props = $props();
-
-  let email = $state('');
 </script>
 
 <section class="space-y-4">
@@ -55,7 +53,6 @@
               toast.info('Student is already registered');
               break;
             case 'added':
-              email = '';
               toast.success('Student added to allowlist');
               break;
             default:
@@ -76,7 +73,6 @@
           id="allowlist-email"
           name="email"
           placeholder="student@up.edu.ph"
-          bind:value={email}
           required
         />
       </div>
