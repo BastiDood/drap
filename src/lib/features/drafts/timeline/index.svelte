@@ -37,7 +37,6 @@
     records: FacultyChoiceRecord[];
     finalized: DraftFinalizedBreakdown;
     allowlistCount: number;
-    requestedAt: Date;
   }
 
   const {
@@ -48,7 +47,6 @@
     records,
     finalized,
     allowlistCount,
-    requestedAt,
   }: Props = $props();
   const draftId = $derived(rawDraftId.toString());
 
@@ -57,7 +55,7 @@
     if (draft.activePeriodEnd !== null) return 'finalized';
     if (draft.currRound === null) return 'review';
     if (draft.currRound === 0)
-      return draft.registrationClosesAt <= requestedAt ? 'registration-closed' : 'registration';
+      return draft.isRegistrationClosed ? 'registration-closed' : 'registration';
     if (draft.currRound !== null && draft.currRound > draft.maxRounds) return 'intervention';
     return 'regular';
   });

@@ -24,6 +24,8 @@ export interface Draft extends Pick<
   schema.Draft,
   'id' | 'currRound' | 'maxRounds' | 'registrationClosesAt'
 > {
+  /** Derived from the timestamp of the database for best consistency */
+  isRegistrationClosed: boolean;
   /** Computed from `activePeriod` range lower bound */
   activePeriodStart: Date;
   /** Computed from `activePeriod` range upper bound */

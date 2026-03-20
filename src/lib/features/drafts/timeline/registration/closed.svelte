@@ -32,8 +32,8 @@
       <section class="prose dark:prose-invert">
         <h3>Registered Students</h3>
         <p>
-          Registration has closed. There are currently <strong>{studentCount}</strong> students who
-          registered for this draft.
+          Registration has closed. There are currently <strong>{studentCount}</strong> students who registered
+          for this draft.
         </p>
         <p>
           Use the allowlist to grant additional students access to submit their rankings before

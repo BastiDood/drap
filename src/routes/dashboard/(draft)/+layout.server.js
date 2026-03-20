@@ -9,6 +9,5 @@ export async function load() {
   return {
     draft,
     candidateSenders,
-    requestedAt: new Date(),
   };
 }

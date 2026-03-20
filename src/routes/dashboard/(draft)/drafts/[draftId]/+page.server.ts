@@ -163,7 +163,6 @@ export async function load({ params, locals: { session } }) {
         },
       },
       allowlistCount,
-      requestedAt: new Date(),
     };
   });
 }

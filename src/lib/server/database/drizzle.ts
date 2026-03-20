@@ -63,6 +63,10 @@ function coerceNumber(value: unknown) {
   throw new CoercionError('expected a number');
 }
 
+const isRegistrationClosed = sql`${schema.draft.registrationClosesAt} < now()`
+  .mapWith(Boolean)
+  .as('is_registration_closed');
+
 export class CoercionError extends Error {
   constructor(message: string) {
     super(message);
@@ -583,6 +587,7 @@ export async function getDrafts(db: DbConnection) {
         currRound: schema.draft.currRound,
         maxRounds: schema.draft.maxRounds,
         registrationClosesAt: schema.draft.registrationClosesAt,
+        isRegistrationClosed,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`
           .mapWith(coerceDate)
           .as('_start'),
@@ -603,6 +608,7 @@ export async function getDraftById(db: DbConnection, id: bigint) {
         currRound: schema.draft.currRound,
         maxRounds: schema.draft.maxRounds,
         registrationClosesAt: schema.draft.registrationClosesAt,
+        isRegistrationClosed,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
         activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
       })
@@ -620,6 +626,7 @@ export async function getDraftByIdForUpdate(db: DrizzleTransaction, id: bigint) 
         currRound: schema.draft.currRound,
         maxRounds: schema.draft.maxRounds,
         registrationClosesAt: schema.draft.registrationClosesAt,
+        isRegistrationClosed,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
         activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
       })
@@ -638,6 +645,7 @@ export async function getActiveDraft(db: DbConnection) {
         currRound: schema.draft.currRound,
         maxRounds: schema.draft.maxRounds,
         registrationClosesAt: schema.draft.registrationClosesAt,
+        isRegistrationClosed,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
         activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
       })
@@ -662,6 +670,7 @@ export async function getDraftByIdForShare(db: DrizzleTransaction, id: bigint) {
         currRound: schema.draft.currRound,
         maxRounds: schema.draft.maxRounds,
         registrationClosesAt: schema.draft.registrationClosesAt,
+        isRegistrationClosed,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
         activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
       })
@@ -680,6 +689,7 @@ export async function getActiveDraftForShare(db: DrizzleTransaction) {
         currRound: schema.draft.currRound,
         maxRounds: schema.draft.maxRounds,
         registrationClosesAt: schema.draft.registrationClosesAt,
+        isRegistrationClosed,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
         activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
       })
@@ -698,6 +708,7 @@ export async function getActiveDraftForUpdate(db: DrizzleTransaction) {
         currRound: schema.draft.currRound,
         maxRounds: schema.draft.maxRounds,
         registrationClosesAt: schema.draft.registrationClosesAt,
+        isRegistrationClosed,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
         activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
       })

@@ -26,7 +26,7 @@
 </script>
 
 <Dialog.Root bind:open>
-  <div class="rounded-lg border border-accent/30 bg-accent/5 p-4">
+  <div class="border-accent/30 bg-accent/5 rounded-lg border p-4">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div class="space-y-1">
         <div class="flex items-center gap-2">
