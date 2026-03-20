@@ -52,28 +52,35 @@
       return async ({ update, result }) => {
         submitter.disabled = false;
         await update();
-
-        if (result.type === 'success' && typeof result.data !== 'undefined') {
-          switch (result.data.status) {
-            case 'already-in-allowlist':
-              toast.info('Student is already in the allowlist');
-              break;
-            case 'already-registered':
-              toast.info('Student is already registered');
-              break;
-            case 'not-a-student':
-              toast.info('User is not a student');
-              break;
-            case 'added':
-              toast.success('Student added to allowlist');
-              break;
-            default:
-              throw new Error('unreachable');
+        switch (result.type) {
+          case 'success':
+            toast.success('Student added to allowlist');
+            await invalidateDraft();
+            break;
+          case 'failure': {
+            switch (result.data?.status) {
+              case 'already-in-allowlist':
+                toast.info('Student is already in the allowlist');
+                break;
+              case 'already-registered':
+                toast.info('Student is already registered');
+                break;
+              case 'not-a-student':
+                toast.info('User is not a student');
+                break;
+              case 'user-not-found':
+                toast.info('User with this email is not found.');
+                break;
+              default:
+                toast.error('Failed to add to allowlist.');
+            }
+            break;
           }
-          await invalidateDraft();
-        } else if (result.type === 'failure' && result.status === 400) {
-          const data = result.data as { message?: string } | undefined;
-          toast.error(data?.message ?? 'Failed to add to allowlist.');
+          case 'error':
+            toast.error('Failed to add to allowlist.');
+            break;
+          default:
+            break;
         }
       };
     }}

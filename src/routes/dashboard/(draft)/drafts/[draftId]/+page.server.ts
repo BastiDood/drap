@@ -835,23 +835,23 @@ export const actions = {
           logger.fatal('user with this email not found', void 0, {
             'draft.id': draftId.toString(),
           });
-          return fail(400, { message: 'User with this email not found.' });
+          return fail(400, { status: 'user-not-found' as const });
         case AllowlistAddResult.AlreadyRegistered:
           logger.fatal('user already registered', void 0, { 'draft.id': draftId.toString() });
-          return { status: 'already-registered' as const };
+          return fail(409, { status: 'already-registered' as const });
         case AllowlistAddResult.AlreadyInAllowlist:
           logger.fatal('user already in allowlist', void 0, { 'draft.id': draftId.toString() });
-          return { status: 'already-in-allowlist' as const };
+          return fail(409, { status: 'already-in-allowlist' as const });
         case AllowlistAddResult.NotAStudent:
           logger.fatal('user is not a student', void 0, { 'draft.id': draftId.toString() });
-          return { status: 'not-a-student' as const };
+          return fail(400, { status: 'not-a-student' as const });
         default:
           logger.info('student added to allowlist', {
             'draft.id': params.draftId,
             email,
             'admin.id': user.id,
           });
-          return { status: 'added' as const };
+          break;
       }
     });
   },
