@@ -38,9 +38,6 @@
     method="post"
     action="/dashboard/drafts/{draftId}/?/add-to-allowlist"
     use:enhance={({ formData, cancel, submitter }) => {
-      const emailValue = formData.get('email');
-      if (typeof emailValue !== 'string' || emailValue.length === 0) return cancel();
-
       assert(submitter !== null);
       assert(submitter instanceof HTMLButtonElement);
       submitter.disabled = true;
