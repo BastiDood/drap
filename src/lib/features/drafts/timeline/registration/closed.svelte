@@ -50,8 +50,5 @@
     </Alert.Root>
   {/if}
 
-  <AllowlistDialog
-    {draftId}
-    {allowlistCount}
-  />
+  <AllowlistDialog {draftId} {allowlistCount} />
 </div>
