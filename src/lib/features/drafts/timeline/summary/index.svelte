@@ -9,10 +9,7 @@
   import * as Card from '$lib/components/ui/card';
   import StudentCard from '$lib/users/student.svelte';
   import { Button } from '$lib/components/ui/button';
-  import {
-    createFetchDrafteesQuery,
-    selectUndraftedAfterRegular,
-  } from '$lib/queries/fetch-draftees';
+  import { createFetchDrafteesQuery } from '$lib/queries/fetch-draftees';
   import type { Draft, DraftFinalizedBreakdown, Lab } from '$lib/features/drafts/types';
   import { Empty } from '$lib/components/ui/empty';
   import { resolve } from '$app/paths';
@@ -42,10 +39,6 @@
   );
 
   const query = $derived(createFetchDrafteesQuery(draftId));
-
-  const undraftedAfterRegular = $derived(
-    selectUndraftedAfterRegular(query.data ?? [], regularDraftedIds),
-  );
 </script>
 
 <div class="space-y-4">
@@ -170,6 +163,9 @@
           {:else if query.isError}
             <Empty>Uh oh! An error has occurred.</Empty>
           {:else}
+            {@const undraftedAfterRegular = query.data.filter(
+              ({ id }) => !regularDraftedIds.has(id),
+            )}
             <div id="section-undrafted-after-regular" class="space-y-2">
               <p class="text-sm font-medium">
                 Undrafted After Regular ({undraftedAfterRegular.length})
