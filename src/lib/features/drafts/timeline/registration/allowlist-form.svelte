@@ -1,5 +1,6 @@
 <script lang="ts">
   import TrashIcon from '@lucide/svelte/icons/trash';
+  import UsersIcon from '@lucide/svelte/icons/users';
   import { format } from 'date-fns';
   import { toast } from 'svelte-sonner';
 
@@ -7,6 +8,7 @@
   import { Button } from '$lib/components/ui/button';
   import type { DraftRegistrationAllowlistEntry } from '$lib/features/drafts/types';
   import { enhance } from '$app/forms';
+  import * as Empty from '$lib/components/ui/empty';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
   import {
@@ -138,6 +140,16 @@
       </Table>
     </div>
   {:else}
-    <p class="text-muted-foreground text-sm">No students on the allowlist.</p>
+      <Empty.Root>
+      <Empty.Media variant="icon">
+        <UsersIcon class="size-6" />
+      </Empty.Media>
+      <Empty.Header>
+        <Empty.Title>No students on the allowlist</Empty.Title>
+        <Empty.Description>
+          Add students above to allow them to register after the deadline.
+        </Empty.Description>
+      </Empty.Header>
+    </Empty.Root>
   {/if}
 </section>
