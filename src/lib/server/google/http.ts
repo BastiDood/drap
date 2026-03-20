@@ -1,5 +1,3 @@
-import assert from 'node:assert/strict';
-
 import { HTTPParser } from 'http-parser-js';
 import { Multipart } from 'multipart-ts';
 import { parse } from 'valibot';
@@ -17,7 +15,10 @@ const tracer = Tracer.byName(SERVICE_NAME);
 export function parseBatchSendResponse(response: Response) {
   return tracer.asyncSpan('parse-batch-send-response', async () => {
     const contentType = response.headers.get('Content-Type');
-    assert(contentType !== null, 'missing content type when reading multipart response');
+    if (contentType === null) MissingBatchContentTypeError.throwNew();
+    if (!contentType.toLowerCase().startsWith('multipart/'))
+      InvalidBatchContentTypeError.throwNew(contentType);
+    if (!/;\s*boundary=/iu.test(contentType)) MissingBatchBoundaryError.throwNew(contentType);
 
     const body = new Uint8Array(await response.arrayBuffer());
     const multipart = await Multipart.blob(new Blob([body], { type: contentType }));
@@ -49,16 +50,59 @@ export class DuplicateBatchContentIdError extends Error {
   }
 }
 
+export class MissingBatchContentTypeError extends Error {
+  constructor() {
+    super('missing content type when reading multipart response');
+    this.name = 'MissingBatchContentTypeError';
+  }
+
+  static throwNew(): never {
+    const error = new MissingBatchContentTypeError();
+    logger.error('missing content type when reading multipart response', error);
+    throw error;
+  }
+}
+
+export class InvalidBatchContentTypeError extends Error {
+  constructor(public readonly contentType: string) {
+    super(`unexpected content type when reading multipart response: ${contentType}`);
+    this.name = 'InvalidBatchContentTypeError';
+  }
+
+  static throwNew(contentType: string): never {
+    const error = new InvalidBatchContentTypeError(contentType);
+    logger.error('unexpected content type when reading multipart response', error, {
+      'error.content_type': contentType,
+    });
+    throw error;
+  }
+}
+
+export class MissingBatchBoundaryError extends Error {
+  constructor(public readonly contentType: string) {
+    super(`missing multipart boundary when reading batch response: ${contentType}`);
+    this.name = 'MissingBatchBoundaryError';
+  }
+
+  static throwNew(contentType: string): never {
+    const error = new MissingBatchBoundaryError(contentType);
+    logger.error('missing multipart boundary when reading batch response', error, {
+      'error.content_type': contentType,
+    });
+    throw error;
+  }
+}
+
 function parseBatchSendPart(part: Multipart['parts'][number]): [string, GmailBatchSendResult] {
   return tracer.span('parse-batch-send-part', span => {
     span.setAttribute('http.part.size', part.body.byteLength);
     const contentType = part.headers.get('Content-Type');
-    assert(contentType !== null, 'gmail batch part is missing its content type');
+    if (contentType === null) MissingBatchPartContentTypeError.throwNew();
     if (!contentType.toLowerCase().startsWith('application/http'))
       NonHttpBatchPartError.throwNew(contentType);
 
     const partContentId = part.headers.get('Content-ID');
-    assert(partContentId !== null, 'gmail batch part is missing its content id');
+    if (partContentId === null) MissingBatchPartContentIdError.throwNew();
 
     const contentId = normalizeBatchContentId(partContentId);
     const { status, body } = parseApplicationHttpResponse(Buffer.from(part.body));
@@ -102,6 +146,45 @@ export class NonHttpBatchPartError extends Error {
   }
 }
 
+export class MissingBatchPartContentTypeError extends Error {
+  constructor() {
+    super('gmail batch part is missing its content type');
+    this.name = 'MissingBatchPartContentTypeError';
+  }
+
+  static throwNew(): never {
+    const error = new MissingBatchPartContentTypeError();
+    logger.error('gmail batch part is missing its content type', error);
+    throw error;
+  }
+}
+
+export class MissingBatchPartContentIdError extends Error {
+  constructor() {
+    super('gmail batch part is missing its content id');
+    this.name = 'MissingBatchPartContentIdError';
+  }
+
+  static throwNew(): never {
+    const error = new MissingBatchPartContentIdError();
+    logger.error('gmail batch part is missing its content id', error);
+    throw error;
+  }
+}
+
+export class MissingBatchPartStatusError extends Error {
+  constructor() {
+    super('missing status code when parsing gmail batch part');
+    this.name = 'MissingBatchPartStatusError';
+  }
+
+  static throwNew(): never {
+    const error = new MissingBatchPartStatusError();
+    logger.error('missing status code when parsing gmail batch part', error);
+    throw error;
+  }
+}
+
 function parseApplicationHttpResponse(data: Buffer) {
   return tracer.span('parse-application-http-response', span => {
     span.setAttribute('http.response.data.size', data.length);
@@ -132,7 +215,7 @@ function parseApplicationHttpResponse(data: Buffer) {
     const finishResult = parser.finish();
     if (finishResult instanceof Error) throw finishResult;
 
-    assert(typeof status !== 'undefined', 'missing status code when parsing gmail batch part');
+    if (typeof status === 'undefined') MissingBatchPartStatusError.throwNew();
     return { status, body: Buffer.concat(bodyChunks).toString('utf-8') };
   });
 }
