@@ -612,6 +612,24 @@ export async function getDraftById(db: DbConnection, id: bigint) {
   });
 }
 
+export async function getDraftByIdForUpdate(db: DrizzleTransaction, id: bigint) {
+  return await tracer.asyncSpan('get-draft-by-id-for-update', async span => {
+    span.setAttribute('database.draft.id', id.toString());
+    return await db
+      .select({
+        currRound: schema.draft.currRound,
+        maxRounds: schema.draft.maxRounds,
+        registrationClosesAt: schema.draft.registrationClosesAt,
+        activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
+        activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
+      })
+      .from(schema.draft)
+      .where(eq(schema.draft.id, id))
+      .for('update')
+      .then(assertOptional);
+  });
+}
+
 export async function getActiveDraft(db: DbConnection) {
   return await tracer.asyncSpan('get-active-draft', async () => {
     return await db

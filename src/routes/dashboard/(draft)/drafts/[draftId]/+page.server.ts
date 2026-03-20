@@ -14,6 +14,7 @@ import {
   getAllowlistByDraft,
   getDraftAssignmentRecords,
   getDraftById,
+  getDraftByIdForUpdate,
   getDraftLabQuotaLabIds,
   getDraftLabQuotaSnapshots,
   getFacultyAndStaff,
@@ -788,7 +789,7 @@ export const actions = {
 
       const result = await db.transaction(
         async db => {
-          const draft = await getDraftById(db, draftId);
+          const draft = await getDraftByIdForUpdate(db, draftId);
           if (typeof draft === 'undefined') {
             logger.error('draft not found', void 0, { 'draft.id': draftId.toString() });
             error(404);
