@@ -1,15 +1,14 @@
 <script lang="ts">
-  import { enhance } from '$app/forms';
-  import { toast } from 'svelte-sonner';
-  import { createQuery } from '@tanstack/svelte-query';
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
   import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
+  import { createQuery } from '@tanstack/svelte-query';
+  import { toast } from 'svelte-sonner';
 
-  import { Button } from '$lib/components/ui/button';
   import Empty from '$lib/components/ui/empty/empty.svelte';
-
   import { assert } from '$lib/assert';
-  import type { Lab, Student, SerializableStudent } from '$lib/features/drafts/types';
+  import { Button } from '$lib/components/ui/button';
+  import { enhance } from '$app/forms';
+  import type { Lab, SerializableStudent, Student } from '$lib/features/drafts/types';
 
   import DataTable from './data-table.svelte';
 
@@ -24,7 +23,7 @@
   const { isPending, isError, data } = $derived(
     createQuery(() => ({
       queryKey: ['available-before-lottery'],
-      queryFn: async () => {
+      async queryFn() {
         const response = await fetch(`/dashboard/drafts/${draftId}/draftees`);
         const serializedData = (await response.json()) as SerializableStudent[];
         if (serializedData === undefined) return [];

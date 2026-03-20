@@ -1,22 +1,15 @@
 <script lang="ts">
-  import {
-    createColumnHelper,
-    getCoreRowModel,
-    getFilteredRowModel,
-    getSortedRowModel,
-    type ColumnFiltersState,
-    type SortingState,
-  } from '@tanstack/table-core';
+  import { type ColumnFiltersState, createColumnHelper, getCoreRowModel, getFilteredRowModel, getSortedRowModel, type SortingState } from '@tanstack/table-core';
 
-  import { Badge } from '$lib/components/ui/badge';
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
   import * as Table from '$lib/components/ui/table';
-  import { Button } from '$lib/components/ui/button';
-  import { createSvelteTable, FlexRender, renderComponent } from '$lib/components/ui/data-table';
-
-  import type { Student } from '$lib/features/drafts/types';
   import DesignatedLab from '$lib/users/designated-lab.svelte';
   import PreferredLab from '$lib/users/preferred-lab.svelte';
+  import { Badge } from '$lib/components/ui/badge';
+  import { Button } from '$lib/components/ui/button';
+  import { createSvelteTable, FlexRender, renderComponent } from '$lib/components/ui/data-table';
+  import type { Student } from '$lib/features/drafts/types';
+
   import SortByHeader from './sort-by-header.svelte';
 
   interface Props {
@@ -109,13 +102,13 @@
 
       // Sorted state
       getSortedRowModel: getSortedRowModel(),
-      onSortingChange: updater => {
+      onSortingChange(updater) {
         sorting = typeof updater === 'function' ? updater(sorting) : updater;
       },
 
       // Filtered state
       getFilteredRowModel: getFilteredRowModel(),
-      onColumnFiltersChange: updater => {
+      onColumnFiltersChange(updater) {
         columnFilters = typeof updater === 'function' ? updater(columnFilters) : updater;
       },
 

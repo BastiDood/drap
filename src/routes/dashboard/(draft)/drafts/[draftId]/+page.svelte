@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { DraftTimeline } from '$lib/features/drafts';
-
   import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
+
+  import { DraftTimeline } from '$lib/features/drafts';
 
   const { data } = $props();
 

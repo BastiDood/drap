@@ -3,21 +3,15 @@
   import CheckCircle2Icon from '@lucide/svelte/icons/check-circle-2';
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
   import SparklesIcon from '@lucide/svelte/icons/sparkles';
-  import { format } from 'date-fns';
   import { createQuery } from '@tanstack/svelte-query';
+  import { format } from 'date-fns';
 
   import * as Alert from '$lib/components/ui/alert';
   import * as Card from '$lib/components/ui/card';
   import StudentCard from '$lib/users/student.svelte';
   import { Button } from '$lib/components/ui/button';
+  import type { Draft, DraftFinalizedBreakdown, Lab, SerializableStudent, Student } from '$lib/features/drafts/types';
   import { Empty } from '$lib/components/ui/empty';
-  import type {
-    Draft,
-    DraftFinalizedBreakdown,
-    Lab,
-    SerializableStudent,
-    Student,
-  } from '$lib/features/drafts/types';
   import { resolve } from '$app/paths';
 
   interface Props {
@@ -52,7 +46,7 @@
   } = $derived(
     createQuery(() => ({
       queryKey: ['undrafted-after-regular'],
-      queryFn: async () => {
+      async queryFn() {
         const response = await fetch(`/dashboard/drafts/${draftId}/draftees`);
         const serializedData = (await response.json()) as SerializableStudent[];
         if (serializedData === undefined) return [];

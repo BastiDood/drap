@@ -3,12 +3,12 @@
   import GraduationCapIcon from '@lucide/svelte/icons/graduation-cap';
   import PaperclipIcon from '@lucide/svelte/icons/paperclip';
 
-  import { Button } from '$lib/components/ui/button';
   import * as Tabs from '$lib/components/ui/tabs';
-
+  import { Button } from '$lib/components/ui/button';
   import type { FacultyChoiceRecord, Lab } from '$lib/features/drafts/types';
 
   import Draftees from '../../draftees/index.svelte';
+
   import LabRoundSummary from './lab-round-summary.svelte';
   import SystemLogsTab from './system-logs-tab.svelte';
 

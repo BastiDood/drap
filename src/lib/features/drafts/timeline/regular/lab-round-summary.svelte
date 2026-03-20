@@ -1,9 +1,8 @@
 <script lang="ts">
   import { Badge } from '$lib/components/ui/badge';
+  import type { Lab } from '$lib/features/drafts/types';
 
   import Draftees from '../../draftees/index.svelte';
-
-  import type { Lab } from '$lib/features/drafts/types';
 
   interface Props {
     draftId: bigint;

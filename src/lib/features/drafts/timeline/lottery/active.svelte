@@ -5,6 +5,7 @@
   import Draftees from '../../draftees/index.svelte';
 
   import ConcludeForm from './conclude-form.svelte';
+
   import LotterySection from './lottery-section/index.svelte';
 
   interface Props {

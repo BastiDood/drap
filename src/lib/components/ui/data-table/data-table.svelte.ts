@@ -1,11 +1,4 @@
-import {
-  type RowData,
-  type TableOptions,
-  type TableOptionsResolved,
-  type TableState,
-  type Updater,
-  createTable,
-} from '@tanstack/table-core';
+import { createTable, type RowData, type TableOptions, type TableOptionsResolved, type TableState, type Updater } from '@tanstack/table-core';
 
 /**
  * Creates a reactive TanStack table object for Svelte.
@@ -39,10 +32,10 @@ export function createSvelteTable<TData extends RowData>(options: TableOptions<T
       state: {},
       onStateChange() {},
       renderFallbackValue: null,
-      mergeOptions: (
+      mergeOptions(
         defaultOptions: TableOptions<TData>,
         options: Partial<TableOptions<TData>>,
-      ) => {
+      ) {
         return mergeObjects(defaultOptions, options);
       },
     },
@@ -57,7 +50,7 @@ export function createSvelteTable<TData extends RowData>(options: TableOptions<T
       return mergeObjects(resolvedOptions, options, {
         state: mergeObjects(state, options.state || {}),
 
-        onStateChange: (updater: Updater<TableState>) => {
+        onStateChange(updater: Updater<TableState>) {
           if (updater instanceof Function) state = updater(state);
           else state = mergeObjects(state, updater);
 
@@ -110,7 +103,7 @@ export function mergeObjects<Sources extends readonly MaybeThunk<any>[]>(
     },
 
     has(_, key) {
-      return !!findSourceWithKey(key);
+      return Boolean(findSourceWithKey(key));
     },
 
     ownKeys(): (string | symbol)[] {
@@ -118,11 +111,11 @@ export function mergeObjects<Sources extends readonly MaybeThunk<any>[]>(
       const all = new Set<string | symbol>();
       for (const s of sources) {
         const obj = resolve(s);
-        if (obj) {
-          for (const k of Reflect.ownKeys(obj) as (string | symbol)[]) {
+        if (obj) 
+          for (const k of Reflect.ownKeys(obj) as (string | symbol)[]) 
             all.add(k);
-          }
-        }
+          
+        
       }
       return [...all];
     },

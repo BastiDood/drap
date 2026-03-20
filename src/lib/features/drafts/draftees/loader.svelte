@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { createQuery } from '@tanstack/svelte-query';
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
+  import { createQuery } from '@tanstack/svelte-query';
 
   import Empty from '$lib/components/ui/empty/empty.svelte';
-
-  import type { Lab, Student, SerializableStudent } from '$lib/features/drafts/types';
+  import type { Lab, SerializableStudent, Student } from '$lib/features/drafts/types';
 
   import DataTable from './data-table.svelte';
 
@@ -32,7 +31,7 @@
   const { isPending, isError, data } = $derived(
     createQuery(() => ({
       queryKey: [queryKey],
-      queryFn: async () => {
+      async queryFn() {
         const response = await fetch(`/dashboard/drafts/${draftId}/draftees`);
         const serializedData = (await response.json()) as SerializableStudent[];
         if (serializedData === undefined) return [];
@@ -63,7 +62,7 @@
           const available = data.filter(({ labId }) => labId === null);
 
           // interested in a lab
-          if (lab !== undefined) {
+          if (lab !== undefined) 
             if (round !== undefined) {
               // later
               if (mustShowInterest === true)
@@ -72,7 +71,7 @@
               // or right now
               return available.filter(d => d.labs[round - 1] === lab.id);
             }
-          }
+          
 
           return available;
         }
