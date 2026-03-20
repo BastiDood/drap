@@ -1292,6 +1292,7 @@ test.describe('Draft Lifecycle', () => {
     test.describe('drafted sections', () => {
       test('are ordered as regular then intervention then lottery', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/drafts/1/');
+        await adminPage.waitForLoadState('networkidle');
 
         const sectionIds = await adminPage
           .locator(
