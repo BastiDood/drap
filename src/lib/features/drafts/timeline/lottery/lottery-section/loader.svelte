@@ -53,6 +53,7 @@
   const queryClient = useQueryClient();
   function invalidateAvailableDrafteeListCache() {
     queryClient.invalidateQueries({ queryKey: ['available-before-lottery', draftId.toString()] });
+    queryClient.invalidateQueries({ queryKey: ['already-drafted-before-lottery', draftId.toString()] });
   }
 </script>
 
