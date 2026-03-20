@@ -771,12 +771,12 @@ export const actions = {
       let parsed: v.InferOutput<typeof AllowlistAddFormData>;
       try {
         parsed = v.parse(AllowlistAddFormData, payload);
-      } catch (error) {
-        if (v.isValiError(error)) {
-          logger.fatal('Invalid email address', error);
+      } catch (err) {
+        if (v.isValiError(err)) {
+          logger.fatal('Invalid email address', err);
           return fail(400, { message: 'Invalid email address.' });
         }
-        throw error;
+        throw err;
       }
 
       if (parsed === null) {
@@ -861,12 +861,12 @@ export const actions = {
       let parsed: v.InferOutput<typeof AllowlistRemoveFormData>;
       try {
         parsed = v.parse(AllowlistRemoveFormData, payload);
-      } catch (error) {
-        if (v.isValiError(error)) {
-          logger.fatal('invalid  student user ID', error);
+      } catch (err) {
+        if (v.isValiError(err)) {
+          logger.fatal('invalid  student user ID', err);
           return fail(400, { message: 'Invalid student user ID.' });
         }
-        throw error;
+        throw err;
       }
 
       if (parsed === null) {
