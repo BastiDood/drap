@@ -60,6 +60,7 @@
       id: 'labs',
       header: 'Lab Preferences',
       cell: info => renderComponent(PreferredLab, { labs: info.getValue() }),
+      filterFn: 'arrIncludesSome',
     }),
   ];
 
@@ -71,6 +72,10 @@
   const designatedLabFilters = $derived([... new Set(data.map(({ labId }) => labId))].filter(labId => labId !== null));
   $effect(() => { designatedLabFilters.sort(); });
   let designatedLabFilterValue = $state('');
+
+  const preferredLabFilters = $derived([... new Set(data.flatMap(({ labs }) => labs))]);
+  $effect(() => { preferredLabFilters.sort() });
+  let preferredLabFilterValues: string[] = $state([]);
 
   // This only initializes lazily on load.
   // We put it here so that we don't needlessly initialize state
@@ -125,6 +130,43 @@
             table.getColumn('labId')?.setFilterValue(designatedLabFilterValue);
           }}>
             {#if designatedLabFilterValue === filter}
+              <Badge variant="outline" class="border-primary bg-primary/10 text-xs uppercase mr-1">
+                {filter.toUpperCase()}
+              </Badge>
+            {:else}
+              <Badge variant="outline" class="border-muted bg-muted/10 text-xs uppercase mr-1">
+                {filter.toUpperCase()}
+              </Badge>
+            {/if}
+          </DropdownMenu.Item>
+        {/each}
+      </DropdownMenu.Content>
+    </DropdownMenu.Root>
+  {/if}
+
+  <!-- Lab Preferences -->
+  {#if preferredLabFilters.length > 0}
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger>
+        <Button variant="outline" class={preferredLabFilterValues.length === 0 ? '' : 'border-secondary text-secondary'}>
+          Lab Preference: {preferredLabFilterValues.length === 0 || preferredLabFilterValues.length === preferredLabFilters.length ? 'All' : preferredLabFilterValues.map(lab => lab.toUpperCase()).join(', ')}
+        </Button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Content>
+        <DropdownMenu.Item onclick={() => {
+          preferredLabFilterValues = [];
+          table.getColumn('labs')?.setFilterValue(preferredLabFilterValues)
+        }}>
+          Clear Filters
+        </DropdownMenu.Item>
+        {#each preferredLabFilters as filter}
+          <DropdownMenu.Item onclick={() => {
+            if (preferredLabFilterValues.includes(filter))
+              preferredLabFilterValues = preferredLabFilterValues.filter(lab => lab !== filter);
+            else preferredLabFilterValues.push(filter);
+            table.getColumn('labs')?.setFilterValue(preferredLabFilterValues)
+          }}>
+            {#if preferredLabFilterValues.includes(filter)}
               <Badge variant="outline" class="border-primary bg-primary/10 text-xs uppercase mr-1">
                 {filter.toUpperCase()}
               </Badge>
