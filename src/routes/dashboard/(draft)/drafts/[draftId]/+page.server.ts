@@ -771,16 +771,17 @@ export const actions = {
       try {
         parsed = v.parse(AllowlistAddFormData, payload);
       } catch (error) {
-        if (error instanceof v.ValiError) {
-          logger.fatal('Invalid email address', error, {
-            'form.issues': error.issues,
-          });
+        if (v.isValiError(error)) {
+          logger.fatal('Invalid email address', error);
           return fail(400, { message: 'Invalid email address.' });
         }
         throw error;
       }
 
-      if (parsed === null) return fail(400, { message: 'Invalid email address.' });
+      if (parsed === null) {
+        logger.fatal('Invalid email address');
+        return fail(400, { message: 'Invalid email address.' });
+      }
       const { email } = parsed;
 
       const draftId = BigInt(params.draftId);
@@ -854,10 +855,8 @@ export const actions = {
       try {
         parsed = v.parse(AllowlistRemoveFormData, payload);
       } catch (error) {
-        if (error instanceof v.ValiError) {
-          logger.fatal('invalid  student user ID', error, {
-            'form.issues': error.issues,
-          });
+        if (v.isValiError(error)) {
+          logger.fatal('invalid  student user ID', error);
           return fail(400, { message: 'Invalid student user ID.' });
         }
         throw error;
