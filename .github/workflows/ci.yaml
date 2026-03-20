@@ -64,6 +64,9 @@ jobs:
       - name: Run All Lints in Parallel
         run: pnpm lint
 
+      - name: Run Unit Tests
+        run: pnpm test:unit
+
       - name: Build Website
         run: pnpm build
 
