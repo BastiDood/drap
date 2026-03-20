@@ -2,12 +2,13 @@
   import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
 
   import * as Alert from '$lib/components/ui/alert';
+  import { Button } from '$lib/components/ui/button';
   import type { DraftFinalizedBreakdown, Student } from '$lib/features/drafts/types';
 
   import QuotaSnapshotForm from '../quota-snapshot-form.svelte';
 
   import StartForm from './start-form.svelte';
-  import StudentList from './student-list.svelte';
+  import Draftees from '../../draftees/index.svelte';
 
   interface Props {
     draftId: bigint;
@@ -37,9 +38,15 @@
           </p>
         </section>
         <QuotaSnapshotForm {draftId} mode="initial" {snapshots} />
+        <div class="flex items-center justify-center">
+          <Draftees {draftId} queryKey="already-registered-students" customTextOnEmpty="No students have registered yet.">
+            {#snippet trigger()}
+              <Button variant="outline" class="border-accent text-accent">See Registered Students</Button>
+            {/snippet}
+          </Draftees>
+        </div>
         <StartForm {draftId} />
       </div>
-      <StudentList {students} />
     </div>
   {:else}
     <Alert.Root variant="warning">
