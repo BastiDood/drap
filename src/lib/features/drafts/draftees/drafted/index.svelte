@@ -4,13 +4,13 @@
 
   import Loader, { type Props } from './loader.svelte';
 
-  const props: Props = $props();
+  const loaderProps: Props = $props();
 </script>
 
 <Drawer.Root>
   <Drawer.Trigger>
     {#snippet child({ props })}
-      {#if typeof props.lab === 'undefined'}
+      {#if typeof loaderProps.lab === 'undefined'}
         <Button variant="outline" class="border-primary text-primary" {...props}
           >Already Drafted</Button
         >
@@ -25,7 +25,7 @@
   </Drawer.Trigger>
   <Drawer.Content class="min-h-screen">
     <div class="overflow-auto px-8 pb-40">
-      <Loader {...props} />
+      <Loader {...loaderProps} />
     </div>
   </Drawer.Content>
 </Drawer.Root>
