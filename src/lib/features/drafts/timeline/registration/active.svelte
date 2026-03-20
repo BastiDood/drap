@@ -4,7 +4,7 @@
   import * as Alert from '$lib/components/ui/alert';
   import type { DraftFinalizedBreakdown, Student } from '$lib/features/drafts/types';
 
-  import QuotaSnapshotForm from '../quota-snapshot-form.svelte';
+  import QuotaSnapshotForm from '$lib/features/drafts/timeline/quota-snapshot-form.svelte';
 
   import StartForm from './start-form.svelte';
   import StudentList from './student-list.svelte';

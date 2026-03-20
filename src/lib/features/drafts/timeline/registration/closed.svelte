@@ -8,7 +8,7 @@
     Student,
   } from '$lib/features/drafts/types';
 
-  import QuotaSnapshotForm from '../quota-snapshot-form.svelte';
+  import QuotaSnapshotForm from '$lib/features/drafts/timeline/quota-snapshot-form.svelte';
 
   import AllowlistForm from './allowlist-form.svelte';
   import StartForm from './start-form.svelte';
