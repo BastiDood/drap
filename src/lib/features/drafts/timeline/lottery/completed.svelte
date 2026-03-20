@@ -1,7 +1,6 @@
 <script lang="ts">
   import * as Card from '$lib/components/ui/card';
-  import Draftees from '$lib/features/drafts/draftees/index.svelte';
-  import { Button } from '$lib/components/ui/button';
+  import DraftedDraftees from '$lib/features/drafts/draftees/drafted/index.svelte';
   import type { DraftAssignmentRecord } from '$lib/features/drafts/types';
 
   import FinalizeForm from './finalize-form.svelte';
@@ -49,13 +48,7 @@
       </Card.Content>
     </Card.Root>
     <div class="flex justify-center">
-      <Draftees {draftId} mustShowDrafted>
-        {#snippet trigger(props)}
-          <Button variant="outline" class="border-primary text-primary" {...props}
-            >Already Drafted</Button
-          >
-        {/snippet}
-      </Draftees>
+      <DraftedDraftees {draftId} />
     </div>
   </div>
 </div>

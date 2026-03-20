@@ -219,7 +219,6 @@
 <!-- Table -->
 <div class="mx-4 rounded-sm">
   <Table.Root>
-    <!-- Header Row -->
     <Table.Header>
       {#each table.getHeaderGroups() as headerGroup (headerGroup.id)}
         <Table.Row>
@@ -236,8 +235,6 @@
         </Table.Row>
       {/each}
     </Table.Header>
-
-    <!-- Table Rows -->
     <Table.Body>
       {#each table.getRowModel().rows as row (row.id)}
         <Table.Row>
@@ -250,7 +247,7 @@
       {:else}
         <Table.Row>
           <Table.Cell colspan={columns.length}>
-            <p class="text-center my-8 text-xl">{customTextOnEmpty ?? ''}</p>
+            <p class="text-center my-8 text-xl">{customTextOnEmpty}</p>
           </Table.Cell>
         </Table.Row>
       {/each}

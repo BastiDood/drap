@@ -6,7 +6,7 @@
   import Empty from '$lib/components/ui/empty/empty.svelte';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
-  import { createFetchDrafteesQuery, selectAvailable } from '$lib/queries/fetch-draftees';
+  import { createFetchDrafteesQuery } from '$lib/queries/fetch-draftees';
   import { enhance } from '$app/forms';
   import type { Lab } from '$lib/features/drafts/types';
 
@@ -19,7 +19,9 @@
 
   const { draftId, labs }: Props = $props();
 
-  const query = $derived(createFetchDrafteesQuery(draftId));
+  const query = $derived(
+    createFetchDrafteesQuery(draftId, students => students.filter(({ labId }) => labId === null)),
+  );
 </script>
 
 {#if query.isPending}
@@ -29,8 +31,7 @@
 {:else if query.isError}
   <Empty>Uh oh! An error has occurred.</Empty>
 {:else if typeof query.data !== 'undefined'}
-  {@const data = selectAvailable(query.data ?? [])}
-  {#if data.length > 0}
+  {#if query.data.length > 0}
     <form
       method="post"
       action="/dashboard/drafts/{draftId}/?/intervene"
@@ -53,7 +54,7 @@
       }}
     >
       <!-- Wrap in a component so we can lazily mount the table state. -->
-      <DataTable {data} {labs} />
+      <DataTable data={query.data} {labs} />
       <input type="hidden" name="draft" value={draftId} />
       <Button
         type="submit"

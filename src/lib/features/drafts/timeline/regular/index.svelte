@@ -4,8 +4,8 @@
   import PaperclipIcon from '@lucide/svelte/icons/paperclip';
 
   import * as Tabs from '$lib/components/ui/tabs';
-  import Draftees from '$lib/features/drafts/draftees/index.svelte';
-  import { Button } from '$lib/components/ui/button';
+  import AvailableDraftees from '$lib/features/drafts/draftees/available/index.svelte';
+  import DraftedDraftees from '$lib/features/drafts/draftees/drafted/index.svelte';
   import type { FacultyChoiceRecord, Lab } from '$lib/features/drafts/types';
 
   import LabRoundSummary from './lab-round-summary.svelte';
@@ -47,20 +47,12 @@
   </Tabs.List>
   <Tabs.Content value="students">
     <div class="flex items-center justify-around">
-      <Draftees {draftId} mustShowDrafted={false} customTextOnEmpty="No available draftees.">
-        {#snippet trigger(props)}
-          <Button variant="outline" class="border-warning text-warning" {...props}
-            >Pending Selection</Button
-          >
-        {/snippet}
-      </Draftees>
-      <Draftees {draftId} mustShowDrafted customTextOnEmpty="No drafted students yet.">
-        {#snippet trigger(props)}
-          <Button variant="outline" class="border-primary text-primary" {...props}
-            >Already Drafted</Button
-          >
-        {/snippet}
-      </Draftees>
+      <AvailableDraftees
+        {draftId}
+        variant="pending-selection"
+        customTextOnEmpty="No available draftees."
+      />
+      <DraftedDraftees {draftId} customTextOnEmpty="No drafted students yet." />
     </div>
   </Tabs.Content>
   <Tabs.Content value="labs">

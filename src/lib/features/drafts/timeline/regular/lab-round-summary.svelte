@@ -1,7 +1,8 @@
 <script lang="ts">
-  import Draftees from '$lib/features/drafts/draftees/index.svelte';
+  import AvailableDraftees from '$lib/features/drafts/draftees/available/index.svelte';
+  import DraftedDraftees from '$lib/features/drafts/draftees/drafted/index.svelte';
+  import InterestedDraftees from '$lib/features/drafts/draftees/interested/index.svelte';
   import { Badge } from '$lib/components/ui/badge';
-  import { Button } from '$lib/components/ui/button';
   import type { Lab } from '$lib/features/drafts/types';
 
   interface Props {
@@ -29,42 +30,10 @@
   {/if}
   <div class="flex items-center gap-1">
     <!-- Members -->
-    <Draftees {draftId} {lab} mustShowDrafted>
-      {#snippet trigger(props)}
-        <Button
-          variant="outline"
-          class="border-primary bg-primary/10 h-fit font-mono text-xs uppercase"
-          {...props}
-        >
-          See Members
-        </Button>
-      {/snippet}
-    </Draftees>
-
+    <DraftedDraftees {draftId} {lab} />
     <!-- Preferred -->
-    <Draftees {draftId} {round} {lab} mustShowDrafted={false}>
-      {#snippet trigger(props)}
-        <Button
-          variant="outline"
-          class="border-accent bg-accent/10 h-fit font-mono text-xs uppercase"
-          {...props}
-        >
-          See Preferred
-        </Button>
-      {/snippet}
-    </Draftees>
-
+    <AvailableDraftees {draftId} {round} {lab} variant="see-preferred" />
     <!-- Interested -->
-    <Draftees {draftId} {round} {lab} mustShowDrafted={false} mustShowInterest>
-      {#snippet trigger(props)}
-        <Button
-          variant="outline"
-          class="border-secondary bg-secondary/10 h-fit font-mono text-xs uppercase"
-          {...props}
-        >
-          See Interested
-        </Button>
-      {/snippet}
-    </Draftees>
+    <InterestedDraftees {draftId} {round} {lab} />
   </div>
 </div>

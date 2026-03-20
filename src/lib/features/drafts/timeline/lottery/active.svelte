@@ -1,6 +1,5 @@
 <script lang="ts">
-  import Draftees from '$lib/features/drafts/draftees/index.svelte';
-  import { Button } from '$lib/components/ui/button';
+  import DraftedDraftees from '$lib/features/drafts/draftees/drafted/index.svelte';
   import type { DraftFinalizedBreakdown, Lab } from '$lib/features/drafts/types';
 
   import ConcludeForm from './conclude-form.svelte';
@@ -42,13 +41,7 @@
 
         <div class="flex justify-center">
           <!-- Already Drafted -->
-          <Draftees draftId={draftId.toString()} mustShowDrafted>
-            {#snippet trigger(props)}
-              <Button variant="outline" class="border-primary text-primary" {...props}
-                >Already Drafted</Button
-              >
-            {/snippet}
-          </Draftees>
+          <DraftedDraftees draftId={draftId.toString()} />
         </div>
       </li>
     </ul>

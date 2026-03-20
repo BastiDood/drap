@@ -2,11 +2,10 @@
   import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
 
   import * as Alert from '$lib/components/ui/alert';
-  import Draftees from '$lib/features/drafts/draftees/index.svelte';
-  import { Button } from '$lib/components/ui/button';
+  import RegisteredDraftees from '$lib/features/drafts/draftees/registered/index.svelte';
   import type { DraftFinalizedBreakdown } from '$lib/features/drafts/types';
 
-  import QuotaSnapshotForm from '../quota-snapshot-form.svelte';
+  import QuotaSnapshotForm from '$lib/features/drafts/timeline/quota-snapshot-form.svelte';
 
   import StartForm from './start-form.svelte';
 
@@ -39,13 +38,11 @@
         </section>
         <QuotaSnapshotForm {draftId} mode="initial" {snapshots} />
         <div class="flex items-center justify-center">
-          <Draftees {draftId} customTextOnEmpty="No students have registered yet.">
-            {#snippet trigger(props)}
-              <Button variant="outline" class="border-accent text-accent" {...props}
-                >See Registered Students</Button
-              >
-            {/snippet}
-          </Draftees>
+          <RegisteredDraftees
+            {draftId}
+            variant="accent"
+            customTextOnEmpty="No students have registered yet."
+          />
         </div>
         <StartForm {draftId} />
       </div>

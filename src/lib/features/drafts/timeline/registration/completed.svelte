@@ -1,6 +1,5 @@
 <script lang="ts">
-  import Draftees from '$lib/features/drafts/draftees/index.svelte';
-  import { Button } from '$lib/components/ui/button';
+  import RegisteredDraftees from '$lib/features/drafts/draftees/registered/index.svelte';
 
   interface Props {
     draftId: string;
@@ -17,12 +16,10 @@
     </p>
   </div>
   <div class="flex items-center justify-center">
-    <Draftees {draftId} customTextOnEmpty="No students have registered.">
-      {#snippet trigger(props)}
-        <Button variant="outline" class="border-primary text-primary" {...props}
-          >See Registered Students</Button
-        >
-      {/snippet}
-    </Draftees>
+    <RegisteredDraftees
+      {draftId}
+      variant="primary"
+      customTextOnEmpty="No students have registered."
+    />
   </div>
 </div>
