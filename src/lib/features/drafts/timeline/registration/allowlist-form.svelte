@@ -124,8 +124,13 @@
                     return async ({ update, result }) => {
                       submitter.disabled = false;
                       await update();
-                      if (result.type === 'success')
-                        toast.success('Student removed from allowlist.');
+                      switch (result.type) {
+                        case 'success':
+                          toast.success('Student removed from allowlist.');
+                          break;
+                        default:
+                          break;
+                      }
                     };
                   }}
                 >

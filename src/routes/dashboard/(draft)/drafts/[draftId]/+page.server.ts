@@ -40,10 +40,10 @@ import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 const enum AllowlistAddResult {
-  UserNotFound,
-  AlreadyRegistered,
-  AlreadyInAllowlist,
-  NotAStudent
+  NotAStudent = -3,
+  UserNotFound = -2,
+  AlreadyRegistered = -1,
+  AlreadyInAllowlist = 0
 }
 
 const DraftActionFormData = v.object({
