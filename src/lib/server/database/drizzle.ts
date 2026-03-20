@@ -1842,9 +1842,11 @@ export async function addToAllowlist(
   adminUserId: string,
 ) {
   return await tracer.asyncSpan('add-to-allowlist', async span => {
-    span.setAttribute('database.draft.id', draftId.toString());
-    span.setAttribute('database.user.student_id', studentUserId);
-    span.setAttribute('database.user.admin_id', adminUserId);
+    span.setAttributes({
+        'database.draft.id': draftId.toString(),
+        'database.user.student_id': studentUserId,
+        'database.user.admin_id': adminUserId,
+    });
     const result = await db
       .insert(schema.draftRegistrationAllowlist)
       .values({ draftId, studentUserId, adminUserId })
@@ -1865,7 +1867,10 @@ export async function removeFromAllowlist(
   studentUserId: string,
 ) {
   return await tracer.asyncSpan('remove-from-allowlist', async span => {
-    span.setAttribute('database.draft.id', draftId.toString());
+    span.setAttributes({
+        'database.draft.id': draftId.toString(),
+        'database.user.id': studentUserId,
+    });
     return await db
       .delete(schema.draftRegistrationAllowlist)
       .where(
@@ -1879,8 +1884,10 @@ export async function removeFromAllowlist(
 
 export async function isUserInAllowlist(db: DbConnection, draftId: bigint, studentUserId: string) {
   return await tracer.asyncSpan('is-user-in-allowlist', async span => {
-    span.setAttribute('database.draft.id', draftId.toString());
-    span.setAttribute('database.user.id', studentUserId);
+    span.setAttributes({
+        'database.draft.id': draftId.toString(),
+        'database.user.id': studentUserId,
+    });
     const result = await db
       .select({ studentUserId: schema.draftRegistrationAllowlist.studentUserId })
       .from(schema.draftRegistrationAllowlist)
@@ -1913,8 +1920,10 @@ export async function isRegisteredOrAssignedInDraft(
   userId: string,
 ) {
   return await tracer.asyncSpan('is-registered-or-assigned-in-draft', async span => {
-    span.setAttribute('database.draft.id', draftId.toString());
-    span.setAttribute('database.user.id', userId);
+    span.setAttributes({
+        'database.draft.id': draftId.toString(),
+        'database.user.id': userId,
+    });
 
     // Check studentRank (submitted rankings)
     const registeredResult = await db
