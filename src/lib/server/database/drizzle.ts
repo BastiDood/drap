@@ -1856,7 +1856,7 @@ export async function addToAllowlist(
           schema.draftRegistrationAllowlist.studentUserId,
         ],
       });
-    span.setAttribute('database.row_count', result.rowCount ?? 0);
+    logger.debug('added to allowlist', { rowCount: result.rowCount });
     return result.rowCount;
   });
 }
