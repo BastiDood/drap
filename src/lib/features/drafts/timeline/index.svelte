@@ -167,7 +167,7 @@
         defaultOpen={currentPhase === 'intervention' || currentPhase === 'review'}
       >
         {#if currentPhase === 'intervention'}
-          <LotteryActive {draftId} {labs} {available} {selected} snapshots={finalized.snapshots} />
+          <LotteryActive {draftId} {labs} {available} snapshots={finalized.snapshots} />
         {:else}
           <LotteryCompleted
             {selected}

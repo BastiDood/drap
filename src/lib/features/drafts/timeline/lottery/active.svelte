@@ -1,12 +1,13 @@
 <script lang="ts">
+  import { Button } from '$lib/components/ui/button';
   import * as Card from '$lib/components/ui/card';
-  import Student from '$lib/users/student.svelte';
   import type {
     DraftFinalizedBreakdown,
     Lab,
     Student as StudentType,
   } from '$lib/features/drafts/types';
 
+  import Draftees from '../../draftees/index.svelte';
   import QuotaSnapshotForm from '../quota-snapshot-form.svelte';
 
   import ConcludeForm from './conclude-form.svelte';
@@ -16,11 +17,10 @@
     draftId: bigint;
     labs: Pick<Lab, 'id' | 'name'>[];
     available: StudentType[];
-    selected: StudentType[];
     snapshots: DraftFinalizedBreakdown['snapshots'];
   }
 
-  const { draftId, labs, available, selected, snapshots }: Props = $props();
+  const { draftId, labs, available, snapshots }: Props = $props();
 </script>
 
 <div class="grid grid-cols-1 gap-4 md:grid-cols-[auto_1fr]">
@@ -40,6 +40,15 @@
       <li>
         Meanwhile, the <strong>"Already Drafted"</strong> section features an <em>immutable</em> list
         of students who have already been drafted into their respective labs. These are considered final.
+
+        <div class="flex justify-center">
+          <!-- Already Drafted -->
+          <Draftees {draftId} queryKey="already-drafted-before-lottery" mustShowDrafted={true}>
+            {#snippet trigger()}
+              <Button variant="outline" class="border-primary text-primary">Already Drafted</Button>
+            {/snippet}
+          </Draftees>
+        </div>
       </li>
     </ul>
     <p>
@@ -67,18 +76,6 @@
             Congratulations! All participants have been drafted. No action is needed here.
           </p>
         {/if}
-      </Card.Content>
-    </Card.Root>
-    <Card.Root variant="soft">
-      <Card.Header>
-        <Card.Title>Already Drafted ({selected.length})</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <ul class="space-y-1">
-          {#each selected as { id, ...user } (id)}
-            <li><Student {user} /></li>
-          {/each}
-        </ul>
       </Card.Content>
     </Card.Root>
   </div>
