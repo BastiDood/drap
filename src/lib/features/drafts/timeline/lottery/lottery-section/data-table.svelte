@@ -144,9 +144,9 @@
         {#each preferredLabFilters as filter (filter)}
           <DropdownMenu.Item
             onclick={() => {
-              if (preferredLabFilterValues.includes(filter))
-                preferredLabFilterValues = preferredLabFilterValues.filter(lab => lab !== filter);
-              else preferredLabFilterValues.push(filter);
+              preferredLabFilterValues = (preferredLabFilterValues.includes(filter))
+                ? preferredLabFilterValues.filter(lab => lab !== filter)
+                : [...preferredLabFilterValues, filter];
               table.getColumn('labs')?.setFilterValue(preferredLabFilterValues);
             }}
           >
