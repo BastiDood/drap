@@ -18,7 +18,7 @@ export async function GET({ params, locals: { session } }) {
 
   const { user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-    logger.error('insufficient permissions to fetch draftee list', void 0, {
+    logger.fatal('insufficient permissions to fetch draftee list', void 0, {
       'user.is_admin': user.isAdmin,
       'user.google_id': user.googleUserId,
       'user.lab_id': user.labId,
