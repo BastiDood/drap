@@ -1170,10 +1170,6 @@ test.describe('Draft Lifecycle', () => {
       const responseData = await response.json();
       expect(responseData.type).toBe('success');
     });
-
-    test('eligible count drops to 3', async ({ adminPage }) => {
-      await adminPage.goto('/dashboard/drafts/1/');
-    });
   });
 
   test.describe('Adjust Quotas for Remaining Students', () => {
