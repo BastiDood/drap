@@ -817,13 +817,13 @@ export const actions = {
 
       switch (result) {
         case AllowlistAddResult.UserNotFound:
-          logger.warn('User with this email not found');
+          logger.warn('user with this email not found');
           return fail(400, { message: 'User with this email not found.' });
         case AllowlistAddResult.AlreadyRegistered:
-          logger.warn('User already registered');
+          logger.warn('user already registered');
           return { success: true, status: 'already_registered' as const };
         case AllowlistAddResult.AlreadyInAllowlist:
-          logger.warn('User already in allowlist');
+          logger.warn('user already in allowlist');
           return { success: true, status: 'already_in_allowlist' as const };
         default:
           logger.info('student added to allowlist', {
