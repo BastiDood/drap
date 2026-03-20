@@ -8,7 +8,6 @@
     DraftFinalizedBreakdown,
     FacultyChoiceRecord,
     Lab,
-    Student,
   } from '$lib/features/drafts/types';
   import { resolve } from '$app/paths';
 

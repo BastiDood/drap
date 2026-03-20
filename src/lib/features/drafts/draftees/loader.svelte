@@ -34,7 +34,7 @@
       async queryFn() {
         const response = await fetch(`/dashboard/drafts/${draftId}/draftees`);
         const serializedData = (await response.json()) as SerializableStudent[];
-        if (serializedData === undefined) return [];
+        if (typeof serializedData === 'undefined') return [];
 
         const data = serializedData.map(draftee => {
           return {
@@ -52,7 +52,7 @@
           const drafted = data.filter(({ labId }) => labId !== null);
 
           // specific to a lab
-          if (lab !== undefined) return drafted.filter(d => d.labId === lab.id);
+          if (typeof lab !== 'undefined') return drafted.filter(d => d.labId === lab.id);
 
           return drafted;
         }
@@ -62,8 +62,8 @@
           const available = data.filter(({ labId }) => labId === null);
 
           // interested in a lab
-          if (lab !== undefined) 
-            if (round !== undefined) {
+          if (typeof lab !== 'undefined')
+            if (typeof round !== 'undefined') {
               // later
               if (mustShowInterest === true)
                 return available.filter(d => d.labs.slice(round).includes(lab.id));
@@ -71,7 +71,6 @@
               // or right now
               return available.filter(d => d.labs[round - 1] === lab.id);
             }
-          
 
           return available;
         }

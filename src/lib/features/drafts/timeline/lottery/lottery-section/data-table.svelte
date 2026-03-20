@@ -1,5 +1,12 @@
 <script lang="ts">
-  import { type ColumnFiltersState, createColumnHelper, getCoreRowModel, getFilteredRowModel, getSortedRowModel, type SortingState } from '@tanstack/table-core';
+  import {
+    type ColumnFiltersState,
+    createColumnHelper,
+    getCoreRowModel,
+    getFilteredRowModel,
+    getSortedRowModel,
+    type SortingState,
+  } from '@tanstack/table-core';
 
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
   import * as Table from '$lib/components/ui/table';
@@ -75,10 +82,7 @@
   let columnFilters: ColumnFiltersState = $state([]);
 
   // Get all possible labs for filtering
-  const preferredLabFilters = $derived([...new Set(data.flatMap(({ labs }) => labs))]);
-  $effect(() => {
-    preferredLabFilters.sort();
-  });
+  const preferredLabFilters = $derived([...new Set(data.flatMap(({ labs }) => labs))].sort());
   let preferredLabFilterValues: string[] = $state([]);
 
   // This only initializes lazily on load.
@@ -138,7 +142,7 @@
         >
           Clear Filters
         </DropdownMenu.Item>
-        {#each preferredLabFilters as filter}
+        {#each preferredLabFilters as filter (filter)}
           <DropdownMenu.Item
             onclick={() => {
               if (preferredLabFilterValues.includes(filter))

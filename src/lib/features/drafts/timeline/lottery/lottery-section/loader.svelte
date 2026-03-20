@@ -26,7 +26,7 @@
       async queryFn() {
         const response = await fetch(`/dashboard/drafts/${draftId}/draftees`);
         const serializedData = (await response.json()) as SerializableStudent[];
-        if (serializedData === undefined) return [];
+        if (typeof serializedData === 'undefined') return [];
 
         const data = serializedData.map(draftee => {
           return {

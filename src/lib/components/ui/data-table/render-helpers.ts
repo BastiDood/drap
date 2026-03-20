@@ -17,6 +17,9 @@ import type { Component, ComponentProps, Snippet } from 'svelte';
  * ```
  */
 export class RenderComponentConfig<TComponent extends Component> {
+  /* eslint-disable @typescript-eslint/parameter-properties
+    -- 
+    abiding this rule will trigger three more different rules for violations */
   component: TComponent;
   props: ComponentProps<TComponent> | Record<string, never>;
   constructor(
@@ -26,6 +29,7 @@ export class RenderComponentConfig<TComponent extends Component> {
     this.component = component;
     this.props = props;
   }
+  /* eslint-enable @typescript-eslint/parameter-properties */
 }
 
 /**
@@ -44,12 +48,16 @@ export class RenderComponentConfig<TComponent extends Component> {
  * ```
  */
 export class RenderSnippetConfig<TProps> {
+  /* eslint-disable @typescript-eslint/parameter-properties
+    -- 
+    abiding this rule will trigger three more different rules for violations */
   snippet: Snippet<[TProps]>;
   params: TProps;
   constructor(snippet: Snippet<[TProps]>, params: TProps) {
     this.snippet = snippet;
     this.params = params;
   }
+  /* eslint-enable @typescript-eslint/parameter-properties */
 }
 
 /**

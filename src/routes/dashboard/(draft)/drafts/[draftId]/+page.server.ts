@@ -19,7 +19,6 @@ import {
   getLabById,
   getPendingLabCountInDraft,
   getStudentCountInDraft,
-  getStudentsInDraftTaggedByLab,
   getUserById,
   incrementDraftRound,
   insertLotteryChoices,

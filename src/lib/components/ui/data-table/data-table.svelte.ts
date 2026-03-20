@@ -1,4 +1,11 @@
-import { createTable, type RowData, type TableOptions, type TableOptionsResolved, type TableState, type Updater } from '@tanstack/table-core';
+import {
+  createTable,
+  type RowData,
+  type TableOptions,
+  type TableOptionsResolved,
+  type TableState,
+  type Updater,
+} from '@tanstack/table-core';
 
 /**
  * Creates a reactive TanStack table object for Svelte.
@@ -30,12 +37,10 @@ export function createSvelteTable<TData extends RowData>(options: TableOptions<T
   const resolvedOptions: TableOptionsResolved<TData> = mergeObjects(
     {
       state: {},
+      // eslint-disable-next-line @typescript-eslint/no-empty-function -- this placeholder function is part of a placeholder object to avoid undefined attributes.
       onStateChange() {},
       renderFallbackValue: null,
-      mergeOptions(
-        defaultOptions: TableOptions<TData>,
-        options: Partial<TableOptions<TData>>,
-      ) {
+      mergeOptions(defaultOptions: TableOptions<TData>, options: Partial<TableOptions<TData>>) {
         return mergeObjects(defaultOptions, options);
       },
     },
@@ -62,10 +67,13 @@ export function createSvelteTable<TData extends RowData>(options: TableOptions<T
 
   updateOptions();
 
+  /* eslint-disable no-restricted-globals
+    --
+    This createSvelteTable implementation might break if this is removed. */
   $effect.pre(() => {
     updateOptions();
   });
-
+  /* eslint-enable no-restricted-globals */
   return table;
 }
 
@@ -84,16 +92,20 @@ type Intersection<T extends readonly unknown[]> = (T extends [infer H, ...infer 
 export function mergeObjects<Sources extends readonly MaybeThunk<any>[]>(
   ...sources: Sources
 ): Intersection<{ [K in keyof Sources]: Sources[K] }> {
-  const resolve = <T extends object>(src: MaybeThunk<T>): T | undefined =>
-    typeof src === 'function' ? (src() ?? undefined) : src;
+  function resolve<T extends object>(src: MaybeThunk<T>): T | null {
+    // from the parent function return, I think it's ok lang if T | null is returned
+    return typeof src === 'function' ? (src() ?? null) : src;
+  }
 
-  const findSourceWithKey = (key: PropertyKey) => {
+  function findSourceWithKey(key: PropertyKey) {
     for (let i = sources.length - 1; i >= 0; i--) {
       const obj = resolve(sources[i]);
       if (obj && key in obj) return obj;
     }
-    return undefined;
-  };
+
+    // from the parent function return, I think it's ok lang if T | null is returned
+    return null;
+  }
 
   return new Proxy(Object.create(null), {
     get(_, key) {
@@ -111,18 +123,14 @@ export function mergeObjects<Sources extends readonly MaybeThunk<any>[]>(
       const all = new Set<string | symbol>();
       for (const s of sources) {
         const obj = resolve(s);
-        if (obj) 
-          for (const k of Reflect.ownKeys(obj) as (string | symbol)[]) 
-            all.add(k);
-          
-        
+        if (obj !== null) for (const k of Reflect.ownKeys(obj) as (string | symbol)[]) all.add(k);
       }
       return [...all];
     },
 
     getOwnPropertyDescriptor(_, key) {
       const src = findSourceWithKey(key);
-      if (!src) return undefined;
+      if (!src) return undefined; // eslint-disable-line no-undefined -- abiding this rule might break something.
       return {
         configurable: true,
         enumerable: true,

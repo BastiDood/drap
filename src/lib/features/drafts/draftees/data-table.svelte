@@ -1,5 +1,12 @@
 <script lang="ts">
-  import { type ColumnFiltersState, createColumnHelper, getCoreRowModel, getFilteredRowModel, getSortedRowModel, type SortingState } from '@tanstack/table-core';
+  import {
+    type ColumnFiltersState,
+    createColumnHelper,
+    getCoreRowModel,
+    getFilteredRowModel,
+    getSortedRowModel,
+    type SortingState,
+  } from '@tanstack/table-core';
 
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
   import * as Table from '$lib/components/ui/table';
@@ -76,17 +83,11 @@
 
   // Get all possible labs for filtering
   const designatedLabFilters = $derived(
-    [...new Set(data.map(({ labId }) => labId))].filter(labId => labId !== null),
+    [...new Set(data.map(({ labId }) => labId))].filter(labId => labId !== null).sort(),
   );
-  $effect(() => {
-    designatedLabFilters.sort();
-  });
   let designatedLabFilterValue = $state('');
 
-  const preferredLabFilters = $derived([...new Set(data.flatMap(({ labs }) => labs))]);
-  $effect(() => {
-    preferredLabFilters.sort();
-  });
+  const preferredLabFilters = $derived([...new Set(data.flatMap(({ labs }) => labs))].sort());
   let preferredLabFilterValues: string[] = $state([]);
 
   // This only initializes lazily on load.
@@ -145,7 +146,7 @@
         >
           Clear Filter
         </DropdownMenu.Item>
-        {#each designatedLabFilters as filter}
+        {#each designatedLabFilters as filter (filter)}
           <DropdownMenu.Item
             onclick={() => {
               designatedLabFilterValue = designatedLabFilterValue === filter ? '' : filter;
@@ -190,7 +191,7 @@
         >
           Clear Filters
         </DropdownMenu.Item>
-        {#each preferredLabFilters as filter}
+        {#each preferredLabFilters as filter (filter)}
           <DropdownMenu.Item
             onclick={() => {
               if (preferredLabFilterValues.includes(filter))

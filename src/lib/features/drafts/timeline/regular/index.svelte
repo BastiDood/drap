@@ -71,7 +71,7 @@
     </div>
   </Tabs.Content>
   <Tabs.Content value="labs">
-    {#each labs as lab}
+    {#each labs as lab (lab)}
       <LabRoundSummary {draftId} {round} {lab} />
     {/each}
   </Tabs.Content>
