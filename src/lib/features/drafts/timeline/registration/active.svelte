@@ -3,7 +3,7 @@
 
   import * as Alert from '$lib/components/ui/alert';
   import { Button } from '$lib/components/ui/button';
-  import type { DraftFinalizedBreakdown, Student } from '$lib/features/drafts/types';
+  import type { DraftFinalizedBreakdown } from '$lib/features/drafts/types';
 
   import QuotaSnapshotForm from '../quota-snapshot-form.svelte';
 
@@ -12,21 +12,21 @@
 
   interface Props {
     draftId: bigint;
-    students: Student[];
+    studentCount: number;
     snapshots: DraftFinalizedBreakdown['snapshots'];
   }
 
-  const { draftId, students, snapshots }: Props = $props();
+  const { draftId, studentCount, snapshots }: Props = $props();
 </script>
 
 <div class="space-y-4">
-  {#if students.length > 0}
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
+  {#if studentCount > 0}
+    <div>
       <div class="space-y-4">
         <section class="prose dark:prose-invert">
           <h3>Registered Students</h3>
           <p>
-            There are currently <strong>{students.length}</strong> students who have registered for
+            There are currently <strong>{studentCount}</strong> students who have registered for
             this draft. Press the <strong>"Start Draft"</strong> button to close registration and start
             the draft automation.
           </p>

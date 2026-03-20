@@ -212,7 +212,7 @@
         <span class="text-muted-foreground text-sm">{studentCount} students</span>
       {/snippet}
       {#if currentPhase === 'registration'}
-        <RegistrationActive {draftId} students={allStudents} snapshots={finalized.snapshots} />
+        <RegistrationActive {draftId} {studentCount} snapshots={finalized.snapshots} />
       {:else}
         <RegistrationCompleted students={allStudents} />
       {/if}
