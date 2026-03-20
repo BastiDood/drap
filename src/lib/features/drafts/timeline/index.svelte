@@ -152,6 +152,7 @@
           {draftId}
           {draft}
           students={allStudents}
+          totalStudents={studentCount}
           {labs}
           {finalized}
           isReview={currentPhase === 'review'}

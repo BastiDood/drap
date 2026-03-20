@@ -15,14 +15,14 @@
     draftId: bigint;
     draft: Pick<Draft, 'activePeriodStart' | 'activePeriodEnd' | 'maxRounds'>;
     students: Student[];
+    totalStudents: number;
     labs: Lab[];
     finalized: DraftFinalizedBreakdown;
     isReview: boolean;
   }
 
-  const { draftId, draft, students, labs, finalized, isReview }: Props = $props();
+  const { draftId, draft, students, totalStudents, labs, finalized, isReview }: Props = $props();
 
-  const totalStudents = $derived(students.length);
   const assignedStudents = $derived(students.filter(s => s.labId !== null).length);
   const participatingLabs = $derived(
     finalized.snapshots.length > 0 ? finalized.snapshots.length : labs.length,
