@@ -5,14 +5,10 @@ import { getStudentsInDraftTaggedByLab } from '$lib/server/database/drizzle';
 import type { SerializableStudent } from '$lib/features/drafts/types';
 
 export async function GET({ params, locals: { session } }) {
-  if (typeof session?.user === 'undefined') 
-    error(401);
-  
+  if (typeof session?.user === 'undefined') error(401);
 
   const { user } = session;
-  if (!user.isAdmin || user.googleUserId === null || user.labId !== null) 
-    error(403);
-  
+  if (!user.isAdmin || user.googleUserId === null || user.labId !== null) error(403);
 
   const draftId = BigInt(params.draftId);
 

@@ -1,5 +1,12 @@
 <script lang="ts">
-  import { type ColumnFiltersState, createColumnHelper, getCoreRowModel, getFilteredRowModel, getSortedRowModel, type SortingState } from '@tanstack/table-core';
+  import {
+    type ColumnFiltersState,
+    createColumnHelper,
+    getCoreRowModel,
+    getFilteredRowModel,
+    getSortedRowModel,
+    type SortingState,
+  } from '@tanstack/table-core';
 
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
   import * as Table from '$lib/components/ui/table';
