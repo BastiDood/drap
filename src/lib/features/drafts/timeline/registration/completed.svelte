@@ -1,13 +1,16 @@
 <script lang="ts">
+  import { Button } from '$lib/components/ui/button';
+
   import type { Student } from '$lib/features/drafts/types';
 
-  import StudentList from './student-list.svelte';
+  import Draftees from '../../draftees/index.svelte';
 
   interface Props {
+    draftId: bigint;
     students: Student[];
   }
 
-  const { students }: Props = $props();
+  const { draftId, students }: Props = $props();
 </script>
 
 <div class="space-y-4">
@@ -16,5 +19,11 @@
       <strong>{students.length}</strong> students registered for this draft before registration closed.
     </p>
   </div>
-  <StudentList {students} />
+  <div class="flex items-center justify-center">
+    <Draftees {draftId} queryKey="final-registered-students" customTextOnEmpty="No students have registered.">
+      {#snippet trigger()}
+        <Button variant="outline" class="border-primary text-primary">See Registered Students</Button>
+      {/snippet}
+    </Draftees>
+  </div>
 </div>
