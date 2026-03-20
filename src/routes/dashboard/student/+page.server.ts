@@ -153,10 +153,7 @@ export async function load({ locals: { session } }) {
         };
       }
 
-      // Check if user is in allowlist
-      const isInAllowlist = await isUserInAllowlist(db, draft.id, user.id);
-
-      if (isInAllowlist) {
+      if (await isUserInAllowlist(db, draft.id, user.id)) {
         logger.warn('registration is closed but student is in allowlist');
         const availableLabs = await getDraftLabRegistry(db, draftId);
         return {
@@ -164,7 +161,7 @@ export async function load({ locals: { session } }) {
           draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
           availableLabs: availableLabs.map(({ id, name }) => ({ id, name })),
           lab,
-          isInAllowlist,
+          isInAllowlist: true,
         };
       }
 
@@ -273,8 +270,7 @@ export const actions = {
             error(403);
           }
 
-          const isInAllowlist = await isUserInAllowlist(db, draftId, user.id);
-          if (registrationClosesAt < new Date() && !isInAllowlist) {
+          if (registrationClosesAt < new Date() && !(await isUserInAllowlist(db, draftId, user.id))) {
             logger.warn('attempt to submit rankings after registration closed', {
               'draft.registration.closes_at': registrationClosesAt.toISOString(),
             });
