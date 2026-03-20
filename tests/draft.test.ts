@@ -1156,6 +1156,7 @@ test.describe('Draft Lifecycle', () => {
   test.describe('Manual Intervention', () => {
     test('assigns first eligible student to a lab', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
+      await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).click();
       const interventionForm = adminPage.locator('form[action*="intervene"]');
       await expect(interventionForm).toBeVisible();
 
@@ -1176,6 +1177,7 @@ test.describe('Draft Lifecycle', () => {
     test.describe('lottery snapshot updates', () => {
       test('partially updates lottery snapshots', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/drafts/1/');
+        await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).click();
         const editor = adminPage.locator('#draft-quota-editor-lottery');
         await expect(editor).toBeVisible();
 
@@ -1196,6 +1198,7 @@ test.describe('Draft Lifecycle', () => {
 
       test('shows committed placeholders after lottery snapshot update', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/drafts/1/');
+        await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).click();
         const editor = adminPage.locator('#draft-quota-editor-lottery');
         await expect(editor).toBeVisible();
 
