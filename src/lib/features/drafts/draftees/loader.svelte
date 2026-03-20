@@ -4,18 +4,19 @@
 
   import Empty from '$lib/components/ui/empty/empty.svelte';
 
-  import type { Student, SerializableStudent } from "$lib/features/drafts/types";
+  import type { Lab, Student, SerializableStudent } from "$lib/features/drafts/types";
 
   import DataTable from './data-table.svelte';
 
   interface Props {
     draftId: bigint;
+    lab?: Lab;
     queryKey: string;
     mustShowDrafted?: boolean;
     customTextOnEmpty?: string;
   }
 
-  const { draftId, queryKey, mustShowDrafted, customTextOnEmpty }: Props = $props()
+  const { draftId, lab, queryKey, mustShowDrafted, customTextOnEmpty }: Props = $props()
 
   // This only triggers on mount of the parent.
   const { isPending, isError, data } = $derived(createQuery(() => ({
@@ -38,7 +39,12 @@
 
       // drafted
       if (mustShowDrafted === true) {
-        return data.filter(({ labId }) => labId !== null);
+        const drafted = data.filter(({ labId }) => labId !== null);
+
+        // specific to a lab
+        if (lab !== undefined) return drafted.filter(d => d.labId === lab.id);
+
+        return drafted;
       }
 
       // still available for lab draft
