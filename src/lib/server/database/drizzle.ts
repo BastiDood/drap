@@ -1843,9 +1843,9 @@ export async function addToAllowlist(
 ) {
   return await tracer.asyncSpan('add-to-allowlist', async span => {
     span.setAttributes({
-        'database.draft.id': draftId.toString(),
-        'database.user.student_id': studentUserId,
-        'database.user.admin_id': adminUserId,
+      'database.draft.id': draftId.toString(),
+      'database.user.student_id': studentUserId,
+      'database.user.admin_id': adminUserId,
     });
     const result = await db
       .insert(schema.draftRegistrationAllowlist)
@@ -1868,8 +1868,8 @@ export async function removeFromAllowlist(
 ) {
   return await tracer.asyncSpan('remove-from-allowlist', async span => {
     span.setAttributes({
-        'database.draft.id': draftId.toString(),
-        'database.user.id': studentUserId,
+      'database.draft.id': draftId.toString(),
+      'database.user.id': studentUserId,
     });
     return await db
       .delete(schema.draftRegistrationAllowlist)
@@ -1885,8 +1885,8 @@ export async function removeFromAllowlist(
 export async function isUserInAllowlist(db: DbConnection, draftId: bigint, studentUserId: string) {
   return await tracer.asyncSpan('is-user-in-allowlist', async span => {
     span.setAttributes({
-        'database.draft.id': draftId.toString(),
-        'database.user.id': studentUserId,
+      'database.draft.id': draftId.toString(),
+      'database.user.id': studentUserId,
     });
     const result = await db
       .select({ studentUserId: schema.draftRegistrationAllowlist.studentUserId })
@@ -1921,8 +1921,8 @@ export async function isRegisteredOrAssignedInDraft(
 ) {
   return await tracer.asyncSpan('is-registered-or-assigned-in-draft', async span => {
     span.setAttributes({
-        'database.draft.id': draftId.toString(),
-        'database.user.id': userId,
+      'database.draft.id': draftId.toString(),
+      'database.user.id': userId,
     });
 
     // Check studentRank (submitted rankings)

@@ -2,13 +2,12 @@
   import LockIcon from '@lucide/svelte/icons/lock';
 
   import * as Alert from '$lib/components/ui/alert';
+  import QuotaSnapshotForm from '$lib/features/drafts/timeline/quota-snapshot-form.svelte';
   import type {
     DraftFinalizedBreakdown,
     DraftRegistrationAllowlistEntry,
     Student,
   } from '$lib/features/drafts/types';
-
-  import QuotaSnapshotForm from '$lib/features/drafts/timeline/quota-snapshot-form.svelte';
 
   import AllowlistForm from './allowlist-form.svelte';
   import StartForm from './start-form.svelte';

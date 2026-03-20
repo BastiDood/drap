@@ -145,9 +145,7 @@
       <Empty.Header>
         <Empty.Title>No students on the allowlist</Empty.Title>
         <Empty.Content>
-          <Button variant="outline" size="sm" href="#allowlist-email">
-            Add a student
-          </Button>
+          <Button variant="outline" size="sm" href="#allowlist-email">Add a student</Button>
         </Empty.Content>
       </Empty.Header>
     </Empty.Root>
