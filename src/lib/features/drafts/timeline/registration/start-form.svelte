@@ -6,7 +6,7 @@
   import { enhance } from '$app/forms';
 
   interface Props {
-    draftId: bigint;
+    draftId: string;
   }
 
   const { draftId }: Props = $props();

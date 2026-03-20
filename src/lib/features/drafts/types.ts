@@ -59,6 +59,5 @@ export interface DraftFinalizedBreakdown {
     regularDrafted: DraftAssignmentRecord[];
     interventionDrafted: DraftAssignmentRecord[];
     lotteryDrafted: DraftAssignmentRecord[];
-    undraftedAfterRegular: Student[];
   };
 }

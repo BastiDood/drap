@@ -1,18 +1,17 @@
 <script lang="ts">
   import * as Card from '$lib/components/ui/card';
-  import Student from '$lib/users/student.svelte';
-  import type { DraftAssignmentRecord, Student as StudentType } from '$lib/features/drafts/types';
+  import DraftedDraftees from '$lib/features/drafts/draftees/drafted/index.svelte';
+  import type { DraftAssignmentRecord } from '$lib/features/drafts/types';
 
   import FinalizeForm from './finalize-form.svelte';
 
   interface Props {
-    draftId: bigint;
-    selected: StudentType[];
+    draftId: string;
     lotteryDrafted: DraftAssignmentRecord[];
     isReview: boolean;
   }
 
-  const { draftId, selected, lotteryDrafted, isReview }: Props = $props();
+  const { draftId, lotteryDrafted, isReview }: Props = $props();
 </script>
 
 <div class="grid grid-cols-1 gap-4 md:grid-cols-[auto_1fr]">
@@ -48,17 +47,8 @@
         </p>
       </Card.Content>
     </Card.Root>
-    <Card.Root variant="soft">
-      <Card.Header>
-        <Card.Title>Already Drafted ({selected.length})</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <ul class="space-y-1">
-          {#each selected as { id, ...user } (id)}
-            <li><Student {user} /></li>
-          {/each}
-        </ul>
-      </Card.Content>
-    </Card.Root>
+    <div class="flex justify-center">
+      <DraftedDraftees {draftId} />
+    </div>
   </div>
 </div>
