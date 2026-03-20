@@ -2,16 +2,18 @@
   import { Button } from '$lib/components/ui/button';
   import * as Drawer from '$lib/components/ui/drawer';
 
-  import type { Lab } from '$lib/features/drafts/types';
+  import type { DraftFinalizedBreakdown, Lab } from '$lib/features/drafts/types';
 
+  import QuotaSnapshotForm from '../../quota-snapshot-form.svelte';
   import Loader from './loader.svelte';
 
   interface Props {
     draftId: bigint;
     labs: Pick<Lab, 'id' | 'name'>[];
+    snapshots: DraftFinalizedBreakdown['snapshots'];
   }
 
-  const { draftId, labs }: Props = $props();
+  const { draftId, labs, snapshots }: Props = $props();
 </script>
 
 <Drawer.Root>
@@ -22,6 +24,12 @@
   </Drawer.Trigger>
   <Drawer.Content class="min-h-screen">
     <div class="overflow-auto pb-40 px-8">
+      <!-- Put QuotaSnapshotForm in Drawer -->
+      <QuotaSnapshotForm {draftId} mode="lottery" {snapshots} />
+
+      <hr class="my-8" />
+
+      <!-- Actual Intervention Form -->
       <Loader {draftId} {labs} />
     </div>
   </Drawer.Content>
