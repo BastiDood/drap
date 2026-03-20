@@ -1908,7 +1908,7 @@ export async function getUserByEmail(db: DbConnection, email: string) {
 }
 
 export async function isRegisteredOrAssignedInDraft(
-  db: DbConnection,
+  db: DrizzleTransaction,
   draftId: bigint,
   userId: string,
 ) {
