@@ -811,20 +811,21 @@ export const actions = {
         return await addToAllowlist(db, draftId, targetUser.id, user.id);
       });
 
-      if (result === AllowlistAddResult.UserNotFound)
-        return fail(400, { message: 'User with this email not found.' });
-      if (result === AllowlistAddResult.AlreadyRegistered)
-        return { success: true, status: 'already_registered' as const };
-      if (result === AllowlistAddResult.AlreadyInAllowlist)
-        return { success: true, status: 'already_in_allowlist' as const };
-
-      logger.info('student added to allowlist', {
-        'draft.id': params.draftId,
-        email,
-        'admin.id': user.id,
-      });
-
-      return { success: true, status: 'added' as const };
+      switch (result) {
+        case AllowlistAddResult.UserNotFound:
+          return fail(400, { message: 'User with this email not found.' });
+        case AllowlistAddResult.AlreadyRegistered:
+          return { success: true, status: 'already_registered' as const };
+        case AllowlistAddResult.AlreadyInAllowlist:
+          return { success: true, status: 'already_in_allowlist' as const };
+        default:
+          logger.info('student added to allowlist', {
+            'draft.id': params.draftId,
+            email,
+            'admin.id': user.id,
+          });
+          return { success: true, status: 'added' as const };
+      }
     });
   },
 
