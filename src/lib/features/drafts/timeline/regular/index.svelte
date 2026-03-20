@@ -47,12 +47,10 @@
   </Tabs.List>
   <Tabs.Content value="students">
     <div class="flex items-center justify-around">
-      <AvailableDraftees
-        {draftId}
-        variant="pending-selection"
-        customTextOnEmpty="No available draftees."
-      />
-      <DraftedDraftees {draftId} customTextOnEmpty="No drafted students yet." />
+      <AvailableDraftees {draftId} variant="pending-selection"
+        >No available draftees.</AvailableDraftees
+      >
+      <DraftedDraftees {draftId}>No drafted students yet.</DraftedDraftees>
     </div>
   </Tabs.Content>
   <Tabs.Content value="labs">

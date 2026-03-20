@@ -16,10 +16,7 @@
     </p>
   </div>
   <div class="flex items-center justify-center">
-    <RegisteredDraftees
-      {draftId}
-      variant="primary"
-      customTextOnEmpty="No students have registered."
-    />
+    <RegisteredDraftees {draftId} variant="primary">No students have registered.</RegisteredDraftees
+    >
   </div>
 </div>

@@ -7,6 +7,7 @@
     getSortedRowModel,
     type SortingState,
   } from '@tanstack/table-core';
+  import type { Snippet } from 'svelte';
 
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
   import * as Table from '$lib/components/ui/table';
@@ -21,10 +22,10 @@
 
   interface Props {
     data: Student[];
-    customTextOnEmpty?: string;
+    children?: Snippet;
   }
 
-  const { data, customTextOnEmpty }: Props = $props();
+  const { data, children }: Props = $props();
 
   // Shape the table columns
   const columnHelper = createColumnHelper<Student>();
@@ -247,7 +248,7 @@
       {:else}
         <Table.Row>
           <Table.Cell colspan={columns.length}>
-            <p class="text-center my-8 text-xl">{customTextOnEmpty}</p>
+            <p class="text-center my-8 text-xl empty:hidden">{@render children?.()}</p>
           </Table.Cell>
         </Table.Row>
       {/each}
