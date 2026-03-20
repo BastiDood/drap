@@ -1,8 +1,8 @@
 <script lang="ts">
   import * as Avatar from '$lib/components/ui/avatar';
-  import { Badge } from '$lib/components/ui/badge';
   import type { schema } from '$lib/server/database/drizzle';
 
+  import DesignatedLab from './designated-lab.svelte';
   import PreferredLab from './preferred-lab.svelte';
 
   interface User extends Pick<
@@ -41,9 +41,7 @@
       {#if labId === null}
         <PreferredLab {labs} />
       {:else}
-        <Badge variant="outline" class="border-primary bg-primary/10 text-xs uppercase">
-          {labId}
-        </Badge>
+        <DesignatedLab {labId} />
       {/if}
     </div>
   </span>
