@@ -37,8 +37,8 @@
       </li>
       <li>
         Meanwhile, the <strong>"Already Drafted"</strong> section features an <em>immutable</em>
-        list of students who have already been drafted into their respective labs. These are
-        considered final.
+        list of students who have already been drafted into their respective labs. These are considered
+        final.
 
         <div class="flex justify-center">
           <!-- Already Drafted -->
