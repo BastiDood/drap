@@ -17,11 +17,15 @@ export const cleanupSessions = inngest.createFunction(
     name: 'Cleanup Sessions',
     triggers: [cron('0 0 * * *')],
   },
-  async () =>
-    await tracer.asyncSpan('cleanup-sessions', async () => {
-      const { rowCount } = await db
-        .delete(session)
-        .where(lt(session.expiredAt, sql`now() - interval '30 days'`));
-      logger.info('sessions cleaned up', { count: rowCount });
-    }),
+  async ({ step }) =>
+    await step.run(
+      'delete-expired-sessions',
+      async () =>
+        await tracer.asyncSpan('delete-expired-sessions', async () => {
+          const { rowCount } = await db
+            .delete(session)
+            .where(lt(session.expiredAt, sql`now() - interval '30 days'`));
+          logger.info('sessions cleaned up', { count: rowCount });
+        }),
+    ),
 );
