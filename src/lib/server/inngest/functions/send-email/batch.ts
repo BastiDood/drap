@@ -27,7 +27,7 @@ const SERVICE_NAME = 'inngest.functions.send-email';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
-const MAX_BATCH_ATTEMPT = 2;
+const MAX_BATCH_ATTEMPTS = 3;
 
 interface EventCreateOptions {
   ts?: number;
@@ -133,7 +133,7 @@ export const sendBatchedEmails = inngest.createFunction(
             ++failureCount;
             const retryable = isRetryableGmailStatus(result.status);
 
-            if (retryable && attempt < MAX_BATCH_ATTEMPT) {
+            if (retryable && attempt < MAX_BATCH_ATTEMPTS) {
               const nextAttempt = attempt + 1;
               const options: EventCreateOptions = {};
               if (typeof event.ts !== 'undefined') options.ts = event.ts;
@@ -238,8 +238,8 @@ export const sendBatchedEmails = inngest.createFunction(
               'error.gmail.response.status': result.status,
               'error.gmail.response.body': result.body,
               'error.retryable': retryable,
-              'email.retry.scheduled': retryable && attempt < MAX_BATCH_ATTEMPT,
-              'email.fallback.scheduled': !retryable || attempt >= MAX_BATCH_ATTEMPT,
+              'email.retry.scheduled': retryable && attempt < MAX_BATCH_ATTEMPTS,
+              'email.fallback.scheduled': !retryable || attempt >= MAX_BATCH_ATTEMPTS,
             });
           }
 
