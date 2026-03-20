@@ -1,11 +1,10 @@
 <script lang="ts">
-  import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
-  import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
   import FlaskConicalIcon from '@lucide/svelte/icons/flask-conical';
   import GraduationCapIcon from '@lucide/svelte/icons/graduation-cap';
   import PaperclipIcon from '@lucide/svelte/icons/paperclip';
 
   import * as Accordion from '$lib/components/ui/accordion';
+  import { Button } from '$lib/components/ui/button';
   import * as Tabs from '$lib/components/ui/tabs';
   import Student from '$lib/users/student.svelte';
 
@@ -15,12 +14,14 @@
     Student as StudentType,
   } from '$lib/features/drafts/types';
 
+  import Draftees from '../../draftees/index.svelte';
   import LabAccordionItem from './lab-accordion-item.svelte';
   import SystemLogsTab from './system-logs-tab.svelte';
 
   type TabType = 'students' | 'labs' | 'logs';
 
   interface Props {
+    draftId: bigint;
     round: number;
     labs: Lab[];
     records: FacultyChoiceRecord[];
@@ -28,8 +29,7 @@
     selected: StudentType[];
   }
 
-  const { round, labs, records, available, selected }: Props = $props();
-  const total = $derived(available.length + selected.length);
+  const { draftId, round, labs, records, available, selected }: Props = $props();
 
   let group: TabType = $state('students');
 </script>
@@ -55,34 +55,18 @@
     </Tabs.Trigger>
   </Tabs.List>
   <Tabs.Content value="students">
-    <Accordion.Root type="multiple">
-      <Accordion.Item value="pending-selection">
-        <Accordion.Trigger>
-          <CheckCircleIcon class="size-5" />
-          <span>Pending Selection ({available.length}/{total})</span>
-        </Accordion.Trigger>
-        <Accordion.Content>
-          <div class="flex flex-col gap-2">
-            {#each available as { id, ...student } (id)}
-              <Student user={student} />
-            {/each}
-          </div>
-        </Accordion.Content>
-      </Accordion.Item>
-      <Accordion.Item value="already-drafted">
-        <Accordion.Trigger>
-          <CircleHelpIcon class="size-5" />
-          <span>Already Drafted ({selected.length}/{total})</span>
-        </Accordion.Trigger>
-        <Accordion.Content>
-          <div class="flex flex-col gap-2">
-            {#each selected as { id, ...student } (id)}
-              <Student user={student} />
-            {/each}
-          </div>
-        </Accordion.Content>
-      </Accordion.Item>
-    </Accordion.Root>
+    <div class="flex items-center justify-around">
+      <Draftees {draftId} queryKey="pending-selection" mustShowDrafted={false} customTextOnEmpty="No available draftees.">
+        {#snippet trigger()}
+          <Button variant="outline" class="border-warning text-warning">Pending Selection</Button>
+        {/snippet}
+      </Draftees>
+      <Draftees {draftId} queryKey="already-drafted" mustShowDrafted={true} customTextOnEmpty="No drafted students yet.">
+        {#snippet trigger()}
+          <Button variant="outline" class="border-primary text-primary">Already Drafted</Button>
+        {/snippet}
+      </Draftees>
+    </div>
   </Tabs.Content>
   <Tabs.Content value="labs">
     <Accordion.Root type="multiple">
