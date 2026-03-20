@@ -1,3 +1,4 @@
+import { assert } from 'node:console';
 import { fail, strictEqual } from 'node:assert/strict';
 
 import { alias, type PgUpdateSetSource } from 'drizzle-orm/pg-core';
@@ -27,7 +28,6 @@ import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 import * as schema from './schema';
-import { assert } from 'node:console';
 
 // Ensures that no database details are leaked at runtime.
 export type { schema };

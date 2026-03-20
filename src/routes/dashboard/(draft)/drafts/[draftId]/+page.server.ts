@@ -43,7 +43,7 @@ const enum AllowlistAddResult {
   NotAStudent = -3,
   UserNotFound = -2,
   AlreadyRegistered = -1,
-  AlreadyInAllowlist = 0
+  AlreadyInAllowlist = 0,
 }
 
 const DraftActionFormData = v.object({
@@ -803,7 +803,8 @@ export const actions = {
 
           const targetUser = await getUserByEmail(db, email);
           if (typeof targetUser === 'undefined') return AllowlistAddResult.UserNotFound;
-          if (targetUser.isAdmin || targetUser.studentNumber === null) return AllowlistAddResult.NotAStudent;
+          if (targetUser.isAdmin || targetUser.studentNumber === null)
+            return AllowlistAddResult.NotAStudent;
 
           // Check if targetUser is already registered or already has a lab
           const isRegisteredOrAssigned = await isRegisteredOrAssignedInDraft(
