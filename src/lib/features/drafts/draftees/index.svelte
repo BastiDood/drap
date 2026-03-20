@@ -9,10 +9,11 @@
     trigger: Snippet;
     draftId: bigint;
     queryKey: string;
+    mustShowDrafted?: boolean;
     customTextOnEmpty?: string;
   }
 
-  const { trigger, draftId, queryKey, customTextOnEmpty }: Props = $props();
+  const { trigger, draftId, queryKey, mustShowDrafted, customTextOnEmpty }: Props = $props();
 </script>
 
 <Drawer.Root>
@@ -21,7 +22,7 @@
   </Drawer.Trigger>
   <Drawer.Content class="min-h-screen">
     <div class="overflow-auto pb-40 px-8">
-      <Loader {draftId} {queryKey} {customTextOnEmpty} />
+      <Loader {draftId} {queryKey} {mustShowDrafted} {customTextOnEmpty} />
     </div>
   </Drawer.Content>
 </Drawer.Root>

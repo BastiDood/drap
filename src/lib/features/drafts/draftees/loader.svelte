@@ -11,10 +11,11 @@
   interface Props {
     draftId: bigint;
     queryKey: string;
+    mustShowDrafted?: boolean;
     customTextOnEmpty?: string;
   }
 
-  const { draftId, queryKey, customTextOnEmpty }: Props = $props()
+  const { draftId, queryKey, mustShowDrafted, customTextOnEmpty }: Props = $props()
 
   // This only triggers on mount of the parent.
   const { isPending, isError, data } = $derived(createQuery(() => ({
@@ -24,7 +25,7 @@
       const serializedData = await response.json() as SerializableStudent[];
       if (serializedData === undefined) return [];
 
-      return (serializedData.map((draftee) => {
+      const data = (serializedData.map((draftee) => {
         return {
           ...draftee,
 
@@ -32,6 +33,21 @@
           studentNumber: draftee.studentNumber === null ? null : BigInt(draftee.studentNumber),
         }
       })) as Student[];
+
+      // Return only those who are
+
+      // drafted
+      if (mustShowDrafted === true) {
+        return data.filter(({ labId }) => labId !== null);
+      }
+
+      // still available for lab draft
+      else if (mustShowDrafted === false) {
+        return data.filter(({ labId }) => labId === null);
+      }
+
+      // Return everything
+      return data;
     }
   })));
 </script>
