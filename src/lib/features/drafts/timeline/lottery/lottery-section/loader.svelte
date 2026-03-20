@@ -1,7 +1,7 @@
 <script lang="ts">
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
   import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
-  import { createQuery } from '@tanstack/svelte-query';
+  import { createMutation, createQuery, useQueryClient } from '@tanstack/svelte-query';
   import { error } from '@sveltejs/kit';
   import { toast } from 'svelte-sonner';
 
@@ -20,31 +20,48 @@
 
   const { draftId, labs }: Props = $props();
 
+  // The fetch function
+  async function fetchDrafteeList() {
+    const response = await fetch(`/dashboard/drafts/${draftId}/draftees`);
+    if (!response.ok) error(500);
+
+    const serializedData = (await response.json()) as SerializableStudent[];
+    if (typeof serializedData === 'undefined') return [];
+
+    const data = serializedData.map(draftee => {
+      return {
+        ...draftee,
+
+        // Revert non-serializable attributes to original data types
+        studentNumber: draftee.studentNumber === null ? null : BigInt(draftee.studentNumber),
+      };
+    }) as Student[];
+
+    // Return only those who are not yet drafted
+    return data.filter(({ labId }) => labId === null);
+  }
+
   // This only triggers on mount of the parent.
   const { isPending, isError, data } = $derived(
     createQuery(() => ({
       queryKey: ['available-before-lottery', draftId.toString()],
-      async queryFn() {
-        const response = await fetch(`/dashboard/drafts/${draftId}/draftees`);
-        if (!response.ok) error(500);
-
-        const serializedData = (await response.json()) as SerializableStudent[];
-        if (typeof serializedData === 'undefined') return [];
-
-        const data = serializedData.map(draftee => {
-          return {
-            ...draftee,
-
-            // Revert non-serializable attributes to original data types
-            studentNumber: draftee.studentNumber === null ? null : BigInt(draftee.studentNumber),
-          };
-        }) as Student[];
-
-        // Return only those who are not yet drafted
-        return data.filter(({ labId }) => labId === null);
-      },
+      queryFn: fetchDrafteeList,
     })),
   );
+
+  // Invalidate cache and update available draftees
+  const queryClient = useQueryClient();
+
+  const mutation = createMutation(() => ({
+    mutationFn: fetchDrafteeList,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['available-before-lottery', draftId.toString()] });
+    },
+  }));
+  
+  function invalidateAvailableDrafteeListCache() {
+    mutation.mutate();
+  }
 </script>
 
 {#if isPending}
@@ -71,6 +88,7 @@
         submitter.disabled = false;
         await update();
         if (result.type === 'success') toast.success('Successfully applied the interventions.');
+        invalidateAvailableDrafteeListCache();
       };
     }}
   >
