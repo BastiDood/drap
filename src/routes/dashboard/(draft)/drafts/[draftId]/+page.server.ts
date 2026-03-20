@@ -786,41 +786,44 @@ export const actions = {
 
       const draftId = BigInt(params.draftId);
 
-      const result = await db.transaction(async db => {
-        const draft = await getDraftById(db, draftId);
-        if (typeof draft === 'undefined') {
-          logger.error('draft not found', void 0, { 'draft.id': draftId.toString() });
-          error(404);
-        }
+      const result = await db.transaction(
+        async db => {
+          const draft = await getDraftById(db, draftId);
+          if (typeof draft === 'undefined') {
+            logger.error('draft not found', void 0, { 'draft.id': draftId.toString() });
+            error(404);
+          }
 
-        if (draft.currRound !== 0) {
-          logger.error('draft already started', void 0, { 'draft.id': draftId.toString() });
-          error(403);
-        }
+          if (draft.currRound !== 0) {
+            logger.error('draft already started', void 0, { 'draft.id': draftId.toString() });
+            error(403);
+          }
 
-        const targetUser = await getUserByEmail(db, email);
-        if (typeof targetUser === 'undefined') return AllowlistAddResult.UserNotFound;
+          const targetUser = await getUserByEmail(db, email);
+          if (typeof targetUser === 'undefined') return AllowlistAddResult.UserNotFound;
 
-        // Check if targetUser is already registered or already has a lab
-        const isRegisteredOrAssigned = await isRegisteredOrAssignedInDraft(
-          db,
-          draftId,
-          targetUser.id,
-        );
-        if (isRegisteredOrAssigned) return AllowlistAddResult.AlreadyRegistered;
+          // Check if targetUser is already registered or already has a lab
+          const isRegisteredOrAssigned = await isRegisteredOrAssignedInDraft(
+            db,
+            draftId,
+            targetUser.id,
+          );
+          if (isRegisteredOrAssigned) return AllowlistAddResult.AlreadyRegistered;
 
-        return await addToAllowlist(db, draftId, targetUser.id, user.id);
-      }, { isolationLevel: 'read committed' });
+          return await addToAllowlist(db, draftId, targetUser.id, user.id);
+        },
+        { isolationLevel: 'read committed' },
+      );
 
       switch (result) {
         case AllowlistAddResult.UserNotFound:
-          logger.warn('User with this email not found')
+          logger.warn('User with this email not found');
           return fail(400, { message: 'User with this email not found.' });
         case AllowlistAddResult.AlreadyRegistered:
-          logger.warn('User already registered')
+          logger.warn('User already registered');
           return { success: true, status: 'already_registered' as const };
         case AllowlistAddResult.AlreadyInAllowlist:
-          logger.warn('User already in allowlist')
+          logger.warn('User already in allowlist');
           return { success: true, status: 'already_in_allowlist' as const };
         default:
           logger.info('student added to allowlist', {
@@ -872,20 +875,23 @@ export const actions = {
       const { studentUserId } = parsed;
       const draftId = BigInt(params.draftId);
 
-      await db.transaction(async db => {
-        const draft = await getDraftById(db, draftId);
-        if (typeof draft === 'undefined') {
-          logger.error('draft not found', void 0, { 'draft.id': draftId.toString() });
-          error(404);
-        }
+      await db.transaction(
+        async db => {
+          const draft = await getDraftById(db, draftId);
+          if (typeof draft === 'undefined') {
+            logger.error('draft not found', void 0, { 'draft.id': draftId.toString() });
+            error(404);
+          }
 
-        if (draft.currRound !== 0) {
-          logger.error('draft already started', void 0, { 'draft.id': draftId.toString() });
-          error(403);
-        }
+          if (draft.currRound !== 0) {
+            logger.error('draft already started', void 0, { 'draft.id': draftId.toString() });
+            error(403);
+          }
 
-        await removeFromAllowlist(db, draftId, studentUserId);
-      }, { isolationLevel: 'read committed' });
+          await removeFromAllowlist(db, draftId, studentUserId);
+        },
+        { isolationLevel: 'read committed' },
+      );
 
       logger.info('student removed from allowlist', {
         'draft.id': params.draftId,

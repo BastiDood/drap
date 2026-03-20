@@ -76,13 +76,15 @@ export async function load({ locals: { session } }) {
       studentNumber,
     };
 
+    const requestedAt = new Date();
+
     // eslint-disable-next-line @typescript-eslint/init-declarations
     let lab: Pick<schema.Lab, 'name'> | undefined;
     if (labId !== null) lab = await getLabById(db, labId);
 
     if (studentNumber === null) {
       logger.debug('user needs profile setup');
-      return { user: baseUser, lab };
+      return { user: baseUser, lab, requestedAt };
     }
 
     // Check for active draft
@@ -91,7 +93,7 @@ export async function load({ locals: { session } }) {
     // NO_DRAFT: no active draft
     if (!draft) {
       logger.debug('no active draft');
-      return { user: baseUser, lab };
+      return { user: baseUser, lab, requestedAt };
     }
 
     const { id: draftId, currRound, maxRounds, registrationClosesAt } = draft;
@@ -108,13 +110,12 @@ export async function load({ locals: { session } }) {
         user: baseUser,
         draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
         lab,
+        requestedAt,
       };
     }
 
     // Check if user has submitted rankings
     const rankings = await getStudentRankings(db, draftId, userId);
-
-    const requestedAt = new Date();
 
     function buildSubmission(r: NonNullable<typeof rankings>) {
       return {
@@ -137,6 +138,7 @@ export async function load({ locals: { session } }) {
           draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
           submission: buildSubmission(rankings),
           lab,
+          requestedAt,
         };
       }
 
@@ -150,6 +152,7 @@ export async function load({ locals: { session } }) {
           draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
           availableLabs: availableLabs.map(({ id, name }) => ({ id, name })),
           lab,
+          requestedAt,
         };
       }
 
@@ -162,6 +165,7 @@ export async function load({ locals: { session } }) {
           availableLabs: availableLabs.map(({ id, name }) => ({ id, name })),
           lab,
           isInAllowlist: true,
+          requestedAt,
         };
       }
 
@@ -172,6 +176,7 @@ export async function load({ locals: { session } }) {
         user: baseUser,
         draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
         lab,
+        requestedAt,
       };
     }
 
@@ -184,6 +189,7 @@ export async function load({ locals: { session } }) {
         draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
         submission: buildSubmission(rankings),
         lab,
+        requestedAt,
       };
     }
 
@@ -270,7 +276,10 @@ export const actions = {
             error(403);
           }
 
-          if (registrationClosesAt < new Date() && !(await isUserInAllowlist(db, draftId, user.id))) {
+          if (
+            registrationClosesAt < new Date() &&
+            !(await isUserInAllowlist(db, draftId, user.id))
+          ) {
             logger.warn('attempt to submit rankings after registration closed', {
               'draft.registration.closes_at': registrationClosesAt.toISOString(),
             });

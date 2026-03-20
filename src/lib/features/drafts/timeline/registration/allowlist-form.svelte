@@ -4,11 +4,11 @@
   import { format } from 'date-fns';
   import { toast } from 'svelte-sonner';
 
+  import * as Empty from '$lib/components/ui/empty';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import type { DraftRegistrationAllowlistEntry } from '$lib/features/drafts/types';
   import { enhance } from '$app/forms';
-  import * as Empty from '$lib/components/ui/empty';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
   import {
@@ -37,7 +37,7 @@
   <form
     method="post"
     action="/dashboard/drafts/{draftId}/?/add-to-allowlist"
-    use:enhance={({ formData, cancel, submitter }) => {
+    use:enhance={({ submitter }) => {
       assert(submitter !== null);
       assert(submitter instanceof HTMLButtonElement);
       submitter.disabled = true;
@@ -78,9 +78,7 @@
           required
         />
       </div>
-      <Button type="submit">
-        Add to Allowlist
-      </Button>
+      <Button type="submit">Add to Allowlist</Button>
     </div>
   </form>
 
@@ -140,7 +138,7 @@
       </Table>
     </div>
   {:else}
-      <Empty.Root>
+    <Empty.Root>
       <Empty.Media variant="icon">
         <UsersIcon class="size-6" />
       </Empty.Media>
