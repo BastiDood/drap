@@ -863,7 +863,10 @@ export const actions = {
         throw error;
       }
 
-      if (parsed === null) return fail(400, { message: 'Invalid student user ID.' });
+      if (parsed === null) {
+        logger.fatal('invalid  student user ID');
+        return fail(400, { message: 'Invalid student user ID.' });
+      }
       const { studentUserId } = parsed;
       const draftId = BigInt(params.draftId);
 
