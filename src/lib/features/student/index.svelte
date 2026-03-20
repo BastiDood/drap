@@ -32,9 +32,10 @@
     submission?: Submission;
     lab?: Pick<schema.Lab, 'name'>;
     isInAllowlist?: boolean;
+    requestedAt: Date;
   }
 
-  let { user, draft, availableLabs, submission, lab, isInAllowlist = false }: Props = $props();
+  let { user, draft, availableLabs, submission, lab, isInAllowlist = false, requestedAt }: Props = $props();
 </script>
 
 <div class="flex h-full items-center">
@@ -61,7 +62,7 @@
       {:else if draft.currRound === 0}
         {#if typeof submission !== 'undefined'}
           <Submitted {submission} />
-        {:else if typeof availableLabs !== 'undefined' && (new Date() < draft.registrationClosesAt || isInAllowlist)}
+        {:else if typeof availableLabs !== 'undefined' && (requestedAt < draft.registrationClosesAt || isInAllowlist)}
           <RegistrationOpen {draft} {availableLabs} />
         {:else}
           <RegistrationClosed registrationClosesAt={draft.registrationClosesAt} />

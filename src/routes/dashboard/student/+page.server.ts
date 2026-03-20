@@ -196,6 +196,7 @@ export async function load({ locals: { session } }) {
       user: baseUser,
       draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
       lab,
+      requestedAt: new Date(),
     };
   });
 }
