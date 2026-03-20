@@ -56,6 +56,11 @@ async function expectStudentsCallout(
   }
 }
 
+async function expectVisibleButtons(page: Page, labels: string[]) {
+  for (const label of labels)
+    await expect(page.getByRole('button', { name: label }).first()).toBeVisible();
+}
+
 test.describe('Draft Lifecycle', () => {
   test.describe.configure({ mode: 'serial' });
 
@@ -572,6 +577,7 @@ test.describe('Draft Lifecycle', () => {
       await adminPage.goto('/dashboard/drafts/1/');
       await expect(adminPage.getByText('There are currently')).toBeVisible();
       await expect(adminPage.getByText(/\b8\b/u).first()).toBeVisible();
+      await expectVisibleButtons(adminPage, ['See Registered Students']);
     });
 
     test('shows initial snapshot quotas as placeholders', async ({ adminPage }) => {
@@ -672,6 +678,14 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('Round 1 — 1st choice', () => {
+    test('admin draft page shows regular loader labels', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+      await expectVisibleButtons(adminPage, ['Pending Selection', 'Already Drafted']);
+
+      await adminPage.getByRole('tab', { name: 'Laboratories' }).click();
+      await expectVisibleButtons(adminPage, ['See Members', 'See Preferred', 'See Interested']);
+    });
+
     test.describe('NDSL', () => {
       test('before submission: full quota, no Previous Picks, progress bar at zero', async ({
         ndslHeadPage,
@@ -1060,6 +1074,17 @@ test.describe('Draft Lifecycle', () => {
       await page.goto('/history/');
       await expect(page.getByText('Draft #1')).toBeVisible();
       await expect(page.getByText(/lottery stage/u)).toBeVisible();
+    });
+
+    test('admin lottery page shows loader labels and intervention action', async ({
+      adminPage,
+    }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+      await expect(adminPage.getByRole('heading', { name: 'Lottery Phase' })).toBeVisible();
+      await expectVisibleButtons(adminPage, ['Eligible for Lottery', 'Already Drafted']);
+
+      await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
+      await expect(adminPage.getByRole('button', { name: 'Apply Interventions' })).toBeVisible();
     });
 
     test('detail page shows ordered round events', async ({ page }) => {
@@ -1938,6 +1963,7 @@ test.describe('Draft Lifecycle', () => {
     test('lottery stage shows zero eligible students', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
       await expect(adminPage.getByRole('heading', { name: 'Lottery Phase' })).toBeVisible();
+      await expectVisibleButtons(adminPage, ['Eligible for Lottery']);
       await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
       await expect(
         adminPage.getByText('Congratulations! All participants have been drafted.'),
