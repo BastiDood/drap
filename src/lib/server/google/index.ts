@@ -127,7 +127,7 @@ export class GoogleOAuthClient {
             ),
           );
           return new Component(
-            { 'Content-ID': contentId, 'Content-Type': 'application/http' },
+            { 'Content-ID': `<${contentId}>`, 'Content-Type': 'application/http' },
             body,
           );
         }),
