@@ -5,7 +5,7 @@
   import type { Attachment } from 'svelte/attachments';
   import type { CellContext, ColumnDefTemplate, HeaderContext } from '@tanstack/table-core';
 
-  import { RenderComponentConfig, RenderSnippetConfig } from './render-helpers.js';
+  import { RenderComponentConfig, RenderSnippetConfig } from './render-helpers';
   interface Props {
     /** The cell or header field of the current cell's column definition. */
     content?: TContext extends HeaderContext<TData, TValue>

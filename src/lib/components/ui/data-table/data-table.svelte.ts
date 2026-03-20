@@ -110,7 +110,6 @@ export function mergeObjects<Sources extends readonly MaybeThunk<any>[]>(
   return new Proxy(Object.create(null), {
     get(_, key) {
       const src = findSourceWithKey(key);
-
       return src?.[key as never];
     },
 
