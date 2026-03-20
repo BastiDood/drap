@@ -1,2 +1,2 @@
 export { sendBatchedEmails } from './batch';
-export { sendEmailFallback } from './retry';
+export { sendEmailFallback } from './fallback';

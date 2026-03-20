@@ -23,7 +23,7 @@ import { Tracer } from '$lib/server/telemetry/tracer';
 
 import { createEmailMessage, getRefreshedCredentials, isRetryableGmailStatus } from './shared';
 
-const SERVICE_NAME = 'inngest.functions.send-email';
+const SERVICE_NAME = 'inngest.functions.send-email.batch';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
@@ -48,8 +48,8 @@ type FollowupEvent =
 
 export const sendBatchedEmails = inngest.createFunction(
   {
-    id: 'send-email',
-    name: 'Send Email',
+    id: 'send-batched-emails',
+    name: 'Send Batched Emails',
     batchEvents: { maxSize: 50, timeout: '5s' },
     triggers: [
       RoundStartedBatchEmailEvent,

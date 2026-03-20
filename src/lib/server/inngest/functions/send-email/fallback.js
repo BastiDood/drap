@@ -15,7 +15,7 @@ import { Tracer } from '$lib/server/telemetry/tracer';
 
 import { createEmailMessage, getRefreshedCredentials, isRetryableGmailStatus } from './shared';
 
-const SERVICE_NAME = 'inngest.functions.send-email';
+const SERVICE_NAME = 'inngest.functions.send-email.fallback';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
