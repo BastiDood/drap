@@ -157,14 +157,11 @@
   );
 </script>
 
-<Card.Root
-  class="from-muted/30 to-muted/10 bg-gradient-to-br transition-all hover:-translate-y-1 hover:shadow-md"
->
+<Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 ">
   <Card.Header>
     <div class="flex flex-row items-center justify-between gap-4">
       <div>
-        <Card.Title>Draft Timeline</Card.Title>
-        <Card.Description>
+        <Card.Title>
           Students {chartMode === 'assigned'
             ? 'assigned'
             : selectedLabId === null
@@ -175,19 +172,20 @@
           {:else}
             &mdash; all labs
           {/if}
-        </Card.Description>
+        </Card.Title>
+        <Card.Description>A long description.</Card.Description>
       </div>
       <div class="flex items-center gap-2">
         <select
           bind:value={chartMode}
-          class="border-border bg-background h-8 rounded-md border px-2 text-sm"
+          class="h-8 rounded-md border border-border bg-background px-2 text-sm"
         >
           <option value="assigned">Assigned</option>
           <option value="remaining">Remaining</option>
         </select>
         <select
           bind:value={selectedLabId}
-          class="border-border bg-background h-8 w-40 min-w-40 rounded-md border px-2 pr-8 text-sm"
+          class="h-8 w-40 min-w-40 rounded-md border border-border bg-background px-2 pr-8 text-sm"
         >
           <option value={null}>All Labs</option>
           {#each labs as lab (lab.id)}
@@ -255,7 +253,7 @@
             cy={point.y}
             r="6"
             fill="var(--primary)"
-            class="hover:fill-primary/80 cursor-pointer"
+            class="cursor-pointer hover:fill-primary/80"
           />
         </g>
       {/each}
@@ -276,7 +274,7 @@
           x={tooltipX + 5}
           y={tooltipY}
           text-anchor="middle"
-          class="fill-foreground font-small text-[10px]"
+          class="font-small fill-foreground text-[10px]"
         >
           {chartMode === 'assigned' ? hoveredPoint.count : hoveredPoint.remaining}
         </text>

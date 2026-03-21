@@ -59,25 +59,25 @@
 
   <!-- Draft Summary Stats -->
   <div class="grid grid-cols-1 gap-2 md:grid-cols-3">
-    <Card.Root class="transition-all hover:shadow-xl">
+    <Card.Root>
       <Card.Header>
-        <Card.Description>Total Students</Card.Description>
-        <Card.Title id="stat-total-students" class="text-2xl font-semibold tabular-nums">
+        <Card.Title class="text-md font-semibold tabular-nums">Total students</Card.Title>
+        <Card.Title id="stat-total-students" class="text-4xl font-semibold tabular-nums">
           {totalStudents}
         </Card.Title>
       </Card.Header>
       <Card.Footer class="flex-col items-start gap-1.5 text-sm">
-        <div class="flex items-center gap-2 font-medium">
+        <div class="flex items-center gap-2 font-medium text-muted-foreground">
           <UsersIcon class="size-4 text-muted-foreground" />
           All registered participants
         </div>
       </Card.Footer>
     </Card.Root>
 
-    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 transition-all hover:shadow-xl">
+    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 ">
       <Card.Header>
-        <Card.Description>Participating Labs</Card.Description>
-        <Card.Title id="stat-participating-labs" class="text-2xl font-semibold tabular-nums">
+        <Card.Title class="text-md font-semibold tabular-nums">Participating Labs</Card.Title>
+        <Card.Title id="stat-participating-labs" class="text-4xl font-semibold tabular-nums">
           {participatingLabs}
         </Card.Title>
       </Card.Header>
@@ -85,10 +85,11 @@
         <div class="text-muted-foreground">Active labs in draft</div>
       </Card.Footer>
     </Card.Root>
-    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 transition-all hover:shadow-xl">
+
+    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 ">
       <Card.Header>
-        <Card.Description>Max Rounds</Card.Description>
-        <Card.Title id="stat-max-rounds" class="text-2xl font-semibold tabular-nums">
+        <Card.Title class="text-md font-semibold tabular-nums">Max Rounds</Card.Title>
+        <Card.Title id="stat-max-rounds" class="text-4xl font-semibold tabular-nums">
           {draft.maxRounds}
         </Card.Title>
       </Card.Header>
@@ -96,23 +97,21 @@
         <div class="text-muted-foreground">Regular draft rounds</div>
       </Card.Footer>
     </Card.Root>
-    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 transition-all hover:shadow-xl">
+    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 ">
       <Card.Header>
-        <Card.Description>Interventions</Card.Description>
-        <Card.Title id="quota-interventions" class="text-2xl font-semibold tabular-nums">
+        <Card.Title class="text-md font-semibold tabular-nums">Interventions</Card.Title>
+        <Card.Title id="quota-interventions" class="text-4xl font-semibold tabular-nums">
           {finalized.quota.lotteryInterventions}
         </Card.Title>
       </Card.Header>
-      <Card.Content>
-        <p id="quota-finalized" class="text-2xl font-semibold">
-          {finalized.quota.finalizedQuota}
-        </p>
-      </Card.Content>
+      <Card.Footer class="flex-col items-start gap-1.5 text-sm">
+        <div class="text-muted-foreground">Interventions Made</div>
+      </Card.Footer>
     </Card.Root>
-    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 transition-all hover:shadow-xl">
+    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 ">
       <Card.Header>
-        <Card.Description>Lottery Assignments</Card.Description>
-        <Card.Title id="quota-interventions" class="text-2xl font-semibold tabular-nums">
+        <Card.Title class="text-md font-semibold tabular-nums">Lottery Assignments</Card.Title>
+        <Card.Title id="quota-interventions" class="text-4xl font-semibold tabular-nums">
           {finalized.sections.lotteryDrafted.length}
         </Card.Title>
       </Card.Header>
@@ -135,7 +134,7 @@
     <Card.Root
       id="section-regular-drafted"
       variant="soft"
-      class="bg-gradient-to-br from-muted/30 to-muted/10 transition-all hover:shadow-md"
+      class="bg-gradient-to-br from-muted/30 to-muted/10 "
     >
       <Card.Header>
         <Card.Title>Regular Drafted ({finalized.sections.regularDrafted.length})</Card.Title>
@@ -159,7 +158,7 @@
     <Card.Root
       id="section-intervention-drafted"
       variant="soft"
-      class="bg-gradient-to-br from-muted/30 to-muted/10 transition-all hover:shadow-md"
+      class="bg-gradient-to-br from-muted/30 to-muted/10 "
     >
       <Card.Header>
         <Card.Title
@@ -226,7 +225,7 @@
     <Card.Root
       id="section-lottery-drafted"
       variant="soft"
-      class="bg-gradient-to-br from-muted/30 to-muted/10 transition-all hover:shadow-md"
+      class="bg-gradient-to-br from-muted/30 to-muted/10 "
     >
       <Card.Header>
         <Card.Title>Lottery Drafted ({finalized.sections.lotteryDrafted.length})</Card.Title>
