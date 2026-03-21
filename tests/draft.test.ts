@@ -795,6 +795,53 @@ test.describe('Draft Lifecycle', () => {
 
         await expectStatCards(ndslHeadPage, { quota: 2, remaining: 1, drafted: 1 });
       });
+
+      test('can edit multiple times in same round', async ({ ndslHeadPage }) => {
+        await ndslHeadPage.goto('/dashboard/students/');
+
+        // First edit: swap Eager for Partial
+        await ndslHeadPage.getByRole('button', { name: 'Edit Selection' }).click();
+        await ndslHeadPage.getByRole('button', { name: /Eager/u }).click();
+        await ndslHeadPage.getByRole('button', { name: /Partial/u }).click();
+        ndslHeadPage.on('dialog', dialog => dialog.accept());
+        let responsePromise = ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
+        await ndslHeadPage.getByRole('button', { name: 'Save Changes' }).click();
+        let response = await responsePromise;
+        expect((await response.json()).type).toBe('success');
+        await expectPreviousPicksTab(ndslHeadPage, 1, [/Partial/u]);
+
+        // Second edit: swap back to Eager
+        await ndslHeadPage.getByRole('button', { name: 'Edit Selection' }).click();
+        await ndslHeadPage.getByRole('button', { name: /Partial/u }).click();
+        await ndslHeadPage.getByRole('button', { name: /Eager/u }).click();
+        responsePromise = ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
+        await ndslHeadPage.getByRole('button', { name: 'Save Changes' }).click();
+        response = await responsePromise;
+        expect((await response.json()).type).toBe('success');
+        await expectPreviousPicksTab(ndslHeadPage, 1, [/Eager/u]);
+      });
+
+      test('can edit with no changes (idempotent)', async ({ ndslHeadPage }) => {
+        await ndslHeadPage.goto('/dashboard/students/');
+
+        // Open edit dialog but don't change anything
+        await ndslHeadPage.getByRole('button', { name: 'Edit Selection' }).click();
+        await expect(ndslHeadPage.getByRole('dialog')).toBeVisible();
+
+        // Eager should already be selected (from previous test)
+        await expect(ndslHeadPage.locator('#selection-progress')).toContainText('1 /');
+
+        // Submit without changes
+        ndslHeadPage.on('dialog', dialog => dialog.accept());
+        const responsePromise = ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
+        await ndslHeadPage.getByRole('button', { name: 'Save Changes' }).click();
+        const response = await responsePromise;
+        expect((await response.json()).type).toBe('success');
+
+        // Selection should remain unchanged
+        await expectPreviousPicksTab(ndslHeadPage, 1, [/Eager/u]);
+        await expectStatCards(ndslHeadPage, { quota: 2, remaining: 1, drafted: 1 });
+      });
     });
 
     test.describe('CSL', () => {
