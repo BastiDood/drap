@@ -1,20 +1,26 @@
 Insert executive summary of the pull request here in 1-3 paragraphs.
 
+In natural prose that flows with the description's narrative, seamlessly mention issues/tickets that this pull request addresses using keywords in GitHub like:
+
+- Closes #1
+- Fixes #2
+- Resolves #3
+
 ## Implementation Notes
 
-Insert significant key architectural decisions here (if any).
+<!-- Insert significant key architectural decisions here (if any). -->
 
-<!-- Ignore this section if mostly routine changes. -->
+<!-- Remove this entire section if mostly routine changes. -->
 
 ## Breaking Changes
 
-Document the breaking changes introduced (if any), and what has been done to mitigate breakage downstream.
+<!-- Document the breaking changes introduced (if any), and what has been done to mitigate breakage downstream. -->
 
-<!-- Ignore this section if not applicable. -->
+<!-- Remove this entire section if not applicable. -->
 
 ## Test Cases
 
-Communicate to the code reviewer that the following test cases have been considered and tested by the author. The author will be able to use this as their own personal checklist before publication.
+<!-- Communicate to the code reviewer that the following test cases have been considered and tested by the author. The author will be able to use this as their own personal checklist before publication. -->
 
 - [ ] Test Case 1
 - [ ] Test Case 2
