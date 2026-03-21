@@ -1,5 +1,8 @@
 # Inngest Conventions
 
+> [!NOTE]
+> The code snippets throughout this document are illustrative examples, not literal code from the codebase. They demonstrate conventions and patterns to follow when writing Inngest functions.
+
 ## Event Naming
 
 - **Event ID**: `draft/<resource>.<verb>.email.batch` or `draft/<resource>.<verb>.email.fallback`
