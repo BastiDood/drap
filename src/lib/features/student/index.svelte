@@ -69,7 +69,7 @@
         {#if typeof submission !== 'undefined'}
           <Submitted {submission} />
         {:else if typeof availableLabs !== 'undefined' && (!draft.isRegistrationClosed || isInAllowlist)}
-          <RegistrationOpen {draft} {availableLabs} />
+          <RegistrationOpen {user} {draft} {availableLabs} />
         {:else}
           <RegistrationClosed registrationClosesAt={draft.registrationClosesAt} />
         {/if}

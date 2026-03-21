@@ -23,22 +23,25 @@
   import { Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui/tooltip';
 
   interface Props {
+    userId: string;
     draftId: bigint;
     maxRounds: number;
     availableLabs: Pick<schema.Lab, 'id' | 'name'>[];
   }
 
-  let { draftId, maxRounds, availableLabs = $bindable() }: Props = $props();
+  let { userId, draftId, maxRounds, availableLabs = $bindable() }: Props = $props();
 
   // svelte-ignore non_reactive_update
-  let selectedLabs = new PersistedState<typeof availableLabs>('lab-rankings', [], {
+  // svelte-ignore state_referenced_locally
+  let selectedLabs = new PersistedState<typeof availableLabs>(`lab-rankings-${userId}`, [], {
     syncTabs: true,
   });
 
   const remaining = $derived(maxRounds - selectedLabs.current.length);
   const hasRemaining = $derived(remaining > 0);
 
-  const labRemarks = new PersistedState<Record<string, string>>('lab-remarks', {}, {
+  // svelte-ignore state_referenced_locally
+  const labRemarks = new PersistedState<Record<string, string>>(`lab-remarks-${userId}`, {}, {
     syncTabs: true,
   });
   const debouncedSetLabRemarks = useDebounce(
@@ -116,8 +119,8 @@
       switch (result.type) {
         case 'success':
           toast.success('Uploaded your lab preferences.');
-          localStorage.removeItem('lab-rankings');
-          localStorage.removeItem('lab-remarks');
+          localStorage.removeItem(`lab-rankings-${userId}`);
+          localStorage.removeItem(`lab-remarks-${userId}`);
           break;
         case 'failure':
           switch (result.status) {
