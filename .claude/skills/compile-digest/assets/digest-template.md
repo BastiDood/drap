@@ -2,12 +2,13 @@
 
 ## #1: Title (@Author)
 
-<!-- Summary in 3-4 Bullets -->
+<!-- One focused point per bullet. No artificial cap on bullet count.
+     Name techniques directly. Parenthetical (why) when not self-evident.
+     "Breaking:" bullet always last, only if applicable. -->
 
-- Concise Main Highlight
-- Brief Summary of Key Implementation Details
-- Breaking Changes (if any)
-- Miscellaneous Notes
+- Point about what changed
+- Another distinct change
+- Breaking: reason (only if applicable; omit bullet otherwise)
 
 <!-- Repeat for each merged PR in merge order (oldest merge first). -->
 

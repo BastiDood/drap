@@ -33,7 +33,11 @@ Compile a structured digest of all merged PRs, open PRs, and commits against the
    sh ${CLAUDE_SKILL_DIR}/scripts/digest-open-prs.sh $ISO_DATE
    ```
 5. **Deep-dive each PR in parallel sub-agents** — for each PR in the merged and open lists, launch the `pull-request-explorer` sub-agent. Pass the PR number in the prompt. Collect each agent's raw findings.
-6. **Assemble digest** — format the collected findings into the [digest template](./assets/digest-template.md). Merged PRs in merge order (oldest first), open PRs in creation order (oldest first). Write the result to `scratchpad/DIGEST.md` and tell the user.
+6. **Assemble digest** — distill the collected findings into the [digest template](./assets/digest-template.md).
+   Each bullet should be one focused technical point — no compound sentences merging unrelated changes.
+   Parenthetical (reason) when a mechanism change isn't self-evident. `Breaking:` bullet always last.
+   Merged PRs in merge order (oldest first), open PRs in creation order (oldest first).
+   Write the result to `scratchpad/DIGEST.md` and tell the user.
 
 ## Script Customization
 

@@ -24,12 +24,13 @@ Given a PR number, investigate it using these techniques:
 
 ## What to Look For
 
-- The core purpose of the change — what problem does it solve?
-- Notable implementation details worth highlighting
-- Breaking changes or behavioral shifts
-- New dependencies, configuration changes, or migration steps
-- Anything surprising, clever, or risky
+- The core purpose — what problem does it solve?
+- Each distinct technical change as a separate point
+- Whether it's a breaking change and why
 
 ## Output
 
-Return your findings naturally. Do not follow a prescribed format — just report what you found clearly and concisely.
+- Return your findings as short, technical observations — one point per finding.
+- Aim for at most 4 points; prioritize the most significant changes.
+- Name techniques and mechanisms directly. When a change isn't self-evident, add a short reason.
+- Omit file paths and function signatures unless they are the point of the change.
