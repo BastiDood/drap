@@ -1307,10 +1307,10 @@ test.describe('Draft Lifecycle', () => {
   test.describe('Admin Finalized Breakdown', () => {
     test('shows expected aggregate quota values', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
-      await expect(adminPage.locator('#admin-finalized-breakdown')).toBeVisible();
-      await expect(adminPage.locator('#quota-initial')).toHaveText('8');
+      await expect(adminPage.locator('#stat-total-students')).toHaveText('8');
+      await expect(adminPage.locator('#stat-participating-labs')).toHaveText('5');
       await expect(adminPage.locator('#quota-interventions')).toHaveText('1');
-      await expect(adminPage.locator('#quota-finalized')).toHaveText('11');
+      await expect(adminPage.locator('#stat-lottery-assignments')).toHaveText('3');
     });
 
     test.describe('drafted sections', () => {
@@ -2038,12 +2038,18 @@ test.describe('Draft Lifecycle', () => {
   test.describe('Second Draft — Dashboard And History Verification', () => {
     test('admin finalized breakdown is correct for Draft #2', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
-      await expect(adminPage.locator('#admin-finalized-breakdown')).toBeVisible();
-      await expect(adminPage.locator('#quota-initial')).toHaveText('3');
+      await expect(adminPage.locator('#stat-total-students')).toHaveText('3');
+      await expect(adminPage.locator('#stat-participating-labs')).toHaveText('4');
       await expect(adminPage.locator('#quota-interventions')).toHaveText('0');
-      await expect(adminPage.locator('#quota-finalized')).toHaveText('3');
+      await expect(adminPage.locator('#stat-lottery-assignments')).toHaveText('0');
       await expect(adminPage.locator('#section-regular-drafted')).toContainText(
         'Regular Drafted (3)',
+      );
+      await expect(adminPage.locator('#section-intervention-drafted')).toContainText(
+        'Intervention Drafted (0)',
+      );
+      await expect(adminPage.locator('#section-lottery-drafted')).toContainText(
+        'Lottery Drafted (0)',
       );
       await expect(adminPage.locator('#section-intervention-drafted')).toContainText(
         'Intervention Drafted (0)',
