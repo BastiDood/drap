@@ -10,7 +10,7 @@
   import XIcon from '@lucide/svelte/icons/x';
   import { crossfade } from 'svelte/transition';
   import { flip } from 'svelte/animate';
-  import { PersistedState } from 'runed';
+  import { PersistedState, useDebounce } from 'runed';
   import { toast } from 'svelte-sonner';
 
   import * as Card from '$lib/components/ui/card';
@@ -37,6 +37,17 @@
 
   const remaining = $derived(maxRounds - selectedLabs.current.length);
   const hasRemaining = $derived(remaining > 0);
+
+  type LabRemark = Record<string, string>;
+  const labRemarks = new PersistedState<LabRemark>('lab-remarks', {}, {
+    syncTabs: true,
+  });
+  const debouncedSetLabRemarks = useDebounce(
+    (labId: string, value: string) => {
+      labRemarks.current[labId] = value;
+    },
+    500
+  );
 
   function selectLab(index: number) {
     if (selectedLabs.current.length >= maxRounds) return;
@@ -86,9 +97,9 @@
   class="space-y-4"
   use:enhance={({ submitter, cancel }) => {
     const message =
-      selectedLabs.length === 0
+      selectedLabs.current.length === 0
         ? 'Are you sure you want to skip lab preferences? You will go directly to the lottery.'
-        : `Are you sure you want to select ${selectedLabs.length} labs?`;
+        : `Are you sure you want to select ${selectedLabs.current.length} labs?`;
 
     // eslint-disable-next-line no-alert
     if (!confirm(message)) {
@@ -107,6 +118,7 @@
         case 'success':
           toast.success('Uploaded your lab preferences.');
           selectedLabs.current = [];
+          labRemarks.current = {};
           break;
         case 'failure':
           switch (result.status) {
@@ -253,6 +265,8 @@
                 name="remarks"
                 placeholder={`Hello ${id.toUpperCase()}, my name is... I would like to do more research on...`}
                 maxlength={1028}
+                value={labRemarks.current[id] ?? ''}
+                oninput={({ currentTarget: { value } }) => debouncedSetLabRemarks(id, value)}
               />
             </li>
           {/each}
