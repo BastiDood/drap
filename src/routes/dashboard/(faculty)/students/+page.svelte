@@ -137,7 +137,7 @@
             draft={id}
             round={currRound}
             {students}
-            {remainingQuota}
+            remainingQuota={remainingQuota + currentRoundSelections.length}
             initialSelectedIds={currentRoundSelectionIds}
             submitLabel="Save Changes"
             onCancel={() => (editDialogOpen = false)}
