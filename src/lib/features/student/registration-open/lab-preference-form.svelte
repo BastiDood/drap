@@ -116,8 +116,8 @@
       switch (result.type) {
         case 'success':
           toast.success('Uploaded your lab preferences.');
-          selectedLabs.current = [];
-          labRemarks.current = {};
+          localStorage.removeItem('lab-rankings');
+          localStorage.removeItem('lab-remarks');
           break;
         case 'failure':
           switch (result.status) {
