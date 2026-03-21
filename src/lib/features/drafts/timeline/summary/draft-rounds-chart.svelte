@@ -2,6 +2,8 @@
   import * as Card from '$lib/components/ui/card';
   import type { DraftAssignmentRecord, Lab } from '$lib/features/drafts/types';
 
+  import { Badge } from '$lib/components/ui/badge';
+
   interface Props {
     records: DraftAssignmentRecord[];
     maxRounds: number;
@@ -162,15 +164,15 @@
     <div class="flex flex-row items-center justify-between gap-4">
       <div>
         <Card.Title>
-          Students {chartMode === 'assigned'
-            ? 'assigned'
+          {chartMode === 'assigned'
+            ? 'Students assigned'
             : selectedLabId === null
-              ? 'remaining'
-              : 'remaining quota'} per phase
+              ? 'Students not yet assigned'
+              : 'Labs remaining quota'} per phase
           {#if selectedLabName}
-            &mdash; {selectedLabName}
+            &mdash; <Badge variant="secondary">{selectedLabName}</Badge>
           {:else}
-            &mdash; all labs
+            &mdash; <Badge variant="default">All labs</Badge>
           {/if}
         </Card.Title>
         <Card.Description>A long description.</Card.Description>
@@ -178,7 +180,7 @@
       <div class="flex items-center gap-2">
         <select
           bind:value={chartMode}
-          class="h-8 rounded-md border border-border bg-background px-2 text-sm"
+          class="h-8 w-40 min-w-40 rounded-md border border-border bg-background px-2 pr-8 text-sm"
         >
           <option value="assigned">Assigned</option>
           <option value="remaining">Remaining</option>
