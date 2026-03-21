@@ -34,16 +34,16 @@
 
   let open = $derived(defaultOpen);
 
-  const contentVariants = tv({
-    base: 'mt-3 rounded-lg p-4',
-    variants: {
-      status: {
-        completed: 'bg-card',
-        active: 'bg-card',
-        pending: '',
-      },
-    },
-  });
+  // const contentVariants = tv({
+  //   base: 'mt-3 rounded-lg p-4',
+  //   variants: {
+  //     status: {
+  //       completed: 'bg-card',
+  //       active: 'bg-card',
+  //       pending: '',
+  //     },
+  //   },
+  // });
 </script>
 
 <div class="relative flex gap-4">
@@ -83,7 +83,7 @@
           />
         </Collapsible.Trigger>
         <Collapsible.Content>
-          <div class={contentVariants({ status })}>
+          <div class="rounded-lg p-4 bg-background">
             {@render children()}
           </div>
         </Collapsible.Content>
@@ -96,7 +96,7 @@
           {@render metadata()}
         {/if}
       </div>
-      <div class={contentVariants({ status })}>
+      <div class="rounded-lg p-4 bg-background">
         {@render children()}
       </div>
     {/if}
