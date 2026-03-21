@@ -16,7 +16,7 @@
   interface SystemLogLabGroup {
     key: string;
     labId: string;
-    round: 'Lottery' | `${number}`;
+    round: 'Lottery' | number;
     choices: FacultyChoiceRecord[];
   }
 
@@ -50,7 +50,7 @@
         labGroup = {
           key: eventLabKey,
           labId: choice.labId,
-          round: choice.round === null ? 'Lottery' : `${choice.round}`,
+          round: choice.round === null ? 'Lottery' : choice.round,
           choices: [],
         };
         labByEventAndLabKey[eventLabKey] = labGroup;
