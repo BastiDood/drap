@@ -89,11 +89,11 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
   <table class="w-full">
     <thead class="text-left">
       <tr class="border-b">
-        <th class="py-2 px-4 whitespace-nowrap">Timestamp</th>
-        <th class="py-2 px-4 whitespace-nowrap">Round</th>
-        <th class="py-2 px-4 whitespace-nowrap">Lab ID</th>
-        <th class="py-2 px-4 whitespace-nowrap">Action</th>
-        <th class="py-2 px-4 whitespace-nowrap">Actor</th>
+        <th class="px-4 py-2 whitespace-nowrap">Timestamp</th>
+        <th class="px-4 py-2 whitespace-nowrap">Round</th>
+        <th class="px-4 py-2 whitespace-nowrap">Lab ID</th>
+        <th class="px-4 py-2 whitespace-nowrap">Action</th>
+        <th class="px-4 py-2 whitespace-nowrap">Actor</th>
       </tr>
     </thead>
 
@@ -104,17 +104,21 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
 
           {#if typeof choice !== 'undefined'}
             <tr class="border-t">
-              <td class="py-2 px-4 whitespace-nowrap">{fromUnixTime(event.unix).toLocaleString()}</td>
-              <td class="py-2 px-4 whitespace-nowrap">{lab.round}</td>
-              <td class="py-2 px-4 whitespace-nowrap uppercase">{lab.labId}</td>
-              <td class="py-2 px-4 whitespace-nowrap">
+              <td class="px-4 py-2 whitespace-nowrap"
+                >{fromUnixTime(event.unix).toLocaleString()}</td
+              >
+              <td class="px-4 py-2 whitespace-nowrap">{lab.round}</td>
+              <td class="px-4 py-2 whitespace-nowrap uppercase">{lab.labId}</td>
+              <td class="px-4 py-2 whitespace-nowrap">
                 {#if choice.userEmail === null}
                   <!-- If the system auto-skipped -->
                   <span>System automation</span>
                 {:else if choice.studentEmail === null}
                   <!-- If a faculty member selected no students -->
                   <span>
-                    <Badge variant="outline" class="border-primary bg-primary/10 text-primary dark:border-secondary dark:bg-secondary/10 dark:text-secondary"
+                    <Badge
+                      variant="outline"
+                      class="border-primary bg-primary/10 text-primary dark:border-secondary dark:bg-secondary/10 dark:text-secondary"
                       >No</Badge
                     >
                     students selected
@@ -124,18 +128,21 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
                   <span>
                     Selected
                     {#each lab.choices as { studentEmail } (studentEmail)}
-                      <Badge variant="outline" class="border-primary bg-primary/10 text-primary dark:border-secondary dark:bg-secondary/10 dark:text-secondary"
+                      <Badge
+                        variant="outline"
+                        class="border-primary bg-primary/10 text-primary dark:border-secondary dark:bg-secondary/10 dark:text-secondary"
                         >{studentEmail}</Badge
                       >
                     {/each}
                   </span>
                 {/if}
               </td>
-              <td class="py-2 px-4 whitespace-nowrap">
+              <td class="px-4 py-2 whitespace-nowrap">
                 {#if choice.userEmail === null}
                   <Badge
                     variant="outline"
-                    class="border-secondary bg-secondary/10 text-secondary-foreground dark:text-secondary">System</Badge
+                    class="border-secondary bg-secondary/10 text-secondary-foreground dark:text-secondary"
+                    >System</Badge
                   >
                 {:else}
                   <Badge
