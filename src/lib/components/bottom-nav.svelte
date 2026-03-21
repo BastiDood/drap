@@ -15,11 +15,11 @@
 
 <TooltipProvider>
   <nav
-    class="bg-background/90 flex w-full items-center justify-between gap-2 px-10 py-2 backdrop-blur-md"
+    class="flex w-full items-center justify-between gap-2 bg-background/90 px-10 py-2 backdrop-blur-md"
   >
     <div class="flex w-1/3 place-content-center items-center">
       <button
-        class="active:bg-primary flex w-2/5 place-content-center rounded-lg py-2 dark:active:bg-white"
+        class="flex w-2/5 place-content-center rounded-lg py-2 active:bg-primary dark:active:bg-white"
         onclick={_ => {
           sidebar.toggle();
         }}

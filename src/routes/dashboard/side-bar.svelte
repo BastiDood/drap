@@ -35,8 +35,8 @@
 
 <TooltipProvider>
   {#if !sidebar.openMobile}
-    <div class="w-full fixed bottom-0 z-45 md:hidden">
-      <BottomNav sidebar={sidebar}/>
+    <div class="fixed bottom-0 z-45 w-full md:hidden">
+      <BottomNav {sidebar} />
     </div>
   {/if}
   <Sidebar.Root collapsible="icon" class="border-r border-border">
