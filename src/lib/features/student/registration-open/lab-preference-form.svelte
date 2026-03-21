@@ -49,14 +49,6 @@
     },
   );
 
-  const availableLabIds = new Set(availableLabs.map(({ id }) => id));
-  persistedSelectedLabs.current = persistedSelectedLabs.current.filter(({ id }) =>
-    availableLabIds.has(id),
-  );
-  persistedAvailableLabs.current = persistedAvailableLabs.current.filter(({ id }) =>
-    availableLabIds.has(id),
-  );
-
   const remaining = $derived(maxRounds - persistedSelectedLabs.current.length);
   const hasRemaining = $derived(remaining > 0);
 
