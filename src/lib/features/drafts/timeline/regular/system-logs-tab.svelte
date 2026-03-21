@@ -89,7 +89,7 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
   <table class="w-full">
     <thead class="text-left">
       <tr class="border-b">
-        <th class="p-1">Timestamp (GMT+8)</th>
+        <th class="p-1">Timestamp</th>
         <th class="p-1">Lab ID</th>
         <th class="p-1">Round</th>
         <th class="p-1">Action</th>
