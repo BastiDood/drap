@@ -10,7 +10,7 @@
     variants: {
       variant: {
         'pending-selection': 'border-warning text-warning',
-        'see-preferred': 'border-accent bg-accent/10 h-fit font-mono text-xs uppercase',
+        'see-preferred': 'h-fit border-accent bg-accent/10 font-mono text-xs uppercase',
       },
     },
   });
