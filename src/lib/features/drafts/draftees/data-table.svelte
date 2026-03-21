@@ -155,11 +155,11 @@
             }}
           >
             {#if designatedLabFilterValue === filter}
-              <Badge variant="outline" class="border-primary bg-primary/10 mr-1 text-xs uppercase">
+              <Badge variant="outline" class="mr-1 border-primary bg-primary/10 text-xs uppercase">
                 {filter.toUpperCase()}
               </Badge>
             {:else}
-              <Badge variant="outline" class="border-muted bg-muted/10 mr-1 text-xs uppercase">
+              <Badge variant="outline" class="mr-1 border-muted bg-muted/10 text-xs uppercase">
                 {filter.toUpperCase()}
               </Badge>
             {/if}
@@ -202,11 +202,11 @@
             }}
           >
             {#if preferredLabFilterValues.includes(filter)}
-              <Badge variant="outline" class="border-primary bg-primary/10 mr-1 text-xs uppercase">
+              <Badge variant="outline" class="mr-1 border-primary bg-primary/10 text-xs uppercase">
                 {filter.toUpperCase()}
               </Badge>
             {:else}
-              <Badge variant="outline" class="border-muted bg-muted/10 mr-1 text-xs uppercase">
+              <Badge variant="outline" class="mr-1 border-muted bg-muted/10 text-xs uppercase">
                 {filter.toUpperCase()}
               </Badge>
             {/if}

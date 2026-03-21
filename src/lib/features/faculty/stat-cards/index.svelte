@@ -35,7 +35,7 @@
         Total Quota
         <Popover.Root>
           <Popover.Trigger>
-            <CircleHelpIcon class="text-muted-foreground size-3.5" />
+            <CircleHelpIcon class="size-3.5 text-muted-foreground" />
           </Popover.Trigger>
           <Popover.Content class="text-sm">
             Total slots allocated to your lab for this draft.
@@ -53,7 +53,7 @@
         Remaining This Round
         <Popover.Root>
           <Popover.Trigger>
-            <CircleHelpIcon class="text-muted-foreground size-3.5" />
+            <CircleHelpIcon class="size-3.5 text-muted-foreground" />
           </Popover.Trigger>
           <Popover.Content class="text-sm">
             Slots you can still fill. You're not required to exhaust your allocation this round.
@@ -71,7 +71,7 @@
         Drafted So Far
         <Popover.Root>
           <Popover.Trigger>
-            <CircleHelpIcon class="text-muted-foreground size-3.5" />
+            <CircleHelpIcon class="size-3.5 text-muted-foreground" />
           </Popover.Trigger>
           <Popover.Content class="text-sm">
             Students your lab selected in previous rounds.

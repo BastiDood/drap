@@ -59,7 +59,7 @@
   <Button
     type="submit"
     variant="outline"
-    class="border-warning bg-warning/10 text-warning hover:bg-warning/20 w-full"
+    class="w-full border-warning bg-warning/10 text-warning hover:bg-warning/20"
   >
     Start Draft
   </Button>

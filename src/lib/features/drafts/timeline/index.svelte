@@ -165,10 +165,10 @@
       <Step title="Summary" status="active" collapsible={false}>
         {#snippet metadata()}
           {#if draft.activePeriodEnd !== null}
-            <span class="text-muted-foreground text-sm">{format(draft.activePeriodEnd, 'PPP')}</span
+            <span class="text-sm text-muted-foreground">{format(draft.activePeriodEnd, 'PPP')}</span
             >
           {:else}
-            <span class="text-muted-foreground text-sm">Pending Finalization</span>
+            <span class="text-sm text-muted-foreground">Pending Finalization</span>
           {/if}
         {/snippet}
         <SummaryPhase
@@ -205,7 +205,7 @@
     {#if currentPhase !== 'registration' && currentPhase !== 'registration-closed'}
       <Step title="Regular Rounds" status={regularStatus} defaultOpen={currentPhase === 'regular'}>
         {#snippet metadata()}
-          <span class="text-muted-foreground text-sm">
+          <span class="text-sm text-muted-foreground">
             {draft.currRound === null
               ? draft.maxRounds
               : Math.min(draft.currRound, draft.maxRounds)} / {draft.maxRounds}
@@ -231,7 +231,7 @@
       last
     >
       {#snippet metadata()}
-        <span class="text-muted-foreground text-sm">{studentCount} students</span>
+        <span class="text-sm text-muted-foreground">{studentCount} students</span>
       {/snippet}
       {#if currentPhase === 'registration'}
         <RegistrationActive {draftId} {studentCount} snapshots={finalized.snapshots} />

@@ -137,13 +137,13 @@
           {#each finalized.sections.regularDrafted as { id, labId, labName, round, ...student } (id)}
             <div class="space-y-1">
               <StudentCard user={{ ...student, labs: [], labId }} />
-              <p class="text-muted-foreground px-1 text-sm">
+              <p class="px-1 text-sm text-muted-foreground">
                 Assigned to <strong>{labName}</strong> in round {round}.
               </p>
             </div>
           {/each}
         {:else}
-          <p class="text-muted-foreground text-sm">No regular-round assignments recorded.</p>
+          <p class="text-sm text-muted-foreground">No regular-round assignments recorded.</p>
         {/if}
       </Card.Content>
     </Card.Root>
@@ -175,7 +175,7 @@
                   <StudentCard user={{ ...student, labs: [], labId: null }} />
                 {/each}
               {:else}
-                <p class="text-muted-foreground text-sm">
+                <p class="text-sm text-muted-foreground">
                   All students were drafted during regular rounds.
                 </p>
               {/if}
@@ -190,7 +190,7 @@
               {#each finalized.sections.interventionDrafted as { id, labId, labName, assignedAt, ...student } (id)}
                 <div class="space-y-1">
                   <StudentCard user={{ ...student, labs: [], labId }} />
-                  <p class="text-muted-foreground px-1 text-sm">
+                  <p class="px-1 text-sm text-muted-foreground">
                     Intervention assignment to <strong>{labName}</strong> on
                     {#if assignedAt !== null}
                       <time id="intervention-date-{id}" datetime={assignedAt.toISOString()}>
@@ -204,7 +204,7 @@
                 </div>
               {/each}
             {:else}
-              <p class="text-muted-foreground text-sm">No intervention assignments were made.</p>
+              <p class="text-sm text-muted-foreground">No intervention assignments were made.</p>
             {/if}
           </div>
         </div>
@@ -220,13 +220,13 @@
           {#each finalized.sections.lotteryDrafted as { id, labId, labName, ...student } (id)}
             <div class="space-y-1">
               <StudentCard user={{ ...student, labs: [], labId }} />
-              <p class="text-muted-foreground px-1 text-sm">
+              <p class="px-1 text-sm text-muted-foreground">
                 Assigned by finalized lottery results to <strong>{labName}</strong>.
               </p>
             </div>
           {/each}
         {:else}
-          <p class="text-muted-foreground text-sm">No lottery assignments were recorded.</p>
+          <p class="text-sm text-muted-foreground">No lottery assignments were recorded.</p>
         {/if}
       </Card.Content>
     </Card.Root>

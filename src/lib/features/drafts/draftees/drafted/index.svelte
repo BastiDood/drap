@@ -17,7 +17,7 @@
       {:else}
         <Button
           variant="outline"
-          class="border-primary bg-primary/10 h-fit font-mono text-xs uppercase"
+          class="h-fit border-primary bg-primary/10 font-mono text-xs uppercase"
           {...props}>See Members</Button
         >
       {/if}

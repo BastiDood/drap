@@ -49,19 +49,19 @@
 <div class="relative flex gap-4">
   <!-- Connector line -->
   {#if !last}
-    <div class="bg-border absolute top-8 -bottom-2 left-3 w-px"></div>
+    <div class="absolute top-8 -bottom-2 left-3 w-px bg-border"></div>
   {/if}
 
   <!-- Status icon -->
   <div
-    class="bg-background relative z-10 mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full"
+    class="relative z-10 mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-background"
   >
     {#if status === 'completed'}
-      <CheckCircleIcon class="text-success size-5" />
+      <CheckCircleIcon class="size-5 text-success" />
     {:else if status === 'active'}
-      <CircleIcon class="fill-primary text-primary size-5" />
+      <CircleIcon class="size-5 fill-primary text-primary" />
     {:else}
-      <CircleIcon class="text-muted-foreground/50 size-5" />
+      <CircleIcon class="size-5 text-muted-foreground/50" />
     {/if}
   </div>
 
@@ -70,7 +70,7 @@
     {#if collapsible}
       <Collapsible.Root bind:open>
         <Collapsible.Trigger
-          class="hover:bg-muted/50 -ml-2 flex w-full items-center justify-between rounded-lg px-2 py-1"
+          class="-ml-2 flex w-full items-center justify-between rounded-lg px-2 py-1 hover:bg-muted/50"
         >
           <div class="flex items-center gap-3">
             <h3 class="font-semibold">{title}</h3>
@@ -79,7 +79,7 @@
             {/if}
           </div>
           <ChevronDownIcon
-            class="text-muted-foreground size-4 transition-transform {open ? 'rotate-180' : ''}"
+            class="size-4 text-muted-foreground transition-transform {open ? 'rotate-180' : ''}"
           />
         </Collapsible.Trigger>
         <Collapsible.Content>

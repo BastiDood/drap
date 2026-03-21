@@ -41,7 +41,7 @@
               <li>
                 <a
                   href="mailto:{email}"
-                  class="bg-muted hover:bg-muted/80 flex items-center gap-3 rounded-md p-2 transition-colors duration-150"
+                  class="flex items-center gap-3 rounded-md bg-muted p-2 transition-colors duration-150 hover:bg-muted/80"
                 >
                   <Avatar.Root class="size-10">
                     <Avatar.Image src={avatarUrl} alt="{givenName} {familyName}" />

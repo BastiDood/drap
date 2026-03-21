@@ -81,7 +81,7 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
   <Card.Content class="pt-4">
     <label class="flex items-center space-x-2">
       <input
-        class="border-primary h-4 w-4 rounded border"
+        class="h-4 w-4 rounded border border-primary"
         type="checkbox"
         bind:checked={showAutomated}
       />
@@ -98,7 +98,7 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
       {#each event.labs as lab (lab.key)}
         {@const [choice] = lab.choices}
         {#if typeof choice !== 'undefined'}
-          <div class="bg-muted space-y-1 rounded-md p-4">
+          <div class="space-y-1 rounded-md bg-muted p-4">
             <strong class="uppercase">{lab.labId}</strong> ({lab.round}):
             {#if choice.userEmail === null || choice.studentEmail === null}
               {#if choice.userEmail === null}

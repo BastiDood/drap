@@ -38,7 +38,7 @@
       <Sidebar.Trigger class="bg-background shadow-lg" />
     </div>
   {/if}
-  <Sidebar.Root collapsible="icon" class="border-border border-r">
+  <Sidebar.Root collapsible="icon" class="border-r border-border">
     <Sidebar.Header>
       <div class="flex items-center justify-between">
         <div class="flex items-center gap-2 p-2">

@@ -28,7 +28,7 @@
     <h4 class="text-lg font-semibold">Invited</h4>
     <ul class="space-y-1">
       {#each invited as { id, ...head } (id)}
-        <li class="bg-muted hover:bg-muted/80 rounded-md p-2 transition-colors duration-150">
+        <li class="rounded-md bg-muted p-2 transition-colors duration-150 hover:bg-muted/80">
           <Invited user={head} />
         </li>
       {/each}
@@ -38,7 +38,7 @@
     <h4 class="text-lg font-semibold">Registered</h4>
     <ul class="space-y-1">
       {#each registered as { id, ...head } (id)}
-        <li class="bg-muted hover:bg-muted/80 rounded-md p-2 transition-colors duration-150">
+        <li class="rounded-md bg-muted p-2 transition-colors duration-150 hover:bg-muted/80">
           <Faculty user={head} />
         </li>
       {/each}

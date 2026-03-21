@@ -50,17 +50,17 @@
     {#if submission.labs.length > 0}
       <ol class="space-y-3">
         {#each submission.labs as { name, remark }, i (name)}
-          <li class="dark:bg-background/50 bg-muted/30 flex flex-col space-y-1 rounded-lg p-4">
+          <li class="flex flex-col space-y-1 rounded-lg bg-muted/30 p-4 dark:bg-background/50">
             <div class="flex items-center gap-3">
               <div
-                class="bg-secondary text-secondary-foreground flex size-7 items-center justify-center rounded-full pb-0.5 text-sm font-bold"
+                class="flex size-7 items-center justify-center rounded-full bg-secondary pb-0.5 text-sm font-bold text-secondary-foreground"
               >
                 {i + 1}
               </div>
               <span class="font-semibold">{name}</span>
             </div>
             {#if remark.length > 0}
-              <div class="text-muted-foreground flex items-center gap-2 p-2 text-sm">
+              <div class="flex items-center gap-2 p-2 text-sm text-muted-foreground">
                 <div class="flex gap-3">
                   <MessageSquare class="mt-0.75 size-4 shrink-0" />
                   <p class="italic">
@@ -74,9 +74,9 @@
       </ol>
     {:else}
       <div class="flex flex-col items-center justify-center gap-2 py-12 text-center">
-        <AlertCircle class="text-muted-foreground size-10" />
+        <AlertCircle class="size-10 text-muted-foreground" />
         <h3 class="text-xl font-semibold">No Labs Selected</h3>
-        <p class="text-muted-foreground max-w-xs text-sm">
+        <p class="max-w-xs text-sm text-muted-foreground">
           You selected none of the labs. You will thus skip ahead to the lottery phase.
         </p>
       </div>

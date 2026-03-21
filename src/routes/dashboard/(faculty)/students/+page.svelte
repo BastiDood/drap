@@ -23,7 +23,7 @@
 {#if typeof info === 'undefined'}
   <Empty.Root>
     <Empty.Media variant="icon">
-      <BanIcon class="text-muted-foreground size-5" />
+      <BanIcon class="size-5 text-muted-foreground" />
     </Empty.Media>
     <Empty.Header>
       <Empty.Title>Lab Excluded from This Draft</Empty.Title>
@@ -45,7 +45,7 @@
   {#if currRound === null}
     <Empty.Root>
       <Empty.Media variant="icon">
-        <Clock3Icon class="text-muted-foreground size-5" />
+        <Clock3Icon class="size-5 text-muted-foreground" />
       </Empty.Media>
       <Empty.Header>
         <Empty.Title>Draft Under Review</Empty.Title>
@@ -61,7 +61,7 @@
   {:else if currRound > maxRounds}
     <Empty.Root>
       <Empty.Media variant="icon">
-        <ShuffleIcon class="text-muted-foreground size-5" />
+        <ShuffleIcon class="size-5 text-muted-foreground" />
       </Empty.Media>
       <Empty.Header>
         <Empty.Title>Lottery Stage</Empty.Title>
@@ -77,7 +77,7 @@
   {:else if currRound === 0}
     <Empty.Root>
       <Empty.Media variant="icon">
-        <InfoIcon class="text-muted-foreground size-5" />
+        <InfoIcon class="size-5 text-muted-foreground" />
       </Empty.Media>
       <Empty.Header>
         <Empty.Title>Registration Still Open</Empty.Title>
@@ -98,7 +98,7 @@
     {#if submissionSource === 'faculty'}
       <Empty.Root>
         <Empty.Media variant="icon">
-          <CheckCircleIcon class="text-muted-foreground size-5" />
+          <CheckCircleIcon class="size-5 text-muted-foreground" />
         </Empty.Media>
         <Empty.Header>
           <Empty.Title>Round Already Submitted</Empty.Title>
@@ -114,7 +114,7 @@
     {:else if autoAcknowledgeReason === 'quota-exhausted'}
       <Empty.Root>
         <Empty.Media variant="icon">
-          <CircleSlashIcon class="text-muted-foreground size-5" />
+          <CircleSlashIcon class="size-5 text-muted-foreground" />
         </Empty.Media>
         <Empty.Header>
           <Empty.Title>No Slots Remaining</Empty.Title>
@@ -130,7 +130,7 @@
     {:else if autoAcknowledgeReason === 'no-preferences'}
       <Empty.Root>
         <Empty.Media variant="icon">
-          <UserXIcon class="text-muted-foreground size-5" />
+          <UserXIcon class="size-5 text-muted-foreground" />
         </Empty.Media>
         <Empty.Header>
           <Empty.Title>No Student Preferences This Round</Empty.Title>

@@ -76,25 +76,25 @@
         <Table.Cell>
           <Badge variant={getStatusVariant(status)}>{getStatusLabel(status)}</Badge>
           {#if status === 'regular' && draft.currRound !== null}
-            <span class="text-muted-foreground ml-1 text-xs">
+            <span class="ml-1 text-xs text-muted-foreground">
               Round {draft.currRound}/{draft.maxRounds}
             </span>
           {/if}
         </Table.Cell>
         <Table.Cell>
           <span class="text-sm">{format(draft.activePeriodStart, 'PPP')}</span>
-          <span class="text-muted-foreground block text-xs">
+          <span class="block text-xs text-muted-foreground">
             {format(draft.activePeriodStart, 'p')}
           </span>
         </Table.Cell>
         <Table.Cell>
           {#if draft.activePeriodEnd !== null}
             <span class="text-sm">{format(draft.activePeriodEnd, 'PPP')}</span>
-            <span class="text-muted-foreground block text-xs">
+            <span class="block text-xs text-muted-foreground">
               {format(draft.activePeriodEnd, 'p')}
             </span>
           {:else}
-            <span class="text-muted-foreground text-sm">Ongoing</span>
+            <span class="text-sm text-muted-foreground">Ongoing</span>
           {/if}
         </Table.Cell>
         <Table.Cell>

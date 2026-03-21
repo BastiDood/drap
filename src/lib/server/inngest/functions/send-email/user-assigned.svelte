@@ -15,16 +15,16 @@
 
 <EmailLayout preview="You have been assigned to {labName}">
   <Section>
-    <Heading class="text-foreground text-2xl font-bold" as="h1">Lab Assignment</Heading>
-    <Text class="text-muted-foreground mt-4 text-base leading-relaxed">
+    <Heading class="text-2xl font-bold text-foreground" as="h1">Lab Assignment</Heading>
+    <Text class="mt-4 text-base leading-relaxed text-muted-foreground">
       Hello, <strong class="text-foreground">{userName}</strong>!
     </Text>
-    <Text class="text-muted-foreground text-base leading-relaxed">
+    <Text class="text-base leading-relaxed text-muted-foreground">
       We are pleased to inform you that you have been assigned to the <strong
         class="text-foreground">{labName}</strong
       >.
     </Text>
-    <Section class="bg-secondary/30 text-secondary-foreground my-6 rounded-lg">
+    <Section class="my-6 rounded-lg bg-secondary/30 text-secondary-foreground">
       <Section class="mx-auto max-w-md">
         <Text class="text-sm">
           You can view more details about your lab assignment through your dashboard.
@@ -34,7 +34,7 @@
           target="_blank"
           pX={24}
           pY={12}
-          class="bg-primary text-primary-foreground hover:bg-primary/90 mb-4 rounded-md font-medium"
+          class="mb-4 rounded-md bg-primary font-medium text-primary-foreground hover:bg-primary/90"
         >
           Go to Dashboard
         </Button>

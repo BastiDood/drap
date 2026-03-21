@@ -23,7 +23,7 @@
 
 <a
   href="mailto:{email}"
-  class="bg-muted hover:bg-muted/80 grid w-full grid-cols-[auto_1fr] items-center gap-2 rounded-md p-2 transition-colors duration-150"
+  class="grid w-full grid-cols-[auto_1fr] items-center gap-2 rounded-md bg-muted p-2 transition-colors duration-150 hover:bg-muted/80"
 >
   <Avatar.Root class="size-20">
     <Avatar.Image src={avatarUrl} alt="{givenName} {familyName}" />

@@ -21,7 +21,7 @@
 </script>
 
 <Alert.Root variant="info">
-  <Alert.Description class="prose dark:prose-invert max-w-none">
+  <Alert.Description class="prose max-w-none dark:prose-invert">
     <p>
       {#if currRound === null}
         <strong>Draft #{id}</strong> (which opened last <strong>{startDate}</strong> at

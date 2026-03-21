@@ -12,7 +12,7 @@
     {#snippet child({ props })}
       <Button
         variant="outline"
-        class="border-secondary bg-secondary/10 h-fit font-mono text-xs uppercase"
+        class="h-fit border-secondary bg-secondary/10 font-mono text-xs uppercase"
         {...props}
       >
         See Interested

@@ -152,7 +152,7 @@
                 >
                   <input type="hidden" name="studentUserId" value={entry.studentUserId} />
                   <Button type="submit" variant="ghost" size="icon">
-                    <TrashIcon class="text-destructive size-4" />
+                    <TrashIcon class="size-4 text-destructive" />
                   </Button>
                 </form>
               </TableCell>

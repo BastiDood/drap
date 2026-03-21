@@ -37,7 +37,7 @@
       </Avatar.Root>
       <div>
         <h1 class="text-2xl font-semibold">{user.givenName} {user.familyName}</h1>
-        <div class="text-muted-foreground flex items-center gap-2 text-sm">
+        <div class="flex items-center gap-2 text-sm text-muted-foreground">
           <span>{user.email}</span>
           <Badge variant="secondary">{roleLabel}</Badge>
         </div>

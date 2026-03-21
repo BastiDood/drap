@@ -18,7 +18,7 @@
 </script>
 
 <div class="grid grid-cols-1 items-start gap-4 lg:grid-cols-[auto_1fr]">
-  <div class="prose dark:prose-invert max-w-none lg:max-w-prose">
+  <div class="prose max-w-none lg:max-w-prose dark:prose-invert">
     <h2>Email Notifications</h2>
     <p>
       To enable email notifications, one of the draft administrators must first volunteer themselves

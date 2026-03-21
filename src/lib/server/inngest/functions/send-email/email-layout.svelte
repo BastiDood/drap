@@ -27,7 +27,7 @@
           height="90"
           class="mx-auto mt-4 block"
         />
-        <Text class="text-primary-foreground mt-2 text-sm font-medium">
+        <Text class="mt-2 text-sm font-medium text-primary-foreground">
           Draft Ranking Automated Processor
         </Text>
       </Section>

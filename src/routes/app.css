@@ -187,7 +187,7 @@
 
 @layer components {
   .preset-tonal-primary {
-    @apply dark:border-primary border-current;
+    @apply border-current dark:border-primary;
     background-color: color-mix(in srgb, var(--primary), var(--background));
     color: hsl(from var(--primary) h 90% 15%);
   }
@@ -196,7 +196,7 @@
   }
 
   .preset-tonal-secondary {
-    @apply dark:border-secondary border-current;
+    @apply border-current dark:border-secondary;
     background-color: color-mix(in srgb, var(--secondary), var(--background) 70%);
     color: hsl(from var(--secondary) h 30% 30%);
   }
@@ -205,7 +205,7 @@
   }
 
   .preset-tonal-accent {
-    @apply dark:border-accent border-current;
+    @apply border-current dark:border-accent;
     background-color: color-mix(in srgb, var(--accent), var(--background) 40%);
     color: hsl(from var(--accent) h 50% 50%);
   }

@@ -65,14 +65,14 @@
       type="submit"
       variant="outline"
       size="lg"
-      class="border-warning bg-warning/10 text-warning hover:bg-warning/20 w-full shadow-lg"
+      class="w-full border-warning bg-warning/10 text-warning shadow-lg hover:bg-warning/20"
     >
       <ShieldAlertIcon class="size-6" />
       <span>Apply Interventions</span>
     </Button>
   </form>
 {:else}
-  <p class="prose dark:prose-invert max-w-none">
+  <p class="prose max-w-none dark:prose-invert">
     Congratulations! All participants have been drafted. No action is needed here.
   </p>
 {/if}

@@ -28,7 +28,7 @@
   <div>
     <Card.Title class="text-base font-semibold">{name}</Card.Title>
     {#if typeof role !== 'undefined'}
-      <Card.Description class="text-muted-foreground mt-0.5 text-xs">{role}</Card.Description>
+      <Card.Description class="mt-0.5 text-xs text-muted-foreground">{role}</Card.Description>
     {/if}
   </div>
   <div class="flex flex-wrap gap-2">
@@ -37,7 +37,7 @@
         href={website}
         target="_blank"
         rel="external"
-        class="text-muted-foreground text-xs hover:underline"
+        class="text-xs text-muted-foreground hover:underline"
       >
         <GlobeIcon class="size-5" />
       </Link>
@@ -47,7 +47,7 @@
         href="https://github.com/{github}"
         target="_blank"
         rel="external"
-        class="text-muted-foreground text-xs hover:underline"
+        class="text-xs text-muted-foreground hover:underline"
       >
         <GithubIcon class="size-5" />
       </Link>

@@ -168,7 +168,7 @@
       > and is currently in the registration stage.
     </div>
   </div>
-  <Progress class="border-muted-foreground/40 bg-muted border" value={0} />
+  <Progress class="border border-muted-foreground/40 bg-muted" value={0} />
 {:else}
   <!-- Regular Draft Process -->
   <div
@@ -184,14 +184,14 @@
   <Progress max={maxRounds} value={currRound} />
 {/if}
 <section class="mt-10 p-4">
-  <ol class="border-border relative border-s">
+  <ol class="relative border-s border-border">
     {#each groupedEntries as { unix, groupedTimelineEntries } (unix)}
       {@const date = fromUnixTime(unix)}
       {@const heading = format(date, 'PPPpp')}
       <li class="ms-6 mb-10">
         <span
-          class="bg-background ring-muted-foreground absolute -inset-s-3 mt-0.5 flex size-6 items-center justify-center rounded-full ring-2"
-          ><CalendarDaysIcon class="text-foreground size-4" /></span
+          class="absolute -inset-s-3 mt-0.5 flex size-6 items-center justify-center rounded-full bg-background ring-2 ring-muted-foreground"
+          ><CalendarDaysIcon class="size-4 text-foreground" /></span
         >
         <h4 class="mb-2 scroll-m-20 text-xl font-semibold tracking-tight">
           <time datetime={date.toISOString()}>{heading}</time>

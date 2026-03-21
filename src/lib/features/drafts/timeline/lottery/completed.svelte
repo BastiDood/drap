@@ -42,7 +42,7 @@
         </Card.Title>
       </Card.Header>
       <Card.Content class="space-y-4">
-        <p class="prose dark:prose-invert max-w-none">
+        <p class="prose max-w-none dark:prose-invert">
           {lotteryDrafted.length} students were assigned via lottery.
         </p>
       </Card.Content>
