@@ -53,7 +53,7 @@
   </div>
 
   <!-- Content area -->
-  <div class="flex-1 pb-6">
+  <div class="min-w-0 flex-1 pb-6">
     {#if collapsible}
       <Collapsible.Root bind:open>
         <Collapsible.Trigger
