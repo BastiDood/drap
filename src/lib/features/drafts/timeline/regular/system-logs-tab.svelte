@@ -85,7 +85,7 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
   <span>Show System Automation Logs</span>
 </label>
 
-<div class="my-4 overflow-x-auto rounded-lg border">
+<div class="my-4 overflow-auto rounded-lg border">
   <table class="w-full">
     <thead class="text-left">
       <tr class="border-b">
@@ -104,10 +104,10 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
 
           {#if typeof choice !== 'undefined'}
             <tr class="border-t">
-              <td class="p-1">{fromUnixTime(event.unix).toLocaleString()}</td>
-              <td class="p-1 uppercase">{lab.labId}</td>
-              <td class="p-1">{lab.round}</td>
-              <td class="p-1">
+              <td class="p-1 whitespace-nowrap">{fromUnixTime(event.unix).toLocaleString()}</td>
+              <td class="p-1 whitespace-nowrap uppercase">{lab.labId}</td>
+              <td class="p-1 whitespace-nowrap">{lab.round}</td>
+              <td class="p-1 whitespace-nowrap">
                 {#if choice.userEmail === null}
                   <!-- If the system auto-skipped -->
                   <span>System automation</span>
@@ -131,7 +131,7 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
                   </span>
                 {/if}
               </td>
-              <td class="p-1">
+              <td class="p-1 whitespace-nowrap">
                 {#if choice.userEmail === null}
                   <Badge
                     variant="outline"
