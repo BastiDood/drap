@@ -13,7 +13,7 @@ const tracer = Tracer.byName(SERVICE_NAME);
 export async function load({ params: { draft: id } }) {
   const draftId = validateBigInt(id);
   if (draftId === null) {
-    logger.error('invalid draft id');
+    logger.fatal('invalid draft id');
     error(404, 'Invalid draft ID.');
   }
 
@@ -24,7 +24,7 @@ export async function load({ params: { draft: id } }) {
 
     const draft = await getDraftById(db, draftId);
     if (typeof draft === 'undefined') {
-      logger.error('draft not found');
+      logger.fatal('draft not found');
       error(404, 'Draft not found.');
     }
 

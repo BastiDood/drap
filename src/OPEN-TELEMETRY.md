@@ -32,9 +32,8 @@ logger.trace('detailed debug info', { key: 'value' });
 logger.debug('debug info', { key: 'value' });
 logger.info('informational', { key: 'value' });
 logger.warn('warning message', { key: 'value' });
-logger.error('error message');
-logger.error('error with exception', error, { key: 'value' });
-logger.fatal('fatal error', error, { key: 'value' });
+logger.error('handled internal error', error, { key: 'value' });
+logger.fatal('request will terminate with failure', error, { key: 'value' });
 ```
 
 **Signature patterns:**
@@ -48,8 +47,71 @@ logger.fatal('fatal error', error, { key: 'value' });
 - `debug`: Developer debugging info
 - `info`: Normal operations (request started, completed)
 - `warn`: Unexpected but recoverable situations
-- `error`: Errors that need attention
-- `fatal`: Unrecoverable errors
+- `error`: Internal errors that need attention, but the request does not terminate at this log site
+- `fatal`: Failure-style request termination at the boundary where the error becomes user-facing
+
+Severity is chosen by where the error is logged in the request lifecycle, not by whether the final status code is `4xx` or `5xx`.
+
+OpenTelemetry's log data model treats `FATAL` as the highest severity bucket for catastrophic failures. We intentionally use a stricter application-level convention: any failure-style request terminator must emit `logger.fatal(...)` at the boundary where the request stops.
+
+> [!NOTE]
+> See the [OpenTelemetry Logs Data Model](https://opentelemetry.io/docs/specs/otel/logs/data-model/).
+
+## Request-Terminating Failures
+
+Use `logger.fatal(...)` immediately before `error(...)`, `return fail(...)`, or any equivalent failure-style request termination.
+
+- Apply this rule to expected user-facing failures too, including validation, permission, conflict, and not-found responses
+- Do not treat an earlier internal `warn` or `error` log as a substitute for the boundary `fatal`
+- Internal handled failures may still use `warn` or `error` if request processing continues or recovers
+
+```ts
+// Internal handled error: request continues, so not fatal
+try {
+  value = parseInput(payload);
+} catch (error) {
+  logger.error('failed to parse input, using fallback', error);
+  value = fallbackValue;
+}
+
+return { value };
+```
+
+```ts
+// Boundary validation failure: request terminates here, so fatal
+if (!result.success) {
+  logger.fatal('invalid profile form input', result.error, {
+    'user.id': session.user.id,
+  });
+  return fail(422, { message: 'Invalid profile input.' });
+}
+```
+
+```ts
+// Boundary permission failure: request terminates here, so fatal
+if (!session.user.isAdmin) {
+  logger.fatal('insufficient permissions to access page', void 0, {
+    'user.id': session.user.id,
+    'user.is_admin': session.user.isAdmin,
+    'user.google_id': session.user.googleUserId,
+    'user.lab_id': session.user.labId,
+  });
+  error(403);
+}
+```
+
+### Redirects
+
+Redirects terminate the request, but they are not failure-style terminators for this rule. Do not use `fatal` for redirects by default.
+
+When a redirect is worth logging, it should typically use `error` or a lower level depending on intent.
+
+```ts
+if (session === null) {
+  logger.error('missing session, redirecting to login');
+  redirect(303, '/login');
+}
+```
 
 ## Span Wrapping
 
@@ -144,19 +206,19 @@ return tracer.asyncSpan('load-lab-page', async span => {
 - Use `span.setAttribute(key, value)` for single attributes
 - Use `if` conditions for nullable values (never set `null` as attribute value)
 
-### Permission Failure Logging
+### Boundary Failure Logging
 
-For `logger.error` on permission failures, use `user.*` prefix (not `auth.*`):
+For `logger.fatal` on request-terminating failures, use `user.*` prefix (not `auth.*`) for permission context:
 
 ```ts
-logger.error('insufficient permissions to access page', void 0, {
+logger.fatal('insufficient permissions to access page', void 0, {
   'user.is_admin': user.isAdmin,
   'user.google_id': user.googleUserId,
   'user.lab_id': user.labId,
 });
 ```
 
-Note: `logger.error` signature is `(body, error?, attributes?)` - pass `void 0` when no exception.
+Note: `logger.error` and `logger.fatal` signatures are `(body, error?, attributes?)` - pass `void 0` when no exception.
 
 ## Route File Pattern
 

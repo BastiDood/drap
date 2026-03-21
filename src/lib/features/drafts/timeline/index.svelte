@@ -16,11 +16,18 @@
   import LotteryActive from './lottery/active.svelte';
   import LotteryCompleted from './lottery/completed.svelte';
   import RegistrationActive from './registration/active.svelte';
+  import RegistrationClosed from './registration/closed.svelte';
   import RegistrationCompleted from './registration/completed.svelte';
   import RegularPhase from './regular/index.svelte';
   import SummaryPhase from './summary/index.svelte';
 
-  type Phase = 'registration' | 'regular' | 'intervention' | 'review' | 'finalized';
+  type Phase =
+    | 'registration'
+    | 'registration-closed'
+    | 'regular'
+    | 'intervention'
+    | 'review'
+    | 'finalized';
 
   interface Props {
     draftId: bigint;
@@ -29,16 +36,26 @@
     studentCount: number;
     records: FacultyChoiceRecord[];
     finalized: DraftFinalizedBreakdown;
+    allowlistCount: number;
   }
 
-  const { draftId: rawDraftId, draft, labs, studentCount, records, finalized }: Props = $props();
+  const {
+    draftId: rawDraftId,
+    draft,
+    labs,
+    studentCount,
+    records,
+    finalized,
+    allowlistCount,
+  }: Props = $props();
   const draftId = $derived(rawDraftId.toString());
 
   // Determine current phase
   const currentPhase = $derived.by(() => {
     if (draft.activePeriodEnd !== null) return 'finalized';
     if (draft.currRound === null) return 'review';
-    if (draft.currRound === 0) return 'registration';
+    if (draft.currRound === 0)
+      return draft.isRegistrationClosed ? 'registration-closed' : 'registration';
     if (draft.currRound !== null && draft.currRound > draft.maxRounds) return 'intervention';
     return 'regular';
   });
@@ -47,6 +64,7 @@
   function getPhaseLabel(phase: Phase) {
     switch (phase) {
       case 'registration':
+      case 'registration-closed':
         return 'Registration';
       case 'regular':
         return `Round ${draft.currRound} of ${draft.maxRounds}` as const;
@@ -62,15 +80,22 @@
   }
 
   // Status per phase
-  const registrationStatus: Status = $derived(
-    currentPhase === 'registration' ? 'active' : 'completed',
-  );
+  const registrationStatus: Status = $derived.by(() => {
+    switch (currentPhase) {
+      case 'registration':
+      case 'registration-closed':
+        return 'active';
+      default:
+        return 'completed';
+    }
+  });
 
   const regularStatus: Status = $derived.by(() => {
     switch (currentPhase) {
       case 'regular':
         return 'active';
       case 'registration':
+      case 'registration-closed':
         return 'pending';
       case 'intervention':
       case 'review':
@@ -84,6 +109,7 @@
   const lotteryStatus: Status = $derived.by(() => {
     switch (currentPhase) {
       case 'registration':
+      case 'registration-closed':
       case 'regular':
         return 'pending';
       case 'intervention':
@@ -108,7 +134,7 @@
         Started {format(draft.activePeriodStart, 'PPP')} &middot; {getPhaseLabel(currentPhase)}
       </p>
     </div>
-    {#if currentPhase !== 'registration'}
+    {#if currentPhase !== 'registration' && currentPhase !== 'registration-closed'}
       <div class="flex gap-2">
         <Button
           href={resolve(`/dashboard/drafts/${draftId}/students.csv`)}
@@ -176,7 +202,7 @@
     {/if}
 
     <!-- Regular Rounds -->
-    {#if currentPhase !== 'registration'}
+    {#if currentPhase !== 'registration' && currentPhase !== 'registration-closed'}
       <Step title="Regular Rounds" status={regularStatus} defaultOpen={currentPhase === 'regular'}>
         {#snippet metadata()}
           <span class="text-muted-foreground text-sm">
@@ -201,7 +227,7 @@
     <Step
       title="Registration"
       status={registrationStatus}
-      defaultOpen={currentPhase === 'registration'}
+      defaultOpen={currentPhase === 'registration' || currentPhase === 'registration-closed'}
       last
     >
       {#snippet metadata()}
@@ -209,6 +235,13 @@
       {/snippet}
       {#if currentPhase === 'registration'}
         <RegistrationActive {draftId} {studentCount} snapshots={finalized.snapshots} />
+      {:else if currentPhase === 'registration-closed'}
+        <RegistrationClosed
+          {draftId}
+          {studentCount}
+          {allowlistCount}
+          snapshots={finalized.snapshots}
+        />
       {:else}
         <RegistrationCompleted {draftId} {studentCount} />
       {/if}

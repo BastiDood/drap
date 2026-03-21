@@ -11,6 +11,7 @@ import {
   getLabById,
   getStudentRankings,
   insertStudentRanking,
+  isUserInAllowlist,
   type schema,
 } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
@@ -36,7 +37,7 @@ export async function load({ locals: { session } }) {
 
   // Only students allowed (not admin)
   if (user.isAdmin) {
-    logger.error('admin attempting to access student dashboard', void 0, {
+    logger.fatal('admin attempting to access student dashboard', void 0, {
       'user.id': user.id,
       'user.is_admin': user.isAdmin,
     });
@@ -88,12 +89,12 @@ export async function load({ locals: { session } }) {
     const draft = await getActiveDraft(db);
 
     // NO_DRAFT: no active draft
-    if (!draft) {
+    if (typeof draft === 'undefined') {
       logger.debug('no active draft');
       return { user: baseUser, lab };
     }
 
-    const { id: draftId, currRound, maxRounds, registrationClosesAt } = draft;
+    const { id: draftId, currRound, maxRounds, registrationClosesAt, isRegistrationClosed } = draft;
     logger.debug('active draft found', {
       'draft.id': draftId.toString(),
       'draft.round.current': currRound,
@@ -105,15 +106,13 @@ export async function load({ locals: { session } }) {
       logger.debug('draft in lottery or review phase');
       return {
         user: baseUser,
-        draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
+        draft: { id: draftId, currRound, maxRounds, registrationClosesAt, isRegistrationClosed },
         lab,
       };
     }
 
     // Check if user has submitted rankings
     const rankings = await getStudentRankings(db, draftId, userId);
-
-    const requestedAt = new Date();
 
     function buildSubmission(r: NonNullable<typeof rankings>) {
       return {
@@ -133,22 +132,34 @@ export async function load({ locals: { session } }) {
         logger.debug('user already submitted rankings');
         return {
           user: baseUser,
-          draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
+          draft: { id: draftId, currRound, maxRounds, registrationClosesAt, isRegistrationClosed },
           submission: buildSubmission(rankings),
           lab,
         };
       }
 
       // Check if registration is still open
-      if (requestedAt < registrationClosesAt) {
+      if (!isRegistrationClosed) {
         // REGISTRATION_OPEN: registration still open
         logger.debug('registration open');
         const availableLabs = await getDraftLabRegistry(db, draftId);
         return {
           user: baseUser,
-          draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
+          draft: { id: draftId, currRound, maxRounds, registrationClosesAt, isRegistrationClosed },
           availableLabs: availableLabs.map(({ id, name }) => ({ id, name })),
           lab,
+        };
+      }
+
+      if (await isUserInAllowlist(db, draft.id, user.id)) {
+        logger.warn('registration is closed but student is in allowlist');
+        const availableLabs = await getDraftLabRegistry(db, draftId);
+        return {
+          user: baseUser,
+          draft: { id: draftId, currRound, maxRounds, registrationClosesAt, isRegistrationClosed },
+          availableLabs: availableLabs.map(({ id, name }) => ({ id, name })),
+          lab,
+          isInAllowlist: true,
         };
       }
 
@@ -157,7 +168,7 @@ export async function load({ locals: { session } }) {
       logger.debug('registration closed, user missed registration');
       return {
         user: baseUser,
-        draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
+        draft: { id: draftId, currRound, maxRounds, registrationClosesAt, isRegistrationClosed },
         lab,
       };
     }
@@ -168,7 +179,7 @@ export async function load({ locals: { session } }) {
       logger.debug('draft in progress, user submitted');
       return {
         user: baseUser,
-        draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
+        draft: { id: draftId, currRound, maxRounds, registrationClosesAt, isRegistrationClosed },
         submission: buildSubmission(rankings),
         lab,
       };
@@ -178,7 +189,7 @@ export async function load({ locals: { session } }) {
     logger.debug('draft in progress, user missed registration');
     return {
       user: baseUser,
-      draft: { id: draftId, currRound, maxRounds, registrationClosesAt },
+      draft: { id: draftId, currRound, maxRounds, registrationClosesAt, isRegistrationClosed },
       lab,
     };
   });
@@ -198,7 +209,7 @@ export const actions = {
       user.labId !== null ||
       user.studentNumber === null
     ) {
-      logger.error('insufficient permissions to submit lab rankings', void 0, {
+      logger.fatal('insufficient permissions to submit lab rankings', void 0, {
         'user.is_admin': user.isAdmin,
         'user.google_id': user.googleUserId,
         'user.lab_id': user.labId,
@@ -230,7 +241,7 @@ export const actions = {
         else uniqueLabIds.add(labId);
 
       if (duplicateLabIds.size > 0) {
-        logger.warn('submitted duplicate lab rankings', {
+        logger.fatal('submitted duplicate lab rankings', void 0, {
           'draft.id': draftId.toString(),
           'ranking.duplicate_lab_count': duplicateLabIds.size,
           'ranking.duplicate_lab_ids': Array.from(duplicateLabIds),
@@ -242,29 +253,38 @@ export const actions = {
         async db => {
           const draft = await getDraftByIdForShare(db, draftId);
           if (typeof draft === 'undefined') {
-            logger.warn('cannot find the target draft');
+            logger.fatal('cannot find the target draft');
             error(404);
           }
 
-          const { currRound, maxRounds, registrationClosesAt } = draft;
+          const { currRound, maxRounds, registrationClosesAt, isRegistrationClosed } = draft;
           logger.debug('max rounds for target draft determined', { 'draft.round.max': maxRounds });
           if (currRound !== 0) {
-            logger.warn('cannot submit rankings to an ongoing draft', {
+            logger.fatal('cannot submit rankings to an ongoing draft', void 0, {
               'draft.round.current': currRound,
               'draft.round.max': maxRounds,
             });
             error(403);
           }
 
-          if (registrationClosesAt < new Date()) {
-            logger.warn('attempt to submit rankings after registration closed', {
-              'draft.registration.closes_at': registrationClosesAt.toISOString(),
-            });
-            error(403);
+          if (isRegistrationClosed) {
+            const isInAllowlist = await isUserInAllowlist(db, draftId, user.id);
+            if (isInAllowlist) {
+              logger.warn(
+                'attempt to submit rankings after registration closed but student is in allowlist',
+              );
+            } else {
+              logger.fatal('attempt to submit rankings after registration closed', void 0, {
+                'draft.registration.closes_at': registrationClosesAt.toISOString(),
+              });
+              error(403);
+            }
           }
 
           if (labs.length > maxRounds) {
-            logger.warn('lab rankings exceed max round', { 'ranking.lab_count': labs.length });
+            logger.fatal('lab rankings exceed max round', void 0, {
+              'ranking.lab_count': labs.length,
+            });
             error(400);
           }
 
@@ -273,7 +293,7 @@ export const actions = {
             labId => !snapshotLabIds.has(labId),
           );
           if (unknownLabIds.length > 0) {
-            logger.warn('submitted rankings with labs outside draft snapshot', {
+            logger.fatal('submitted rankings with labs outside draft snapshot', void 0, {
               'draft.id': draftId.toString(),
               'ranking.lab_count': labs.length,
               'ranking.snapshot_lab_count': snapshotLabIds.size,

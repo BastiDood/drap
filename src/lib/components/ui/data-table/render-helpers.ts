@@ -18,7 +18,7 @@ import type { Component, ComponentProps, Snippet } from 'svelte';
  */
 export class RenderComponentConfig<TComponent extends Component> {
   /* eslint-disable @typescript-eslint/parameter-properties
-    -- 
+    --
     abiding this rule will trigger three more different rules for violations */
   component: TComponent;
   props: ComponentProps<TComponent> | Record<string, never>;
@@ -49,7 +49,7 @@ export class RenderComponentConfig<TComponent extends Component> {
  */
 export class RenderSnippetConfig<TProps> {
   /* eslint-disable @typescript-eslint/parameter-properties
-    -- 
+    --
     abiding this rule will trigger three more different rules for violations */
   snippet: Snippet<[TProps]>;
   params: TProps;

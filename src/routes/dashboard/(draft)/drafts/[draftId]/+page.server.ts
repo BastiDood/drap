@@ -6,12 +6,15 @@ import { error, fail } from '@sveltejs/kit';
 import { repeat, roundrobin, zip } from 'itertools';
 
 import {
+  addToAllowlist,
   autoAcknowledgeLabsWithoutPreferences,
   beginDraftReview,
   concludeDraft,
   getActiveDraftForUpdate,
+  getAllowlistCountByDraft,
   getDraftAssignmentRecords,
   getDraftById,
+  getDraftByIdForUpdate,
   getDraftLabQuotaLabIds,
   getDraftLabQuotaSnapshots,
   getFacultyAndStaff,
@@ -19,10 +22,13 @@ import {
   getLabById,
   getPendingLabCountInDraft,
   getStudentCountInDraft,
+  getUserByEmail,
   getUserById,
   incrementDraftRound,
   insertLotteryChoices,
+  isRegisteredOrAssignedInDraft,
   randomizeRemainingStudents,
+  removeFromAllowlist,
   syncResultsToUsers,
   updateDraftInitialLabQuotas,
   updateDraftLotteryLabQuotas,
@@ -37,6 +43,13 @@ import {
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
+
+const enum AllowlistAddResult {
+  NotAStudent = -3,
+  UserNotFound = -2,
+  AlreadyRegistered = -1,
+  AlreadyInAllowlist = 0,
+}
 
 const DraftActionFormData = v.object({
   draft: v.pipe(v.string(), v.minLength(1)),
@@ -59,7 +72,7 @@ export async function load({ params, locals: { session } }) {
 
   const { user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
-    logger.error('insufficient permissions to access draft detail page', void 0, {
+    logger.fatal('insufficient permissions to access draft detail page', void 0, {
       'user.is_admin': user.isAdmin,
       'user.google_id': user.googleUserId,
       'user.lab_id': user.labId,
@@ -83,15 +96,16 @@ export async function load({ params, locals: { session } }) {
     const draft = await getDraftById(db, draftId);
 
     if (typeof draft === 'undefined') {
-      logger.warn('draft not found', { 'draft.id': params.draftId });
+      logger.fatal('draft not found', void 0, { 'draft.id': params.draftId });
       error(404);
     }
 
-    const [studentCount, records, assignments, quotaSnapshots] = await Promise.all([
+    const [studentCount, records, assignments, quotaSnapshots, allowlistCount] = await Promise.all([
       getStudentCountInDraft(db, draftId),
       getFacultyChoiceRecords(db, draftId),
       getDraftAssignmentRecords(db, draftId),
       getDraftLabQuotaSnapshots(db, draftId),
+      getAllowlistCountByDraft(db, draftId),
     ]);
     const labs = quotaSnapshots.map(({ labId, labName, initialQuota }) => ({
       id: labId,
@@ -148,12 +162,21 @@ export async function load({ params, locals: { session } }) {
           lotteryDrafted,
         },
       },
+      allowlistCount,
     };
   });
 }
 
 const UserId = v.pipe(v.string(), v.ulid());
 type UserId = v.InferOutput<typeof UserId>;
+
+const AllowlistAddFormData = v.object({
+  email: v.pipe(v.string(), v.email()),
+});
+
+const AllowlistRemoveFormData = v.object({
+  studentUserId: UserId,
+});
 
 function* mapRowTuples(data: FormData) {
   for (const [userId, lab] of data.entries()) {
@@ -168,7 +191,13 @@ function mapQuotaPairs(data: FormData) {
     if (key === 'draft' || key === 'kind') continue;
     if (value instanceof File || value.length === 0) continue;
     const quota = Number.parseInt(value, 10);
-    if (!Number.isFinite(quota) || quota < 0) error(400);
+    if (!Number.isFinite(quota) || quota < 0) {
+      logger.fatal('invalid quota input', void 0, {
+        'draft.quota.field': key,
+        'draft.quota.value': value,
+      });
+      error(400);
+    }
     pairs.push([key, quota]);
   }
   return pairs;
@@ -209,7 +238,7 @@ export const actions = {
 
       // Validate draftId matches URL param
       if (draft !== params.draftId) {
-        logger.warn('draft id mismatch', {
+        logger.fatal('draft id mismatch', void 0, {
           'draft.form_id': draft,
           'draft.param_id': params.draftId,
         });
@@ -224,12 +253,14 @@ export const actions = {
         async db => {
           const activeDraft = await getActiveDraftForUpdate(db);
           if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
-            logger.warn('attempt to start non-active draft', { 'draft.id': draftId.toString() });
+            logger.fatal('attempt to start non-active draft', void 0, {
+              'draft.id': draftId.toString(),
+            });
             error(403);
           }
 
           if (activeDraft.currRound !== 0) {
-            logger.warn('attempt to start draft outside registration phase', {
+            logger.fatal('attempt to start draft outside registration phase', void 0, {
               'draft.id': draftId.toString(),
               'draft.round.current': activeDraft.currRound,
               'draft.round.max': activeDraft.maxRounds,
@@ -271,7 +302,12 @@ export const actions = {
         { isolationLevel: 'read committed' },
       );
 
-      if (!started) return fail(497);
+      if (!started) {
+        logger.fatal('cannot start draft without students', void 0, {
+          'draft.id': draftId.toString(),
+        });
+        return fail(497);
+      }
 
       // Dispatch notifications for all rounds that were started
       const facultyAndStaff = await getFacultyAndStaff(db);
@@ -312,7 +348,7 @@ export const actions = {
       const { draft, kind } = v.parse(QuotaActionFormData, decode(data));
 
       if (draft !== params.draftId) {
-        logger.warn('draft id mismatch', {
+        logger.fatal('draft id mismatch', void 0, {
           'draft.form_id': draft,
           'draft.param_id': params.draftId,
         });
@@ -333,7 +369,7 @@ export const actions = {
         async db => {
           const activeDraft = await getActiveDraftForUpdate(db);
           if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
-            logger.warn('attempt to update quota snapshots for non-active draft', {
+            logger.fatal('attempt to update quota snapshots for non-active draft', void 0, {
               'draft.id': draftId.toString(),
             });
             error(403);
@@ -345,7 +381,7 @@ export const actions = {
             snapshotLabIds,
           );
           if (unknownLabIds.length > 0) {
-            logger.error('attempt to update draft quota snapshots with unknown labs', void 0, {
+            logger.fatal('attempt to update draft quota snapshots with unknown labs', void 0, {
               'draft.id': draftId.toString(),
               'quota.kind': kind,
               'quota.snapshot_lab_count': snapshotLabIds.size,
@@ -359,7 +395,7 @@ export const actions = {
           switch (kind) {
             case 'initial':
               if (activeDraft.currRound !== 0) {
-                logger.warn('attempt to update initial snapshots outside registration', {
+                logger.fatal('attempt to update initial snapshots outside registration', void 0, {
                   'draft.id': draftId.toString(),
                   'draft.round.current': activeDraft.currRound,
                 });
@@ -369,11 +405,15 @@ export const actions = {
               break;
             case 'lottery':
               if (activeDraft.currRound !== activeDraft.maxRounds + 1) {
-                logger.warn('attempt to update lottery snapshots outside intervention phase', {
-                  'draft.id': draftId.toString(),
-                  'draft.round.current': activeDraft.currRound,
-                  'draft.round.max': activeDraft.maxRounds,
-                });
+                logger.fatal(
+                  'attempt to update lottery snapshots outside intervention phase',
+                  void 0,
+                  {
+                    'draft.id': draftId.toString(),
+                    'draft.round.current': activeDraft.currRound,
+                    'draft.round.max': activeDraft.maxRounds,
+                  },
+                );
                 error(403);
               }
               await updateDraftLotteryLabQuotas(db, draftId, pairs);
@@ -414,7 +454,7 @@ export const actions = {
 
       // Validate draftId matches URL param
       if (draft !== params.draftId) {
-        logger.warn('draft id mismatch', {
+        logger.fatal('draft id mismatch', void 0, {
           'draft.form_id': draft,
           'draft.param_id': params.draftId,
         });
@@ -437,14 +477,14 @@ export const actions = {
           const activeDraft = await getActiveDraftForUpdate(db);
 
           if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
-            logger.warn('attempt to intervene non-active draft', {
+            logger.fatal('attempt to intervene non-active draft', void 0, {
               'draft.id': draftId.toString(),
             });
             error(403);
           }
 
           if (activeDraft.currRound !== activeDraft.maxRounds + 1) {
-            logger.warn('attempt to intervene outside intervention rounds', {
+            logger.fatal('attempt to intervene outside intervention rounds', void 0, {
               'draft.id': draftId.toString(),
               'draft.round.current': activeDraft.currRound,
               'draft.round.max': activeDraft.maxRounds,
@@ -458,7 +498,7 @@ export const actions = {
             snapshotLabIds,
           );
           if (unknownLabIds.length > 0) {
-            logger.error('attempt to intervene draft with unknown labs', void 0, {
+            logger.fatal('attempt to intervene draft with unknown labs', void 0, {
               'draft.id': draftId.toString(),
               'draft.pair_count': pairs.length,
               'draft.snapshot_lab_count': snapshotLabIds.size,
@@ -474,7 +514,7 @@ export const actions = {
       );
 
       if (typeof result === 'undefined') {
-        logger.error('draft must exist prior to lottery in intervention');
+        logger.fatal('draft must exist prior to lottery in intervention');
         error(404);
       }
 
@@ -526,7 +566,7 @@ export const actions = {
 
       // Validate draftId matches URL param
       if (draft !== params.draftId) {
-        logger.warn('draft id mismatch', {
+        logger.fatal('draft id mismatch', void 0, {
           'draft.form_id': draft,
           'draft.param_id': params.draftId,
         });
@@ -541,14 +581,14 @@ export const actions = {
           async db => {
             const activeDraft = await getActiveDraftForUpdate(db);
             if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
-              logger.warn('attempt to conclude non-active draft', {
+              logger.fatal('attempt to conclude non-active draft', void 0, {
                 'draft.id': draftId.toString(),
               });
               error(403);
             }
 
             if (activeDraft.currRound !== activeDraft.maxRounds + 1) {
-              logger.warn('attempt to conclude outside intervention rounds', {
+              logger.fatal('attempt to conclude outside intervention rounds', void 0, {
                 'draft.id': draftId.toString(),
                 'draft.round.current': activeDraft.currRound,
                 'draft.round.max': activeDraft.maxRounds,
@@ -586,7 +626,7 @@ export const actions = {
 
               const result = await insertLotteryChoices(db, draftId, user.id, pairs, 'lottery');
               if (typeof result === 'undefined') {
-                logger.error('draft must exist prior to draft finalization');
+                logger.fatal('draft must exist prior to draft finalization');
                 error(404);
               }
             } else {
@@ -596,7 +636,7 @@ export const actions = {
 
             const review = await beginDraftReview(db, draftId);
             if (typeof review === 'undefined') {
-              logger.error('draft must exist prior to entering review');
+              logger.fatal('draft must exist prior to entering review');
               error(404);
             }
           },
@@ -604,7 +644,10 @@ export const actions = {
         );
         logger.info('draft review started');
       } catch (err) {
-        if (err === ZIP_NOT_EQUAL) return fail(403);
+        if (err === ZIP_NOT_EQUAL) {
+          logger.fatal('cannot conclude draft because schedule and quota mismatched');
+          return fail(403);
+        }
         throw err;
       }
     });
@@ -631,7 +674,7 @@ export const actions = {
       const { draft } = v.parse(DraftActionFormData, decode(data));
 
       if (draft !== params.draftId) {
-        logger.warn('draft id mismatch', {
+        logger.fatal('draft id mismatch', void 0, {
           'draft.form_id': draft,
           'draft.param_id': params.draftId,
         });
@@ -647,12 +690,14 @@ export const actions = {
           const activeDraft = await getActiveDraftForUpdate(db);
 
           if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
-            logger.warn('attempt to finalize non-active draft', { 'draft.id': draftId.toString() });
+            logger.fatal('attempt to finalize non-active draft', void 0, {
+              'draft.id': draftId.toString(),
+            });
             error(403);
           }
 
           if (activeDraft.currRound !== null) {
-            logger.warn('attempt to finalize outside review phase', {
+            logger.fatal('attempt to finalize outside review phase', void 0, {
               'draft.id': draftId.toString(),
               'draft.round.current': activeDraft.currRound,
               'draft.round.max': activeDraft.maxRounds,
@@ -711,6 +756,168 @@ export const actions = {
           }),
         );
       }
+    });
+  },
+
+  async 'add-to-allowlist'({ params, locals: { session }, request }) {
+    if (typeof session?.user === 'undefined') {
+      logger.fatal('attempt to add to allowlist without session');
+      error(401);
+    }
+
+    const { user } = session;
+    if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
+      logger.fatal('invalid user', void 0, {
+        'user.is_admin': user.isAdmin,
+        'user.google_id': user.googleUserId,
+        'user.lab_id': user.labId,
+      });
+      error(403);
+    }
+
+    return await tracer.asyncSpan('action.allowlist-add', async () => {
+      const data = await request.formData();
+      const payload = decode(data);
+
+      // eslint-disable-next-line @typescript-eslint/init-declarations
+      let parsed: v.InferOutput<typeof AllowlistAddFormData>;
+      try {
+        parsed = v.parse(AllowlistAddFormData, payload);
+      } catch (err) {
+        if (v.isValiError(err)) {
+          logger.fatal('Invalid email address', err);
+          return fail(400, { message: 'Invalid email address.' });
+        }
+        throw err;
+      }
+
+      if (parsed === null) {
+        logger.fatal('Invalid email address');
+        return fail(400, { message: 'Invalid email address.' });
+      }
+      const { email } = parsed;
+
+      const draftId = BigInt(params.draftId);
+
+      const result = await db.transaction(
+        async db => {
+          const draft = await getDraftByIdForUpdate(db, draftId);
+          if (typeof draft === 'undefined') {
+            logger.fatal('draft not found', void 0, { 'draft.id': draftId.toString() });
+            error(404);
+          }
+
+          if (draft.currRound !== 0) {
+            logger.fatal('draft already started', void 0, { 'draft.id': draftId.toString() });
+            error(403);
+          }
+
+          const targetUser = await getUserByEmail(db, email);
+          if (typeof targetUser === 'undefined') return AllowlistAddResult.UserNotFound;
+          if (targetUser.isAdmin || targetUser.studentNumber === null)
+            return AllowlistAddResult.NotAStudent;
+
+          // Check if targetUser is already registered or already has a lab
+          const isRegisteredOrAssigned = await isRegisteredOrAssignedInDraft(
+            db,
+            draftId,
+            targetUser.id,
+          );
+          if (isRegisteredOrAssigned) return AllowlistAddResult.AlreadyRegistered;
+
+          return await addToAllowlist(db, draftId, targetUser.id, user.id);
+        },
+        { isolationLevel: 'read committed' },
+      );
+
+      switch (result) {
+        case AllowlistAddResult.UserNotFound:
+          logger.fatal('user with this email not found', void 0, {
+            'draft.id': draftId.toString(),
+          });
+          return fail(400, { status: 'user-not-found' as const });
+        case AllowlistAddResult.AlreadyRegistered:
+          logger.fatal('user already registered', void 0, { 'draft.id': draftId.toString() });
+          return fail(409, { status: 'already-registered' as const });
+        case AllowlistAddResult.AlreadyInAllowlist:
+          logger.fatal('user already in allowlist', void 0, { 'draft.id': draftId.toString() });
+          return fail(409, { status: 'already-in-allowlist' as const });
+        case AllowlistAddResult.NotAStudent:
+          logger.fatal('user is not a student', void 0, { 'draft.id': draftId.toString() });
+          return fail(400, { status: 'not-a-student' as const });
+        default:
+          logger.info('student added to allowlist', {
+            'draft.id': params.draftId,
+            email,
+            'admin.id': user.id,
+          });
+          break;
+      }
+    });
+  },
+
+  async 'remove-from-allowlist'({ params, locals: { session }, request }) {
+    if (typeof session?.user === 'undefined') {
+      logger.fatal('attempt to remove from allowlist without session');
+      error(401);
+    }
+
+    const { user } = session;
+    if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
+      logger.fatal('invalid user', void 0, {
+        'user.is_admin': user.isAdmin,
+        'user.google_id': user.googleUserId,
+        'user.lab_id': user.labId,
+      });
+      error(403);
+    }
+
+    return await tracer.asyncSpan('action.allowlist-remove', async () => {
+      const data = await request.formData();
+      const payload = decode(data);
+
+      // eslint-disable-next-line @typescript-eslint/init-declarations
+      let parsed: v.InferOutput<typeof AllowlistRemoveFormData>;
+      try {
+        parsed = v.parse(AllowlistRemoveFormData, payload);
+      } catch (err) {
+        if (v.isValiError(err)) {
+          logger.fatal('invalid  student user ID', err);
+          return fail(400, { message: 'Invalid student user ID.' });
+        }
+        throw err;
+      }
+
+      if (parsed === null) {
+        logger.fatal('invalid  student user ID');
+        return fail(400, { message: 'Invalid student user ID.' });
+      }
+      const { studentUserId } = parsed;
+      const draftId = BigInt(params.draftId);
+
+      await db.transaction(
+        async db => {
+          const draft = await getDraftByIdForUpdate(db, draftId);
+          if (typeof draft === 'undefined') {
+            logger.fatal('draft not found', void 0, { 'draft.id': draftId.toString() });
+            error(404);
+          }
+
+          if (draft.currRound !== 0) {
+            logger.fatal('draft already started', void 0, { 'draft.id': draftId.toString() });
+            error(403);
+          }
+
+          await removeFromAllowlist(db, draftId, studentUserId);
+        },
+        { isolationLevel: 'read committed' },
+      );
+
+      logger.info('student removed from allowlist', {
+        'draft.id': params.draftId,
+        studentUserId,
+        'admin.id': user.id,
+      });
     });
   },
 };

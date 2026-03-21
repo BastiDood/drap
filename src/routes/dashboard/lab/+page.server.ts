@@ -20,7 +20,7 @@ export async function load({ locals: { session } }) {
   }
 
   if (session.user.googleUserId === null || session.user.labId === null) {
-    logger.error('insufficient permissions to access lab page', void 0, {
+    logger.fatal('insufficient permissions to access lab page', void 0, {
       isAdmin: session.user.isAdmin,
       googleUserId: session.user.googleUserId,
       labId: session.user.labId,
