@@ -210,7 +210,7 @@ export const actions = {
                 'draft.round.current': activeDraft.currRound,
                 'choice.round': existingChoice.round,
               });
-              error(403);
+            error(409);
             }
 
             const selectedInCurrentRound = await getLabSelectedStudentCountInDraftRound(
