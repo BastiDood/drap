@@ -4,12 +4,15 @@
   import CircleSlashIcon from '@lucide/svelte/icons/circle-slash';
   import Clock3Icon from '@lucide/svelte/icons/clock-3';
   import InfoIcon from '@lucide/svelte/icons/info';
+  import PencilIcon from '@lucide/svelte/icons/pencil';
   import ShuffleIcon from '@lucide/svelte/icons/shuffle';
   import UserXIcon from '@lucide/svelte/icons/user-x';
 
+  import * as Dialog from '$lib/components/ui/dialog';
   import * as Empty from '$lib/components/ui/empty';
   import PreviousPicks from '$lib/features/faculty/previous-picks/index.svelte';
   import StatCards from '$lib/features/faculty/stat-cards/index.svelte';
+  import { Button } from '$lib/components/ui/button';
 
   import RankingsForm from './rankings-form.svelte';
 
@@ -18,6 +21,7 @@
     draft: { id, currRound, maxRounds },
     info,
   } = $derived(data);
+  let editDialogOpen = $state(false);
 </script>
 
 {#if typeof info === 'undefined'}
@@ -95,6 +99,9 @@
       {submissionSource}
       {autoAcknowledgeReason}
     />
+    {@const currentRoundSelections =
+      currRound === null ? [] : researchers.filter(({ round }) => round === currRound)}
+    {@const currentRoundSelectionIds = currentRoundSelections.map(({ id }) => id)}
     {#if submissionSource === 'faculty'}
       <Empty.Root>
         <Empty.Media variant="icon">
@@ -103,14 +110,41 @@
         <Empty.Header>
           <Empty.Title>Round Already Submitted</Empty.Title>
           <Empty.Description>
-            This lab has already submitted its picks for this round. No action is required until the
-            next one.
+            This lab has already submitted its picks for this round. You may still edit while this
+            round is active. Once all labs submit and the round advances, changes are irreversible.
           </Empty.Description>
         </Empty.Header>
+        <Empty.Content>
+          <Button onclick={() => (editDialogOpen = true)}>
+            <PencilIcon />
+            Edit Selection
+          </Button>
+        </Empty.Content>
       </Empty.Root>
       {#if researchers.length > 0}
         <PreviousPicks {researchers} />
       {/if}
+      <Dialog.Root bind:open={editDialogOpen}>
+        <Dialog.Content class="max-h-[85vh] max-w-2xl overflow-y-auto">
+          <Dialog.Header>
+            <Dialog.Title>Edit Round {currRound} Selection</Dialog.Title>
+            <Dialog.Description>
+              Modify your student selections for this round. Changes will overwrite your previous
+              submission.
+            </Dialog.Description>
+          </Dialog.Header>
+          <RankingsForm
+            draft={id}
+            round={currRound}
+            {students}
+            {remainingQuota}
+            initialSelectedIds={currentRoundSelectionIds}
+            submitLabel="Save Changes"
+            onCancel={() => (editDialogOpen = false)}
+            onSuccess={() => (editDialogOpen = false)}
+          />
+        </Dialog.Content>
+      </Dialog.Root>
     {:else if autoAcknowledgeReason === 'quota-exhausted'}
       <Empty.Root>
         <Empty.Media variant="icon">
@@ -148,7 +182,7 @@
         {#if researchers.length > 0}
           <PreviousPicks {researchers} />
         {/if}
-        <RankingsForm draft={id} {students} {remainingQuota} />
+        <RankingsForm draft={id} round={currRound} {students} {remainingQuota} />
       </div>
     {/if}
   {/if}

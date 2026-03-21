@@ -20,14 +20,51 @@
 
   interface Props {
     draft: schema.Draft['id'];
+    round: number;
     students: Student[];
     remainingQuota: number;
+    initialSelectedIds?: string[];
+    submitLabel?: string;
+    onCancel?: () => void;
+    onSuccess?: () => void;
   }
 
-  const { draft, students, remainingQuota }: Props = $props();
+  const {
+    draft,
+    round,
+    students,
+    remainingQuota,
+    initialSelectedIds = [],
+    submitLabel,
+    onCancel,
+    onSuccess,
+  }: Props = $props();
 
-  const drafteeIds = new SvelteSet<string>();
-  const disabled = $derived(remainingQuota - drafteeIds.size < 0);
+  const addedIds = new SvelteSet<string>();
+  const removedIds = new SvelteSet<string>();
+  const selectedIds = $derived([
+    ...initialSelectedIds.filter(id => !removedIds.has(id)),
+    ...Array.from(addedIds, id => (initialSelectedIds.includes(id) ? null : id)).filter(
+      (id): id is string => id !== null,
+    ),
+  ]);
+  const disabled = $derived(remainingQuota - selectedIds.length < 0);
+  const editing = $derived(initialSelectedIds.length > 0);
+
+  function toggleSelection(id: string) {
+    if (initialSelectedIds.includes(id)) {
+      if (removedIds.has(id)) removedIds.delete(id);
+      else removedIds.add(id);
+      return;
+    }
+
+    if (addedIds.has(id)) addedIds.delete(id);
+    else addedIds.add(id);
+  }
+
+  function hasSelection(id: string) {
+    return (initialSelectedIds.includes(id) && !removedIds.has(id)) || addedIds.has(id);
+  }
 </script>
 
 <form
@@ -36,7 +73,12 @@
   use:enhance={({ formData, submitter, cancel }) => {
     const count = formData.getAll('students').length;
     // eslint-disable-next-line no-alert
-    if (!confirm(`Are you sure you want to select these ${count} students?`)) {
+    const confirmed = confirm(
+      editing
+        ? `Are you sure you want to update your selections to ${count} students?`
+        : `Are you sure you want to select these ${count} students?`,
+    );
+    if (!confirmed) {
       cancel();
       return;
     }
@@ -48,10 +90,11 @@
       await update();
       switch (result.type) {
         case 'success':
-          toast.success('Selections submitted.');
+          toast.success(editing ? 'Selections updated.' : 'Selections submitted.');
+          onSuccess?.();
           break;
         case 'failure':
-          toast.error('Failed to submit selections.');
+          toast.error(editing ? 'Failed to update selections.' : 'Failed to submit selections.');
           break;
         default:
           break;
@@ -61,13 +104,13 @@
   class="flex flex-col gap-4 inert:opacity-20"
 >
   <input type="hidden" name="draft" value={draft} />
-  {#each drafteeIds as id (id)}
+  <input type="hidden" name="round" value={round} />
+  {#each selectedIds as id (id)}
     <input type="hidden" name="students" value={id} />
   {/each}
   <ul class="space-y-1">
     {#each students as { id, email, givenName, familyName, avatarUrl, studentNumber, remark } (id)}
-      {@const selected = drafteeIds.has(id)}
-      {@const action: (value: string) => void = selected ? drafteeIds.delete : drafteeIds.add}
+      {@const selected = hasSelection(id)}
       <li
         data-selected={selected}
         class="cursor-pointer rounded-md bg-muted transition-colors duration-150 hover:bg-muted/80 data-[selected=true]:bg-primary/20"
@@ -75,7 +118,7 @@
         <button
           type="button"
           class="flex w-full flex-col gap-3 p-2"
-          onclick={action.bind(drafteeIds, id)}
+          onclick={toggleSelection.bind(void 0, id)}
         >
           <div class="flex items-center gap-3 p-2">
             <Avatar.Root class="size-10">
@@ -104,20 +147,25 @@
     {/each}
   </ul>
   <div id="selection-progress" class="flex items-center gap-3">
-    <Progress value={drafteeIds.size} max={remainingQuota} />
+    <Progress value={selectedIds.length} max={remainingQuota} />
     <span class="text-sm whitespace-nowrap text-muted-foreground tabular-nums">
-      {drafteeIds.size} / {remainingQuota} slots
+      {selectedIds.length} / {remainingQuota} slots
     </span>
   </div>
   <div class="flex items-center gap-2">
-    <Button type="submit" class="grow" {disabled}>Submit</Button>
+    <Button type="submit" class="grow" {disabled}
+      >{submitLabel ?? (editing ? 'Update Selection' : 'Submit')}</Button
+    >
+    {#if typeof onCancel !== 'undefined'}
+      <Button type="button" variant="outline" onclick={onCancel}>Cancel</Button>
+    {/if}
     <Popover.Root>
       <Popover.Trigger>
         <CircleHelpIcon class="size-4 text-muted-foreground" />
       </Popover.Trigger>
       <Popover.Content class="text-sm">
-        Empty submissions allowed. All lab heads must submit before the next round auto-starts.
-        Everyone is notified on round advance.
+        Empty submissions allowed. You may amend selections while this round is active. Once all
+        labs submit and the round advances, changes become irreversible.
       </Popover.Content>
     </Popover.Root>
   </div>

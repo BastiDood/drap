@@ -721,6 +721,29 @@ test.describe('Draft Lifecycle', () => {
         await ndslHeadPage.goto('/dashboard/students/');
         await expectStatCards(ndslHeadPage, { quota: 2, remaining: 1, drafted: 1 });
       });
+
+      test('can amend picks while round is still active', async ({ ndslHeadPage }) => {
+        await ndslHeadPage.goto('/dashboard/students/');
+        await expect(ndslHeadPage.getByRole('button', { name: 'Edit Selection' })).toBeVisible();
+        await ndslHeadPage.getByRole('button', { name: 'Edit Selection' }).click();
+        await expect(ndslHeadPage.getByRole('button', { name: /Eager/u })).toBeVisible();
+        await expect(ndslHeadPage.getByRole('button', { name: /Partial/u })).toBeVisible();
+
+        // Replace the prior selection (Eager) with Partial before the round advances.
+        await ndslHeadPage.getByRole('button', { name: /Eager/u }).click();
+        await ndslHeadPage.getByRole('button', { name: /Partial/u }).click();
+        ndslHeadPage.on('dialog', dialog => dialog.accept());
+        const responsePromise = ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
+        await ndslHeadPage.getByRole('button', { name: 'Save Changes' }).click();
+        const response = await responsePromise;
+        const responseData = await response.json();
+        expect(responseData.type).toBe('success');
+
+        await expectStudentsCallout(
+          ndslHeadPage,
+          'This lab has already submitted its picks for this round.',
+        );
+      });
     });
 
     test.describe('CSL', () => {
