@@ -6599,11 +6599,19 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
 
+<<<<<<< HEAD
   vaul-svelte@1.0.0-next.7(svelte@5.54.0):
     dependencies:
       runed: 0.23.4(svelte@5.54.0)
       svelte: 5.54.0
       svelte-toolbelt: 0.7.1(svelte@5.54.0)
+=======
+  vaul-svelte@1.0.0-next.7(svelte@5.53.12):
+    dependencies:
+      runed: 0.23.4(svelte@5.53.12)
+      svelte: 5.53.12
+      svelte-toolbelt: 0.7.1(svelte@5.53.12)
+>>>>>>> 195c7c3 (feat: add drawer component from vaul-svelte)
 
   vfile-message@4.0.3:
     dependencies:
