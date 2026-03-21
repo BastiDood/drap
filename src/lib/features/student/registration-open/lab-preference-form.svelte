@@ -51,6 +51,10 @@
     500
   );
 
+  // Remove already selected labs from available labs
+  const selectedIds = new Set(selectedLabs.current.map(({ id }) => id));
+  availableLabs = availableLabs.filter(({ id }) => !selectedIds.has(id));
+
   function selectLab(index: number) {
     if (selectedLabs.current.length >= maxRounds) return;
     selectedLabs.current.push(...availableLabs.splice(index, 1));
