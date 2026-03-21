@@ -132,9 +132,9 @@
   const maxCount = $derived(Math.max(...chartData.map(p => p.count), 1));
   const chartMax = $derived.by(() => {
     if (chartMode === 'remaining' && selectedLabId !== null && selectedLabQuota !== null)
-      return selectedLabQuota;
+      return Math.max(selectedLabQuota, 1);
 
-    if (chartMode === 'remaining') return totalStudents;
+    if (chartMode === 'remaining') return Math.max(totalStudents, 1);
 
     return maxCount;
   });
