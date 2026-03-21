@@ -77,18 +77,15 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
 4. Lab received no interest, was auto-skipped [null faculty email, none of the above cases]
 -->
 
-<Card.Root class="my-2">
-  <Card.Content class="pt-4">
-    <label class="flex items-center space-x-2">
-      <input
-        class="h-4 w-4 rounded border border-primary"
-        type="checkbox"
-        bind:checked={showAutomated}
-      />
-      <span>Show System Automation Logs</span>
-    </label>
-  </Card.Content>
-</Card.Root>
+<label class="flex items-center space-x-2 mt-4">
+  <input
+    class="border-primary h-4 w-4 rounded border"
+    type="checkbox"
+    bind:checked={showAutomated}
+  />
+  <span>Show System Automation Logs</span>
+</label>
+
 {#each events as event (event.key)}
   <Card.Root class="my-2">
     <Card.Header>
