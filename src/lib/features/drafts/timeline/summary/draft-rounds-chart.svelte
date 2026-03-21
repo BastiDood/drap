@@ -1,8 +1,7 @@
 <script lang="ts">
   import * as Card from '$lib/components/ui/card';
-  import type { DraftAssignmentRecord, Lab } from '$lib/features/drafts/types';
-
   import { Badge } from '$lib/components/ui/badge';
+  import type { DraftAssignmentRecord, Lab } from '$lib/features/drafts/types';
 
   interface Props {
     records: DraftAssignmentRecord[];
@@ -88,16 +87,18 @@
     const maxCount = Math.max(
       ...nonZeroRounds.map(r => r.count),
       interventionCount,
-      lotteryRecords.length,
+      filteredLotteryRecords.length,
       1,
     );
 
-    const maxY =
-      chartMode === 'remaining' && selectedLabId !== null && selectedLabQuota !== null
-        ? selectedLabQuota
-        : chartMode === 'remaining'
-          ? totalStudents
-          : maxCount;
+    const maxY = (() => {
+      if (chartMode === 'remaining' && selectedLabId !== null && selectedLabQuota !== null)
+        return selectedLabQuota;
+
+      if (chartMode === 'remaining') return totalStudents;
+
+      return maxCount;
+    })();
 
     return points.map((point, index) => ({
       ...point,
@@ -120,18 +121,23 @@
     pts: { label: string; type: 'round' | 'intervention' | 'lottery'; count: number }[],
   ) {
     let drafted = 0;
-    for (let i = 0; i <= index; i++) drafted += pts[i]!.count;
+    for (let i = 0; i <= index; i++) {
+      const pt = pts[i];
+      if (typeof pt === 'undefined') throw new Error(`Expected point at index ${i}`);
+      drafted += pt.count;
+    }
     return drafted;
   }
 
   const maxCount = $derived(Math.max(...chartData().map(p => p.count), 1));
-  const chartMax = $derived(
-    chartMode === 'remaining'
-      ? selectedLabId !== null && selectedLabQuota !== null
-        ? selectedLabQuota
-        : totalStudents
-      : maxCount,
-  );
+  const chartMax = (() => {
+    if (chartMode === 'remaining' && selectedLabId !== null && selectedLabQuota !== null)
+      return selectedLabQuota;
+
+    if (chartMode === 'remaining') return totalStudents;
+
+    return maxCount;
+  })();
 
   const linePath = $derived(
     chartData().length > 0
@@ -141,34 +147,38 @@
       : '',
   );
 
-  const areaPath = $derived(
-    chartData().length > 0
-      ? `${linePath} L ${chartData().at(-1)!.x},${padding.top + chartHeight} L ${chartData()[0]!.x},${padding.top + chartHeight} Z`
-      : '',
-  );
+  const areaPath = $derived.by(() => {
+    const data = chartData();
+    if (data.length === 0) return '';
+    const [first] = data;
+    const last = data.at(-1);
+    if (!first || !last) throw new Error('Expected non-empty chart data');
+    return `${linePath} L ${last.x},${padding.top + chartHeight} L ${first.x},${padding.top + chartHeight} Z`;
+  });
 
-  const yTicks = $derived(() => {
+  const yTicks = $derived.by(() => {
     const ticks: number[] = [];
     const step = Math.ceil(chartMax / 4);
+    if (step <= 0) return [0];
     for (let i = 0; i <= chartMax; i += step) ticks.push(i);
     return ticks;
   });
-
   const selectedLabName = $derived(
     selectedLabId === null ? null : labs.find(l => l.id === selectedLabId)?.name,
   );
+  const chartModeLabel = (() => {
+    if (chartMode === 'assigned') return 'Students assigned';
+    if (selectedLabId === null) return 'Students not yet assigned';
+    return 'Labs remaining quota';
+  })();
 </script>
 
-<Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 ">
+<Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10">
   <Card.Header>
     <div class="flex flex-row items-center justify-between gap-4">
       <div>
-        <Card.Title>
-          {chartMode === 'assigned'
-            ? 'Students assigned'
-            : selectedLabId === null
-              ? 'Students not yet assigned'
-              : 'Labs remaining quota'} per phase
+        <Card.Title
+          >{chartModeLabel} per phase
           {#if selectedLabName}
             &mdash; <Badge variant="secondary">{selectedLabName}</Badge>
           {:else}
@@ -206,7 +216,7 @@
         </linearGradient>
       </defs>
 
-      {#each yTicks() as tick (tick)}
+      {#each yTicks as tick (tick)}
         {@const y = padding.top + chartHeight - (tick / chartMax) * chartHeight}
         <line
           x1={padding.left}

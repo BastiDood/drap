@@ -74,7 +74,7 @@
       </Card.Footer>
     </Card.Root>
 
-    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 ">
+    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10">
       <Card.Header>
         <Card.Title class="text-md font-semibold tabular-nums">Participating Labs</Card.Title>
         <Card.Title id="stat-participating-labs" class="text-4xl font-semibold tabular-nums">
@@ -86,7 +86,7 @@
       </Card.Footer>
     </Card.Root>
 
-    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 ">
+    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10">
       <Card.Header>
         <Card.Title class="text-md font-semibold tabular-nums">Max Rounds</Card.Title>
         <Card.Title id="stat-max-rounds" class="text-4xl font-semibold tabular-nums">
@@ -97,7 +97,7 @@
         <div class="text-muted-foreground">Regular draft rounds</div>
       </Card.Footer>
     </Card.Root>
-    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 ">
+    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10">
       <Card.Header>
         <Card.Title class="text-md font-semibold tabular-nums">Interventions</Card.Title>
         <Card.Title id="quota-interventions" class="text-4xl font-semibold tabular-nums">
@@ -108,7 +108,7 @@
         <div class="text-muted-foreground">Interventions Made</div>
       </Card.Footer>
     </Card.Root>
-    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 ">
+    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10">
       <Card.Header>
         <Card.Title class="text-md font-semibold tabular-nums">Lottery Assignments</Card.Title>
         <Card.Title id="quota-interventions" class="text-4xl font-semibold tabular-nums">
@@ -134,7 +134,7 @@
     <Card.Root
       id="section-regular-drafted"
       variant="soft"
-      class="bg-gradient-to-br from-muted/30 to-muted/10 "
+      class="bg-gradient-to-br from-muted/30 to-muted/10"
     >
       <Card.Header>
         <Card.Title>Regular Drafted ({finalized.sections.regularDrafted.length})</Card.Title>
@@ -158,7 +158,7 @@
     <Card.Root
       id="section-intervention-drafted"
       variant="soft"
-      class="bg-gradient-to-br from-muted/30 to-muted/10 "
+      class="bg-gradient-to-br from-muted/30 to-muted/10"
     >
       <Card.Header>
         <Card.Title
@@ -225,7 +225,7 @@
     <Card.Root
       id="section-lottery-drafted"
       variant="soft"
-      class="bg-gradient-to-br from-muted/30 to-muted/10 "
+      class="bg-gradient-to-br from-muted/30 to-muted/10"
     >
       <Card.Header>
         <Card.Title>Lottery Drafted ({finalized.sections.lotteryDrafted.length})</Card.Title>
