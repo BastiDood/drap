@@ -49,7 +49,7 @@
       <a href={resolve('/')}>
         <img src={Logo} alt="DRAP Logo" class="size-6" />
       </a>
-      <span class="sr-only">Go to Dashboard</span>
+      <span class="sr-only">Go to Home</span>
     </div>
   </nav>
 </TooltipProvider>
