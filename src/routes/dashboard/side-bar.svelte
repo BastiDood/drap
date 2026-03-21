@@ -12,8 +12,8 @@
 
   import * as Avatar from '$lib/components/ui/avatar';
   import * as Sidebar from '$lib/components/ui/sidebar';
-  import Button from '$lib/components/ui/button/button.svelte';
   import BottomNav from '$lib/components/bottom-nav.svelte';
+  import Button from '$lib/components/ui/button/button.svelte';
   import Logo from '$lib/assets/logo-DRAP-icon-colored.svg';
   import ModeSwitcher from '$lib/components/mode-switcher.svelte';
   import { assert } from '$lib/assert';
