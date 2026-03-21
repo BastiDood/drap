@@ -64,7 +64,7 @@ export async function load({ locals: { session }, parent }) {
 
     const { draft } = await parent();
     if (typeof draft === 'undefined') {
-      logger.warn('no active draft found');
+      logger.fatal('no active draft found');
       error(404);
     }
 
@@ -141,7 +141,7 @@ export const actions = {
         async db => {
           const activeDraft = await getActiveDraftForUpdate(db);
           if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
-            logger.warn('attempt to submit rankings for non-active draft', {
+            logger.fatal('attempt to submit rankings for non-active draft', void 0, {
               'draft.id': draftId.toString(),
             });
             error(403);
@@ -152,7 +152,7 @@ export const actions = {
             activeDraft.currRound <= 0 ||
             activeDraft.currRound > activeDraft.maxRounds
           ) {
-            logger.warn('attempt to submit rankings outside regular rounds', {
+            logger.fatal('attempt to submit rankings outside regular rounds', void 0, {
               'draft.id': draftId.toString(),
               'draft.round.current': activeDraft.currRound,
               'draft.round.max': activeDraft.maxRounds,
@@ -169,7 +169,7 @@ export const actions = {
 
           const total = selected + students.length;
           if (total > quota) {
-            logger.warn('total students exceeds quota', {
+            logger.fatal('total students exceeds quota', void 0, {
               'student.total': total,
               'lab.quota': quota,
             });

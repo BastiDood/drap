@@ -14,8 +14,8 @@
 
 <EmailLayout preview="{labName} submitted preferences for Round #{round}">
   <Section>
-    <Heading class="text-foreground text-2xl font-bold" as="h1">Preferences Submitted</Heading>
-    <Text class="text-foreground text-base">
+    <Heading class="text-2xl font-bold text-foreground" as="h1">Preferences Submitted</Heading>
+    <Text class="text-base text-foreground">
       The <strong>{labName}</strong> has submitted their student preferences for
       <strong>Round #{round}</strong> of Draft
       <strong>#{draftId}</strong>.

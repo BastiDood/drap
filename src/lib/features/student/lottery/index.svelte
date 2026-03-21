@@ -6,7 +6,7 @@
 
 <Empty.Root>
   <Empty.Media>
-    <ShuffleIcon class="text-muted-foreground size-12" />
+    <ShuffleIcon class="size-12 text-muted-foreground" />
   </Empty.Media>
   <Empty.Header>
     <Empty.Title>Lottery / Review in Progress</Empty.Title>

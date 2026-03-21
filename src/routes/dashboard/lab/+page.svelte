@@ -34,7 +34,7 @@
     <h3 class="scroll-m-20 text-2xl font-semibold tracking-tight">Heads</h3>
     <ul class="space-y-1">
       {#each heads as user (user.email)}
-        <li class="bg-muted hover:bg-muted/80 rounded-md p-2 transition-colors duration-150">
+        <li class="rounded-md bg-muted p-2 transition-colors duration-150 hover:bg-muted/80">
           <Member {user} />
         </li>
       {/each}
@@ -43,7 +43,7 @@
       <h3 class="scroll-m-20 text-2xl font-semibold tracking-tight">Faculty</h3>
       <ul class="space-y-1">
         {#each faculty as user (user.email)}
-          <li class="bg-muted hover:bg-muted/80 rounded-md p-2 transition-colors duration-150">
+          <li class="rounded-md bg-muted p-2 transition-colors duration-150 hover:bg-muted/80">
             <Member {user} />
           </li>
         {/each}
@@ -80,7 +80,7 @@
                 <ul class="space-y-1">
                   {#each memberUsers as user (user.email)}
                     <li
-                      class="bg-muted hover:bg-muted/80 rounded-md p-2 transition-colors duration-150"
+                      class="rounded-md bg-muted p-2 transition-colors duration-150 hover:bg-muted/80"
                     >
                       <Member {user} />
                     </li>

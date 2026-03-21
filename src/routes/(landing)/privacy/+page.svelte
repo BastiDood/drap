@@ -2,7 +2,7 @@
   import Link from '$lib/components/link.svelte';
 </script>
 
-<section class="prose dark:prose-invert mx-auto max-w-2xl p-10">
+<section class="mx-auto prose max-w-2xl p-10 dark:prose-invert">
   <h1>Privacy Policy</h1>
   <section>
     <h2>Introduction</h2>

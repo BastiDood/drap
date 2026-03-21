@@ -5,8 +5,14 @@
 
   const { data, children } = $props();
   const {
-    draft: { id, currRound, maxRounds, registrationClosesAt, activePeriodStart },
-    requestedAt,
+    draft: {
+      id,
+      currRound,
+      maxRounds,
+      registrationClosesAt,
+      activePeriodStart,
+      isRegistrationClosed,
+    },
   } = $derived(data);
   const startDate = $derived(format(activePeriodStart, 'PPP'));
   const startTime = $derived(format(activePeriodStart, 'pp'));
@@ -15,7 +21,7 @@
 </script>
 
 <Alert.Root variant="info">
-  <Alert.Description class="prose dark:prose-invert max-w-none">
+  <Alert.Description class="prose max-w-none dark:prose-invert">
     <p>
       {#if currRound === null}
         <strong>Draft #{id}</strong> (which opened last <strong>{startDate}</strong> at
@@ -29,7 +35,7 @@
         <strong>Draft #{id}</strong> is currently on Round <strong>{currRound}</strong>
         of <strong>{maxRounds}</strong>. It opened last <strong>{startDate}</strong> at
         <strong>{startTime}</strong>.
-        {#if currRound === 0 && requestedAt < registrationClosesAt}
+        {#if currRound === 0 && !isRegistrationClosed}
           Draft registration is currently open and will close on <strong>{closeDate}</strong> at
           <strong>{closeTime}</strong>.
         {:else}

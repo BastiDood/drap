@@ -20,7 +20,5 @@ export async function load() {
     maxRounds: draft.maxRounds,
   });
 
-  const requestedAt = new Date();
-
-  return { draft, requestedAt };
+  return { draft };
 }

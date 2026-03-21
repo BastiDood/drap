@@ -68,7 +68,7 @@
     <Button
       type="button"
       variant="outline"
-      class="text-muted-foreground w-full justify-start border-2 border-dashed"
+      class="w-full justify-start border-2 border-dashed text-muted-foreground"
       onclick={addRow}
     >
       <PlusIcon class="size-4" />

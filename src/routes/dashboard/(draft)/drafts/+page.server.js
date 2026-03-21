@@ -85,7 +85,7 @@ export const actions = {
       const draft = await db.transaction(
         async db => {
           if (await hasActiveDraft(db)) {
-            logger.warn('attempt to init draft while active draft exists');
+            logger.fatal('attempt to init draft while active draft exists');
             error(409, 'An active draft already exists');
           }
           return await initDraft(db, rounds, closesAt);

@@ -1,4 +1,4 @@
-import { fail, strictEqual } from 'node:assert/strict';
+import assert, { fail, strictEqual } from 'node:assert/strict';
 
 import { alias, type PgUpdateSetSource } from 'drizzle-orm/pg-core';
 import {
@@ -62,6 +62,10 @@ function coerceNumber(value: unknown) {
   if (typeof value === 'number') return value;
   throw new CoercionError('expected a number');
 }
+
+const isRegistrationClosed = sql`${schema.draft.registrationClosesAt} < now()`
+  .mapWith(Boolean)
+  .as('is_registration_closed');
 
 export class CoercionError extends Error {
   constructor(message: string) {
@@ -583,6 +587,7 @@ export async function getDrafts(db: DbConnection) {
         currRound: schema.draft.currRound,
         maxRounds: schema.draft.maxRounds,
         registrationClosesAt: schema.draft.registrationClosesAt,
+        isRegistrationClosed,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`
           .mapWith(coerceDate)
           .as('_start'),
@@ -603,11 +608,31 @@ export async function getDraftById(db: DbConnection, id: bigint) {
         currRound: schema.draft.currRound,
         maxRounds: schema.draft.maxRounds,
         registrationClosesAt: schema.draft.registrationClosesAt,
+        isRegistrationClosed,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
         activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
       })
       .from(schema.draft)
       .where(eq(schema.draft.id, id))
+      .then(assertOptional);
+  });
+}
+
+export async function getDraftByIdForUpdate(db: DrizzleTransaction, id: bigint) {
+  return await tracer.asyncSpan('get-draft-by-id-for-update', async span => {
+    span.setAttribute('database.draft.id', id.toString());
+    return await db
+      .select({
+        currRound: schema.draft.currRound,
+        maxRounds: schema.draft.maxRounds,
+        registrationClosesAt: schema.draft.registrationClosesAt,
+        isRegistrationClosed,
+        activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
+        activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
+      })
+      .from(schema.draft)
+      .where(eq(schema.draft.id, id))
+      .for('update')
       .then(assertOptional);
   });
 }
@@ -620,6 +645,7 @@ export async function getActiveDraft(db: DbConnection) {
         currRound: schema.draft.currRound,
         maxRounds: schema.draft.maxRounds,
         registrationClosesAt: schema.draft.registrationClosesAt,
+        isRegistrationClosed,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
         activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
       })
@@ -644,6 +670,7 @@ export async function getDraftByIdForShare(db: DrizzleTransaction, id: bigint) {
         currRound: schema.draft.currRound,
         maxRounds: schema.draft.maxRounds,
         registrationClosesAt: schema.draft.registrationClosesAt,
+        isRegistrationClosed,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
         activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
       })
@@ -662,6 +689,7 @@ export async function getActiveDraftForShare(db: DrizzleTransaction) {
         currRound: schema.draft.currRound,
         maxRounds: schema.draft.maxRounds,
         registrationClosesAt: schema.draft.registrationClosesAt,
+        isRegistrationClosed,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
         activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
       })
@@ -680,6 +708,7 @@ export async function getActiveDraftForUpdate(db: DrizzleTransaction) {
         currRound: schema.draft.currRound,
         maxRounds: schema.draft.maxRounds,
         registrationClosesAt: schema.draft.registrationClosesAt,
+        isRegistrationClosed,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
         activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
       })
@@ -1801,4 +1830,170 @@ export async function upsertTestUser(
   );
   await updateUserRole(db, userId, isAdmin, labId);
   return { id: userId, isAdmin, labId };
+}
+
+export async function getAllowlistByDraft(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-allowlist-by-draft', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    const student = alias(schema.user, 'student');
+    const admin = alias(schema.user, 'admin');
+    return await db
+      .select({
+        draftId: schema.draftRegistrationAllowlist.draftId,
+        studentUserId: schema.draftRegistrationAllowlist.studentUserId,
+        studentEmail: student.email,
+        adminUserId: schema.draftRegistrationAllowlist.adminUserId,
+        adminGivenName: admin.givenName,
+        adminFamilyName: admin.familyName,
+        adminEmail: admin.email,
+        createdAt: schema.draftRegistrationAllowlist.createdAt,
+        submittedAt: schema.studentRank.createdAt,
+      })
+      .from(schema.draftRegistrationAllowlist)
+      .innerJoin(admin, eq(schema.draftRegistrationAllowlist.adminUserId, admin.id))
+      .innerJoin(student, eq(schema.draftRegistrationAllowlist.studentUserId, student.id))
+      .leftJoin(
+        schema.studentRank,
+        and(
+          eq(schema.draftRegistrationAllowlist.draftId, schema.studentRank.draftId),
+          eq(schema.draftRegistrationAllowlist.studentUserId, schema.studentRank.userId),
+        ),
+      )
+      .where(eq(schema.draftRegistrationAllowlist.draftId, draftId))
+      .orderBy(desc(schema.draftRegistrationAllowlist.createdAt));
+  });
+}
+
+export async function getAllowlistCountByDraft(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-allowlist-count-by-draft', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    const { result } = await db
+      .select({ result: count(schema.draftRegistrationAllowlist.studentUserId) })
+      .from(schema.draftRegistrationAllowlist)
+      .where(eq(schema.draftRegistrationAllowlist.draftId, draftId))
+      .then(assertSingle);
+    return result;
+  });
+}
+
+export async function addToAllowlist(
+  db: DrizzleTransaction,
+  draftId: bigint,
+  studentUserId: string,
+  adminUserId: string,
+) {
+  return await tracer.asyncSpan('add-to-allowlist', async span => {
+    span.setAttributes({
+      'database.draft.id': draftId.toString(),
+      'database.user.student_id': studentUserId,
+      'database.user.admin_id': adminUserId,
+    });
+    const result = await db
+      .insert(schema.draftRegistrationAllowlist)
+      .values({ draftId, studentUserId, adminUserId })
+      .onConflictDoNothing({
+        target: [
+          schema.draftRegistrationAllowlist.draftId,
+          schema.draftRegistrationAllowlist.studentUserId,
+        ],
+      });
+    assert(result.rowCount !== null);
+    logger.debug('added to allowlist', { rowCount: result.rowCount });
+    return result.rowCount;
+  });
+}
+
+export async function removeFromAllowlist(
+  db: DrizzleTransaction,
+  draftId: bigint,
+  studentUserId: string,
+) {
+  return await tracer.asyncSpan('remove-from-allowlist', async span => {
+    span.setAttributes({
+      'database.draft.id': draftId.toString(),
+      'database.user.id': studentUserId,
+    });
+    return await db
+      .delete(schema.draftRegistrationAllowlist)
+      .where(
+        and(
+          eq(schema.draftRegistrationAllowlist.draftId, draftId),
+          eq(schema.draftRegistrationAllowlist.studentUserId, studentUserId),
+        ),
+      );
+  });
+}
+
+export async function isUserInAllowlist(db: DbConnection, draftId: bigint, studentUserId: string) {
+  return await tracer.asyncSpan('is-user-in-allowlist', async span => {
+    span.setAttributes({
+      'database.draft.id': draftId.toString(),
+      'database.user.id': studentUserId,
+    });
+    const result = await db
+      .select({ studentUserId: schema.draftRegistrationAllowlist.studentUserId })
+      .from(schema.draftRegistrationAllowlist)
+      .where(
+        and(
+          eq(schema.draftRegistrationAllowlist.draftId, draftId),
+          eq(schema.draftRegistrationAllowlist.studentUserId, studentUserId),
+        ),
+      )
+      .then(assertOptional);
+    return typeof result !== 'undefined';
+  });
+}
+
+export async function getUserByEmail(db: DbConnection, email: string) {
+  return await tracer.asyncSpan('get-user-by-email', async span => {
+    span.setAttribute('database.user.email', email);
+    const { email: _, ...columns } = getTableColumns(schema.user);
+    return await db
+      .select(columns)
+      .from(schema.user)
+      .where(eq(schema.user.email, email))
+      .then(assertOptional);
+  });
+}
+
+export async function isRegisteredOrAssignedInDraft(
+  db: DrizzleTransaction,
+  draftId: bigint,
+  userId: string,
+) {
+  return await tracer.asyncSpan('is-registered-or-assigned-in-draft', async span => {
+    span.setAttributes({
+      'database.draft.id': draftId.toString(),
+      'database.user.id': userId,
+    });
+
+    // Check studentRank (submitted rankings)
+    const registeredResult = await db
+      .select({ userId: schema.studentRank.userId })
+      .from(schema.studentRank)
+      .innerJoin(schema.user, eq(schema.studentRank.userId, schema.user.id))
+      .where(and(eq(schema.studentRank.draftId, draftId), eq(schema.user.id, userId)))
+      .then(assertOptional);
+
+    if (typeof registeredResult !== 'undefined') {
+      logger.debug('registered', { 'student_rank.user_id': registeredResult.userId });
+      return true;
+    }
+
+    // Check facultyChoiceUser (assigned to lab)
+    const assignedResult = await db
+      .select({ studentUserId: schema.facultyChoiceUser.studentUserId })
+      .from(schema.facultyChoiceUser)
+      .innerJoin(schema.user, eq(schema.facultyChoiceUser.studentUserId, schema.user.id))
+      .where(and(eq(schema.facultyChoiceUser.draftId, draftId), eq(schema.user.id, userId)))
+      .then(assertOptional);
+
+    if (typeof assignedResult !== 'undefined') {
+      logger.debug('assigned', { 'faculty_choice.student_user_id': assignedResult.studentUserId });
+      return true;
+    }
+
+    logger.debug('not registered or assigned');
+    return false;
+  });
 }

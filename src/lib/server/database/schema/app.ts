@@ -117,6 +117,25 @@ export const draftLabQuota = app.table(
 export type DraftLabQuota = typeof draftLabQuota.$inferSelect;
 export type NewDraftLabQuota = typeof draftLabQuota.$inferInsert;
 
+export const draftRegistrationAllowlist = app.table(
+  'draft_registration_allowlist',
+  {
+    draftId: bigint('draft_id', { mode: 'bigint' })
+      .notNull()
+      .references(() => draft.id, { onUpdate: 'cascade' }),
+    studentUserId: ulid('student_user_id')
+      .notNull()
+      .references(() => user.id, { onUpdate: 'cascade' }),
+    adminUserId: ulid('admin_user_id')
+      .notNull()
+      .references(() => user.id, { onUpdate: 'cascade' }),
+    createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+  },
+  ({ draftId, studentUserId }) => [primaryKey({ columns: [draftId, studentUserId] })],
+);
+export type DraftRegistrationAllowlist = typeof draftRegistrationAllowlist.$inferSelect;
+export type NewDraftRegistrationAllowlist = typeof draftRegistrationAllowlist.$inferInsert;
+
 export const studentRank = app.table(
   'student_rank',
   {

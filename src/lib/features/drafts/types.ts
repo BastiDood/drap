@@ -24,6 +24,8 @@ export interface Draft extends Pick<
   schema.Draft,
   'id' | 'currRound' | 'maxRounds' | 'registrationClosesAt'
 > {
+  /** Derived from the timestamp of the database for best consistency */
+  isRegistrationClosed: boolean;
   /** Computed from `activePeriod` range lower bound */
   activePeriodStart: Date;
   /** Computed from `activePeriod` range upper bound */
@@ -59,6 +61,16 @@ export interface DraftFinalizedBreakdown {
     regularDrafted: DraftAssignmentRecord[];
     interventionDrafted: DraftAssignmentRecord[];
     lotteryDrafted: DraftAssignmentRecord[];
-    undraftedAfterRegular: Student[];
   };
+}
+
+export interface DraftRegistrationAllowlistEntry extends Pick<
+  schema.DraftRegistrationAllowlist,
+  'draftId' | 'studentUserId' | 'createdAt' | 'adminUserId'
+> {
+  studentEmail: string;
+  adminGivenName: string;
+  adminFamilyName: string;
+  adminEmail: string;
+  submittedAt: Date | null;
 }

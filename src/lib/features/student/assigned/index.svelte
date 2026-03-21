@@ -15,7 +15,7 @@
 
 <Empty.Root>
   <Empty.Media>
-    <PartyPopperIcon class="text-muted-foreground size-12" />
+    <PartyPopperIcon class="size-12 text-muted-foreground" />
   </Empty.Media>
   <Empty.Header>
     <Empty.Title>Congratulations!</Empty.Title>

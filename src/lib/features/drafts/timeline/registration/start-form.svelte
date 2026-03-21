@@ -1,15 +1,17 @@
 <script lang="ts">
   import { toast } from 'svelte-sonner';
+  import { useQueryClient } from '@tanstack/svelte-query'; // eslint-disable-line no-restricted-imports
 
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
 
   interface Props {
-    draftId: bigint;
+    draftId: string;
   }
 
   const { draftId }: Props = $props();
+  const queryClient = useQueryClient();
 </script>
 
 <form
@@ -30,6 +32,9 @@
       switch (result.type) {
         case 'success':
           toast.success('Draft started.');
+          await queryClient.invalidateQueries({
+            queryKey: ['drafts', draftId],
+          });
           break;
         case 'failure':
           switch (result.status) {
@@ -54,7 +59,7 @@
   <Button
     type="submit"
     variant="outline"
-    class="border-warning bg-warning/10 text-warning hover:bg-warning/20 w-full"
+    class="w-full border-warning bg-warning/10 text-warning hover:bg-warning/20"
   >
     Start Draft
   </Button>

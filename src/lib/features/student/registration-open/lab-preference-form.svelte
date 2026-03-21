@@ -138,7 +138,7 @@
             <li in:receive={config} out:send={config} animate:flip={DURATION}>
               <button
                 type="button"
-                class="bg-muted hover:bg-muted/80 w-full flex-auto rounded-md p-4 text-left transition duration-150"
+                class="w-full flex-auto rounded-md bg-muted p-4 text-left transition duration-150 hover:bg-muted/80"
                 onclick={selectLab.bind(null, idx)}
               >
                 {name}
@@ -178,7 +178,7 @@
           {#each selectedLabs as { id, name }, idx (id)}
             {@const config = { key: id }}
             <li
-              class="border-border dark:bg-muted bg-muted/20 flex flex-col gap-4 rounded-lg border p-4 transition-shadow hover:shadow-md"
+              class="flex flex-col gap-4 rounded-lg border border-border bg-muted/20 p-4 transition-shadow hover:shadow-md dark:bg-muted"
               in:receive={config}
               out:send={config}
               animate:flip={DURATION}
@@ -186,7 +186,7 @@
               <input type="hidden" name="labs" value={id} />
               <div class="flex items-center gap-3">
                 <div
-                  class="bg-secondary text-secondary-foreground flex size-10 shrink-0 items-center justify-center rounded-full pb-0.5 text-lg font-semibold"
+                  class="flex size-10 shrink-0 items-center justify-center rounded-full bg-secondary pb-0.5 text-lg font-semibold text-secondary-foreground"
                 >
                   {idx + 1}
                 </div>

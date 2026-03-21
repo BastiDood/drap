@@ -18,7 +18,7 @@
 
 <Empty.Root>
   <Empty.Media>
-    <LockIcon class="text-muted-foreground size-12" />
+    <LockIcon class="size-12 text-muted-foreground" />
   </Empty.Media>
   <Empty.Header>
     <Empty.Title>Registration Closed</Empty.Title>

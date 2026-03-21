@@ -63,8 +63,8 @@
 >
   <div class="space-y-2">
     <Label for="closesAt">Registration Closing Date</Label>
-    <div class="border-input flex overflow-hidden rounded-md border">
-      <div class="bg-muted flex items-center px-3"><CalendarDaysIcon class="size-5" /></div>
+    <div class="flex overflow-hidden rounded-md border border-input">
+      <div class="flex items-center bg-muted px-3"><CalendarDaysIcon class="size-5" /></div>
       <Input
         type="datetime-local"
         required

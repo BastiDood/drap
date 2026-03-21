@@ -547,7 +547,7 @@ export const actions = {
             // Switch user via session ID
             const id = await impersonateUserBySessionId(db, session.id, userEmail);
             if (id === null) {
-              logger.warn('failed to switch to another user');
+              logger.fatal('failed to switch to another user');
               return fail(404);
             }
 

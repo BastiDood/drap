@@ -1,16 +1,18 @@
 <script lang="ts">
   import ArrowRightIcon from '@lucide/svelte/icons/arrow-right';
   import { toast } from 'svelte-sonner';
+  import { useQueryClient } from '@tanstack/svelte-query'; // eslint-disable-line no-restricted-imports
 
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
 
   interface Props {
-    draftId: bigint;
+    draftId: string;
   }
 
   const { draftId }: Props = $props();
+  const queryClient = useQueryClient();
 </script>
 
 <form
@@ -32,6 +34,9 @@
       switch (result.type) {
         case 'success':
           toast.success('Lottery complete. Draft is now in review.');
+          await queryClient.invalidateQueries({
+            queryKey: ['drafts', draftId],
+          });
           break;
         case 'failure':
           assert(result.status === 403);

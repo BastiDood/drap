@@ -10,7 +10,7 @@
 <a
   {...rest}
   class={cn(
-    `decoration-muted-foreground hover:text-muted-foreground/80 dark:hover:text-secondary underline underline-offset-3 transition`,
+    `underline decoration-muted-foreground underline-offset-3 transition hover:text-muted-foreground/80 dark:hover:text-secondary`,
     className,
   )}>{@render children?.()}</a
 >

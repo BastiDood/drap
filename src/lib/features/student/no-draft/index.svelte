@@ -8,7 +8,7 @@
 
 <Empty.Root>
   <Empty.Media>
-    <CalendarIcon class="text-muted-foreground size-12" />
+    <CalendarIcon class="size-12 text-muted-foreground" />
   </Empty.Media>
   <Empty.Header>
     <Empty.Title>No Active Draft</Empty.Title>

@@ -16,7 +16,7 @@ export function load({ locals: { session } }: PageServerLoadEvent) {
   const { user } = session;
 
   if (!user.isAdmin) {
-    logger.error('non-admin attempting to access admin dashboard', void 0, {
+    logger.fatal('non-admin attempting to access admin dashboard', void 0, {
       'user.id': user.id,
       'user.is_admin': user.isAdmin,
     });

@@ -70,7 +70,7 @@
       {@const action: (value: string) => void = selected ? drafteeIds.delete : drafteeIds.add}
       <li
         data-selected={selected}
-        class="bg-muted hover:bg-muted/80 data-[selected=true]:bg-primary/20 cursor-pointer rounded-md transition-colors duration-150"
+        class="cursor-pointer rounded-md bg-muted transition-colors duration-150 hover:bg-muted/80 data-[selected=true]:bg-primary/20"
       >
         <button
           type="button"
@@ -105,7 +105,7 @@
   </ul>
   <div id="selection-progress" class="flex items-center gap-3">
     <Progress value={drafteeIds.size} max={remainingQuota} />
-    <span class="text-muted-foreground text-sm whitespace-nowrap tabular-nums">
+    <span class="text-sm whitespace-nowrap text-muted-foreground tabular-nums">
       {drafteeIds.size} / {remainingQuota} slots
     </span>
   </div>
@@ -113,7 +113,7 @@
     <Button type="submit" class="grow" {disabled}>Submit</Button>
     <Popover.Root>
       <Popover.Trigger>
-        <CircleHelpIcon class="text-muted-foreground size-4" />
+        <CircleHelpIcon class="size-4 text-muted-foreground" />
       </Popover.Trigger>
       <Popover.Content class="text-sm">
         Empty submissions allowed. All lab heads must submit before the next round auto-starts.

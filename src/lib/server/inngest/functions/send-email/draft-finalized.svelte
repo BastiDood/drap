@@ -47,19 +47,19 @@
 
 <EmailLayout preview="Draft #{draftId} is finalized - View final assignments">
   <Section>
-    <Heading class="text-foreground text-2xl font-bold" as="h1">Draft Finalized</Heading>
+    <Heading class="text-2xl font-bold text-foreground" as="h1">Draft Finalized</Heading>
     <Text class="text-base">
       Draft <strong class="text-foreground">#{draftId}</strong> has just been finalized. All registered
       students have been assigned to their respective research labs.
     </Text>
     {#if groupedLotteryAssignments.length > 0}
-      <Section class="bg-card text-card-foreground my-6 rounded-lg">
+      <Section class="my-6 rounded-lg bg-card text-card-foreground">
         <Section class="mx-auto max-w-md py-4">
-          <Heading class="text-foreground text-lg font-semibold" as="h2">
+          <Heading class="text-lg font-semibold text-foreground" as="h2">
             Finalized Lottery Results
           </Heading>
           {#each groupedLotteryAssignments as group (group.labId)}
-            <Section class="border-muted my-3 rounded-md border px-3 py-2">
+            <Section class="my-3 rounded-md border border-muted px-3 py-2">
               <Text class="mb-2 text-sm font-semibold">{group.labName}</Text>
               {#each group.students as student (`${group.labId}:${student.studentEmail}`)}
                 <Text class="my-0 text-sm leading-relaxed">
@@ -71,7 +71,7 @@
         </Section>
       </Section>
     {/if}
-    <Section class="bg-secondary/30 text-secondary-foreground my-6 rounded-lg">
+    <Section class="my-6 rounded-lg bg-secondary/30 text-secondary-foreground">
       <Section class="mx-auto max-w-md">
         <Text class="text-sm">See the new roster of researchers through the lab module.</Text>
         <Button
@@ -79,7 +79,7 @@
           target="_blank"
           pX={24}
           pY={12}
-          class="bg-primary text-primary-foreground hover:bg-primary/90 mb-4 rounded-md font-medium"
+          class="mb-4 rounded-md bg-primary font-medium text-primary-foreground hover:bg-primary/90"
         >
           Go to Dashboard
         </Button>

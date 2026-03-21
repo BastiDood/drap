@@ -1,7 +1,9 @@
 <script lang="ts">
   import * as Avatar from '$lib/components/ui/avatar';
-  import { Badge } from '$lib/components/ui/badge';
   import type { schema } from '$lib/server/database/drizzle';
+
+  import DesignatedLab from './designated-lab.svelte';
+  import PreferredLab from './preferred-lab.svelte';
 
   interface User extends Pick<
     schema.User,
@@ -21,7 +23,7 @@
 
 <a
   href="mailto:{email}"
-  class="bg-muted hover:bg-muted/80 grid w-full grid-cols-[auto_1fr] items-center gap-2 rounded-md p-2 transition-colors duration-150"
+  class="grid w-full grid-cols-[auto_1fr] items-center gap-2 rounded-md bg-muted p-2 transition-colors duration-150 hover:bg-muted/80"
 >
   <Avatar.Root class="size-20">
     <Avatar.Image src={avatarUrl} alt="{givenName} {familyName}" />
@@ -37,15 +39,9 @@
     <span class="text-xs opacity-50">{email}</span>
     <div class="space-x-1">
       {#if labId === null}
-        {#each labs as lab (lab)}
-          <Badge variant="outline" class="border-accent bg-accent/10 text-xs uppercase">
-            {lab}
-          </Badge>
-        {/each}
+        <PreferredLab {labs} />
       {:else}
-        <Badge variant="outline" class="border-primary bg-primary/10 text-xs uppercase">
-          {labId}
-        </Badge>
+        <DesignatedLab {labId} />
       {/if}
     </div>
   </span>

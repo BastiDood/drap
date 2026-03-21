@@ -8,7 +8,7 @@
 
 <TooltipProvider>
   <nav
-    class="border-border bg-background/90 sticky top-0 z-50 flex items-center justify-between border-b px-12 py-4 backdrop-blur-md"
+    class="sticky top-0 z-50 flex items-center justify-between border-b border-border bg-background/90 px-12 py-4 backdrop-blur-md"
   >
     <a href={resolve('/')}>
       <img src={Logo} alt="DRAP Logo" class="size-10" />

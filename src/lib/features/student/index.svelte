@@ -22,18 +22,26 @@
     labs: Lab[];
   }
 
+  interface Draft extends Pick<
+    schema.Draft,
+    'id' | 'currRound' | 'maxRounds' | 'registrationClosesAt'
+  > {
+    isRegistrationClosed: boolean;
+  }
+
   interface Props {
     user: Pick<
       schema.User,
       'id' | 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
     >;
-    draft?: Pick<schema.Draft, 'id' | 'currRound' | 'maxRounds' | 'registrationClosesAt'>;
+    draft?: Draft;
     availableLabs?: Pick<schema.Lab, 'id' | 'name'>[];
     submission?: Submission;
     lab?: Pick<schema.Lab, 'name'>;
+    isInAllowlist?: boolean;
   }
 
-  let { user, draft, availableLabs, submission, lab }: Props = $props();
+  let { user, draft, availableLabs, submission, lab, isInAllowlist = false }: Props = $props();
 </script>
 
 <div class="flex h-full items-center">
@@ -60,7 +68,7 @@
       {:else if draft.currRound === 0}
         {#if typeof submission !== 'undefined'}
           <Submitted {submission} />
-        {:else if typeof availableLabs !== 'undefined' && new Date() < draft.registrationClosesAt}
+        {:else if typeof availableLabs !== 'undefined' && (!draft.isRegistrationClosed || isInAllowlist)}
           <RegistrationOpen {draft} {availableLabs} />
         {:else}
           <RegistrationClosed registrationClosesAt={draft.registrationClosesAt} />

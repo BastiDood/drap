@@ -2,7 +2,7 @@
   import type { DraftFinalizedBreakdown } from '$lib/features/drafts/types';
 
   export interface Props {
-    draftId: bigint;
+    draftId: string;
     mode: 'initial' | 'lottery';
     snapshots: DraftFinalizedBreakdown['snapshots'];
   }
@@ -10,6 +10,7 @@
 
 <script lang="ts">
   import { toast } from 'svelte-sonner';
+  import { useQueryClient } from '@tanstack/svelte-query'; // eslint-disable-line no-restricted-imports
 
   import * as Card from '$lib/components/ui/card';
   import * as Table from '$lib/components/ui/table';
@@ -20,6 +21,7 @@
   import { Label } from '$lib/components/ui/label';
 
   const { draftId, mode, snapshots }: Props = $props();
+  const queryClient = useQueryClient();
 
   const { title, description } = $derived.by(() => {
     /* eslint-disable @typescript-eslint/init-declarations */
@@ -68,6 +70,9 @@
                   ? 'Initial quota snapshots updated.'
                   : 'Lottery quota snapshots updated.',
               );
+              await queryClient.invalidateQueries({
+                queryKey: ['drafts', draftId],
+              });
               break;
             case 'failure':
               toast.error('Failed to update quota snapshots.');

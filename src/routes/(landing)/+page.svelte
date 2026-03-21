@@ -13,7 +13,7 @@
 
 <Hero />
 <div class="mb-8 px-10 lg:px-56">
-  <section class="prose dark:prose-invert max-w-none">
+  <section class="prose max-w-none dark:prose-invert">
     <p>
       Welcome to <strong>DRAP</strong>: the <strong>Draft Ranking Automated Processor</strong> for
       the
@@ -25,17 +25,17 @@
     </p>
   </section>
 
-  <section class="prose dark:prose-invert prose-h3:mt-0 prose-h3:mb-2 prose-li:m-0 my-8 max-w-none">
-    <h2 class="border-border border-b pb-2">How It Works</h2>
+  <section class="my-8 prose max-w-none dark:prose-invert prose-h3:mt-0 prose-h3:mb-2 prose-li:m-0">
+    <h2 class="border-b border-border pb-2">How It Works</h2>
     <ol class="mx-auto max-w-prose pl-0">
       <li class="grid grid-cols-[auto_1fr] gap-4">
         <div class="flex flex-col items-center">
           <div
-            class="bg-primary text-primary-foreground flex size-9 items-center justify-center rounded-full font-bold"
+            class="flex size-9 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground"
           >
             1
           </div>
-          <div aria-hidden="true" class="bg-muted w-1 flex-1"></div>
+          <div aria-hidden="true" class="w-1 flex-1 bg-muted"></div>
         </div>
         <div class="pb-8">
           <h3 class="text-xl font-bold">Registration</h3>
@@ -49,11 +49,11 @@
       <li class="grid grid-cols-[auto_1fr] gap-4">
         <div class="flex flex-col items-center">
           <div
-            class="bg-primary text-primary-foreground flex size-9 items-center justify-center rounded-full font-bold"
+            class="flex size-9 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground"
           >
             2
           </div>
-          <div aria-hidden="true" class="bg-muted w-1 flex-1"></div>
+          <div aria-hidden="true" class="w-1 flex-1 bg-muted"></div>
         </div>
         <div class="pb-8">
           <h3 class="text-xl font-bold">Regular Draft</h3>
@@ -81,11 +81,11 @@
       <li class="grid grid-cols-[auto_1fr] gap-4">
         <div class="flex flex-col items-center">
           <div
-            class="bg-primary text-primary-foreground flex size-9 items-center justify-center rounded-full font-bold"
+            class="flex size-9 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground"
           >
             3
           </div>
-          <div aria-hidden="true" class="bg-muted w-1 flex-1"></div>
+          <div aria-hidden="true" class="w-1 flex-1 bg-muted"></div>
         </div>
         <div class="pb-8">
           <h3 class="text-xl font-bold">Lottery Round</h3>
@@ -109,7 +109,7 @@
       <li class="grid grid-cols-[auto_1fr] gap-4">
         <div class="flex flex-col items-center">
           <div
-            class="bg-primary text-primary-foreground flex size-9 items-center justify-center rounded-full font-bold"
+            class="flex size-9 items-center justify-center rounded-full bg-primary font-bold text-primary-foreground"
           >
             4
           </div>
@@ -123,24 +123,24 @@
   </section>
 
   <section class="my-8">
-    <div class="prose dark:prose-invert my-6 max-w-none">
-      <h2 class="border-border border-b pb-2">Getting Started</h2>
+    <div class="my-6 prose max-w-none dark:prose-invert">
+      <h2 class="border-b border-border pb-2">Getting Started</h2>
       <p>
         All interactions with the application require UP Mail authentication. The next steps depend
         on your role in the draft.
       </p>
     </div>
-    <Accordion.Root type="single" class="border-border overflow-hidden rounded-lg border">
+    <Accordion.Root type="single" class="overflow-hidden rounded-lg border border-border">
       <Accordion.Item value="student">
         <Accordion.Trigger
-          class="data-[state=open]:bg-secondary data-[state=open]:text-secondary-foreground data-[state=open]:*:text-secondary-foreground px-4 transition-none data-[state=open]:rounded-none data-[state=open]:font-semibold"
+          class="px-4 transition-none data-[state=open]:rounded-none data-[state=open]:bg-secondary data-[state=open]:font-semibold data-[state=open]:text-secondary-foreground data-[state=open]:*:text-secondary-foreground"
         >
           <span class="flex items-center gap-2">
             <GraduationCapIcon class="size-5" />
             <span>For Students</span>
           </span>
         </Accordion.Trigger>
-        <Accordion.Content class="prose dark:prose-invert px-4">
+        <Accordion.Content class="prose px-4 dark:prose-invert">
           <ol>
             <li>
               Go to your <Link href={resolve('/dashboard/')}>profile</Link> and set your student number.
@@ -159,14 +159,14 @@
       </Accordion.Item>
       <Accordion.Item value="lab-head">
         <Accordion.Trigger
-          class="data-[state=open]:bg-secondary data-[state=open]:text-secondary-foreground data-[state=open]:*:text-secondary-foreground px-4 transition-none data-[state=open]:rounded-none data-[state=open]:font-semibold"
+          class="px-4 transition-none data-[state=open]:rounded-none data-[state=open]:bg-secondary data-[state=open]:font-semibold data-[state=open]:text-secondary-foreground data-[state=open]:*:text-secondary-foreground"
         >
           <span class="flex items-center gap-2">
             <FlaskConicalIcon class="size-5" />
             <span>For Lab Heads</span>
           </span>
         </Accordion.Trigger>
-        <Accordion.Content class="prose dark:prose-invert px-4">
+        <Accordion.Content class="prose px-4 dark:prose-invert">
           <ol>
             <li>Wait for the administrators to open a draft.</li>
             <li>
@@ -191,14 +191,14 @@
       </Accordion.Item>
       <Accordion.Item value="admin">
         <Accordion.Trigger
-          class="data-[state=open]:bg-secondary data-[state=open]:text-secondary-foreground data-[state=open]:*:text-secondary-foreground px-4 transition-none data-[state=open]:rounded-none data-[state=open]:font-semibold"
+          class="px-4 transition-none data-[state=open]:rounded-none data-[state=open]:bg-secondary data-[state=open]:font-semibold data-[state=open]:text-secondary-foreground data-[state=open]:*:text-secondary-foreground"
         >
           <span class="flex items-center gap-2">
             <ShieldAlertIcon class="size-5" />
             <span>For Administrators</span>
           </span>
         </Accordion.Trigger>
-        <Accordion.Content class="prose dark:prose-invert px-4">
+        <Accordion.Content class="prose px-4 dark:prose-invert">
           <ol>
             <li>Maintain the <Link href={resolve('/dashboard/labs/')}>lab catalog</Link>.</li>
             <li>Initialize a <Link href={resolve('/dashboard/drafts/')}>new draft</Link>.</li>
@@ -232,8 +232,8 @@
   </section>
 
   <section class="my-8">
-    <div class="prose dark:prose-invert max-w-none">
-      <h2 class="border-border border-b pb-2">Acknowledgements</h2>
+    <div class="prose max-w-none dark:prose-invert">
+      <h2 class="border-b border-border pb-2">Acknowledgements</h2>
       <p>
         The <Link target="_blank" href="https://github.com/BastiDood/drap">DRAP project</Link>,
         licensed under the free and open-source
@@ -255,8 +255,8 @@
   </section>
 
   <section class="my-8">
-    <div class="prose dark:prose-invert max-w-none">
-      <h2 class="border-border border-b pb-2">Contributors</h2>
+    <div class="prose max-w-none dark:prose-invert">
+      <h2 class="border-b border-border pb-2">Contributors</h2>
       <div class="not-prose contents">
         <ContributorTabs />
       </div>

@@ -19,7 +19,7 @@
     : `Round #${round} started - Draft #${draftId}`}
 >
   <Section>
-    <Heading class="text-foreground text-2xl font-bold" as="h1">
+    <Heading class="text-2xl font-bold text-foreground" as="h1">
       {#if round === null}
         DRAP Lottery Round Started
       {:else}
@@ -31,7 +31,7 @@
       <Text class="text-base">
         The <strong>lottery round</strong> for Draft <strong>#{draftId}</strong> has begun.
       </Text>
-      <Section class="bg-secondary/30 text-secondary-foreground my-6 rounded-lg">
+      <Section class="my-6 rounded-lg bg-secondary/30 text-secondary-foreground">
         <Section class="mx-auto max-w-md">
           <Text class="font-semibold">Action Required for Lab Heads</Text>
           <Text class="text-sm">
@@ -43,7 +43,7 @@
       <Text class="text-base">
         <strong>Round #{round}</strong> for Draft <strong>#{draftId}</strong> has begun.
       </Text>
-      <Section class="bg-secondary/30 text-secondary-foreground my-6 rounded-lg">
+      <Section class="my-6 rounded-lg bg-secondary/30 text-secondary-foreground">
         <Section class="mx-auto max-w-md">
           <Text class="font-semibold">Action Required for Lab Heads</Text>
           <Text class="text-sm">
@@ -54,7 +54,7 @@
             target="_blank"
             pX={24}
             pY={12}
-            class="bg-primary text-primary-foreground hover:bg-primary/90 mb-4 rounded-md font-medium"
+            class="mb-4 rounded-md bg-primary font-medium text-primary-foreground hover:bg-primary/90"
           >
             Go to Dashboard
           </Button>

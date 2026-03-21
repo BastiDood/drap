@@ -1,20 +1,22 @@
 <script lang="ts">
-  import type { Student } from '$lib/features/drafts/types';
-
-  import StudentList from './student-list.svelte';
+  import RegisteredDraftees from '$lib/features/drafts/draftees/registered/index.svelte';
 
   interface Props {
-    students: Student[];
+    draftId: string;
+    studentCount: number;
   }
 
-  const { students }: Props = $props();
+  const { draftId, studentCount }: Props = $props();
 </script>
 
 <div class="space-y-4">
   <div class="prose dark:prose-invert">
     <p>
-      <strong>{students.length}</strong> students registered for this draft before registration closed.
+      <strong>{studentCount}</strong> students registered for this draft before registration closed.
     </p>
   </div>
-  <StudentList {students} />
+  <div class="flex items-center justify-center">
+    <RegisteredDraftees {draftId} variant="primary">No students have registered.</RegisteredDraftees
+    >
+  </div>
 </div>
