@@ -3,6 +3,7 @@
   import CheckCircle2Icon from '@lucide/svelte/icons/check-circle-2';
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
   import SparklesIcon from '@lucide/svelte/icons/sparkles';
+  import UsersIcon from '@lucide/svelte/icons/users';
   import { format } from 'date-fns';
 
   import * as Alert from '$lib/components/ui/alert';
@@ -14,6 +15,8 @@
   import { Empty } from '$lib/components/ui/empty';
   import { resolve } from '$app/paths';
 
+  import DraftRoundsChart from './draft-rounds-chart.svelte';
+
   interface Props {
     draftId: string;
     draft: Pick<Draft, 'activePeriodStart' | 'activePeriodEnd' | 'maxRounds'>;
@@ -24,12 +27,6 @@
   }
 
   const { draftId, draft, totalStudents, labs, finalized, isReview }: Props = $props();
-
-  const assignedStudents = $derived(
-    finalized.sections.regularDrafted.length +
-      finalized.sections.interventionDrafted.length +
-      finalized.sections.lotteryDrafted.length,
-  ); // Get from snapshots
   const participatingLabs = $derived(
     finalized.snapshots.length > 0 ? finalized.snapshots.length : labs.length,
   );
@@ -60,46 +57,78 @@
     </Alert.Root>
   {/if}
 
-  <div class="prose dark:prose-invert">
-    <h3>Summary</h3>
-    <ul>
-      <li>
-        <strong>Duration:</strong>
-        {format(draft.activePeriodStart, 'PPP')} - {draft.activePeriodEnd
-          ? format(draft.activePeriodEnd, 'PPP')
-          : 'Ongoing'}
-      </li>
-      <li><strong>Total Rounds:</strong> {draft.maxRounds}</li>
-      <li><strong>Participating Labs:</strong> {participatingLabs}</li>
-      <li>
-        <strong>Students Assigned:</strong>
-        {assignedStudents} / {totalStudents}
-      </li>
-    </ul>
-  </div>
-
-  <div id="admin-finalized-breakdown" class="grid grid-cols-1 gap-2 md:grid-cols-3">
-    <Card.Root variant="soft">
+  <!-- Draft Summary Stats -->
+  <div class="grid grid-cols-1 gap-2 md:grid-cols-3">
+    <Card.Root class="transition-all hover:shadow-xl">
       <Card.Header>
-        <Card.Title>Initial Quota</Card.Title>
+        <Card.Description>Total Students</Card.Description>
+        <Card.Title id="stat-total-students" class="text-2xl font-semibold tabular-nums">
+          {totalStudents}
+        </Card.Title>
       </Card.Header>
-      <Card.Content>
-        <p id="quota-initial" class="text-2xl font-semibold">{finalized.quota.initialQuota}</p>
-      </Card.Content>
+      <Card.Footer class="flex-col items-start gap-1.5 text-sm">
+        <div class="flex items-center gap-2 font-medium">
+          <UsersIcon class="size-4 text-muted-foreground" />
+          All registered participants
+        </div>
+      </Card.Footer>
     </Card.Root>
-    <Card.Root variant="soft">
+    <!-- <Card.Root class="from-muted/30 to-muted/10 bg-gradient-to-br transition-all  hover:shadow-xl"> -->
+    <!--   <Card.Header> -->
+    <!--     <Card.Description>Assigned Students</Card.Description> -->
+    <!--     <Card.Title id="stat-assigned-students" class="text-2xl font-semibold tabular-nums"> -->
+    <!--       {assignedStudents} -->
+    <!--     </Card.Title> -->
+    <!--   </Card.Header> -->
+    <!--   <Card.Content class="flex items-center gap-2"> -->
+    <!--     <Badge variant="outline"> -->
+    <!--       <ArrowUpIcon class="size-3" /> -->
+    <!--       {Math.round((assignedStudents / totalStudents) * 100)}% -->
+    <!--     </Badge> -->
+    <!--     <span class="text-muted-foreground text-sm"> -->
+    <!--       {totalStudents - assignedStudents} remaining unassigned -->
+    <!--     </span> -->
+    <!--   </Card.Content> -->
+    <!-- </Card.Root> -->
+    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 transition-all hover:shadow-xl">
       <Card.Header>
-        <Card.Title>Lottery Interventions</Card.Title>
+        <Card.Description>Participating Labs</Card.Description>
+        <Card.Title id="stat-participating-labs" class="text-2xl font-semibold tabular-nums">
+          {participatingLabs}
+        </Card.Title>
       </Card.Header>
-      <Card.Content>
-        <p id="quota-interventions" class="text-2xl font-semibold">
+      <Card.Footer class="flex-col items-start gap-1.5 text-sm">
+        <div class="text-muted-foreground">Active labs in draft</div>
+      </Card.Footer>
+    </Card.Root>
+    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 transition-all hover:shadow-xl">
+      <Card.Header>
+        <Card.Description>Max Rounds</Card.Description>
+        <Card.Title id="stat-max-rounds" class="text-2xl font-semibold tabular-nums">
+          {draft.maxRounds}
+        </Card.Title>
+      </Card.Header>
+      <Card.Footer class="flex-col items-start gap-1.5 text-sm">
+        <div class="text-muted-foreground">Regular draft rounds</div>
+      </Card.Footer>
+    </Card.Root>
+    <!-- <Card.Root class="from-muted/30 to-muted/10 bg-gradient-to-br transition-all  hover:shadow-xl"> -->
+    <!--   <Card.Header> -->
+    <!--     <Card.Description>Initial Quota</Card.Description> -->
+    <!--     <Card.Title id="quota-initial" class="text-2xl font-semibold tabular-nums"> -->
+    <!--       {finalized.quota.initialQuota} -->
+    <!--     </Card.Title> -->
+    <!--   </Card.Header> -->
+    <!--   <Card.Footer class="flex-col items-start gap-1.5 text-sm"> -->
+    <!--     <div class="text-muted-foreground">Slots allocated for regular rounds</div> -->
+    <!--   </Card.Footer> -->
+    <!-- </Card.Root> -->
+    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 transition-all hover:shadow-xl">
+      <Card.Header>
+        <Card.Description>Interventions</Card.Description>
+        <Card.Title id="quota-interventions" class="text-2xl font-semibold tabular-nums">
           {finalized.quota.lotteryInterventions}
-        </p>
-      </Card.Content>
-    </Card.Root>
-    <Card.Root variant="soft">
-      <Card.Header>
-        <Card.Title>Finalized Quota</Card.Title>
+        </Card.Title>
       </Card.Header>
       <Card.Content>
         <p id="quota-finalized" class="text-2xl font-semibold">
@@ -107,28 +136,73 @@
         </p>
       </Card.Content>
     </Card.Root>
+    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 transition-all hover:shadow-xl">
+      <Card.Header>
+        <Card.Description>Lottery Assignments</Card.Description>
+        <Card.Title id="quota-interventions" class="text-2xl font-semibold tabular-nums">
+          {finalized.sections.lotteryDrafted.length}
+        </Card.Title>
+      </Card.Header>
+      <Card.Footer class="flex-col items-start gap-1.5 text-sm">
+        <div class="text-muted-foreground">Students chosen during lottery</div>
+      </Card.Footer>
+    </Card.Root>
   </div>
 
-  {#if finalized.snapshots.length > 0}
-    <Card.Root variant="soft">
-      <Card.Header>
-        <Card.Title>Lab Quota Timeline</Card.Title>
-      </Card.Header>
-      <Card.Content>
-        <ul class="space-y-1">
-          {#each finalized.snapshots as { labId, labName, initialQuota, lotteryQuota, finalizedQuota } (labId)}
-            <li class="text-sm">
-              <strong>{labName}</strong>:
-              {initialQuota} initial + {lotteryQuota} lottery = {finalizedQuota} finalized
-            </li>
-          {/each}
-        </ul>
-      </Card.Content>
-    </Card.Root>
-  {/if}
+  <!-- Quota Breakdown Stats -->
+  <!-- <div class="grid grid-cols-1 gap-2 md:grid-cols-3"> -->
+  <!-- <Card.Root class="transition-all duration-200 hover:-translate-y-1 hover:shadow-md bg-gradient-to-br from-muted/30 to-muted/10"> -->
+  <!--   <Card.Header> -->
+  <!--     <Card.Description>Finalized Quota</Card.Description> -->
+  <!--     <Card.Title id="quota-finalized" class="text-2xl font-semibold tabular-nums"> -->
+  <!--       {finalized.quota.finalizedQuota} -->
+  <!--     </Card.Title> -->
+  <!--   </Card.Header> -->
+  <!--   <Card.Content class="flex items-center gap-2"> -->
+  <!--     <Badge variant="outline"> -->
+  <!--       <ArrowUpIcon class="size-3" /> -->
+  <!--       Total -->
+  <!--     </Badge> -->
+  <!--     <span class="text-muted-foreground text-sm"> Initial + interventions combined </span> -->
+  <!--   </Card.Content> -->
+  <!-- </Card.Root> -->
+  <!-- </div> -->
+
+  <!-- {#if finalized.snapshots.length > 0} -->
+  <!--   <Card.Root -->
+  <!--     variant="soft" -->
+  <!--     class="from-muted/30 to-muted/10 bg-gradient-to-br transition-all hover:shadow-md" -->
+  <!--   > -->
+  <!--     <Card.Header> -->
+  <!--       <Card.Title>Lab Quota Timeline</Card.Title> -->
+  <!--     </Card.Header> -->
+  <!--     <Card.Content> -->
+  <!--       <ul class="space-y-1"> -->
+  <!--         {#each finalized.snapshots as { labId, labName, initialQuota, lotteryQuota, finalizedQuota } (labId)} -->
+  <!--           <li class="text-sm"> -->
+  <!--             <strong>{labName}</strong>: -->
+  <!--             {initialQuota} initial + {lotteryQuota} lottery = {finalizedQuota} finalized -->
+  <!--           </li> -->
+  <!--         {/each} -->
+  <!--       </ul> -->
+  <!--     </Card.Content> -->
+  <!--   </Card.Root> -->
+  <!-- {/if} -->
+
+  <DraftRoundsChart
+    records={finalized.sections.regularDrafted}
+    maxRounds={draft.maxRounds}
+    interventionRecords={finalized.sections.interventionDrafted}
+    lotteryRecords={finalized.sections.lotteryDrafted}
+    {labs}
+  />
 
   <div class="grid grid-cols-1 gap-2">
-    <Card.Root id="section-regular-drafted" variant="soft">
+    <Card.Root
+      id="section-regular-drafted"
+      variant="soft"
+      class="bg-gradient-to-br from-muted/30 to-muted/10 transition-all hover:shadow-md"
+    >
       <Card.Header>
         <Card.Title>Regular Drafted ({finalized.sections.regularDrafted.length})</Card.Title>
       </Card.Header>
@@ -148,7 +222,11 @@
       </Card.Content>
     </Card.Root>
 
-    <Card.Root id="section-intervention-drafted" variant="soft">
+    <Card.Root
+      id="section-intervention-drafted"
+      variant="soft"
+      class="bg-gradient-to-br from-muted/30 to-muted/10 transition-all hover:shadow-md"
+    >
       <Card.Header>
         <Card.Title
           >Intervention Drafted ({finalized.sections.interventionDrafted.length})</Card.Title
@@ -211,7 +289,11 @@
       </Card.Content>
     </Card.Root>
 
-    <Card.Root id="section-lottery-drafted" variant="soft">
+    <Card.Root
+      id="section-lottery-drafted"
+      variant="soft"
+      class="bg-gradient-to-br from-muted/30 to-muted/10 transition-all hover:shadow-md"
+    >
       <Card.Header>
         <Card.Title>Lottery Drafted ({finalized.sections.lotteryDrafted.length})</Card.Title>
       </Card.Header>
