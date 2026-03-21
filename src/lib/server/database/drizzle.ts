@@ -1550,6 +1550,7 @@ export async function upsertFacultyChoice(
         set: { userId: facultyUserId, createdAt: sql`now()` },
       });
 
+    // clear and re-insert to handle student removals and avoid orphaned rows
     await db
       .delete(schema.facultyChoiceUser)
       .where(
