@@ -6,11 +6,8 @@
   import { page } from '$app/state';
   import { resolve } from '$app/paths';
   import { TooltipProvider } from '$lib/components/ui/tooltip';
-  // import { useSidebar } from '$lib/components/ui/sidebar/context.svelte';
 
   let { sidebar } = $props();
-
-  // const sidebar = useSidebar();
 </script>
 
 <TooltipProvider>
