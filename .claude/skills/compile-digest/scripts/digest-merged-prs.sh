@@ -1,5 +1,5 @@
 # List merged PRs since a cutoff date.
-# Usage: digest-prs.sh <since_iso8601> [base_branch=main]
+# Usage: digest-merged-prs.sh <since_iso8601> [base_branch=main]
 #   since_iso8601: e.g. "2026-03-07T00:00:00Z"
 #   base_branch: target branch (default: main)
 set -euo pipefail

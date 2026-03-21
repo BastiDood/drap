@@ -7,9 +7,9 @@ description: >
 compatibility: Requires Git (`git`) and the GitHub CLI (`gh`).
 allowed-tools:
   - Bash(date:*)
-  - Bash(sh */scripts/digest-commits.sh *)
-  - Bash(sh */scripts/digest-merged-prs.sh *)
-  - Bash(sh */scripts/digest-open-prs.sh *)
+  - Bash(source */scripts/digest-commits.sh *)
+  - Bash(source */scripts/digest-merged-prs.sh *)
+  - Bash(source */scripts/digest-open-prs.sh *)
   - Bash(gh pr list:*)
 ---
 
@@ -22,15 +22,15 @@ Compile a structured digest of all merged PRs, open PRs, and commits against the
 1. **Parse cutoff date**. Convert relative dates (e.g., "2 weeks ago") to ISO 8601 using `date -d` before passing to scripts.
 2. **Fetch merged PR list** — run the following and capture the JSON output:
    ```shell
-   sh ${CLAUDE_SKILL_DIR}/scripts/digest-merged-prs.sh $ISO_DATE
+   source ${CLAUDE_SKILL_DIR}/scripts/digest-merged-prs.sh $ISO_DATE
    ```
 3. **Fetch commit list** — run the following and capture the text output:
    ```shell
-   sh ${CLAUDE_SKILL_DIR}/scripts/digest-commits.sh $ISO_DATE
+   source ${CLAUDE_SKILL_DIR}/scripts/digest-commits.sh $ISO_DATE
    ```
 4. **Fetch open PR list** — run the following and capture the JSON output:
    ```shell
-   sh ${CLAUDE_SKILL_DIR}/scripts/digest-open-prs.sh $ISO_DATE
+   source ${CLAUDE_SKILL_DIR}/scripts/digest-open-prs.sh $ISO_DATE
    ```
 5. **Deep-dive each PR in parallel sub-agents** — for each PR in the merged and open lists, launch the `pull-request-explorer` sub-agent. Pass the PR number in the prompt. Collect each agent's raw findings.
 6. **Assemble digest** — distill the collected findings into the [digest template](./assets/digest-template.md).
