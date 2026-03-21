@@ -8,6 +8,7 @@
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
+  import { invalidateAll } from '$app/navigation';
   import { Progress } from '$lib/components/ui/progress';
   import type { schema } from '$lib/server/database/drizzle';
 
@@ -87,6 +88,14 @@
     submitter.disabled = true;
     return async ({ update, result }) => {
       submitter.disabled = false;
+      if (result.type === 'error' && result.status === 409) {
+        toast.error('Round advanced while editing. No changes saved. Refreshing...');
+        addedIds.clear();
+        removedIds.clear();
+        onSuccess?.();
+        await invalidateAll();
+        return;
+      }
       await update();
       switch (result.type) {
         case 'success':
