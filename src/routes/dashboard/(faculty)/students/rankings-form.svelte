@@ -1,9 +1,11 @@
 <script lang="ts">
   import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
+  import type { Snippet } from 'svelte';
   import { SvelteSet } from 'svelte/reactivity';
   import { toast } from 'svelte-sonner';
 
   import * as Avatar from '$lib/components/ui/avatar';
+  import * as Dialog from '$lib/components/ui/dialog';
   import * as Popover from '$lib/components/ui/popover';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
@@ -25,9 +27,8 @@
     students: Student[];
     remainingQuota: number;
     initialSelectedIds?: string[];
-    submitLabel?: string;
-    onCancel?: () => void;
-    onSuccess?: () => void;
+    submitLabel?: Snippet;
+    inDialog?: boolean;
   }
 
   const {
@@ -37,18 +38,19 @@
     remainingQuota,
     initialSelectedIds = [],
     submitLabel,
-    onCancel,
-    onSuccess,
+    inDialog = false,
   }: Props = $props();
+
+  let dialogCloseRef: HTMLButtonElement | null = $state(null);
 
   const addedIds = new SvelteSet<string>();
   const removedIds = new SvelteSet<string>();
-  const selectedIds = $derived([
-    ...initialSelectedIds.filter(id => !removedIds.has(id)),
-    ...Array.from(addedIds, id => (initialSelectedIds.includes(id) ? null : id)).filter(
-      (id): id is string => id !== null,
-    ),
-  ]);
+  const selectedIds = $derived.by(() => {
+    const ids: string[] = [];
+    for (const id of initialSelectedIds) if (!removedIds.has(id)) ids.push(id);
+    for (const id of addedIds) if (!initialSelectedIds.includes(id)) ids.push(id);
+    return ids;
+  });
   const disabled = $derived(remainingQuota - selectedIds.length < 0);
   const editing = $derived(initialSelectedIds.length > 0);
 
@@ -88,26 +90,35 @@
     submitter.disabled = true;
     return async ({ update, result }) => {
       submitter.disabled = false;
-      if (result.type === 'error' && result.status === 409) {
-        toast.error('Round advanced while editing. No changes saved. Refreshing...');
-        addedIds.clear();
-        removedIds.clear();
-        onSuccess?.();
-        await invalidateAll();
-        return;
-      }
-      await update();
+
       switch (result.type) {
         case 'success':
           toast.success(editing ? 'Selections updated.' : 'Selections submitted.');
           addedIds.clear();
           removedIds.clear();
-          onSuccess?.();
+          dialogCloseRef?.click();
+          await update();
+          break;
+        case 'error':
+          switch (result.status) {
+            case 409:
+              toast.error('Round advanced while editing. No changes saved.');
+              break;
+            default:
+              toast.error('An unexpected error occurred.');
+              break;
+          }
+          addedIds.clear();
+          removedIds.clear();
+          dialogCloseRef?.click();
+          await invalidateAll();
           break;
         case 'failure':
           toast.error(editing ? 'Failed to update selections.' : 'Failed to submit selections.');
+          await update();
           break;
         default:
+          await update();
           break;
       }
     };
@@ -129,7 +140,7 @@
         <button
           type="button"
           class="flex w-full flex-col gap-3 p-2"
-          onclick={toggleSelection.bind(void 0, id)}
+          onclick={toggleSelection.bind(null, id)}
         >
           <div class="flex items-center gap-3 p-2">
             <Avatar.Root class="size-10">
@@ -164,12 +175,21 @@
     </span>
   </div>
   <div class="flex items-center gap-2">
-    <Button type="submit" class="grow" {disabled}
-      >{submitLabel ?? (editing ? 'Update Selection' : 'Submit')}</Button
-    >
-    {#if typeof onCancel !== 'undefined'}
-      <Button type="button" variant="outline" onclick={onCancel}>Cancel</Button>
+    {#if inDialog}
+      <Dialog.Close bind:ref={dialogCloseRef} type="button" class="hidden" />
+      <Dialog.Close>
+        {#snippet child({ props })}
+          <Button type="button" variant="outline" {...props}>Cancel</Button>
+        {/snippet}
+      </Dialog.Close>
     {/if}
+    <Button type="submit" class="grow" {disabled}>
+      {#if submitLabel}
+        {@render submitLabel()}
+      {:else}
+        {editing ? 'Update Selection' : 'Submit'}
+      {/if}
+    </Button>
     <Popover.Root>
       <Popover.Trigger>
         <CircleHelpIcon class="size-4 text-muted-foreground" />
