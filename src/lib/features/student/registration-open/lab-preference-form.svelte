@@ -10,6 +10,7 @@
   import XIcon from '@lucide/svelte/icons/x';
   import { crossfade } from 'svelte/transition';
   import { flip } from 'svelte/animate';
+  import { PersistedState } from 'runed';
   import { toast } from 'svelte-sonner';
 
   import * as Card from '$lib/components/ui/card';
@@ -29,14 +30,17 @@
 
   let { draftId, maxRounds, availableLabs = $bindable() }: Props = $props();
 
-  let selectedLabs = $state<typeof availableLabs>([]);
+  // svelte-ignore non_reactive_update
+  let selectedLabs = new PersistedState<typeof availableLabs>('lab-rankings', [], {
+    syncTabs: true,
+  });
 
-  const remaining = $derived(maxRounds - selectedLabs.length);
+  const remaining = $derived(maxRounds - selectedLabs.current.length);
   const hasRemaining = $derived(remaining > 0);
 
   function selectLab(index: number) {
-    if (selectedLabs.length >= maxRounds) return;
-    selectedLabs.push(...availableLabs.splice(index, 1));
+    if (selectedLabs.current.length >= maxRounds) return;
+    selectedLabs.current.push(...availableLabs.splice(index, 1));
     selectedLabs = selectedLabs;
     availableLabs = availableLabs;
   }
@@ -46,31 +50,31 @@
     const below = above--;
     if (above < 0) return;
 
-    const temp = selectedLabs[below];
+    const temp = selectedLabs.current[below];
     assert(typeof temp !== 'undefined');
-    const target = selectedLabs[above];
+    const target = selectedLabs.current[above];
     assert(typeof target !== 'undefined');
 
-    selectedLabs[below] = target;
-    selectedLabs[above] = temp;
+    selectedLabs.current[below] = target;
+    selectedLabs.current[above] = temp;
   }
 
   function moveLabDown(below: number) {
     // eslint-disable-next-line no-param-reassign
     const above = below++;
-    if (below >= selectedLabs.length) return;
+    if (below >= selectedLabs.current.length) return;
 
-    const temp = selectedLabs[below];
+    const temp = selectedLabs.current[below];
     assert(typeof temp !== 'undefined');
-    const target = selectedLabs[above];
+    const target = selectedLabs.current[above];
     assert(typeof target !== 'undefined');
 
-    selectedLabs[below] = target;
-    selectedLabs[above] = temp;
+    selectedLabs.current[below] = target;
+    selectedLabs.current[above] = temp;
   }
 
   function resetSelection(index: number) {
-    availableLabs.push(...selectedLabs.splice(index, 1));
+    availableLabs.push(...selectedLabs.current.splice(index, 1));
   }
 
   const [send, receive] = crossfade(DURATION);
@@ -102,6 +106,7 @@
       switch (result.type) {
         case 'success':
           toast.success('Uploaded your lab preferences.');
+          selectedLabs.current = [];
           break;
         case 'failure':
           switch (result.status) {
@@ -130,7 +135,7 @@
       </Card.Header>
       <Card.Content class="flex grow flex-col">
         <ul
-          inert={selectedLabs.length >= maxRounds}
+          inert={selectedLabs.current.length >= maxRounds}
           class="space-y-2 empty:hidden inert:opacity-20"
         >
           {#each availableLabs as { id, name }, idx (id)}
@@ -175,7 +180,7 @@
       </Card.Header>
       <Card.Content class="flex grow flex-col">
         <ol class="space-y-2 empty:hidden">
-          {#each selectedLabs as { id, name }, idx (id)}
+          {#each selectedLabs.current as { id, name }, idx (id)}
             {@const config = { key: id }}
             <li
               class="flex flex-col gap-4 rounded-lg border border-border bg-muted/20 p-4 transition-shadow hover:shadow-md dark:bg-muted"
@@ -218,7 +223,7 @@
                           size="icon"
                           class="bg-warning text-warning-foreground hover:bg-warning/80"
                           onclick={moveLabDown.bind(null, idx)}
-                          disabled={idx >= selectedLabs.length - 1}
+                          disabled={idx >= selectedLabs.current.length - 1}
                         >
                           <ArrowDownIcon class="size-5" />
                         </Button>
@@ -252,7 +257,7 @@
             </li>
           {/each}
         </ol>
-        {#if selectedLabs.length === 0}
+        {#if selectedLabs.current.length === 0}
           <div class="flex grow items-center justify-center">
             <Empty.Root>
               <Empty.Media variant="icon">
