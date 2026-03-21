@@ -38,8 +38,7 @@
   const remaining = $derived(maxRounds - selectedLabs.current.length);
   const hasRemaining = $derived(remaining > 0);
 
-  type LabRemark = Record<string, string>;
-  const labRemarks = new PersistedState<LabRemark>('lab-remarks', {}, {
+  const labRemarks = new PersistedState<Record<string, string>>('lab-remarks', {}, {
     syncTabs: true,
   });
   const debouncedSetLabRemarks = useDebounce(
