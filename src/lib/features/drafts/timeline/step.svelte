@@ -8,8 +8,6 @@
   import CircleIcon from '@lucide/svelte/icons/circle';
   import type { Snippet } from 'svelte';
 
-  import { tv } from 'tailwind-variants';
-
   import * as Collapsible from '$lib/components/ui/collapsible';
 
   interface Props {
@@ -33,17 +31,6 @@
   }: Props = $props();
 
   let open = $derived(defaultOpen);
-
-  // const contentVariants = tv({
-  //   base: 'mt-3 rounded-lg p-4',
-  //   variants: {
-  //     status: {
-  //       completed: 'bg-card',
-  //       active: 'bg-card',
-  //       pending: '',
-  //     },
-  //   },
-  // });
 </script>
 
 <div class="relative flex gap-4">

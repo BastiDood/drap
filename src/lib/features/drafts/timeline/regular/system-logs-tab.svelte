@@ -1,7 +1,6 @@
 <script lang="ts">
   import { fromUnixTime, getUnixTime } from 'date-fns';
 
-  import * as Card from '$lib/components/ui/card';
   import { Badge } from '$lib/components/ui/badge';
 
   import type { FacultyChoiceRecord } from '$lib/features/drafts/types';
