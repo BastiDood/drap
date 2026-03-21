@@ -91,6 +91,8 @@
       switch (result.type) {
         case 'success':
           toast.success(editing ? 'Selections updated.' : 'Selections submitted.');
+          addedIds.clear();
+          removedIds.clear();
           onSuccess?.();
           break;
         case 'failure':
