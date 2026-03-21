@@ -1,7 +1,6 @@
 <script lang="ts">
   import { fromUnixTime, getUnixTime } from 'date-fns';
 
-  import * as Card from '$lib/components/ui/card';
   import { Badge } from '$lib/components/ui/badge';
 
   import type { FacultyChoiceRecord } from '$lib/features/drafts/types';
@@ -17,7 +16,7 @@
   interface SystemLogLabGroup {
     key: string;
     labId: string;
-    round: 'Lottery' | `Round ${number}`;
+    round: 'Lottery' | number;
     choices: FacultyChoiceRecord[];
   }
 
@@ -51,7 +50,7 @@
         labGroup = {
           key: eventLabKey,
           labId: choice.labId,
-          round: choice.round === null ? 'Lottery' : `Round ${choice.round}`,
+          round: choice.round === null ? 'Lottery' : choice.round,
           choices: [],
         };
         labByEventAndLabKey[eventLabKey] = labGroup;
@@ -77,68 +76,86 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
 4. Lab received no interest, was auto-skipped [null faculty email, none of the above cases]
 -->
 
-<Card.Root class="my-2">
-  <Card.Content class="pt-4">
-    <label class="flex items-center space-x-2">
-      <input
-        class="h-4 w-4 rounded border border-primary"
-        type="checkbox"
-        bind:checked={showAutomated}
-      />
-      <span>Show System Automation Logs</span>
-    </label>
-  </Card.Content>
-</Card.Root>
-{#each events as event (event.key)}
-  <Card.Root class="my-2">
-    <Card.Header>
-      <Card.Title class="text-base">{fromUnixTime(event.unix).toLocaleString()}</Card.Title>
-    </Card.Header>
-    <Card.Content class="space-y-4">
-      {#each event.labs as lab (lab.key)}
-        {@const [choice] = lab.choices}
-        {#if typeof choice !== 'undefined'}
-          <div class="space-y-1 rounded-md bg-muted p-4">
-            <strong class="uppercase">{lab.labId}</strong> ({lab.round}):
-            {#if choice.userEmail === null || choice.studentEmail === null}
-              {#if choice.userEmail === null}
-                <!-- If the system auto-skipped -->
-                <span>This selection was automated by the system</span>
-              {:else}
-                <!-- If a faculty member selected no students -->
-                <span>
-                  This selection of <Badge
-                    variant="outline"
-                    class="border-primary bg-primary/10 text-primary">no</Badge
-                  >
-                  students was performed by faculty member
+<label class="mt-4 flex items-center space-x-2">
+  <input
+    class="h-4 w-4 rounded-lg border border-primary"
+    type="checkbox"
+    bind:checked={showAutomated}
+  />
+  <span>Show System Automation Logs</span>
+</label>
+
+<div class="my-4 overflow-auto rounded-lg border">
+  <table class="w-full">
+    <thead class="text-left">
+      <tr class="border-b">
+        <th class="px-4 py-2 whitespace-nowrap">Timestamp</th>
+        <th class="px-4 py-2 whitespace-nowrap">Round</th>
+        <th class="px-4 py-2 whitespace-nowrap">Lab ID</th>
+        <th class="px-4 py-2 whitespace-nowrap">Action</th>
+        <th class="px-4 py-2 whitespace-nowrap">Actor</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {#each events as event (event.key)}
+        {#each event.labs as lab (lab.key)}
+          {@const [choice] = lab.choices}
+
+          {#if typeof choice !== 'undefined'}
+            <tr class="border-t">
+              <td class="px-4 py-2 whitespace-nowrap"
+                >{fromUnixTime(event.unix).toLocaleString()}</td
+              >
+              <td class="px-4 py-2 whitespace-nowrap">{lab.round}</td>
+              <td class="px-4 py-2 whitespace-nowrap uppercase">{lab.labId}</td>
+              <td class="px-4 py-2 whitespace-nowrap">
+                {#if choice.userEmail === null}
+                  <!-- If the system auto-skipped -->
+                  <span>System automation</span>
+                {:else if choice.studentEmail === null}
+                  <!-- If a faculty member selected no students -->
+                  <span>
+                    <Badge
+                      variant="outline"
+                      class="border-primary bg-primary/10 text-primary dark:border-secondary dark:bg-secondary/10 dark:text-secondary"
+                      >No</Badge
+                    >
+                    students selected
+                  </span>
+                {:else}
+                  <!-- If a faculty member selected students -->
+                  <span>
+                    Selected
+                    {#each lab.choices as { studentEmail } (studentEmail)}
+                      <Badge
+                        variant="outline"
+                        class="border-primary bg-primary/10 text-primary dark:border-secondary dark:bg-secondary/10 dark:text-secondary"
+                        >{studentEmail}</Badge
+                      >
+                    {/each}
+                  </span>
+                {/if}
+              </td>
+              <td class="px-4 py-2 whitespace-nowrap">
+                {#if choice.userEmail === null}
                   <Badge
                     variant="outline"
-                    class="border-secondary bg-secondary/10 text-secondary-foreground"
+                    class="border-secondary bg-secondary/10 text-secondary-foreground dark:text-secondary"
+                    >System</Badge
+                  >
+                {:else}
+                  <Badge
+                    variant="outline"
+                    class="border-secondary bg-secondary/10 text-secondary-foreground dark:text-secondary"
                     >{choice.userEmail}</Badge
                   >
-                </span>
-              {/if}
-            {:else}
-              <!-- If a faculty member selected students -->
-              <span>
-                This selection of
-                {#each lab.choices as { studentEmail } (studentEmail)}
-                  <Badge variant="outline" class="border-primary bg-primary/10 text-primary"
-                    >{studentEmail}</Badge
-                  >
-                {/each}
-                was performed by
-                <Badge
-                  variant="outline"
-                  class="border-secondary bg-secondary/10 text-secondary-foreground"
-                  >{choice.userEmail}</Badge
-                >
-              </span>
-            {/if}
-          </div>
-        {/if}
+                {/if}
+              </td>
+            </tr>
+          {/if}
+        {/each}
       {/each}
-    </Card.Content>
-  </Card.Root>
-{/each}
+    </tbody>
+  </table>
+</div>

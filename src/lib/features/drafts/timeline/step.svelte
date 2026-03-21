@@ -8,8 +8,6 @@
   import CircleIcon from '@lucide/svelte/icons/circle';
   import type { Snippet } from 'svelte';
 
-  import { tv } from 'tailwind-variants';
-
   import * as Collapsible from '$lib/components/ui/collapsible';
 
   interface Props {
@@ -33,17 +31,6 @@
   }: Props = $props();
 
   let open = $derived(defaultOpen);
-
-  const contentVariants = tv({
-    base: 'mt-3 rounded-lg p-4',
-    variants: {
-      status: {
-        completed: 'bg-card',
-        active: 'bg-card',
-        pending: '',
-      },
-    },
-  });
 </script>
 
 <div class="relative flex gap-4">
@@ -66,7 +53,7 @@
   </div>
 
   <!-- Content area -->
-  <div class="flex-1 pb-6">
+  <div class="min-w-0 flex-1 pb-6">
     {#if collapsible}
       <Collapsible.Root bind:open>
         <Collapsible.Trigger
@@ -83,7 +70,7 @@
           />
         </Collapsible.Trigger>
         <Collapsible.Content>
-          <div class={contentVariants({ status })}>
+          <div class="rounded-lg bg-background p-4">
             {@render children()}
           </div>
         </Collapsible.Content>
@@ -96,7 +83,7 @@
           {@render metadata()}
         {/if}
       </div>
-      <div class={contentVariants({ status })}>
+      <div class="rounded-lg bg-background p-4">
         {@render children()}
       </div>
     {/if}
