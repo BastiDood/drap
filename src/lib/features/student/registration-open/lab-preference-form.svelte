@@ -31,9 +31,8 @@
 
   let { userId, draftId, maxRounds, availableLabs = $bindable() }: Props = $props();
 
-  // svelte-ignore non_reactive_update
   // svelte-ignore state_referenced_locally
-  let persistedSelectedLabs = new PersistedState<typeof availableLabs>(
+  const persistedSelectedLabs = new PersistedState<typeof availableLabs>(
     `selected-labs-${userId}-${draftId}`,
     [],
     {
@@ -41,9 +40,8 @@
     },
   );
 
-  // svelte-ignore non_reactive_update
   // svelte-ignore state_referenced_locally
-  let persistedAvailableLabs = new PersistedState<typeof availableLabs>(
+  const persistedAvailableLabs = new PersistedState<typeof availableLabs>(
     `available-labs-${userId}-${draftId}`,
     availableLabs,
     {
@@ -77,8 +75,6 @@
   function selectLab(index: number) {
     if (persistedSelectedLabs.current.length >= maxRounds) return;
     persistedSelectedLabs.current.push(...persistedAvailableLabs.current.splice(index, 1));
-    persistedSelectedLabs = persistedSelectedLabs;
-    persistedAvailableLabs = persistedAvailableLabs;
   }
 
   function moveLabUp(above: number) {
