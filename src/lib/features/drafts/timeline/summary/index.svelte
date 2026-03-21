@@ -73,29 +73,8 @@
         </div>
       </Card.Footer>
     </Card.Root>
-<<<<<<< HEAD
-    <!-- <Card.Root class="from-muted/30 to-muted/10 bg-gradient-to-br transition-all  hover:shadow-xl"> -->
-    <!--   <Card.Header> -->
-    <!--     <Card.Description>Assigned Students</Card.Description> -->
-    <!--     <Card.Title id="stat-assigned-students" class="text-2xl font-semibold tabular-nums"> -->
-    <!--       {assignedStudents} -->
-    <!--     </Card.Title> -->
-    <!--   </Card.Header> -->
-    <!--   <Card.Content class="flex items-center gap-2"> -->
-    <!--     <Badge variant="outline"> -->
-    <!--       <ArrowUpIcon class="size-3" /> -->
-    <!--       {Math.round((assignedStudents / totalStudents) * 100)}% -->
-    <!--     </Badge> -->
-    <!--     <span class="text-muted-foreground text-sm"> -->
-    <!--       {totalStudents - assignedStudents} remaining unassigned -->
-    <!--     </span> -->
-    <!--   </Card.Content> -->
-    <!-- </Card.Root> -->
-    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 transition-all hover:shadow-xl">
-=======
 
-    <Card.Root class="from-muted/30 to-muted/10 bg-gradient-to-br transition-all hover:shadow-xl">
->>>>>>> 6a8686c (fix: graph-hover text)
+    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 transition-all hover:shadow-xl">
       <Card.Header>
         <Card.Description>Participating Labs</Card.Description>
         <Card.Title id="stat-participating-labs" class="text-2xl font-semibold tabular-nums">
@@ -117,7 +96,7 @@
         <div class="text-muted-foreground">Regular draft rounds</div>
       </Card.Footer>
     </Card.Root>
-    <Card.Root class="from-muted/30 to-muted/10 bg-gradient-to-br transition-all hover:shadow-xl">
+    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 transition-all hover:shadow-xl">
       <Card.Header>
         <Card.Description>Interventions</Card.Description>
         <Card.Title id="quota-interventions" class="text-2xl font-semibold tabular-nums">
@@ -149,6 +128,7 @@
     interventionRecords={finalized.sections.interventionDrafted}
     lotteryRecords={finalized.sections.lotteryDrafted}
     {labs}
+    {totalStudents}
   />
 
   <div class="grid grid-cols-1 gap-2">

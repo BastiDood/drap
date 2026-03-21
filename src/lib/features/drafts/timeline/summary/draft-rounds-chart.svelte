@@ -8,6 +8,7 @@
     interventionRecords?: DraftAssignmentRecord[];
     lotteryRecords?: DraftAssignmentRecord[];
     labs: Lab[];
+    totalStudents: number;
   }
 
   const {
@@ -16,7 +17,10 @@
     interventionRecords = [],
     lotteryRecords = [],
     labs,
+    totalStudents,
   }: Props = $props();
+
+  let chartMode = $state<'assigned' | 'remaining'>('assigned');
 
   const padding = { top: 20, right: 20, bottom: 30, left: 40 };
   const width = 600;
@@ -25,7 +29,13 @@
   const chartHeight = height - padding.top - padding.bottom;
 
   let selectedLabId = $state<string | null>(null);
-  let hoveredPoint = $state<{ label: string; count: number; x: number; y: number } | null>(null);
+  let hoveredPoint = $state<{
+    label: string;
+    count: number;
+    remaining: number;
+    x: number;
+    y: number;
+  } | null>(null);
 
   const filteredRecords = $derived(
     selectedLabId === null ? records : records.filter(r => r.labId === selectedLabId),
@@ -37,6 +47,10 @@
   );
   const filteredLotteryRecords = $derived(
     selectedLabId === null ? lotteryRecords : lotteryRecords.filter(r => r.labId === selectedLabId),
+  );
+
+  const selectedLabQuota = $derived(
+    selectedLabId === null ? null : (labs.find(l => l.id === selectedLabId)?.quota ?? null),
   );
 
   const chartData = $derived(() => {
@@ -76,14 +90,46 @@
       1,
     );
 
+    const maxY =
+      chartMode === 'remaining' && selectedLabId !== null && selectedLabQuota !== null
+        ? selectedLabQuota
+        : chartMode === 'remaining'
+          ? totalStudents
+          : maxCount;
+
     return points.map((point, index) => ({
       ...point,
       x: padding.left + (index / Math.max(totalPoints - 1, 1)) * chartWidth,
-      y: padding.top + chartHeight - (point.count / maxCount) * chartHeight,
+      y:
+        chartMode === 'assigned'
+          ? padding.top + chartHeight - (point.count / maxCount) * chartHeight
+          : padding.top +
+            chartHeight -
+            ((selectedLabId !== null && selectedLabQuota !== null
+              ? Math.max(0, selectedLabQuota - cumulativeUpTo(index, points))
+              : totalStudents - cumulativeUpTo(index, points)) /
+              maxY) *
+              chartHeight,
     }));
   });
 
+  function cumulativeUpTo(
+    index: number,
+    pts: { label: string; type: 'round' | 'intervention' | 'lottery'; count: number }[],
+  ) {
+    let drafted = 0;
+    for (let i = 0; i <= index; i++) drafted += pts[i]!.count;
+    return drafted;
+  }
+
   const maxCount = $derived(Math.max(...chartData().map(p => p.count), 1));
+  const chartMax = $derived(
+    chartMode === 'remaining'
+      ? selectedLabId !== null && selectedLabQuota !== null
+        ? selectedLabQuota
+        : totalStudents
+      : maxCount,
+  );
 
   const linePath = $derived(
     chartData().length > 0
@@ -101,8 +147,8 @@
 
   const yTicks = $derived(() => {
     const ticks: number[] = [];
-    const step = Math.ceil(maxCount / 4);
-    for (let i = 0; i <= maxCount; i += step) ticks.push(i);
+    const step = Math.ceil(chartMax / 4);
+    for (let i = 0; i <= chartMax; i += step) ticks.push(i);
     return ticks;
   });
 
@@ -119,7 +165,11 @@
       <div>
         <Card.Title>Draft Timeline</Card.Title>
         <Card.Description>
-          Students assigned per phase
+          Students {chartMode === 'assigned'
+            ? 'assigned'
+            : selectedLabId === null
+              ? 'remaining'
+              : 'remaining quota'} per phase
           {#if selectedLabName}
             &mdash; {selectedLabName}
           {:else}
@@ -127,17 +177,26 @@
           {/if}
         </Card.Description>
       </div>
-      <select
-        bind:value={selectedLabId}
-        class="border-border bg-background h-8 w-40 min-w-40 rounded-md border px-2 pr-8 text-sm"
-      >
-        <option value={null}>All Labs</option>
-        {#each labs as lab (lab.id)}
-          <option value={lab.id}>{lab.name}</option>
-        {/each}
-      </select>
-    </div>
-  </Card.Header>
+      <div class="flex items-center gap-2">
+        <select
+          bind:value={chartMode}
+          class="border-border bg-background h-8 rounded-md border px-2 text-sm"
+        >
+          <option value="assigned">Assigned</option>
+          <option value="remaining">Remaining</option>
+        </select>
+        <select
+          bind:value={selectedLabId}
+          class="border-border bg-background h-8 w-40 min-w-40 rounded-md border px-2 pr-8 text-sm"
+        >
+          <option value={null}>All Labs</option>
+          {#each labs as lab (lab.id)}
+            <option value={lab.id}>{lab.name}</option>
+          {/each}
+        </select>
+      </div>
+    </div></Card.Header
+  >
   <Card.Content>
     <svg viewBox="0 0 {width} {height}" class="h-auto w-full">
       <defs>
@@ -148,7 +207,7 @@
       </defs>
 
       {#each yTicks() as tick (tick)}
-        {@const y = padding.top + chartHeight - (tick / maxCount) * chartHeight}
+        {@const y = padding.top + chartHeight - (tick / chartMax) * chartHeight}
         <line
           x1={padding.left}
           y1={y}
@@ -178,18 +237,22 @@
         stroke-linejoin="round"
       />
 
-      {#each chartData() as { label, count, x, y } (label)}
+      {#each chartData() as point, index (point.label)}
+        {@const remaining =
+          selectedLabId !== null && selectedLabQuota !== null
+            ? Math.max(0, selectedLabQuota - cumulativeUpTo(index, chartData()))
+            : totalStudents - cumulativeUpTo(index, chartData())}
         <g
           role="button"
           tabindex="0"
-          onmouseenter={() => (hoveredPoint = { label, count, x, y })}
+          onmouseenter={() => (hoveredPoint = { ...point, remaining, x: point.x, y: point.y })}
           onmouseleave={() => (hoveredPoint = null)}
-          onfocus={() => (hoveredPoint = { label, count, x, y })}
+          onfocus={() => (hoveredPoint = { ...point, remaining, x: point.x, y: point.y })}
           onblur={() => (hoveredPoint = null)}
         >
           <circle
-            cx={x}
-            cy={y}
+            cx={point.x}
+            cy={point.y}
             r="6"
             fill="var(--primary)"
             class="hover:fill-primary/80 cursor-pointer"
@@ -215,7 +278,7 @@
           text-anchor="middle"
           class="fill-foreground font-small text-[10px]"
         >
-          {hoveredPoint.count}
+          {chartMode === 'assigned' ? hoveredPoint.count : hoveredPoint.remaining}
         </text>
       {/if}
 
