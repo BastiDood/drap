@@ -79,63 +79,80 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
 
 <label class="flex items-center space-x-2 mt-4">
   <input
-    class="border-primary h-4 w-4 rounded border"
+    class="border-primary h-4 w-4 rounded-lg border"
     type="checkbox"
     bind:checked={showAutomated}
   />
   <span>Show System Automation Logs</span>
 </label>
 
-{#each events as event (event.key)}
-  <Card.Root class="my-2">
-    <Card.Header>
-      <Card.Title class="text-base">{fromUnixTime(event.unix).toLocaleString()}</Card.Title>
-    </Card.Header>
-    <Card.Content class="space-y-4">
-      {#each event.labs as lab (lab.key)}
-        {@const [choice] = lab.choices}
-        {#if typeof choice !== 'undefined'}
-          <div class="space-y-1 rounded-md bg-muted p-4">
-            <strong class="uppercase">{lab.labId}</strong> ({lab.round}):
-            {#if choice.userEmail === null || choice.studentEmail === null}
-              {#if choice.userEmail === null}
-                <!-- If the system auto-skipped -->
-                <span>This selection was automated by the system</span>
-              {:else}
-                <!-- If a faculty member selected no students -->
-                <span>
-                  This selection of <Badge
-                    variant="outline"
-                    class="border-primary bg-primary/10 text-primary">no</Badge
-                  >
-                  students was performed by faculty member
+
+<div class="my-4 overflow-x-auto rounded-lg border">
+  <table class="w-full">
+    <thead class="text-left">
+      <tr class="border-b">
+        <th class="p-1">Timestamp (GMT+8)</th>
+        <th class="p-1">Lab ID</th>
+        <th class="p-1">Round</th>
+        <th class="p-1">Action</th>
+        <th class="p-1">Actor</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {#each events as event (event.key)}
+        {#each event.labs as lab (lab.key)}
+          {@const [choice] = lab.choices}
+
+          {#if typeof choice !== 'undefined'}
+            <tr class="border-t">
+              <td class="p-1">{fromUnixTime(event.unix).toLocaleString()}</td>
+              <td class="p-1 uppercase">{lab.labId}</td>
+              <td class="p-1">{lab.round}</td>
+              <td class="p-1">
+                {#if choice.userEmail === null}
+                  <!-- If the system auto-skipped -->
+                  <span>System automation</span>
+                {:else if choice.studentEmail === null}
+                  <!-- If a faculty member selected no students -->
+                  <span>
+                    <Badge
+                      variant="outline"
+                      class="border-primary bg-primary/10 text-primary">No</Badge
+                    >
+                    students selected
+                  </span>
+                {:else}
+                  <!-- If a faculty member selected students -->
+                  <span>
+                    Selected
+                    {#each lab.choices as { studentEmail } (studentEmail)}
+                      <Badge variant="outline" class="border-primary bg-primary/10 text-primary"
+                        >{studentEmail}</Badge
+                      >
+                    {/each}
+                  </span>
+                {/if}
+              </td>
+              <td class="p-1">
+                {#if choice.userEmail === null}
                   <Badge
-                    variant="outline"
-                    class="border-secondary bg-secondary/10 text-secondary-foreground"
-                    >{choice.userEmail}</Badge
-                  >
-                </span>
-              {/if}
-            {:else}
-              <!-- If a faculty member selected students -->
-              <span>
-                This selection of
-                {#each lab.choices as { studentEmail } (studentEmail)}
-                  <Badge variant="outline" class="border-primary bg-primary/10 text-primary"
-                    >{studentEmail}</Badge
-                  >
-                {/each}
-                was performed by
-                <Badge
-                  variant="outline"
-                  class="border-secondary bg-secondary/10 text-secondary-foreground"
-                  >{choice.userEmail}</Badge
-                >
-              </span>
-            {/if}
-          </div>
-        {/if}
+                        variant="outline"
+                        class="border-secondary bg-secondary/10 text-secondary-foreground"
+                        >System</Badge
+                      >
+                {:else}
+                  <Badge
+                        variant="outline"
+                        class="border-secondary bg-secondary/10 text-secondary-foreground"
+                        >{choice.userEmail}</Badge
+                      >
+                {/if}
+              </td>
+            </tr>
+          {/if}
+        {/each}
       {/each}
-    </Card.Content>
-  </Card.Root>
-{/each}
+    </tbody>
+  </table>
+</div>
