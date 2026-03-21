@@ -37,6 +37,12 @@
     syncTabs: true,
   });
 
+  // svelte-ignore non_reactive_update
+  // svelte-ignore state_referenced_locally
+  let persistedAvailableLabs = new PersistedState<typeof availableLabs>(`available-labs-${userId}`, availableLabs, {
+    syncTabs: true,
+  });
+
   const remaining = $derived(maxRounds - selectedLabs.current.length);
   const hasRemaining = $derived(remaining > 0);
 
@@ -51,15 +57,11 @@
     500
   );
 
-  // Remove already selected labs from available labs
-  const selectedIds = new Set(selectedLabs.current.map(({ id }) => id));
-  availableLabs = availableLabs.filter(({ id }) => !selectedIds.has(id));
-
   function selectLab(index: number) {
     if (selectedLabs.current.length >= maxRounds) return;
-    selectedLabs.current.push(...availableLabs.splice(index, 1));
+    selectedLabs.current.push(...persistedAvailableLabs.current.splice(index, 1));
     selectedLabs = selectedLabs;
-    availableLabs = availableLabs;
+    persistedAvailableLabs = persistedAvailableLabs;
   }
 
   function moveLabUp(above: number) {
@@ -91,7 +93,7 @@
   }
 
   function resetSelection(index: number) {
-    availableLabs.push(...selectedLabs.current.splice(index, 1));
+    persistedAvailableLabs.current.push(...selectedLabs.current.splice(index, 1));
   }
 
   const [send, receive] = crossfade(DURATION);
@@ -124,6 +126,7 @@
         case 'success':
           toast.success('Uploaded your lab preferences.');
           localStorage.removeItem(`lab-rankings-${userId}`);
+          localStorage.removeItem(`available-labs-${userId}`);
           localStorage.removeItem(`lab-remarks-${userId}`);
           break;
         case 'failure':
@@ -156,7 +159,7 @@
           inert={selectedLabs.current.length >= maxRounds}
           class="space-y-2 empty:hidden inert:opacity-20"
         >
-          {#each availableLabs as { id, name }, idx (id)}
+          {#each persistedAvailableLabs.current as { id, name }, idx (id)}
             {@const config = { key: id }}
             <li in:receive={config} out:send={config} animate:flip={DURATION}>
               <button
@@ -169,7 +172,7 @@
             </li>
           {/each}
         </ul>
-        {#if availableLabs.length === 0}
+        {#if persistedAvailableLabs.current.length === 0}
           <div class="flex grow items-center justify-center">
             <Empty.Root>
               <Empty.Media variant="icon">
