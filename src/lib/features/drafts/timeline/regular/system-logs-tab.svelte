@@ -16,7 +16,7 @@
   interface SystemLogLabGroup {
     key: string;
     labId: string;
-    round: 'Lottery' | `Round ${number}`;
+    round: 'Lottery' | `${number}`;
     choices: FacultyChoiceRecord[];
   }
 
@@ -50,7 +50,7 @@
         labGroup = {
           key: eventLabKey,
           labId: choice.labId,
-          round: choice.round === null ? 'Lottery' : `Round ${choice.round}`,
+          round: choice.round === null ? 'Lottery' : `${choice.round}`,
           choices: [],
         };
         labByEventAndLabKey[eventLabKey] = labGroup;
@@ -89,11 +89,11 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
   <table class="w-full">
     <thead class="text-left">
       <tr class="border-b">
-        <th class="p-1 whitespace-nowrap">Timestamp</th>
-        <th class="p-1 whitespace-nowrap">Round</th>
-        <th class="p-1 whitespace-nowrap">Lab ID</th>
-        <th class="p-1 whitespace-nowrap">Action</th>
-        <th class="p-1 whitespace-nowrap">Actor</th>
+        <th class="py-2 px-4 whitespace-nowrap">Timestamp</th>
+        <th class="py-2 px-4 whitespace-nowrap">Round</th>
+        <th class="py-2 px-4 whitespace-nowrap">Lab ID</th>
+        <th class="py-2 px-4 whitespace-nowrap">Action</th>
+        <th class="py-2 px-4 whitespace-nowrap">Actor</th>
       </tr>
     </thead>
 
@@ -104,10 +104,10 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
 
           {#if typeof choice !== 'undefined'}
             <tr class="border-t">
-              <td class="p-1 whitespace-nowrap">{fromUnixTime(event.unix).toLocaleString()}</td>
-              <td class="p-1 whitespace-nowrap">{lab.round}</td>
-              <td class="p-1 whitespace-nowrap uppercase">{lab.labId}</td>
-              <td class="p-1 whitespace-nowrap">
+              <td class="py-2 px-4 whitespace-nowrap">{fromUnixTime(event.unix).toLocaleString()}</td>
+              <td class="py-2 px-4 whitespace-nowrap">{lab.round}</td>
+              <td class="py-2 px-4 whitespace-nowrap uppercase">{lab.labId}</td>
+              <td class="py-2 px-4 whitespace-nowrap">
                 {#if choice.userEmail === null}
                   <!-- If the system auto-skipped -->
                   <span>System automation</span>
@@ -131,7 +131,7 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
                   </span>
                 {/if}
               </td>
-              <td class="p-1 whitespace-nowrap">
+              <td class="py-2 px-4 whitespace-nowrap">
                 {#if choice.userEmail === null}
                   <Badge
                     variant="outline"
