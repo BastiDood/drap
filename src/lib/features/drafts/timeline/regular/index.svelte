@@ -31,20 +31,22 @@
     if (value === 'students' || value === 'labs' || value === 'logs') group = value;
   }}
 >
-  <Tabs.List>
-    <Tabs.Trigger value="students">
-      <GraduationCapIcon class="size-5" />
-      <span>Registered Students</span>
-    </Tabs.Trigger>
-    <Tabs.Trigger value="labs">
-      <FlaskConicalIcon class="size-5" />
-      <span>Laboratories</span>
-    </Tabs.Trigger>
-    <Tabs.Trigger value="logs">
-      <PaperclipIcon class="size-5" />
-      <span>System Logs</span>
-    </Tabs.Trigger>
-  </Tabs.List>
+  <div class="min-w-0 overflow-auto">
+    <Tabs.List>
+      <Tabs.Trigger value="students">
+        <GraduationCapIcon class="size-5" />
+        <span>Registered Students</span>
+      </Tabs.Trigger>
+      <Tabs.Trigger value="labs">
+        <FlaskConicalIcon class="size-5" />
+        <span>Laboratories</span>
+      </Tabs.Trigger>
+      <Tabs.Trigger value="logs">
+        <PaperclipIcon class="size-5" />
+        <span>System Logs</span>
+      </Tabs.Trigger>
+    </Tabs.List>
+  </div>
   <Tabs.Content value="students">
     <div class="flex items-center justify-around">
       <AvailableDraftees {draftId} variant="pending-selection"
