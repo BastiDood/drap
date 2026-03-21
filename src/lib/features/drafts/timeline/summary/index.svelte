@@ -111,7 +111,7 @@
     <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10">
       <Card.Header>
         <Card.Title class="text-md font-semibold tabular-nums">Lottery Assignments</Card.Title>
-        <Card.Title id="quota-interventions" class="text-4xl font-semibold tabular-nums">
+        <Card.Title id="stat-lottery-assignments" class="text-4xl font-semibold tabular-nums">
           {finalized.sections.lotteryDrafted.length}
         </Card.Title>
       </Card.Header>

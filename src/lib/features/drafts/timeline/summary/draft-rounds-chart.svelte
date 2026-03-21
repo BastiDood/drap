@@ -54,7 +54,7 @@
     selectedLabId === null ? null : (labs.find(l => l.id === selectedLabId)?.quota ?? null),
   );
 
-  const chartData = $derived(() => {
+  const chartData = $derived.by(() => {
     const roundCounts: Record<number, number> = {};
     for (let i = 1; i <= maxRounds; i++) roundCounts[i] = 0;
 
@@ -129,26 +129,21 @@
     return drafted;
   }
 
-  const maxCount = $derived(Math.max(...chartData().map(p => p.count), 1));
-  const chartMax = (() => {
+  const maxCount = $derived(Math.max(...chartData.map(p => p.count), 1));
+  const chartMax = $derived.by(() => {
     if (chartMode === 'remaining' && selectedLabId !== null && selectedLabQuota !== null)
       return selectedLabQuota;
 
     if (chartMode === 'remaining') return totalStudents;
 
     return maxCount;
-  })();
-
+  });
   const linePath = $derived(
-    chartData().length > 0
-      ? `M ${chartData()
-          .map(p => `${p.x},${p.y}`)
-          .join(' L ')}`
-      : '',
+    chartData.length > 0 ? `M ${chartData.map(p => `${p.x},${p.y}`).join(' L ')}` : '',
   );
 
   const areaPath = $derived.by(() => {
-    const data = chartData();
+    const data = chartData;
     if (data.length === 0) return '';
     const [first] = data;
     const last = data.at(-1);
@@ -166,11 +161,11 @@
   const selectedLabName = $derived(
     selectedLabId === null ? null : labs.find(l => l.id === selectedLabId)?.name,
   );
-  const chartModeLabel = (() => {
+  const chartModeLabel = $derived.by(() => {
     if (chartMode === 'assigned') return 'Students assigned';
     if (selectedLabId === null) return 'Students not yet assigned';
     return 'Labs remaining quota';
-  })();
+  });
 </script>
 
 <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10">
@@ -247,11 +242,11 @@
         stroke-linejoin="round"
       />
 
-      {#each chartData() as point, index (point.label)}
+      {#each chartData as point, index (point.label)}
         {@const remaining =
           selectedLabId !== null && selectedLabQuota !== null
-            ? Math.max(0, selectedLabQuota - cumulativeUpTo(index, chartData()))
-            : totalStudents - cumulativeUpTo(index, chartData())}
+            ? Math.max(0, selectedLabQuota - cumulativeUpTo(index, chartData))
+            : totalStudents - cumulativeUpTo(index, chartData)}
         <g
           role="button"
           tabindex="0"
@@ -292,7 +287,7 @@
         </text>
       {/if}
 
-      {#each chartData() as { label, x } (label)}
+      {#each chartData as { label, x } (label)}
         <text {x} y={height - 8} text-anchor="middle" class="fill-muted-foreground text-[10px]">
           {label}
         </text>
