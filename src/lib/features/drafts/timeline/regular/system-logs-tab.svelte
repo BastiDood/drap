@@ -76,15 +76,14 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
 4. Lab received no interest, was auto-skipped [null faculty email, none of the above cases]
 -->
 
-<label class="flex items-center space-x-2 mt-4">
+<label class="mt-4 flex items-center space-x-2">
   <input
-    class="border-primary h-4 w-4 rounded-lg border"
+    class="h-4 w-4 rounded-lg border border-primary"
     type="checkbox"
     bind:checked={showAutomated}
   />
   <span>Show System Automation Logs</span>
 </label>
-
 
 <div class="my-4 overflow-x-auto rounded-lg border">
   <table class="w-full">
@@ -115,9 +114,8 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
                 {:else if choice.studentEmail === null}
                   <!-- If a faculty member selected no students -->
                   <span>
-                    <Badge
-                      variant="outline"
-                      class="border-primary bg-primary/10 text-primary">No</Badge
+                    <Badge variant="outline" class="border-primary bg-primary/10 text-primary"
+                      >No</Badge
                     >
                     students selected
                   </span>
@@ -136,16 +134,15 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
               <td class="p-1">
                 {#if choice.userEmail === null}
                   <Badge
-                        variant="outline"
-                        class="border-secondary bg-secondary/10 text-secondary-foreground"
-                        >System</Badge
-                      >
+                    variant="outline"
+                    class="border-secondary bg-secondary/10 text-secondary-foreground">System</Badge
+                  >
                 {:else}
                   <Badge
-                        variant="outline"
-                        class="border-secondary bg-secondary/10 text-secondary-foreground"
-                        >{choice.userEmail}</Badge
-                      >
+                    variant="outline"
+                    class="border-secondary bg-secondary/10 text-secondary-foreground"
+                    >{choice.userEmail}</Badge
+                  >
                 {/if}
               </td>
             </tr>
