@@ -97,7 +97,7 @@
 
       if (chartMode === 'remaining') return Math.max(totalStudents, 1);
 
-      return maxCount;
+      return Math.max(maxCount, 1);
     })();
 
     return points.map((point, index) => ({
@@ -136,7 +136,7 @@
 
     if (chartMode === 'remaining') return Math.max(totalStudents, 1);
 
-    return maxCount;
+    return Math.max(maxCount, 1);
   });
   const linePath = $derived(
     chartData.length > 0 ? `M ${chartData.map(p => `${p.x},${p.y}`).join(' L ')}` : '',
@@ -246,7 +246,7 @@
         {@const remaining =
           selectedLabId !== null && selectedLabQuota !== null
             ? Math.max(0, selectedLabQuota - cumulativeUpTo(index, chartData))
-            : totalStudents - cumulativeUpTo(index, chartData)}
+            : Math.max(0, totalStudents - cumulativeUpTo(index, chartData))}
         <g
           role="button"
           tabindex="0"
