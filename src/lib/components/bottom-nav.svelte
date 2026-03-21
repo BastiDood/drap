@@ -45,10 +45,10 @@
       <span class="sr-only">Go to Dashboard</span>
     </div>
 
-    <button class="flex w-1/3 place-content-center items-center">
+    <div class="flex w-1/3 place-content-center items-center">
       <a href={resolve('/')}>
         <img src={Logo} alt="DRAP Logo" class="size-6" />
       </a>
-    </button>
+    </div>
   </nav>
 </TooltipProvider>
