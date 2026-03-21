@@ -34,7 +34,7 @@
   // svelte-ignore non_reactive_update
   // svelte-ignore state_referenced_locally
   let persistedSelectedLabs = new PersistedState<typeof availableLabs>(
-    `selected-labs-${userId}`,
+    `selected-labs-${userId}-${draftId}`,
     [],
     {
       syncTabs: true,
@@ -44,7 +44,7 @@
   // svelte-ignore non_reactive_update
   // svelte-ignore state_referenced_locally
   let persistedAvailableLabs = new PersistedState<typeof availableLabs>(
-    `available-labs-${userId}`,
+    `available-labs-${userId}-${draftId}`,
     availableLabs,
     {
       syncTabs: true,
@@ -56,7 +56,7 @@
 
   // svelte-ignore state_referenced_locally
   const persistedLabRemarks = new PersistedState<Record<string, string>>(
-    `lab-remarks-${userId}`,
+    `lab-remarks-${userId}-${draftId}`,
     {},
     {
       syncTabs: true,
@@ -134,9 +134,9 @@
       switch (result.type) {
         case 'success':
           toast.success('Uploaded your lab preferences.');
-          localStorage.removeItem(`selected-labs-${userId}`);
-          localStorage.removeItem(`available-labs-${userId}`);
-          localStorage.removeItem(`lab-remarks-${userId}`);
+          localStorage.removeItem(`selected-labs-${userId}-${draftId}`);
+          localStorage.removeItem(`available-labs-${userId}-${draftId}`);
+          localStorage.removeItem(`lab-remarks-${userId}-${draftId}`);
           break;
         case 'failure':
           switch (result.status) {
