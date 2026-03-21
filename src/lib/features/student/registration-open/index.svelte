@@ -28,5 +28,10 @@
       your lab preferences before the deadline.
     </p>
   </Callout>
-  <LabPreferenceForm userId={user.id} draftId={draft.id} maxRounds={draft.maxRounds} bind:availableLabs />
+  <LabPreferenceForm
+    userId={user.id}
+    draftId={draft.id}
+    maxRounds={draft.maxRounds}
+    bind:availableLabs
+  />
 </div>

@@ -33,29 +33,38 @@
 
   // svelte-ignore non_reactive_update
   // svelte-ignore state_referenced_locally
-  let persistedSelectedLabs = new PersistedState<typeof availableLabs>(`selected-labs-${userId}`, [], {
-    syncTabs: true,
-  });
+  let persistedSelectedLabs = new PersistedState<typeof availableLabs>(
+    `selected-labs-${userId}`,
+    [],
+    {
+      syncTabs: true,
+    },
+  );
 
   // svelte-ignore non_reactive_update
   // svelte-ignore state_referenced_locally
-  let persistedAvailableLabs = new PersistedState<typeof availableLabs>(`available-labs-${userId}`, availableLabs, {
-    syncTabs: true,
-  });
+  let persistedAvailableLabs = new PersistedState<typeof availableLabs>(
+    `available-labs-${userId}`,
+    availableLabs,
+    {
+      syncTabs: true,
+    },
+  );
 
   const remaining = $derived(maxRounds - persistedSelectedLabs.current.length);
   const hasRemaining = $derived(remaining > 0);
 
   // svelte-ignore state_referenced_locally
-  const persistedLabRemarks = new PersistedState<Record<string, string>>(`lab-remarks-${userId}`, {}, {
-    syncTabs: true,
-  });
-  const debouncedSetLabRemarks = useDebounce(
-    (labId: string, value: string) => {
-      persistedLabRemarks.current[labId] = value;
+  const persistedLabRemarks = new PersistedState<Record<string, string>>(
+    `lab-remarks-${userId}`,
+    {},
+    {
+      syncTabs: true,
     },
-    500
   );
+  const debouncedSetLabRemarks = useDebounce((labId: string, value: string) => {
+    persistedLabRemarks.current[labId] = value;
+  }, 500);
 
   function selectLab(index: number) {
     if (persistedSelectedLabs.current.length >= maxRounds) return;
