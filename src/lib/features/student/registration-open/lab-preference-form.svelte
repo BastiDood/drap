@@ -33,7 +33,7 @@
 
   // svelte-ignore non_reactive_update
   // svelte-ignore state_referenced_locally
-  let selectedLabs = new PersistedState<typeof availableLabs>(`lab-rankings-${userId}`, [], {
+  let persistedSelectedLabs = new PersistedState<typeof availableLabs>(`selected-labs-${userId}`, [], {
     syncTabs: true,
   });
 
@@ -43,24 +43,24 @@
     syncTabs: true,
   });
 
-  const remaining = $derived(maxRounds - selectedLabs.current.length);
+  const remaining = $derived(maxRounds - persistedSelectedLabs.current.length);
   const hasRemaining = $derived(remaining > 0);
 
   // svelte-ignore state_referenced_locally
-  const labRemarks = new PersistedState<Record<string, string>>(`lab-remarks-${userId}`, {}, {
+  const persistedLabRemarks = new PersistedState<Record<string, string>>(`lab-remarks-${userId}`, {}, {
     syncTabs: true,
   });
   const debouncedSetLabRemarks = useDebounce(
     (labId: string, value: string) => {
-      labRemarks.current[labId] = value;
+      persistedLabRemarks.current[labId] = value;
     },
     500
   );
 
   function selectLab(index: number) {
-    if (selectedLabs.current.length >= maxRounds) return;
-    selectedLabs.current.push(...persistedAvailableLabs.current.splice(index, 1));
-    selectedLabs = selectedLabs;
+    if (persistedSelectedLabs.current.length >= maxRounds) return;
+    persistedSelectedLabs.current.push(...persistedAvailableLabs.current.splice(index, 1));
+    persistedSelectedLabs = persistedSelectedLabs;
     persistedAvailableLabs = persistedAvailableLabs;
   }
 
@@ -69,31 +69,31 @@
     const below = above--;
     if (above < 0) return;
 
-    const temp = selectedLabs.current[below];
+    const temp = persistedSelectedLabs.current[below];
     assert(typeof temp !== 'undefined');
-    const target = selectedLabs.current[above];
+    const target = persistedSelectedLabs.current[above];
     assert(typeof target !== 'undefined');
 
-    selectedLabs.current[below] = target;
-    selectedLabs.current[above] = temp;
+    persistedSelectedLabs.current[below] = target;
+    persistedSelectedLabs.current[above] = temp;
   }
 
   function moveLabDown(below: number) {
     // eslint-disable-next-line no-param-reassign
     const above = below++;
-    if (below >= selectedLabs.current.length) return;
+    if (below >= persistedSelectedLabs.current.length) return;
 
-    const temp = selectedLabs.current[below];
+    const temp = persistedSelectedLabs.current[below];
     assert(typeof temp !== 'undefined');
-    const target = selectedLabs.current[above];
+    const target = persistedSelectedLabs.current[above];
     assert(typeof target !== 'undefined');
 
-    selectedLabs.current[below] = target;
-    selectedLabs.current[above] = temp;
+    persistedSelectedLabs.current[below] = target;
+    persistedSelectedLabs.current[above] = temp;
   }
 
   function resetSelection(index: number) {
-    persistedAvailableLabs.current.push(...selectedLabs.current.splice(index, 1));
+    persistedAvailableLabs.current.push(...persistedSelectedLabs.current.splice(index, 1));
   }
 
   const [send, receive] = crossfade(DURATION);
@@ -105,9 +105,9 @@
   class="space-y-4"
   use:enhance={({ submitter, cancel }) => {
     const message =
-      selectedLabs.current.length === 0
+      persistedSelectedLabs.current.length === 0
         ? 'Are you sure you want to skip lab preferences? You will go directly to the lottery.'
-        : `Are you sure you want to select ${selectedLabs.current.length} labs?`;
+        : `Are you sure you want to select ${persistedSelectedLabs.current.length} labs?`;
 
     // eslint-disable-next-line no-alert
     if (!confirm(message)) {
@@ -125,7 +125,7 @@
       switch (result.type) {
         case 'success':
           toast.success('Uploaded your lab preferences.');
-          localStorage.removeItem(`lab-rankings-${userId}`);
+          localStorage.removeItem(`selected-labs-${userId}`);
           localStorage.removeItem(`available-labs-${userId}`);
           localStorage.removeItem(`lab-remarks-${userId}`);
           break;
@@ -156,7 +156,7 @@
       </Card.Header>
       <Card.Content class="flex grow flex-col">
         <ul
-          inert={selectedLabs.current.length >= maxRounds}
+          inert={persistedSelectedLabs.current.length >= maxRounds}
           class="space-y-2 empty:hidden inert:opacity-20"
         >
           {#each persistedAvailableLabs.current as { id, name }, idx (id)}
@@ -201,7 +201,7 @@
       </Card.Header>
       <Card.Content class="flex grow flex-col">
         <ol class="space-y-2 empty:hidden">
-          {#each selectedLabs.current as { id, name }, idx (id)}
+          {#each persistedSelectedLabs.current as { id, name }, idx (id)}
             {@const config = { key: id }}
             <li
               class="flex flex-col gap-4 rounded-lg border border-border bg-muted/20 p-4 transition-shadow hover:shadow-md dark:bg-muted"
@@ -244,7 +244,7 @@
                           size="icon"
                           class="bg-warning text-warning-foreground hover:bg-warning/80"
                           onclick={moveLabDown.bind(null, idx)}
-                          disabled={idx >= selectedLabs.current.length - 1}
+                          disabled={idx >= persistedSelectedLabs.current.length - 1}
                         >
                           <ArrowDownIcon class="size-5" />
                         </Button>
@@ -274,13 +274,13 @@
                 name="remarks"
                 placeholder={`Hello ${id.toUpperCase()}, my name is... I would like to do more research on...`}
                 maxlength={1028}
-                value={labRemarks.current[id] ?? ''}
+                value={persistedLabRemarks.current[id] ?? ''}
                 oninput={({ currentTarget: { value } }) => debouncedSetLabRemarks(id, value)}
               />
             </li>
           {/each}
         </ol>
-        {#if selectedLabs.current.length === 0}
+        {#if persistedSelectedLabs.current.length === 0}
           <div class="flex grow items-center justify-center">
             <Empty.Root>
               <Empty.Media variant="icon">
