@@ -80,7 +80,7 @@ export async function load({ locals: { session }, parent }) {
       labId,
     );
     if (typeof draftLabResult === 'undefined') {
-      logger.warn('lab not in draft snapshot', { lab: labId });
+      logger.warn('lab not in draft snapshot', { 'lab.id': labId });
       return { draft };
     }
 
@@ -129,7 +129,10 @@ export const actions = {
     const lab = user.labId;
     const faculty = user.id;
     return await tracer.asyncSpan('action.rankings', async () => {
-      logger.debug('submitting rankings on behalf of lab head', { lab, faculty });
+      logger.debug('submitting rankings on behalf of lab head', {
+        'lab.id': lab,
+        'user.id': faculty,
+      });
 
       const data = await request.formData();
       const {
@@ -137,8 +140,11 @@ export const actions = {
         round: expectedRound,
         students,
       } = v.parse(RankingsFormData, decode(data, { arrays: ['students'], numbers: ['round'] }));
-      logger.debug('draft submitted', { 'draft.id': draft, 'expected.round': expectedRound });
-      logger.debug('students submitted', { students });
+      logger.debug('rankings form received', {
+        'draft.id': draft,
+        'draft.round.expected': expectedRound,
+        'student.ids': students,
+      });
 
       const draftId = BigInt(draft);
       const { submittedRound, roundsToNotify } = await db.transaction(
@@ -165,7 +171,7 @@ export const actions = {
           }
 
           if (activeDraft.currRound !== expectedRound) {
-            logger.warn('round mismatch - round may have advanced since page load', {
+            logger.fatal('round mismatch - round may have advanced since page load', void 0, {
               'draft.id': draftId.toString(),
               'draft.round.current': activeDraft.currRound,
               'draft.round.expected': expectedRound,
@@ -189,17 +195,17 @@ export const actions = {
           let baseSelected = selected;
           if (typeof existingChoice !== 'undefined') {
             if (existingChoice.userId !== faculty) {
-              logger.warn('attempt to edit non-faculty or foreign submission', {
+              logger.fatal('attempt to edit non-faculty or foreign submission', void 0, {
                 'draft.id': draftId.toString(),
                 'draft.round.current': activeDraft.currRound,
                 'choice.user_id': existingChoice.userId,
-                faculty,
+                'user.id': faculty,
               });
               error(403);
             }
 
             if (existingChoice.round !== activeDraft.currRound) {
-              logger.warn('attempt to edit submission after round advanced', {
+              logger.fatal('attempt to edit submission after round advanced', void 0, {
                 'draft.id': draftId.toString(),
                 'draft.round.current': activeDraft.currRound,
                 'choice.round': existingChoice.round,
