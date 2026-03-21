@@ -22,8 +22,8 @@
         }}
       >
         <MenuIcon class="size-6 active:text-white dark:active:text-black" />
+        <span class="sr-only">Toggle Sidebar</span>
       </button>
-      <span class="sr-only">Toggle Sidebar</span>
     </div>
 
     <div class="flex w-1/3 place-content-center items-center">
@@ -41,14 +41,15 @@
               : 'text-primary'}"
           />
         </a>
+        <span class="sr-only">Go to Dashboard</span>
       </div>
-      <span class="sr-only">Go to Dashboard</span>
     </div>
 
     <div class="flex w-1/3 place-content-center items-center">
       <a href={resolve('/')}>
         <img src={Logo} alt="DRAP Logo" class="size-6" />
       </a>
+      <span class="sr-only">Go to Dashboard</span>
     </div>
   </nav>
 </TooltipProvider>
