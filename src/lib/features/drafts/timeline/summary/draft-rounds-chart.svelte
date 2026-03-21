@@ -93,9 +93,9 @@
 
     const maxY = (() => {
       if (chartMode === 'remaining' && selectedLabId !== null && selectedLabQuota !== null)
-        return selectedLabQuota;
+        return Math.max(selectedLabQuota, 1);
 
-      if (chartMode === 'remaining') return totalStudents;
+      if (chartMode === 'remaining') return Math.max(totalStudents, 1);
 
       return maxCount;
     })();
@@ -110,7 +110,7 @@
             chartHeight -
             ((selectedLabId !== null && selectedLabQuota !== null
               ? Math.max(0, selectedLabQuota - cumulativeUpTo(index, points))
-              : totalStudents - cumulativeUpTo(index, points)) /
+              : Math.max(0, totalStudents - cumulativeUpTo(index, points))) /
               maxY) *
               chartHeight,
     }));
