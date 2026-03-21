@@ -198,10 +198,10 @@
       {/each}
 
       {#if hoveredPoint}
-        {@const tooltipX = hoveredPoint.x + 12}
-        {@const tooltipY = Math.max(hoveredPoint.y - 10, padding.top + 10)}
+        {@const tooltipX = hoveredPoint.x - 5}
+        {@const tooltipY = Math.min(hoveredPoint.y + 25, padding.top + chartHeight - 20)}
         <rect
-          x={tooltipX - 4}
+          x={tooltipX - 10}
           y={tooltipY - 14}
           width="30"
           height="20"
@@ -210,10 +210,10 @@
           class="fill-background/95"
         />
         <text
-          x={tooltipX + 11}
+          x={tooltipX + 5}
           y={tooltipY}
           text-anchor="middle"
-          class="fill-foreground text-[11px] font-medium"
+          class="fill-foreground font-small text-[10px]"
         >
           {hoveredPoint.count}
         </text>

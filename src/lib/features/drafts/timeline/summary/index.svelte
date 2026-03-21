@@ -73,6 +73,7 @@
         </div>
       </Card.Footer>
     </Card.Root>
+<<<<<<< HEAD
     <!-- <Card.Root class="from-muted/30 to-muted/10 bg-gradient-to-br transition-all  hover:shadow-xl"> -->
     <!--   <Card.Header> -->
     <!--     <Card.Description>Assigned Students</Card.Description> -->
@@ -91,6 +92,10 @@
     <!--   </Card.Content> -->
     <!-- </Card.Root> -->
     <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 transition-all hover:shadow-xl">
+=======
+
+    <Card.Root class="from-muted/30 to-muted/10 bg-gradient-to-br transition-all hover:shadow-xl">
+>>>>>>> 6a8686c (fix: graph-hover text)
       <Card.Header>
         <Card.Description>Participating Labs</Card.Description>
         <Card.Title id="stat-participating-labs" class="text-2xl font-semibold tabular-nums">
@@ -112,18 +117,7 @@
         <div class="text-muted-foreground">Regular draft rounds</div>
       </Card.Footer>
     </Card.Root>
-    <!-- <Card.Root class="from-muted/30 to-muted/10 bg-gradient-to-br transition-all  hover:shadow-xl"> -->
-    <!--   <Card.Header> -->
-    <!--     <Card.Description>Initial Quota</Card.Description> -->
-    <!--     <Card.Title id="quota-initial" class="text-2xl font-semibold tabular-nums"> -->
-    <!--       {finalized.quota.initialQuota} -->
-    <!--     </Card.Title> -->
-    <!--   </Card.Header> -->
-    <!--   <Card.Footer class="flex-col items-start gap-1.5 text-sm"> -->
-    <!--     <div class="text-muted-foreground">Slots allocated for regular rounds</div> -->
-    <!--   </Card.Footer> -->
-    <!-- </Card.Root> -->
-    <Card.Root class="bg-gradient-to-br from-muted/30 to-muted/10 transition-all hover:shadow-xl">
+    <Card.Root class="from-muted/30 to-muted/10 bg-gradient-to-br transition-all hover:shadow-xl">
       <Card.Header>
         <Card.Description>Interventions</Card.Description>
         <Card.Title id="quota-interventions" class="text-2xl font-semibold tabular-nums">
@@ -148,46 +142,6 @@
       </Card.Footer>
     </Card.Root>
   </div>
-
-  <!-- Quota Breakdown Stats -->
-  <!-- <div class="grid grid-cols-1 gap-2 md:grid-cols-3"> -->
-  <!-- <Card.Root class="transition-all duration-200 hover:-translate-y-1 hover:shadow-md bg-gradient-to-br from-muted/30 to-muted/10"> -->
-  <!--   <Card.Header> -->
-  <!--     <Card.Description>Finalized Quota</Card.Description> -->
-  <!--     <Card.Title id="quota-finalized" class="text-2xl font-semibold tabular-nums"> -->
-  <!--       {finalized.quota.finalizedQuota} -->
-  <!--     </Card.Title> -->
-  <!--   </Card.Header> -->
-  <!--   <Card.Content class="flex items-center gap-2"> -->
-  <!--     <Badge variant="outline"> -->
-  <!--       <ArrowUpIcon class="size-3" /> -->
-  <!--       Total -->
-  <!--     </Badge> -->
-  <!--     <span class="text-muted-foreground text-sm"> Initial + interventions combined </span> -->
-  <!--   </Card.Content> -->
-  <!-- </Card.Root> -->
-  <!-- </div> -->
-
-  <!-- {#if finalized.snapshots.length > 0} -->
-  <!--   <Card.Root -->
-  <!--     variant="soft" -->
-  <!--     class="from-muted/30 to-muted/10 bg-gradient-to-br transition-all hover:shadow-md" -->
-  <!--   > -->
-  <!--     <Card.Header> -->
-  <!--       <Card.Title>Lab Quota Timeline</Card.Title> -->
-  <!--     </Card.Header> -->
-  <!--     <Card.Content> -->
-  <!--       <ul class="space-y-1"> -->
-  <!--         {#each finalized.snapshots as { labId, labName, initialQuota, lotteryQuota, finalizedQuota } (labId)} -->
-  <!--           <li class="text-sm"> -->
-  <!--             <strong>{labName}</strong>: -->
-  <!--             {initialQuota} initial + {lotteryQuota} lottery = {finalizedQuota} finalized -->
-  <!--           </li> -->
-  <!--         {/each} -->
-  <!--       </ul> -->
-  <!--     </Card.Content> -->
-  <!--   </Card.Root> -->
-  <!-- {/if} -->
 
   <DraftRoundsChart
     records={finalized.sections.regularDrafted}
