@@ -9,3 +9,7 @@
 .env.*
 node_modules
 scratchpad
+
+# Coding Agents
+AGENTS.override.md
+CLAUDE.local.md
