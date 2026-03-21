@@ -114,7 +114,7 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
                 {:else if choice.studentEmail === null}
                   <!-- If a faculty member selected no students -->
                   <span>
-                    <Badge variant="outline" class="border-primary bg-primary/10 text-primary"
+                    <Badge variant="outline" class="border-primary bg-primary/10 text-primary dark:border-secondary dark:bg-secondary/10 dark:text-secondary"
                       >No</Badge
                     >
                     students selected
@@ -124,7 +124,7 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
                   <span>
                     Selected
                     {#each lab.choices as { studentEmail } (studentEmail)}
-                      <Badge variant="outline" class="border-primary bg-primary/10 text-primary"
+                      <Badge variant="outline" class="border-primary bg-primary/10 text-primary dark:border-secondary dark:bg-secondary/10 dark:text-secondary"
                         >{studentEmail}</Badge
                       >
                     {/each}
@@ -135,12 +135,12 @@ Needs to distinguish the following events (one 'event' being a grouping of choic
                 {#if choice.userEmail === null}
                   <Badge
                     variant="outline"
-                    class="border-secondary bg-secondary/10 text-secondary-foreground">System</Badge
+                    class="border-secondary bg-secondary/10 text-secondary-foreground dark:text-secondary">System</Badge
                   >
                 {:else}
                   <Badge
                     variant="outline"
-                    class="border-secondary bg-secondary/10 text-secondary-foreground"
+                    class="border-secondary bg-secondary/10 text-secondary-foreground dark:text-secondary"
                     >{choice.userEmail}</Badge
                   >
                 {/if}
