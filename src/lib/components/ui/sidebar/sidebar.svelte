@@ -41,7 +41,7 @@
       data-sidebar="sidebar"
       data-slot="sidebar"
       data-mobile="true"
-      class="w-100 bg-sidebar p-0 text-sidebar-foreground data-[state=closed]:duration-200 data-[state=open]:duration-200 [&>button]:hidden"
+      class="w-full bg-sidebar p-0 text-sidebar-foreground"
       style="--sidebar-width: {SIDEBAR_WIDTH_MOBILE};"
       // {side}
     >
