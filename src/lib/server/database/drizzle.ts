@@ -1648,9 +1648,9 @@ export async function getDraftAssignmentRecords(db: DbConnection, draftId: bigin
   });
 }
 
-export async function getStudentRegistrationTimelineExport(db: DbConnection, draftId: bigint) {
+export async function getStudentRegistrationTimelineExport(db: DbConnection) {
   return await tracer.asyncSpan('get-student-registration-timeline-export', async span => {
-    span.setAttribute('database.draft.id', draftId.toString());
+    span.setAttribute('db.table', 'schema.user');
     return await db
       .select({
         createdAt: schema.user.createdAt,
