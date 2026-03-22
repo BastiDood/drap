@@ -45,7 +45,7 @@ export async function GET({ params: { draftId: draftIdParam }, locals: { session
 
   logger.info('exporting student timeline');
   const [studentRegistrationTimeline, studentRanksTimeline] = await Promise.all([
-    getStudentRegistrationTimelineExport(db),
+    getStudentRegistrationTimelineExport(db, draftId),
     getStudentRanksTimelineExport(db, draftId),
   ]);
 
