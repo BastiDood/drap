@@ -43,7 +43,6 @@
       data-mobile="true"
       class="w-full bg-sidebar p-0 text-sidebar-foreground"
       style="--sidebar-width: {SIDEBAR_WIDTH_MOBILE};"
-      // {side}
     >
       <Drawer.Header class="sr-only">
         <Drawer.Title>Sidebar</Drawer.Title>
