@@ -1,6 +1,6 @@
 import assert, { fail, strictEqual } from 'node:assert/strict';
 
-import { alias, type PgUpdateSetSource } from 'drizzle-orm/pg-core';
+import { alias, type PgUpdateSetSource, union as queryUnion } from 'drizzle-orm/pg-core';
 import {
   and,
   asc,
@@ -1681,7 +1681,8 @@ export async function getStudentRegistrationTimelineExport(db: DbConnection, dra
     // Return empty array if there's no current draft
     if (typeof currentDraft === 'undefined') return [];
 
-    return await db
+    // Get the students who created their accounts before registration closed
+    const getValidRegistrants = db
       .select({
         createdAt: schema.user.createdAt,
         email: schema.user.email,
@@ -1696,12 +1697,30 @@ export async function getStudentRegistrationTimelineExport(db: DbConnection, dra
           isNotNull(schema.user.googleUserId),
           typeof previousDraft === 'undefined'
             ? // eslint-disable-next-line no-undefined -- prefer explicit where(undefined) over tautological condition
-              undefined
+            undefined
             : gte(schema.user.createdAt, previousDraft.registrationClosesAt),
           lt(schema.user.createdAt, currentDraft.registrationClosesAt),
         ),
       )
       .orderBy(asc(schema.user.createdAt));
+
+    // Get the students in allowlist
+    const getAllowlistRegistrants = db
+      .select({
+        createdAt: schema.user.createdAt,
+        email: schema.user.email,
+        studentNumber: schema.user.studentNumber,
+        givenName: schema.user.givenName,
+        familyName: schema.user.familyName,
+      })
+      .from(schema.draftRegistrationAllowlist)
+      .innerJoin(schema.user, eq(schema.user.id, schema.draftRegistrationAllowlist.studentUserId))
+      .where(eq(schema.draftRegistrationAllowlist.draftId, draftId));
+
+    return await queryUnion(
+      getValidRegistrants,
+      getAllowlistRegistrants
+    );
   });
 }
 
