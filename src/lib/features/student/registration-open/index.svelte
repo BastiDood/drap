@@ -7,11 +7,15 @@
   import LabPreferenceForm from './lab-preference-form.svelte';
 
   interface Props {
+    user: Pick<
+      schema.User,
+      'id' | 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
+    >;
     draft: Pick<schema.Draft, 'id' | 'maxRounds' | 'registrationClosesAt'>;
     availableLabs: Pick<schema.Lab, 'id' | 'name'>[];
   }
 
-  let { draft, availableLabs = $bindable() }: Props = $props();
+  let { user, draft, availableLabs = $bindable() }: Props = $props();
 
   const closeDate = $derived(format(draft.registrationClosesAt, 'PPP'));
   const closeTime = $derived(format(draft.registrationClosesAt, 'pp'));
@@ -24,5 +28,10 @@
       your lab preferences before the deadline.
     </p>
   </Callout>
-  <LabPreferenceForm draftId={draft.id} maxRounds={draft.maxRounds} bind:availableLabs />
+  <LabPreferenceForm
+    userId={user.id}
+    draftId={draft.id}
+    maxRounds={draft.maxRounds}
+    bind:availableLabs
+  />
 </div>
