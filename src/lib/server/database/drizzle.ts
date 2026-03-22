@@ -1697,7 +1697,7 @@ export async function getStudentRegistrationTimelineExport(db: DbConnection, dra
           isNotNull(schema.user.googleUserId),
           typeof previousDraft === 'undefined'
             ? // eslint-disable-next-line no-undefined -- prefer explicit where(undefined) over tautological condition
-            undefined
+              undefined
             : gte(schema.user.createdAt, previousDraft.registrationClosesAt),
           lt(schema.user.createdAt, currentDraft.registrationClosesAt),
         ),
@@ -1717,10 +1717,7 @@ export async function getStudentRegistrationTimelineExport(db: DbConnection, dra
       .innerJoin(schema.user, eq(schema.user.id, schema.draftRegistrationAllowlist.studentUserId))
       .where(eq(schema.draftRegistrationAllowlist.draftId, draftId));
 
-    return await queryUnion(
-      getValidRegistrants,
-      getAllowlistRegistrants
-    );
+    return await queryUnion(getValidRegistrants, getAllowlistRegistrants);
   });
 }
 
