@@ -137,6 +137,15 @@
     {#if currentPhase !== 'registration' && currentPhase !== 'registration-closed'}
       <div class="flex gap-2">
         <Button
+          href={resolve(`/dashboard/drafts/${draftId}/student-timeline.csv`)}
+          download
+          variant="outline"
+          size="sm"
+        >
+          <ArrowUpFromLineIcon class="size-4" />
+          <span>Student Timeline</span>
+        </Button>
+        <Button
           href={resolve(`/dashboard/drafts/${draftId}/students.csv`)}
           download
           variant="outline"
