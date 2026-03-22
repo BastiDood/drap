@@ -1694,7 +1694,8 @@ export async function getStudentRegistrationTimelineExport(db: DbConnection, dra
         and(
           eq(schema.user.isAdmin, false),
           isNotNull(schema.user.googleUserId),
-          gte(schema.user.createdAt, previousDraft?.registrationClosesAt ?? schema.user.createdAt),
+          // eslint-disable-next-line no-undefined -- prefer explicit where(undefined) over tautological condition
+          typeof previousDraft === 'undefined' ? undefined : gte(schema.user.createdAt, previousDraft.registrationClosesAt),
           lt(schema.user.createdAt, currentDraft.registrationClosesAt),
         ),
       )
