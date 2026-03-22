@@ -104,6 +104,9 @@
             case 409:
               toast.error('Round advanced while editing. No changes saved.');
               break;
+            case 403:
+              toast.error('Draft is inactive or in the lottery phase. No changes saved.');
+              break;
             default:
               toast.error('An unexpected error occurred.');
               break;
