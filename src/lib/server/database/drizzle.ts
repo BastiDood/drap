@@ -1670,6 +1670,31 @@ export async function getStudentRegistrationTimelineExport(db: DbConnection, dra
   });
 }
 
+export async function getStudentRanksTimelineExport(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-student-ranks-timeline-export', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    return await db
+      .select({
+        createdAt: schema.studentRank.createdAt,
+        email: schema.user.email,
+        studentNumber: schema.user.studentNumber,
+        givenName: schema.user.givenName,
+        familyName: schema.user.familyName,
+      })
+      .from(schema.studentRank)
+      .innerJoin(schema.user, eq(schema.studentRank.userId, schema.user.id))
+      .where(
+        and(
+          eq(schema.studentRank.draftId, draftId),
+          eq(schema.user.isAdmin, false),
+          isNotNull(schema.user.googleUserId)
+        )
+      )
+      .groupBy(schema.user.id, schema.studentRank.createdAt)
+      .orderBy(asc(schema.studentRank.createdAt));
+  });
+}
+
 export async function getStudentRanksExport(db: DbConnection, draftId: bigint) {
   return await tracer.asyncSpan('get-student-ranks-export', async span => {
     span.setAttribute('database.draft.id', draftId.toString());
