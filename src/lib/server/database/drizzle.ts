@@ -1678,6 +1678,9 @@ export async function getStudentRegistrationTimelineExport(db: DbConnection, dra
       getDraftById(db, draftId),
     ]);
 
+    // Implicitly return undefined if there's no current draft
+    if (typeof currentDraft === 'undefined') return;
+
     return await db
       .select({
         createdAt: schema.user.createdAt,
