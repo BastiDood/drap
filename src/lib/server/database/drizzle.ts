@@ -1654,7 +1654,7 @@ export async function getStudentRegistrationTimelineExport(db: DbConnection, dra
 
     const [previousDraft, currentDraft] = await Promise.all([
       getDraftById(db, draftId - BigInt(1)),
-      getDraftById(db, draftId)
+      getDraftById(db, draftId),
     ]);
 
     return await db
@@ -1666,12 +1666,14 @@ export async function getStudentRegistrationTimelineExport(db: DbConnection, dra
         familyName: schema.user.familyName,
       })
       .from(schema.user)
-      .where(and(
-        eq(schema.user.isAdmin, false),
-        isNotNull(schema.user.googleUserId),
-        gte(schema.user.createdAt, previousDraft?.registrationClosesAt ?? schema.user.createdAt),
-        lte(schema.user.createdAt, currentDraft?.registrationClosesAt ?? schema.user.createdAt)
-      ))
+      .where(
+        and(
+          eq(schema.user.isAdmin, false),
+          isNotNull(schema.user.googleUserId),
+          gte(schema.user.createdAt, previousDraft?.registrationClosesAt ?? schema.user.createdAt),
+          lte(schema.user.createdAt, currentDraft?.registrationClosesAt ?? schema.user.createdAt),
+        ),
+      )
       .orderBy(asc(schema.user.createdAt));
   });
 }
