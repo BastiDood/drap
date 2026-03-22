@@ -6,6 +6,7 @@ import { TZDate } from '@date-fns/tz';
 import { db } from '$lib/server/database';
 import {
   getDraftById,
+  getStudentAllowlistTimelineExport,
   getStudentRanksTimelineExport,
   getStudentRegistrationTimelineExport,
 } from '$lib/server/database/drizzle';
@@ -44,9 +45,10 @@ export async function GET({ params: { draftId: draftIdParam }, locals: { session
   }
 
   logger.info('exporting student timeline');
-  const [studentRegistrationTimeline, studentRanksTimeline] = await Promise.all([
+  const [studentRegistrationTimeline, studentRanksTimeline, studentAllowlistTimeline] = await Promise.all([
     getStudentRegistrationTimelineExport(db, draftId),
     getStudentRanksTimelineExport(db, draftId),
+    getStudentAllowlistTimelineExport(db, draftId),
   ]);
 
   const studentRegistrationTimelineWithAction = studentRegistrationTimeline.map(row => ({
@@ -57,10 +59,15 @@ export async function GET({ params: { draftId: draftIdParam }, locals: { session
     ...row,
     action: 'preference submission',
   }));
+  const studentAllowlistTimelineWithAction = studentAllowlistTimeline.map(row => ({
+    ...row,
+    action: 'added to allowlist',
+  }));
 
   const results = [
     ...studentRegistrationTimelineWithAction,
     ...studentRanksTimelineWithAction,
+    ...studentAllowlistTimelineWithAction,
   ].sort((prev, next) => prev.createdAt.getTime() - next.createdAt.getTime());
 
   const philippineTime = new TZDate(new Date(), 'Asia/Manila');
