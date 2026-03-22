@@ -1648,6 +1648,28 @@ export async function getDraftAssignmentRecords(db: DbConnection, draftId: bigin
   });
 }
 
+export async function getStudentRegistrationTimelineExport(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-student-registration-timeline-export', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    return await db
+      .select({
+        createdAt: schema.user.createdAt,
+        email: schema.user.email,
+        studentNumber: schema.user.studentNumber,
+        givenName: schema.user.givenName,
+        familyName: schema.user.familyName,
+      })
+      .from(schema.user)
+      .where(
+        and(
+          eq(schema.user.isAdmin, false),
+          isNotNull(schema.user.googleUserId)
+        )
+      )
+      .orderBy(asc(schema.user.createdAt));
+  });
+}
+
 export async function getStudentRanksExport(db: DbConnection, draftId: bigint) {
   return await tracer.asyncSpan('get-student-ranks-export', async span => {
     span.setAttribute('database.draft.id', draftId.toString());
