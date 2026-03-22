@@ -1096,37 +1096,6 @@ export async function getLabSelectedStudentCountInDraftRound(
   });
 }
 
-export async function resetFacultyChoiceForLabInDraftRound(
-  db: DrizzleTransaction,
-  draftId: bigint,
-  labId: string,
-  round: number,
-) {
-  return await tracer.asyncSpan('reset-faculty-choice-for-lab-in-draft-round', async span => {
-    span.setAttribute('database.draft.id', draftId.toString());
-    span.setAttribute('database.lab.id', labId);
-    span.setAttribute('database.round', round);
-    await db
-      .delete(schema.facultyChoiceUser)
-      .where(
-        and(
-          eq(schema.facultyChoiceUser.draftId, draftId),
-          eq(schema.facultyChoiceUser.labId, labId),
-          eq(schema.facultyChoiceUser.round, round),
-        ),
-      );
-    await db
-      .delete(schema.facultyChoice)
-      .where(
-        and(
-          eq(schema.facultyChoice.draftId, draftId),
-          eq(schema.facultyChoice.labId, labId),
-          eq(schema.facultyChoice.round, round),
-        ),
-      );
-  });
-}
-
 export async function initDraft(
   db: DrizzleTransaction,
   maxRounds: number,
