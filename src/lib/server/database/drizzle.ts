@@ -1709,7 +1709,7 @@ export async function getStudentRanksTimelineExport(db: DbConnection, draftId: b
   return await tracer.asyncSpan('get-student-ranks-timeline-export', async span => {
     span.setAttribute('database.draft.id', draftId.toString());
     return await db
-      .select({
+      .selectDistinct({
         createdAt: schema.studentRank.createdAt,
         email: schema.user.email,
         studentNumber: schema.user.studentNumber,
@@ -1725,7 +1725,6 @@ export async function getStudentRanksTimelineExport(db: DbConnection, draftId: b
           isNotNull(schema.user.googleUserId),
         ),
       )
-      .groupBy(schema.user.id, schema.studentRank.createdAt)
       .orderBy(asc(schema.studentRank.createdAt));
   });
 }
