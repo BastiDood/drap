@@ -1715,7 +1715,13 @@ export async function getStudentRegistrationTimelineExport(db: DbConnection, dra
       })
       .from(schema.draftRegistrationAllowlist)
       .innerJoin(schema.user, eq(schema.user.id, schema.draftRegistrationAllowlist.studentUserId))
-      .where(eq(schema.draftRegistrationAllowlist.draftId, draftId));
+      .where(
+        and(
+          eq(schema.user.isAdmin, false),
+          isNotNull(schema.user.googleUserId),
+          eq(schema.draftRegistrationAllowlist.draftId, draftId),
+        ),
+      );
 
     return await queryUnion(getValidRegistrants, getAllowlistRegistrants);
   });
@@ -1758,7 +1764,13 @@ export async function getStudentAllowlistTimelineExport(db: DbConnection, draftI
       })
       .from(schema.draftRegistrationAllowlist)
       .innerJoin(schema.user, eq(schema.user.id, schema.draftRegistrationAllowlist.studentUserId))
-      .where(eq(schema.draftRegistrationAllowlist.draftId, draftId));
+      .where(
+        and(
+          eq(schema.user.isAdmin, false),
+          isNotNull(schema.user.googleUserId),
+          eq(schema.draftRegistrationAllowlist.draftId, draftId),
+        ),
+      );
   });
 }
 
