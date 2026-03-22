@@ -13,6 +13,7 @@ import {
   inArray,
   isNotNull,
   isNull,
+  lt,
   lte,
   or,
   sql,
@@ -614,6 +615,26 @@ export async function getDraftById(db: DbConnection, id: bigint) {
       })
       .from(schema.draft)
       .where(eq(schema.draft.id, id))
+      .then(assertOptional);
+  });
+}
+
+export async function getDraftBeforeGivenDraftId(db: DbConnection, id: bigint) {
+  return await tracer.asyncSpan('get-previous-draft-from-current-draft-id', async span => {
+    span.setAttribute('database.draft.id', id.toString());
+    return await db
+      .select({
+        currRound: schema.draft.currRound,
+        maxRounds: schema.draft.maxRounds,
+        registrationClosesAt: schema.draft.registrationClosesAt,
+        isRegistrationClosed,
+        activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
+        activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
+      })
+      .from(schema.draft)
+      .where(lt(schema.draft.id, id))
+      .orderBy(desc(schema.draft.id))
+      .limit(1)
       .then(assertOptional);
   });
 }
@@ -1653,7 +1674,7 @@ export async function getStudentRegistrationTimelineExport(db: DbConnection, dra
     span.setAttribute('database.draft.id', draftId.toString());
 
     const [previousDraft, currentDraft] = await Promise.all([
-      getDraftById(db, draftId - BigInt(1)),
+      getDraftBeforeGivenDraftId(db, draftId),
       getDraftById(db, draftId),
     ]);
 
