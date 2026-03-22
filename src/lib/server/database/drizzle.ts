@@ -1695,7 +1695,7 @@ export async function getStudentRegistrationTimelineExport(db: DbConnection, dra
           eq(schema.user.isAdmin, false),
           isNotNull(schema.user.googleUserId),
           gte(schema.user.createdAt, previousDraft?.registrationClosesAt ?? schema.user.createdAt),
-          lte(schema.user.createdAt, currentDraft?.registrationClosesAt ?? schema.user.createdAt),
+          lt(schema.user.createdAt, currentDraft.registrationClosesAt),
         ),
       )
       .orderBy(asc(schema.user.createdAt));
