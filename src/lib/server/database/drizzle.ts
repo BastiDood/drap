@@ -1651,6 +1651,12 @@ export async function getDraftAssignmentRecords(db: DbConnection, draftId: bigin
 export async function getStudentRegistrationTimelineExport(db: DbConnection, draftId: bigint) {
   return await tracer.asyncSpan('get-student-registration-timeline-export', async span => {
     span.setAttribute('database.draft.id', draftId.toString());
+
+    const [previousDraft, currentDraft] = await Promise.all([
+      getDraftById(db, draftId - BigInt(1)),
+      getDraftById(db, draftId)
+    ]);
+
     return await db
       .select({
         createdAt: schema.user.createdAt,
@@ -1660,7 +1666,12 @@ export async function getStudentRegistrationTimelineExport(db: DbConnection, dra
         familyName: schema.user.familyName,
       })
       .from(schema.user)
-      .where(and(eq(schema.user.isAdmin, false), isNotNull(schema.user.googleUserId)))
+      .where(and(
+        eq(schema.user.isAdmin, false),
+        isNotNull(schema.user.googleUserId),
+        gte(schema.user.createdAt, previousDraft?.registrationClosesAt ?? schema.user.createdAt),
+        lte(schema.user.createdAt, currentDraft?.registrationClosesAt ?? schema.user.createdAt)
+      ))
       .orderBy(asc(schema.user.createdAt));
   });
 }
