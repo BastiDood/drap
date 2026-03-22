@@ -16,12 +16,12 @@
   >
     <div class="flex w-1/3 place-content-center items-center">
       <button
-        class="flex w-2/5 place-content-center rounded-lg py-2 active:bg-primary dark:active:bg-white"
+        class="flex w-2/5 place-content-center rounded-lg py-2 active:bg-primary dark:active:bg-white group"
         onclick={_ => {
           sidebar.toggle();
         }}
       >
-        <MenuIcon class="size-6 active:text-white dark:active:text-black" />
+        <MenuIcon class="size-6 group-active:text-white dark:group-active:text-black" />
         <span class="sr-only">Toggle Sidebar</span>
       </button>
     </div>
