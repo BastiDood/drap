@@ -9,12 +9,12 @@ import { error, fail, redirect } from '@sveltejs/kit';
 import { db } from '$lib/server/database';
 import { dev } from '$app/environment';
 import {
-  DraftFinalizedEvent,
-  type DraftFinalizedSchema,
-  LotteryInterventionEvent,
-  RoundStartedEvent,
-  RoundSubmittedEvent,
-  UserAssignedEvent,
+  DraftFinalizedBatchEmailEvent,
+  type DraftFinalizedBatchEmailSchema,
+  LotteryInterventionBatchEmailEvent,
+  RoundStartedBatchEmailEvent,
+  RoundSubmittedBatchEmailEvent,
+  UserAssignedBatchEmailEvent,
 } from '$lib/server/inngest/schema';
 import {
   getLabById,
@@ -80,33 +80,33 @@ const LotteryAssignmentFormData = v.object({
 
 const SendEmailFormData = v.variant('event', [
   v.object({
-    event: v.literal('draft/round.started'),
+    event: v.literal('draft/round.started.email.batch'),
     draftId: v.number(),
     round: v.optional(v.nullable(v.number()), null),
     recipientEmail: v.string(),
   }),
   v.object({
-    event: v.literal('draft/round.submitted'),
+    event: v.literal('draft/round.submitted.email.batch'),
     draftId: v.number(),
     round: v.number(),
     labId: v.string(),
     recipientEmail: v.string(),
   }),
   v.object({
-    event: v.literal('draft/lottery.intervened'),
+    event: v.literal('draft/lottery.intervened.email.batch'),
     draftId: v.number(),
     labId: v.string(),
     studentEmail: v.string(),
     recipientEmail: v.string(),
   }),
   v.object({
-    event: v.literal('draft/draft.finalized'),
+    event: v.literal('draft/draft.finalized.email.batch'),
     draftId: v.number(),
     recipientEmail: v.string(),
     lotteryAssignments: v.optional(v.array(LotteryAssignmentFormData), []),
   }),
   v.object({
-    event: v.literal('draft/user.assigned'),
+    event: v.literal('draft/user.assigned.email.batch'),
     labId: v.string(),
     userEmail: v.string(),
   }),
@@ -303,7 +303,7 @@ export const actions = {
 
             logger.info('dispatching email event...');
             switch (parsed.event) {
-              case 'draft/round.started': {
+              case 'draft/round.started.email.batch': {
                 /* eslint-disable @typescript-eslint/init-declarations */
                 let givenName: string;
                 let familyName: string;
@@ -318,7 +318,7 @@ export const actions = {
                   throw err;
                 }
                 await inngest.send(
-                  RoundStartedEvent.create({
+                  RoundStartedBatchEmailEvent.create({
                     draftId: parsed.draftId,
                     round: parsed.round,
                     recipientEmail: parsed.recipientEmail,
@@ -327,7 +327,7 @@ export const actions = {
                 );
                 break;
               }
-              case 'draft/round.submitted': {
+              case 'draft/round.submitted.email.batch': {
                 // eslint-disable-next-line @typescript-eslint/init-declarations
                 let labName: string;
                 try {
@@ -340,7 +340,7 @@ export const actions = {
                   throw err;
                 }
                 await inngest.send(
-                  RoundSubmittedEvent.create({
+                  RoundSubmittedBatchEmailEvent.create({
                     draftId: parsed.draftId,
                     round: parsed.round,
                     labId: parsed.labId,
@@ -350,7 +350,7 @@ export const actions = {
                 );
                 break;
               }
-              case 'draft/lottery.intervened': {
+              case 'draft/lottery.intervened.email.batch': {
                 // eslint-disable-next-line @typescript-eslint/init-declarations
                 let labName: string;
                 try {
@@ -394,7 +394,7 @@ export const actions = {
                 }
 
                 await inngest.send(
-                  LotteryInterventionEvent.create({
+                  LotteryInterventionBatchEmailEvent.create({
                     draftId: parsed.draftId,
                     labId: parsed.labId,
                     labName,
@@ -406,7 +406,7 @@ export const actions = {
                 );
                 break;
               }
-              case 'draft/draft.finalized': {
+              case 'draft/draft.finalized.email.batch': {
                 /* eslint-disable @typescript-eslint/init-declarations */
                 let givenName: string;
                 let familyName: string;
@@ -421,7 +421,7 @@ export const actions = {
                   throw err;
                 }
 
-                const lotteryAssignments: DraftFinalizedSchema['lotteryAssignments'] = [];
+                const lotteryAssignments: DraftFinalizedBatchEmailSchema['lotteryAssignments'] = [];
                 for (const { labId, studentEmail } of parsed.lotteryAssignments) {
                   // eslint-disable-next-line @typescript-eslint/init-declarations
                   let labName: string;
@@ -463,7 +463,7 @@ export const actions = {
                 }
 
                 await inngest.send(
-                  DraftFinalizedEvent.create({
+                  DraftFinalizedBatchEmailEvent.create({
                     draftId: parsed.draftId,
                     recipientEmail: parsed.recipientEmail,
                     recipientName: `${givenName} ${familyName}`,
@@ -472,7 +472,7 @@ export const actions = {
                 );
                 break;
               }
-              case 'draft/user.assigned': {
+              case 'draft/user.assigned.email.batch': {
                 // eslint-disable-next-line @typescript-eslint/init-declarations
                 let labName: string;
                 try {
@@ -501,7 +501,7 @@ export const actions = {
                 }
 
                 await inngest.send(
-                  UserAssignedEvent.create({
+                  UserAssignedBatchEmailEvent.create({
                     labId: parsed.labId,
                     labName,
                     userEmail: parsed.userEmail,

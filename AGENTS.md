@@ -55,7 +55,7 @@ If errors appear:
 2. Analyze remaining errors with `pnpm lint:eslint` and `pnpm lint:svelte` individually.
 3. Only run the linter that reports errors.
 
-**After building features, write and run the new end-to-end tests with `pnpm test:playwright` as the final verification step.** See the [End-to-End Testing](#end-to-end-testing) section above for setup instructions.
+**After building features, write and run the new tests with `pnpm test:unit` and `pnpm test:playwright` as the final verification step.** See the [End-to-End Testing](#end-to-end-testing) section above for setup instructions.
 
 # Additional Guidelines
 

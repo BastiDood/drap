@@ -1,6 +1,7 @@
 import { cwd, env } from 'node:process';
 
 import tailwind from '@tailwindcss/vite';
+import { configDefaults } from 'vitest/config';
 import { defineConfig, loadEnv } from 'vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 
@@ -21,4 +22,9 @@ export default defineConfig({
   build: { assetsInlineLimit: 0 },
   server: { host: true, allowedHosts: ['host.docker.internal'] },
   preview: { host: true, allowedHosts: ['host.docker.internal'] },
+  test: {
+    environment: 'node',
+    include: ['src/**/*.test.{js,ts}'],
+    exclude: [...configDefaults.exclude, 'tests/**', 'output/**'],
+  },
 });

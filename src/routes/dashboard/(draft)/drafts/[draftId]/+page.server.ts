@@ -35,10 +35,10 @@ import {
 } from '$lib/server/database/drizzle';
 import { db } from '$lib/server/database';
 import {
-  DraftFinalizedEvent,
-  LotteryInterventionEvent,
-  RoundStartedEvent,
-  UserAssignedEvent,
+  DraftFinalizedBatchEmailEvent,
+  LotteryInterventionBatchEmailEvent,
+  RoundStartedBatchEmailEvent,
+  UserAssignedBatchEmailEvent,
 } from '$lib/server/inngest/schema';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
@@ -314,7 +314,7 @@ export const actions = {
       await inngest.send(
         roundsToNotify.flatMap(round =>
           facultyAndStaff.map(({ email, givenName, familyName }) =>
-            RoundStartedEvent.create({
+            RoundStartedBatchEmailEvent.create({
               draftId: Number(draftId),
               round,
               recipientEmail: email,
@@ -527,7 +527,7 @@ export const actions = {
         ]);
         await inngest.send(
           facultyAndStaff.map(({ email, givenName, familyName }) =>
-            LotteryInterventionEvent.create({
+            LotteryInterventionBatchEmailEvent.create({
               draftId: Number(draftId),
               labId,
               labName,
@@ -733,7 +733,7 @@ export const actions = {
 
       await inngest.send(
         facultyAndStaff.map(({ email, givenName, familyName }) =>
-          DraftFinalizedEvent.create({
+          DraftFinalizedBatchEmailEvent.create({
             draftId: Number(draftId),
             recipientEmail: email,
             recipientName: `${givenName} ${familyName}`,
@@ -748,7 +748,7 @@ export const actions = {
           getUserById(db, userId),
         ]);
         await inngest.send(
-          UserAssignedEvent.create({
+          UserAssignedBatchEmailEvent.create({
             labId,
             labName,
             userEmail: assignedUser.email,

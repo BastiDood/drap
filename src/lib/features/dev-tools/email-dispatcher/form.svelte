@@ -19,7 +19,7 @@
 
   const { onSuccess }: Props = $props();
 
-  let selectedEvent = $state('draft/round.started');
+  let selectedEvent = $state('draft/round.started.email.batch');
 </script>
 
 <form
@@ -67,16 +67,24 @@
     <div class="space-y-2">
       <Label for="event">Event Type</Label>
       <NativeSelect.Root name="event" id="event" bind:value={selectedEvent} class="w-full">
-        <NativeSelect.Option value="draft/round.started">Round Started</NativeSelect.Option>
-        <NativeSelect.Option value="draft/round.submitted">Round Submitted</NativeSelect.Option>
-        <NativeSelect.Option value="draft/lottery.intervened"
+        <NativeSelect.Option value="draft/round.started.email.batch"
+          >Round Started</NativeSelect.Option
+        >
+        <NativeSelect.Option value="draft/round.submitted.email.batch"
+          >Round Submitted</NativeSelect.Option
+        >
+        <NativeSelect.Option value="draft/lottery.intervened.email.batch"
           >Lottery Intervened</NativeSelect.Option
         >
-        <NativeSelect.Option value="draft/draft.finalized">Draft Finalized</NativeSelect.Option>
-        <NativeSelect.Option value="draft/user.assigned">User Assigned</NativeSelect.Option>
+        <NativeSelect.Option value="draft/draft.finalized.email.batch"
+          >Draft Finalized</NativeSelect.Option
+        >
+        <NativeSelect.Option value="draft/user.assigned.email.batch"
+          >User Assigned</NativeSelect.Option
+        >
       </NativeSelect.Root>
     </div>
-    {#if selectedEvent === 'draft/round.started'}
+    {#if selectedEvent === 'draft/round.started.email.batch'}
       <div class="space-y-2">
         <Label for="draftId">Draft ID</Label>
         <Input type="number" name="draftId" id="draftId" min="1" required placeholder="1" />
@@ -101,7 +109,7 @@
           placeholder="example@up.edu.ph"
         />
       </div>
-    {:else if selectedEvent === 'draft/round.submitted'}
+    {:else if selectedEvent === 'draft/round.submitted.email.batch'}
       <div class="space-y-2">
         <Label for="draftId">Draft ID</Label>
         <Input type="number" name="draftId" id="draftId" required placeholder="1" />
@@ -124,7 +132,7 @@
           placeholder="example@up.edu.ph"
         />
       </div>
-    {:else if selectedEvent === 'draft/lottery.intervened'}
+    {:else if selectedEvent === 'draft/lottery.intervened.email.batch'}
       <div class="space-y-2">
         <Label for="draftId">Draft ID</Label>
         <Input type="number" name="draftId" id="draftId" min="1" required placeholder="1" />
@@ -153,7 +161,7 @@
           placeholder="example@up.edu.ph"
         />
       </div>
-    {:else if selectedEvent === 'draft/draft.finalized'}
+    {:else if selectedEvent === 'draft/draft.finalized.email.batch'}
       <div class="space-y-2">
         <Label for="draftId">Draft ID</Label>
         <Input type="number" name="draftId" id="draftId" min="1" required placeholder="1" />
@@ -169,7 +177,7 @@
         />
       </div>
       <LotteryAssignmentsInput />
-    {:else if selectedEvent === 'draft/user.assigned'}
+    {:else if selectedEvent === 'draft/user.assigned.email.batch'}
       <div class="space-y-2">
         <Label for="labId">Lab ID</Label>
         <Input type="text" name="labId" id="labId" required placeholder="ndsl" />

@@ -10,6 +10,7 @@ import { OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET } from '$lib/server/env/google';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 import { GmailMessageSendResult, TokenResponse } from './schema';
+import { parseBatchSendResponse } from './http';
 
 const SERVICE_NAME = 'lib.server.google';
 const logger = Logger.byName(SERVICE_NAME);
@@ -89,6 +90,7 @@ export class GoogleOAuthClient {
             'email.message.id': result.id,
             'email.message.thread_id': result.threadId,
             'email.message.label_ids': result.labelIds,
+            'email.message.internal_date': result.internalDate,
           });
           return result;
         }
@@ -104,15 +106,14 @@ export class GoogleOAuthClient {
   }
 
   /** Bulk version of {@linkcode sendEmail}. */
-  async sendEmails(messages: MIMEMessage[]) {
+  async sendEmails(messages: Map<string, MIMEMessage>) {
     return await tracer.asyncSpan('google-oauth-client-send-emails', async span => {
       if (!this.scopes.includes(GMAIL_SEND_SCOPE)) GmailScopeError.throwNew(this.scopes);
-      if (messages.length > 100) BatchError.throwNew(messages.length);
-
-      span.setAttribute('messages.count', messages.length);
+      if (messages.size > 100) BatchError.throwNew(messages.size);
+      span.setAttribute('messages.count', messages.size);
 
       const multipart = new Multipart(
-        messages.map(message => {
+        Array.from(messages.entries(), ([contentId, message]) => {
           const encoder = new TextEncoder();
           const body = encoder.encode(
             HttpRawRequest.toString(
@@ -125,7 +126,10 @@ export class GoogleOAuthClient {
               JSON.stringify({ raw: message.asEncoded() }),
             ),
           );
-          return new Component({ 'Content-Type': 'application/http' }, body);
+          return new Component(
+            { 'Content-ID': `<${contentId}>`, 'Content-Type': 'application/http' },
+            body,
+          );
         }),
       );
 
@@ -141,16 +145,10 @@ export class GoogleOAuthClient {
         body: multipart.bytes(),
       });
 
-      switch (response.status) {
-        case 200:
-        // TODO: Parse each HTTP response.
-        // falls through
-        case 429:
-          // TODO: Handle rate limits.
-          break;
-        default:
-          throw GmailError.throwNew(response.status, await response.text());
-      }
+      if (response.status !== 200)
+        throw GmailError.throwNew(response.status, await response.text());
+
+      return await parseBatchSendResponse(response);
     });
   }
 }
@@ -210,7 +208,7 @@ export class GmailScopeError extends Error {
 
   static throwNew(scopes: string[]): never {
     const error = new GmailScopeError(scopes);
-    logger.error('missing gmail.send scope', error, { 'error.scopes': scopes.join(' ') });
+    logger.error('missing gmail.send scope', error, { 'error.scopes': scopes });
     throw error;
   }
 }
