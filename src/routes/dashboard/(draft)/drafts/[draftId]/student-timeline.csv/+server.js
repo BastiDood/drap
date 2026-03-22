@@ -4,7 +4,11 @@ import { lightFormat } from 'date-fns';
 import { TZDate } from '@date-fns/tz';
 
 import { db } from '$lib/server/database';
-import { getDraftById, getStudentRegistrationTimelineExport, getStudentRanksTimelineExport } from '$lib/server/database/drizzle';
+import {
+  getDraftById,
+  getStudentRanksTimelineExport,
+  getStudentRegistrationTimelineExport,
+} from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { validateBigInt } from '$lib/validators';
 
@@ -45,12 +49,19 @@ export async function GET({ params: { draftId: draftIdParam }, locals: { session
     getStudentRanksTimelineExport(db, draftId),
   ]);
 
-  const studentRegistrationTimelineWithAction = studentRegistrationTimeline.map(row => ({ ...row, action: 'registration' }));
-  const studentRanksTimelineWithAction = studentRanksTimeline.map(row => ({ ...row, action: 'preference submission' }));
+  const studentRegistrationTimelineWithAction = studentRegistrationTimeline.map(row => ({
+    ...row,
+    action: 'registration',
+  }));
+  const studentRanksTimelineWithAction = studentRanksTimeline.map(row => ({
+    ...row,
+    action: 'preference submission',
+  }));
 
-  const results =
-    [...studentRegistrationTimelineWithAction, ...studentRanksTimelineWithAction]
-    .sort((prev, next) => (prev.createdAt.getTime() - next.createdAt.getTime()));
+  const results = [
+    ...studentRegistrationTimelineWithAction,
+    ...studentRanksTimelineWithAction,
+  ].sort((prev, next) => prev.createdAt.getTime() - next.createdAt.getTime());
 
   const philippineTime = new TZDate(new Date(), 'Asia/Manila');
   const now = lightFormat(philippineTime, 'yyyy-MM-dd');

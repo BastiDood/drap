@@ -1660,12 +1660,7 @@ export async function getStudentRegistrationTimelineExport(db: DbConnection, dra
         familyName: schema.user.familyName,
       })
       .from(schema.user)
-      .where(
-        and(
-          eq(schema.user.isAdmin, false),
-          isNotNull(schema.user.googleUserId)
-        )
-      )
+      .where(and(eq(schema.user.isAdmin, false), isNotNull(schema.user.googleUserId)))
       .orderBy(asc(schema.user.createdAt));
   });
 }
@@ -1687,8 +1682,8 @@ export async function getStudentRanksTimelineExport(db: DbConnection, draftId: b
         and(
           eq(schema.studentRank.draftId, draftId),
           eq(schema.user.isAdmin, false),
-          isNotNull(schema.user.googleUserId)
-        )
+          isNotNull(schema.user.googleUserId),
+        ),
       )
       .groupBy(schema.user.id, schema.studentRank.createdAt)
       .orderBy(asc(schema.studentRank.createdAt));
