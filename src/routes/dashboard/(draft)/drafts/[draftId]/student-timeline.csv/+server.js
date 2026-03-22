@@ -62,7 +62,7 @@ export async function GET({ params: { draftId: draftIdParam }, locals: { session
   }));
   const studentAllowlistTimelineWithAction = studentAllowlistTimeline.map(row => ({
     ...row,
-    action: 'added to allowlist',
+    action: 'allowlist addition',
   }));
 
   const results = [
