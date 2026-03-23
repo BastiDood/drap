@@ -3,6 +3,7 @@
   import MenuIcon from '@lucide/svelte/icons/menu';
 
   import Logo from '$lib/assets/logo-DRAP-icon-colored.svg';
+  import { cn } from '$lib/components/ui/utils';
   import { page } from '$app/state';
   import { resolve } from '$app/paths';
   import { TooltipProvider } from '$lib/components/ui/tooltip';
@@ -16,7 +17,7 @@
   >
     <div class="flex w-1/3 place-content-center items-center">
       <button
-        class="flex w-2/5 place-content-center rounded-lg py-2 active:bg-primary dark:active:bg-white group"
+        class="group flex w-2/5 place-content-center rounded-lg py-2 active:bg-primary dark:active:bg-white"
         onclick={_ => {
           sidebar.toggle();
         }}
@@ -28,17 +29,21 @@
 
     <div class="flex w-1/3 place-content-center items-center">
       <div
-        class="flex w-2/5 place-content-center rounded-lg py-2 {String(
-          page.url.pathname,
-        ).startsWith('/dashboard')
-          ? 'bg-primary dark:bg-white'
-          : 'bg-transparent'}"
+        class={cn(
+          'flex w-2/5 place-content-center rounded-lg py-2',
+          page.url.pathname.startsWith('/dashboard')
+            ? 'bg-primary dark:bg-white'
+            : 'bg-transparent',
+        )}
       >
-        <a href={resolve('/dashboard')}>
+        <a href={resolve('/dashboard/')}>
           <HouseIcon
-            class="size-6 {String(page.url.pathname).startsWith('/dashboard')
-              ? 'text-white dark:text-black'
-              : 'text-primary'}"
+            class={cn(
+              'size-6',
+              page.url.pathname.startsWith('/dashboard')
+                ? 'text-white dark:text-black'
+                : 'text-primary',
+            )}
           />
         </a>
         <span class="sr-only">Go to Dashboard</span>
