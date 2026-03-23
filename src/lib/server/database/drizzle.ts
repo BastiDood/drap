@@ -1483,13 +1483,14 @@ export async function upsertDesignatedSender(db: DbConnection, userId: string) {
 }
 
 /**
- * Upserts a faculty choice for a lab in the current draft round.
+ * Upserts a faculty choice for a lab in the specified draft round.
  * Uses ON CONFLICT DO UPDATE for `faculty_choice` and deletes/reinserts `faculty_choice_user`.
  * Typically invoked from within a transaction.
  */
 export async function upsertFacultyChoice(
   db: DrizzleTransaction,
   draftId: bigint,
+  round: number,
   labId: string,
   facultyUserId: string,
   studentUserIds: string[],
@@ -1498,18 +1499,10 @@ export async function upsertFacultyChoice(
     span.setAttribute('database.draft.id', draftId.toString());
     span.setAttribute('database.lab.id', labId);
     span.setAttribute('database.user.id', facultyUserId);
-    const draft = await db.query.draft.findFirst({
-      columns: { currRound: true },
-      where: ({ id }, { eq }) => eq(id, draftId),
-    });
-    if (typeof draft === 'undefined') return;
-
-    const { currRound } = draft;
-    if (currRound === null) throw new Error('upsertFacultyChoice => currRound must be defined');
 
     await db
       .insert(schema.facultyChoice)
-      .values({ draftId, round: currRound, labId, userId: facultyUserId })
+      .values({ draftId, round, labId, userId: facultyUserId })
       .onConflictDoUpdate({
         target: [
           schema.facultyChoice.draftId,
@@ -1526,7 +1519,7 @@ export async function upsertFacultyChoice(
         and(
           eq(schema.facultyChoiceUser.draftId, draftId),
           eq(schema.facultyChoiceUser.labId, labId),
-          eq(schema.facultyChoiceUser.round, currRound),
+          eq(schema.facultyChoiceUser.round, round),
         ),
       );
 
@@ -1538,7 +1531,7 @@ export async function upsertFacultyChoice(
             studentUserId =>
               ({
                 draftId,
-                round: currRound,
+                round,
                 labId,
                 facultyUserId,
                 studentUserId,
@@ -1551,8 +1544,6 @@ export async function upsertFacultyChoice(
         'upsertFacultyChoice::facultyChoiceUser => unexpected insertion count',
       );
     }
-
-    return draft;
   });
 }
 

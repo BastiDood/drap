@@ -194,14 +194,13 @@ export const actions = {
 
           let baseSelected = selected;
           if (typeof existingChoice !== 'undefined') {
-            if (existingChoice.userId !== facultyUserId) {
-              logger.info('lab head editing another lab head\'s submission', {
+            if (existingChoice.userId !== facultyUserId)
+              logger.info("lab head editing another lab head's submission", {
                 'draft.id': draftId.toString(),
                 'draft.round.current': activeDraft.currRound,
                 'original.user_id': existingChoice.userId,
                 'editing.user_id': facultyUserId,
               });
-            }
 
             if (existingChoice.round !== activeDraft.currRound) {
               logger.warn('attempt to edit submission after round advanced', {
@@ -235,17 +234,18 @@ export const actions = {
             'lab.quota': quota,
           });
 
-          const draft = await upsertFacultyChoice(db, draftId, lab, facultyUserId, students);
-          if (typeof draft === 'undefined') {
-            logger.fatal('draft must exist prior to faculty choice submission');
-            error(404);
-          }
+          await upsertFacultyChoice(
+            db,
+            draftId,
+            activeDraft.currRound,
+            lab,
+            facultyUserId,
+            students,
+          );
 
-          const submittedRound = draft.currRound;
+          const submittedRound = activeDraft.currRound;
           assert(
-            submittedRound !== null &&
-              submittedRound > 0 &&
-              submittedRound <= activeDraft.maxRounds,
+            submittedRound > 0 && submittedRound <= activeDraft.maxRounds,
             'cannot submit preferences outside regular rounds',
           );
 
