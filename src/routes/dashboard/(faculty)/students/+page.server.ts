@@ -171,7 +171,7 @@ export const actions = {
           }
 
           if (activeDraft.currRound !== expectedRound) {
-            logger.warn('round mismatch - round may have advanced since page load', {
+            logger.fatal('round mismatch - round may have advanced since page load', void 0, {
               'draft.id': draftId.toString(),
               'draft.round.current': activeDraft.currRound,
               'draft.round.expected': expectedRound,
