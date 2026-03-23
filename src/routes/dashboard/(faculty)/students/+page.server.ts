@@ -127,11 +127,11 @@ export const actions = {
     }
 
     const lab = user.labId;
-    const faculty = user.id;
+    const facultyUserId = user.id;
     return await tracer.asyncSpan('action.rankings', async () => {
       logger.debug('submitting rankings on behalf of lab head', {
         'lab.id': lab,
-        'user.id': faculty,
+        'user.id': facultyUserId,
       });
 
       const data = await request.formData();
@@ -194,14 +194,13 @@ export const actions = {
 
           let baseSelected = selected;
           if (typeof existingChoice !== 'undefined') {
-            if (existingChoice.userId !== faculty) {
-              logger.fatal('attempt to edit non-faculty or foreign submission', void 0, {
+            if (existingChoice.userId !== facultyUserId) {
+              logger.info('lab head editing another lab head\'s submission', {
                 'draft.id': draftId.toString(),
                 'draft.round.current': activeDraft.currRound,
-                'choice.user_id': existingChoice.userId,
-                'user.id': faculty,
+                'original.user_id': existingChoice.userId,
+                'editing.user_id': facultyUserId,
               });
-              error(403);
             }
 
             if (existingChoice.round !== activeDraft.currRound) {
@@ -236,7 +235,7 @@ export const actions = {
             'lab.quota': quota,
           });
 
-          const draft = await upsertFacultyChoice(db, draftId, lab, faculty, students);
+          const draft = await upsertFacultyChoice(db, draftId, lab, facultyUserId, students);
           if (typeof draft === 'undefined') {
             logger.fatal('draft must exist prior to faculty choice submission');
             error(404);
