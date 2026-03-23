@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { HTMLAttributes } from 'svelte/elements';
 
-  import * as Sheet from '$lib/components/ui/sheet';
+  import * as Drawer from '$lib/components/ui/drawer';
   import { cn, type WithElementRef } from '$lib/components/ui/utils';
 
   import { SIDEBAR_WIDTH_MOBILE } from './constants';
@@ -36,24 +36,23 @@
     {@render children?.()}
   </div>
 {:else if sidebar.isMobile}
-  <Sheet.Root bind:open={() => sidebar.openMobile, v => sidebar.setOpenMobile(v)} {...restProps}>
-    <Sheet.Content
+  <Drawer.Root bind:open={() => sidebar.openMobile, v => sidebar.setOpenMobile(v)} {...restProps}>
+    <Drawer.Content
       data-sidebar="sidebar"
       data-slot="sidebar"
       data-mobile="true"
-      class="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground data-[state=closed]:duration-200 data-[state=open]:duration-200 [&>button]:hidden"
+      class="w-full bg-sidebar p-0 text-sidebar-foreground"
       style="--sidebar-width: {SIDEBAR_WIDTH_MOBILE};"
-      {side}
     >
-      <Sheet.Header class="sr-only">
-        <Sheet.Title>Sidebar</Sheet.Title>
-        <Sheet.Description>Displays the mobile sidebar.</Sheet.Description>
-      </Sheet.Header>
+      <Drawer.Header class="sr-only">
+        <Drawer.Title>Sidebar</Drawer.Title>
+        <Drawer.Description>Displays the mobile sidebar.</Drawer.Description>
+      </Drawer.Header>
       <div class="flex h-full w-full flex-col">
         {@render children?.()}
       </div>
-    </Sheet.Content>
-  </Sheet.Root>
+    </Drawer.Content>
+  </Drawer.Root>
 {:else}
   <div
     bind:this={ref}

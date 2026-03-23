@@ -12,6 +12,7 @@
 
   import * as Avatar from '$lib/components/ui/avatar';
   import * as Sidebar from '$lib/components/ui/sidebar';
+  import BottomNav from '$lib/components/bottom-nav.svelte';
   import Button from '$lib/components/ui/button/button.svelte';
   import Logo from '$lib/assets/logo-DRAP-icon-colored.svg';
   import ModeSwitcher from '$lib/components/mode-switcher.svelte';
@@ -34,8 +35,8 @@
 
 <TooltipProvider>
   {#if !sidebar.openMobile}
-    <div class="fixed top-4 left-5 z-100 md:hidden">
-      <Sidebar.Trigger class="bg-background shadow-lg" />
+    <div class="fixed bottom-0 z-45 w-full md:hidden">
+      <BottomNav {sidebar} />
     </div>
   {/if}
   <Sidebar.Root collapsible="icon" class="border-r border-border">
@@ -48,7 +49,6 @@
         {#if sidebar.openMobile}
           <div class="flex items-center gap-2 pr-2 md:hidden">
             <ModeSwitcher />
-            <Sidebar.Trigger />
           </div>
         {/if}
         <div class="hidden md:block">
