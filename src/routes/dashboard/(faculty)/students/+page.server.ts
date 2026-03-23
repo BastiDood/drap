@@ -2,19 +2,21 @@ import assert from 'node:assert/strict';
 
 import * as v from 'valibot';
 import { decode } from 'decode-formdata';
-import { error, redirect } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 
 import {
   autoAcknowledgeLabsWithoutPreferences,
   getActiveDraftForUpdate,
   getFacultyAndStaff,
+  getFacultyChoiceForLabInDraftRound,
   getLabAndRemainingStudentsInDraftWithLabPreference,
   getLabById,
   getLabQuotaAndSelectedStudentCountInDraft,
+  getLabSelectedStudentCountInDraftRound,
   getPendingLabCountInDraft,
   getValidStaffEmails,
   incrementDraftRound,
-  insertFacultyChoice,
+  upsertFacultyChoice,
 } from '$lib/server/database/drizzle';
 import { db } from '$lib/server/database';
 import { inngest } from '$lib/server/inngest/client';
@@ -27,6 +29,7 @@ import { Tracer } from '$lib/server/telemetry/tracer';
 
 const RankingsFormData = v.object({
   draft: v.pipe(v.string(), v.minLength(1)),
+  round: v.pipe(v.number(), v.integer(), v.minValue(1)),
   students: v.array(v.pipe(v.string(), v.minLength(1))),
 });
 
@@ -80,7 +83,7 @@ export async function load({ locals: { session }, parent }) {
       labId,
     );
     if (typeof draftLabResult === 'undefined') {
-      logger.warn('lab not in draft snapshot', { lab: labId });
+      logger.warn('lab not in draft snapshot', { 'lab.id': labId });
       return { draft };
     }
 
@@ -127,17 +130,27 @@ export const actions = {
     }
 
     const lab = user.labId;
-    const faculty = user.id;
+    const facultyUserId = user.id;
     return await tracer.asyncSpan('action.rankings', async () => {
-      logger.debug('submitting rankings on behalf of lab head', { lab, faculty });
+      logger.debug('submitting rankings on behalf of lab head', {
+        'lab.id': lab,
+        'user.id': facultyUserId,
+      });
 
       const data = await request.formData();
-      const { draft, students } = v.parse(RankingsFormData, decode(data, { arrays: ['students'] }));
-      logger.debug('draft submitted', { 'draft.id': draft });
-      logger.debug('students submitted', { students });
+      const {
+        draft,
+        round: expectedRound,
+        students,
+      } = v.parse(RankingsFormData, decode(data, { arrays: ['students'], numbers: ['round'] }));
+      logger.debug('rankings form received', {
+        'draft.id': draft,
+        'draft.round.expected': expectedRound,
+        'student.ids': students,
+      });
 
       const draftId = BigInt(draft);
-      const { submittedRound, roundsToNotify } = await db.transaction(
+      const transactionResult = await db.transaction(
         async db => {
           const activeDraft = await getActiveDraftForUpdate(db);
           if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
@@ -160,6 +173,21 @@ export const actions = {
             error(403);
           }
 
+          if (activeDraft.currRound !== expectedRound) {
+            logger.fatal('round mismatch - round may have advanced since page load', void 0, {
+              'draft.id': draftId.toString(),
+              'draft.round.current': activeDraft.currRound,
+              'draft.round.expected': expectedRound,
+            });
+            return fail(409, { reason: 'round_mismatch' });
+          }
+
+          const existingChoice = await getFacultyChoiceForLabInDraftRound(
+            db,
+            draftId,
+            activeDraft.currRound,
+            lab,
+          );
           const { quota, selected } = await getLabQuotaAndSelectedStudentCountInDraft(
             db,
             draftId,
@@ -167,7 +195,35 @@ export const actions = {
           );
           assert(typeof quota !== 'undefined');
 
-          const total = selected + students.length;
+          let baseSelected = selected;
+          if (typeof existingChoice !== 'undefined') {
+            if (existingChoice.userId !== facultyUserId)
+              logger.info("lab head editing another lab head's submission", {
+                'draft.id': draftId.toString(),
+                'draft.round.current': activeDraft.currRound,
+                'original.user_id': existingChoice.userId,
+                'editing.user_id': facultyUserId,
+              });
+
+            if (existingChoice.round !== activeDraft.currRound) {
+              logger.warn('attempt to edit submission after round advanced', {
+                'draft.id': draftId.toString(),
+                'draft.round.current': activeDraft.currRound,
+                'choice.round': existingChoice.round,
+              });
+              return fail(409, { reason: 'round_advanced' });
+            }
+
+            const selectedInCurrentRound = await getLabSelectedStudentCountInDraftRound(
+              db,
+              draftId,
+              lab,
+              activeDraft.currRound,
+            );
+            baseSelected = selected - selectedInCurrentRound;
+          }
+
+          const total = baseSelected + students.length;
           if (total > quota) {
             logger.fatal('total students exceeds quota', void 0, {
               'student.total': total,
@@ -181,23 +237,28 @@ export const actions = {
             'lab.quota': quota,
           });
 
-          const draft = await insertFacultyChoice(db, draftId, lab, faculty, students);
-          if (typeof draft === 'undefined') {
-            logger.fatal('draft must exist prior to faculty choice submission');
-            error(404);
-          }
+          await upsertFacultyChoice(
+            db,
+            draftId,
+            activeDraft.currRound,
+            lab,
+            facultyUserId,
+            students,
+          );
 
-          const submittedRound = draft.currRound;
+          const submittedRound = activeDraft.currRound;
           assert(
-            submittedRound !== null &&
-              submittedRound > 0 &&
-              submittedRound <= activeDraft.maxRounds,
+            submittedRound > 0 && submittedRound <= activeDraft.maxRounds,
             'cannot submit preferences outside regular rounds',
           );
 
           // Track data needed for notifications after transaction
           const roundsToNotify: (number | null)[] = [];
           while (true) {
+            // Auto-acknowledge labs without preferences BEFORE checking pending count
+            await autoAcknowledgeLabsWithoutPreferences(db, draftId);
+            logger.debug('labs without preferences auto-acknowledged');
+
             const count = await getPendingLabCountInDraft(db, draftId);
             if (count > 0) {
               logger.debug('more pending labs found', { 'lab.pending_count': count });
@@ -217,15 +278,17 @@ export const actions = {
               logger.info('intervention round reached');
               break;
             }
-
-            await autoAcknowledgeLabsWithoutPreferences(db, draftId);
-            logger.debug('labs without preferences auto-acknowledged');
           }
 
           return { submittedRound, roundsToNotify };
         },
         { isolationLevel: 'read committed' },
       );
+
+      // Early return if transaction returned a failure
+      if ('status' in transactionResult) return transactionResult;
+
+      const { submittedRound, roundsToNotify } = transactionResult;
 
       // Dispatch notifications after successful transaction
       const [staffEmails, { name: labName }, facultyAndStaff] = await Promise.all([
@@ -244,7 +307,7 @@ export const actions = {
         }),
       );
 
-      const roundStartedEvents = roundsToNotify.flatMap(round =>
+      const roundStartedEvents = roundsToNotify.flatMap((round: number | null) =>
         facultyAndStaff.map(({ email, givenName, familyName }) =>
           RoundStartedBatchEmailEvent.create({
             draftId: Number(draftId),

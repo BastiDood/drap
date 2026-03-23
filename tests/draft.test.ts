@@ -721,6 +721,127 @@ test.describe('Draft Lifecycle', () => {
         await ndslHeadPage.goto('/dashboard/students/');
         await expectStatCards(ndslHeadPage, { quota: 2, remaining: 1, drafted: 1 });
       });
+
+      test('can amend picks while round is still active', async ({ ndslHeadPage }) => {
+        await ndslHeadPage.goto('/dashboard/students/');
+        await expect(ndslHeadPage.getByRole('button', { name: 'Edit Selection' })).toBeVisible();
+        await ndslHeadPage.getByRole('button', { name: 'Edit Selection' }).click();
+        await expect(ndslHeadPage.getByRole('button', { name: /Eager/u })).toBeVisible();
+        await expect(ndslHeadPage.getByRole('button', { name: /Partial/u })).toBeVisible();
+
+        // Replace the prior selection (Eager) with Partial before the round advances.
+        await ndslHeadPage.getByRole('button', { name: /Eager/u }).click();
+        await ndslHeadPage.getByRole('button', { name: /Partial/u }).click();
+        ndslHeadPage.on('dialog', dialog => dialog.accept());
+        const responsePromise = ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
+        await ndslHeadPage.getByRole('button', { name: 'Save Changes' }).click();
+        const response = await responsePromise;
+        const responseData = await response.json();
+        expect(responseData.type).toBe('success');
+
+        await expectStudentsCallout(
+          ndslHeadPage,
+          'This lab has already submitted its picks for this round.',
+        );
+      });
+
+      test('can cancel edit without saving changes', async ({ ndslHeadPage }) => {
+        await ndslHeadPage.goto('/dashboard/students/');
+        await ndslHeadPage.getByRole('button', { name: 'Edit Selection' }).click();
+
+        // Make a change but cancel
+        await ndslHeadPage.getByRole('button', { name: /Partial/u }).click();
+        await ndslHeadPage.getByRole('button', { name: 'Cancel' }).click();
+
+        // Dialog should be closed
+        await expect(ndslHeadPage.getByRole('dialog')).toHaveCount(0);
+
+        // Original selection should still be visible in Previous Picks
+        await expectPreviousPicksTab(ndslHeadPage, 1, [/Partial/u]);
+      });
+
+      test('can edit to empty selection then reselect', async ({ ndslHeadPage }) => {
+        await ndslHeadPage.goto('/dashboard/students/');
+        await ndslHeadPage.getByRole('button', { name: 'Edit Selection' }).click();
+
+        // Deselect the current pick (Partial from previous test)
+        await ndslHeadPage.getByRole('button', { name: /Partial/u }).click();
+        await expect(ndslHeadPage.locator('#selection-progress')).toContainText('0 /');
+
+        ndslHeadPage.on('dialog', dialog => dialog.accept());
+        let responsePromise = ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
+        await ndslHeadPage.getByRole('button', { name: 'Save Changes' }).click();
+        let response = await responsePromise;
+        let responseData = await response.json();
+        expect(responseData.type).toBe('success');
+
+        // After empty submission, should still show submitted state
+        await expectStudentsCallout(
+          ndslHeadPage,
+          'This lab has already submitted its picks for this round.',
+        );
+
+        // Stat cards should show 0 drafted for this round
+        await expectStatCards(ndslHeadPage, { quota: 2, remaining: 2, drafted: 0 });
+
+        // Now re-select Eager to restore expected state for subsequent tests
+        await ndslHeadPage.getByRole('button', { name: 'Edit Selection' }).click();
+        await ndslHeadPage.getByRole('button', { name: /Eager/u }).click();
+        responsePromise = ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
+        await ndslHeadPage.getByRole('button', { name: 'Save Changes' }).click();
+        response = await responsePromise;
+        responseData = await response.json();
+        expect(responseData.type).toBe('success');
+
+        await expectStatCards(ndslHeadPage, { quota: 2, remaining: 1, drafted: 1 });
+      });
+
+      test('can edit multiple times in same round', async ({ ndslHeadPage }) => {
+        await ndslHeadPage.goto('/dashboard/students/');
+
+        // First edit: swap Eager for Partial
+        await ndslHeadPage.getByRole('button', { name: 'Edit Selection' }).click();
+        await ndslHeadPage.getByRole('button', { name: /Eager/u }).click();
+        await ndslHeadPage.getByRole('button', { name: /Partial/u }).click();
+        ndslHeadPage.on('dialog', dialog => dialog.accept());
+        let responsePromise = ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
+        await ndslHeadPage.getByRole('button', { name: 'Save Changes' }).click();
+        let response = await responsePromise;
+        expect((await response.json()).type).toBe('success');
+        await expectPreviousPicksTab(ndslHeadPage, 1, [/Partial/u]);
+
+        // Second edit: swap back to Eager
+        await ndslHeadPage.getByRole('button', { name: 'Edit Selection' }).click();
+        await ndslHeadPage.getByRole('button', { name: /Partial/u }).click();
+        await ndslHeadPage.getByRole('button', { name: /Eager/u }).click();
+        responsePromise = ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
+        await ndslHeadPage.getByRole('button', { name: 'Save Changes' }).click();
+        response = await responsePromise;
+        expect((await response.json()).type).toBe('success');
+        await expectPreviousPicksTab(ndslHeadPage, 1, [/Eager/u]);
+      });
+
+      test('can edit with no changes (idempotent)', async ({ ndslHeadPage }) => {
+        await ndslHeadPage.goto('/dashboard/students/');
+
+        // Open edit dialog but don't change anything
+        await ndslHeadPage.getByRole('button', { name: 'Edit Selection' }).click();
+        await expect(ndslHeadPage.getByRole('dialog')).toBeVisible();
+
+        // Eager should already be selected (from previous test)
+        await expect(ndslHeadPage.locator('#selection-progress')).toContainText('1 /');
+
+        // Submit without changes
+        ndslHeadPage.on('dialog', dialog => dialog.accept());
+        const responsePromise = ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
+        await ndslHeadPage.getByRole('button', { name: 'Save Changes' }).click();
+        const response = await responsePromise;
+        expect((await response.json()).type).toBe('success');
+
+        // Selection should remain unchanged
+        await expectPreviousPicksTab(ndslHeadPage, 1, [/Eager/u]);
+        await expectStatCards(ndslHeadPage, { quota: 2, remaining: 1, drafted: 1 });
+      });
     });
 
     test.describe('CSL', () => {
@@ -804,21 +925,38 @@ test.describe('Draft Lifecycle', () => {
         await expectNoPreviousPicks(aclHeadPage);
       });
 
-      test('skips (sees Unlucky, PartialToLottery)', async ({ aclHeadPage }) => {
+      test('edit conflict: CSL gets 409 when ACL submits and advances round', async ({
+        cslHeadPage,
+        aclHeadPage,
+      }) => {
+        // CSL opens edit dialog (CSL already submitted earlier)
+        await cslHeadPage.goto('/dashboard/students/');
+        await cslHeadPage.getByRole('button', { name: 'Edit Selection' }).click();
+        await expect(cslHeadPage.getByRole('dialog')).toBeVisible();
+
+        // ACL submits (last lab), which advances the round
         await aclHeadPage.goto('/dashboard/students/');
         await expect(aclHeadPage.getByRole('button', { name: /Unlucky/u })).toBeVisible();
         aclHeadPage.on('dialog', dialog => dialog.accept());
-        const responsePromise = aclHeadPage.waitForResponse('/dashboard/students/?/rankings');
+        const aclResponsePromise = aclHeadPage.waitForResponse('/dashboard/students/?/rankings');
         await aclHeadPage.getByRole('button', { name: 'Submit' }).click();
-        const response = await responsePromise;
-        const responseData = await response.json();
-        expect(responseData.type).toBe('success');
+        const aclResponse = await aclResponsePromise;
+        const aclResponseData = await aclResponse.json();
+        expect(aclResponseData.type).toBe('success');
 
-        await expectStudentsCallout(
-          aclHeadPage,
-          'No undrafted students have selected this lab in this round.',
-          ['This lab has no more draft slots remaining for the rest of this draft.'],
-        );
+        // CSL tries to save edit - should get 409 failure and see error toast
+        cslHeadPage.on('dialog', dialog => dialog.accept());
+        const cslResponsePromise = cslHeadPage.waitForResponse('/dashboard/students/?/rankings');
+        await cslHeadPage.getByRole('button', { name: 'Save Changes' }).click();
+        const cslResponse = await cslResponsePromise;
+        const cslResponseData = await cslResponse.json();
+
+        expect(cslResponse.status()).toBe(200);
+        expect(cslResponseData.type).toBe('failure');
+        expect(cslResponseData.status).toBe(409);
+
+        // Should show error toast and refresh
+        await expect(cslHeadPage.getByText('Round advanced while editing')).toBeVisible();
       });
 
       test('after submission: unchanged', async ({ aclHeadPage }) => {
