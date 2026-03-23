@@ -1674,7 +1674,7 @@ export async function getStudentRanksExport(db: DbConnection, draftId: bigint) {
       )
       .where(eq(schema.studentRank.draftId, draftId))
       .groupBy(schema.user.id, schema.studentRank.createdAt)
-      .orderBy(schema.user.familyName);
+      .orderBy(asc(schema.studentRank.createdAt));
   });
 }
 

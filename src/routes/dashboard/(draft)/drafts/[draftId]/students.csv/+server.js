@@ -26,9 +26,9 @@ export async function GET({ params: { draftId: draftIdParam }, locals: { session
   const { user } = session;
   if (!user.isAdmin || user.googleUserId === null || user.labId !== null) {
     logger.fatal('insufficient permissions to export student ranks', void 0, {
-      isAdmin: user.isAdmin,
-      googleUserId: user.googleUserId,
-      labId: user.labId,
+      'user.is_admin': user.isAdmin,
+      'user.google_id': user.googleUserId,
+      'user.lab_id': user.labId,
     });
     error(403);
   }
