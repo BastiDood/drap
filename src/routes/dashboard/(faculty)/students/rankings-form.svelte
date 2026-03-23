@@ -10,7 +10,6 @@
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
-  import { invalidateAll } from '$app/navigation';
   import { Progress } from '$lib/components/ui/progress';
   import type { schema } from '$lib/server/database/drizzle';
 
@@ -91,13 +90,14 @@
     return async ({ update, result }) => {
       submitter.disabled = false;
 
+      await update();
+
       switch (result.type) {
         case 'success':
           toast.success(editing ? 'Selections updated.' : 'Selections submitted.');
           addedIds.clear();
           removedIds.clear();
           dialogCloseRef?.click();
-          await update();
           break;
         case 'error':
           switch (result.status) {
@@ -114,14 +114,23 @@
           addedIds.clear();
           removedIds.clear();
           dialogCloseRef?.click();
-          await invalidateAll();
           break;
         case 'failure':
-          toast.error(editing ? 'Failed to update selections.' : 'Failed to submit selections.');
-          await update();
+          switch (result.status) {
+            case 409:
+              toast.error('Round advanced while editing. No changes saved.');
+              break;
+            default:
+              toast.error(
+                editing ? 'Failed to update selections.' : 'Failed to submit selections.',
+              );
+              break;
+          }
+          addedIds.clear();
+          removedIds.clear();
+          dialogCloseRef?.click();
           break;
         default:
-          await update();
           break;
       }
     };

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 import * as v from 'valibot';
 import { decode } from 'decode-formdata';
-import { error, redirect } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 
 import {
   autoAcknowledgeLabsWithoutPreferences,
@@ -147,7 +147,7 @@ export const actions = {
       });
 
       const draftId = BigInt(draft);
-      const { submittedRound, roundsToNotify } = await db.transaction(
+      const transactionResult = await db.transaction(
         async db => {
           const activeDraft = await getActiveDraftForUpdate(db);
           if (typeof activeDraft === 'undefined' || activeDraft.id !== draftId) {
@@ -171,12 +171,12 @@ export const actions = {
           }
 
           if (activeDraft.currRound !== expectedRound) {
-            logger.fatal('round mismatch - round may have advanced since page load', void 0, {
+            logger.warn('round mismatch - round may have advanced since page load', {
               'draft.id': draftId.toString(),
               'draft.round.current': activeDraft.currRound,
               'draft.round.expected': expectedRound,
             });
-            error(409);
+            return fail(409, { reason: 'round_mismatch' });
           }
 
           const existingChoice = await getFacultyChoiceForLabInDraftRound(
@@ -205,12 +205,12 @@ export const actions = {
             }
 
             if (existingChoice.round !== activeDraft.currRound) {
-              logger.fatal('attempt to edit submission after round advanced', void 0, {
+              logger.warn('attempt to edit submission after round advanced', {
                 'draft.id': draftId.toString(),
                 'draft.round.current': activeDraft.currRound,
                 'choice.round': existingChoice.round,
               });
-              error(409);
+              return fail(409, { reason: 'round_advanced' });
             }
 
             const selectedInCurrentRound = await getLabSelectedStudentCountInDraftRound(
@@ -283,6 +283,11 @@ export const actions = {
         { isolationLevel: 'read committed' },
       );
 
+      // Early return if transaction returned a failure
+      if ('status' in transactionResult) return transactionResult;
+
+      const { submittedRound, roundsToNotify } = transactionResult;
+
       // Dispatch notifications after successful transaction
       const [staffEmails, { name: labName }, facultyAndStaff] = await Promise.all([
         getValidStaffEmails(db),
@@ -300,7 +305,7 @@ export const actions = {
         }),
       );
 
-      const roundStartedEvents = roundsToNotify.flatMap(round =>
+      const roundStartedEvents = roundsToNotify.flatMap((round: number | null) =>
         facultyAndStaff.map(({ email, givenName, familyName }) =>
           RoundStartedEvent.create({
             draftId: Number(draftId),

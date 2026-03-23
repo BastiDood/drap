@@ -944,12 +944,16 @@ test.describe('Draft Lifecycle', () => {
         const aclResponseData = await aclResponse.json();
         expect(aclResponseData.type).toBe('success');
 
-        // CSL tries to save edit - should get 409 and see error toast
+        // CSL tries to save edit - should get 409 failure and see error toast
         cslHeadPage.on('dialog', dialog => dialog.accept());
         const cslResponsePromise = cslHeadPage.waitForResponse('/dashboard/students/?/rankings');
         await cslHeadPage.getByRole('button', { name: 'Save Changes' }).click();
         const cslResponse = await cslResponsePromise;
-        expect(cslResponse.status()).toBe(409);
+        const cslResponseData = await cslResponse.json();
+
+        expect(cslResponse.status()).toBe(200);
+        expect(cslResponseData.type).toBe('failure');
+        expect(cslResponseData.status).toBe(409);
 
         // Should show error toast and refresh
         await expect(cslHeadPage.getByText('Round advanced while editing')).toBeVisible();
