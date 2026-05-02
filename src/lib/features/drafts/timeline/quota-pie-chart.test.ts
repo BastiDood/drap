@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import type { DraftLabQuotaSnapshot } from './types';
+import type { DraftLabQuotaSnapshot } from '../types';
 
 describe('QuotaPieChart - percentage calculation', () => {
   function calculatePercentage(
