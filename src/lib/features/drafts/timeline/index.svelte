@@ -21,6 +21,7 @@
   import RegistrationClosed from './registration/closed.svelte';
   import RegistrationCompleted from './registration/completed.svelte';
   import RegularPhase from './regular/index.svelte';
+  import StartForm from './registration/start-form.svelte';
   import SummaryPhase from './summary/index.svelte';
 
   type Phase =
@@ -151,37 +152,42 @@
         Started {format(draft.activePeriodStart, 'PPP')} &middot; {getPhaseLabel(currentPhase)}
       </p>
     </div>
-    {#if currentPhase !== 'registration' && currentPhase !== 'registration-closed'}
-      <div class="flex flex-wrap gap-2 *:w-full min-[24rem]:*:w-min">
-        <Button
-          href={resolve(`/dashboard/drafts/${draftId}/students.csv`)}
-          download="{lightFormat(requestedAt, 'yyyy-MM-dd')}_{draftId}_students.csv"
-          variant="outline"
-          size="sm"
-        >
-          <ArrowUpFromLineIcon class="size-4" />
-          <span>Student Ranks</span>
-        </Button>
-        <Button
-          href={resolve(`/dashboard/drafts/${draftId}/results.csv`)}
-          download="{lightFormat(requestedAt, 'yyyy-MM-dd')}_{draftId}_results.csv"
-          variant="outline"
-          size="sm"
-        >
-          <ArrowUpFromLineIcon class="size-4" />
-          <span>Results</span>
-        </Button>
-        <Button
-          href={resolve(`/dashboard/drafts/${draftId}/system-logs.csv`)}
-          download="{lightFormat(requestedAt, 'yyyy-MM-dd')}_{draftId}_system-logs.csv"
-          variant="outline"
-          size="sm"
-        >
-          <ArrowUpFromLineIcon class="size-4" />
-          <span>System Logs</span>
-        </Button>
-      </div>
-    {/if}
+    <div class="flex flex-wrap items-start gap-2">
+      {#if currentPhase === 'registration' || currentPhase === 'registration-closed'}
+        <StartForm {draftId} />
+      {/if}
+      {#if currentPhase !== 'registration' && currentPhase !== 'registration-closed'}
+        <div class="flex flex-wrap gap-2 *:w-full min-[24rem]:*:w-min">
+          <Button
+            href={resolve(`/dashboard/drafts/${draftId}/students.csv`)}
+            download="{lightFormat(requestedAt, 'yyyy-MM-dd')}_{draftId}_students.csv"
+            variant="outline"
+            size="sm"
+          >
+            <ArrowUpFromLineIcon class="size-4" />
+            <span>Student Ranks</span>
+          </Button>
+          <Button
+            href={resolve(`/dashboard/drafts/${draftId}/results.csv`)}
+            download="{lightFormat(requestedAt, 'yyyy-MM-dd')}_{draftId}_results.csv"
+            variant="outline"
+            size="sm"
+          >
+            <ArrowUpFromLineIcon class="size-4" />
+            <span>Results</span>
+          </Button>
+          <Button
+            href={resolve(`/dashboard/drafts/${draftId}/system-logs.csv`)}
+            download="{lightFormat(requestedAt, 'yyyy-MM-dd')}_{draftId}_system-logs.csv"
+            variant="outline"
+            size="sm"
+          >
+            <ArrowUpFromLineIcon class="size-4" />
+            <span>System Logs</span>
+          </Button>
+        </div>
+      {/if}
+    </div>
   </div>
 
   <!-- Timeline (reverse chronological: newest at top) -->

@@ -54,11 +54,5 @@
   }}
 >
   <input type="hidden" name="draft" value={draftId} />
-  <Button
-    type="submit"
-    variant="outline"
-    class="w-full border-warning bg-warning/10 text-warning hover:bg-warning/20"
-  >
-    Start Draft
-  </Button>
+  <Button type="submit" size="lg" class="h-12 w-full text-lg">Start Draft</Button>
 </form>
