@@ -161,7 +161,7 @@
         Started {format(draft.activePeriodStart, 'PPP')} &middot; {getPhaseLabel(currentPhase)}
       </p>
     </div>
-<div class="flex flex-wrap items-start gap-2">
+    <div class="flex flex-wrap items-start gap-2">
       {#if currentPhase === DraftPhase.Registration || currentPhase === DraftPhase.RegistrationClosed}
         <StartForm {draftId} />
       {/if}

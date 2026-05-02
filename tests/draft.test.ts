@@ -1019,6 +1019,72 @@ test.describe('Draft Lifecycle', () => {
       });
     });
 
+    test.describe('Quota Pie Chart Card', () => {
+      test('displays initial quota pie chart after snapshots are set', async ({ adminPage }) => {
+        await adminPage.goto('/dashboard/drafts/1/');
+        const card = adminPage
+          .getByText('Initial Quota Distribution')
+          .locator('..')
+          .locator('..')
+          .locator('..');
+        await expect(card).toBeVisible();
+
+        // Check that the pie chart is rendered
+        await expect(card.locator('[data-slot="card-content"]')).toBeVisible();
+      });
+
+      test('clicking pie chart card opens edit sheet', async ({ adminPage }) => {
+        await adminPage.goto('/dashboard/drafts/1/');
+        const card = adminPage
+          .getByText('Initial Quota Distribution')
+          .locator('..')
+          .locator('..')
+          .locator('..');
+
+        // Click the pie chart area to open edit sheet
+        await card.locator('button[type="button"]').first().click();
+
+        // Verify the edit sheet opens
+        const sheet = adminPage.locator('[data-slot="sheet-content"]').last();
+        await expect(sheet).toBeVisible();
+        await expect(sheet.getByText('Update Draft Quota')).toBeVisible();
+
+        // Close the sheet
+        await adminPage.keyboard.press('Escape');
+        await expect(sheet).toBeHidden();
+      });
+
+      test('legend shows percentages next to quota values', async ({ adminPage }) => {
+        await adminPage.goto('/dashboard/drafts/1/');
+        const card = adminPage
+          .getByText('Initial Quota Distribution')
+          .locator('..')
+          .locator('..')
+          .locator('..');
+
+        // Check that legend items contain percentages (e.g., "2 (40%)")
+        const legendItems = card
+          .locator('[data-slot="card-content"] span')
+          .filter({ hasText: /\(\d+%\)/u });
+        await expect(legendItems.first()).toBeVisible();
+      });
+
+      test('"Click to edit" text appears on hover', async ({ adminPage }) => {
+        await adminPage.goto('/dashboard/drafts/1/');
+        const card = adminPage
+          .getByText('Initial Quota Distribution')
+          .locator('..')
+          .locator('..')
+          .locator('..');
+
+        // Hover over the button containing the pie chart
+        await card.locator('button[type="button"]').first().hover();
+
+        // The "Click to edit" text should become visible (opacity-100)
+        await expect(card.getByText('Click to edit')).toBeVisible();
+      });
+    });
+
     test('starts the draft', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
       adminPage.on('dialog', dialog => dialog.accept());
