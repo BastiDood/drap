@@ -11,7 +11,7 @@
   import UsersIcon from '@lucide/svelte/icons/users';
   import { SvelteMap } from 'svelte/reactivity';
 
-  import * as Empty from '$lib/components/ui/empty';
+  import Empty from '$lib/components/empty.svelte';
 
   import DrafteesSheetTable from './table.svelte';
 
@@ -36,15 +36,8 @@
 {#if students.length > 0}
   <DrafteesSheetTable {students} />
 {:else}
-  <Empty.Root class="min-h-40 grow">
-    <Empty.Media variant="icon">
-      <UsersIcon class="size-5" />
-    </Empty.Media>
-    <Empty.Header>
-      <Empty.Title>No Draftees Yet</Empty.Title>
-      <Empty.Description>
-        Registered and late draftees will appear here once available.
-      </Empty.Description>
-    </Empty.Header>
-  </Empty.Root>
+  <Empty media={{ icon: UsersIcon, size: 'sm' }}>
+    {#snippet title()}No Draftees Yet{/snippet}
+    {#snippet description()}Registered and late draftees will appear here once available.{/snippet}
+  </Empty>
 {/if}

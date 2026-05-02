@@ -17,12 +17,15 @@
       <Button variant="outline" class="gap-2" {...props}>View All Draftees</Button>
     {/snippet}
   </Sheet.Trigger>
-  <Sheet.Content side="right" class="flex w-full flex-col overflow-hidden sm:max-w-[600px]">
-    <Sheet.Header>
+  <Sheet.Content
+    side="right"
+    class="flex w-full flex-col gap-4 overflow-hidden p-4 sm:max-w-[600px]"
+  >
+    <Sheet.Header class="shrink-0 p-0 pe-10">
       <Sheet.Title>All Draftees</Sheet.Title>
       <Sheet.Description>Browse registered and late draftees for this draft.</Sheet.Description>
     </Sheet.Header>
-    <div class="flex min-h-0 grow flex-col overflow-y-auto px-4 pb-4">
+    <div class="flex min-h-0 grow flex-col">
       <DrafteesSheetLoader {draftId} />
     </div>
   </Sheet.Content>

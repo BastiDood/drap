@@ -1,6 +1,6 @@
 ---
 name: submit-pull-request
-description: Create a PR with dev as base using the pull request template. Use when opening a new PR.
+description: Create a PR using the project's pull request template. Always use when opening a new PR.
 compatibility: Requires Git (`git`) and the GitHub CLI (`gh`).
 user-invocable: true
 disable-model-invocation: false

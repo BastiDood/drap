@@ -1,0 +1,16 @@
+# TLS ingress overlay for compose.prod.app.yaml.
+
+services:
+  haproxy:
+    ports:
+      - host_ip: 0.0.0.0
+        published: 443
+        target: 443
+        protocol: tcp
+    secrets:
+      - source: certificate
+        target: certificate.pem
+
+secrets:
+  certificate:
+    file: ./certificate.pem

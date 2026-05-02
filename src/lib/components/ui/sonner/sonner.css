@@ -1,11 +1,20 @@
 .toaster[data-sonner-toaster][data-sonner-theme='light'],
 .toaster[data-sonner-toaster][data-sonner-theme='dark'] {
   --success-bg: var(--color-success);
-  --success-text: var(--color-success-foreground);
+  --success-text: var(--color-primary-foreground);
   --error-bg: var(--color-destructive);
   --error-text: var(--color-destructive-foreground);
   --warning-bg: var(--color-warning);
   --warning-text: var(--color-warning-foreground);
   --info-bg: var(--color-accent);
   --info-text: var(--color-accent-foreground);
+}
+
+.toaster[data-sonner-toaster] :where([data-sonner-toast]):hover :where([data-close-button]):hover {
+  background: color-mix(in srgb, var(--color-destructive), var(--color-background)) !important;
+}
+.toaster[data-sonner-toaster][data-sonner-theme='dark']
+  :where([data-sonner-toast]):hover
+  :where([data-close-button]):hover {
+  background: color-mix(in srgb, var(--color-destructive), var(--color-foreground)) !important;
 }

@@ -12,9 +12,6 @@ engineStrict: true
 
 minimumReleaseAge: 1440 # 1 Day
 
-minimumReleaseAgeExclude:
-  - bits-ui@2.17.2
-
 strictDepBuilds: true
 
 trustPolicy: no-downgrade

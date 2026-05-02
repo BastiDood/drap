@@ -2,8 +2,8 @@
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
   import UsersIcon from '@lucide/svelte/icons/users';
 
-  import * as Empty from '$lib/components/ui/empty';
   import * as Sheet from '$lib/components/ui/sheet';
+  import Empty from '$lib/components/empty.svelte';
   import Invited from '$lib/users/invited.svelte';
   import { Button } from '$lib/components/ui/button';
   import { createFetchInvitedUsersQuery } from '$lib/queries/fetch-invited-users';
@@ -34,8 +34,8 @@
       </Button>
     {/snippet}
   </Sheet.Trigger>
-  <Sheet.Content class="flex w-full flex-col overflow-hidden sm:max-w-md">
-    <Sheet.Header>
+  <Sheet.Content class="flex w-full flex-col gap-4 overflow-hidden p-4 sm:max-w-md">
+    <Sheet.Header class="shrink-0 p-0 pe-10">
       <Sheet.Title>
         {#if typeof labs === 'undefined'}
           Invite Draft Administrators
@@ -45,47 +45,30 @@
       </Sheet.Title>
       <Sheet.Description>Invite new users or view pending invitations.</Sheet.Description>
     </Sheet.Header>
-    <div class="flex min-h-0 grow flex-col overflow-y-auto px-4 pb-4">
-      <div class="mb-6 shrink-0">
+    <div class="flex min-h-0 grow flex-col gap-6">
+      <div class="shrink-0">
         {#if typeof labs === 'undefined'}
           <AdminForm />
         {:else}
           <FacultyForm {labs} />
         {/if}
       </div>
-      <div class="flex min-h-0 grow flex-col gap-4">
+      <div class="flex min-h-0 grow flex-col gap-4 overflow-y-auto">
         {#if query.isPending}
-          <Empty.Root class="min-h-40 grow">
-            <Empty.Media>
-              <Loader2Icon class="size-5 animate-spin text-muted-foreground" />
-            </Empty.Media>
-            <Empty.Header>
-              <Empty.Title>Loading Invitations</Empty.Title>
-              <Empty.Description>Fetching pending invitations.</Empty.Description>
-            </Empty.Header>
-          </Empty.Root>
+          <Empty media={{ icon: Loader2Icon, size: 'sm', iconClass: 'animate-spin' }}>
+            {#snippet title()}Loading Invitations{/snippet}
+            {#snippet description()}Fetching pending invitations...{/snippet}
+          </Empty>
         {:else if query.isError}
-          <Empty.Root class="min-h-40 grow">
-            <Empty.Media variant="icon">
-              <UsersIcon class="size-5" />
-            </Empty.Media>
-            <Empty.Header>
-              <Empty.Title class="text-destructive">Failed to Load Invitations</Empty.Title>
-              <Empty.Description>Please try again in a moment.</Empty.Description>
-            </Empty.Header>
-          </Empty.Root>
+          <Empty variant="destructive" media={{ icon: UsersIcon, size: 'sm' }}>
+            {#snippet title()}Failed to Load Invitations{/snippet}
+            {#snippet description()}Please try again in a moment.{/snippet}
+          </Empty>
         {:else if query.data.length === 0}
-          <Empty.Root class="min-h-40 grow">
-            <Empty.Media variant="icon">
-              <UsersIcon class="size-5" />
-            </Empty.Media>
-            <Empty.Header>
-              <Empty.Title>No Pending Invitations</Empty.Title>
-              <Empty.Description
-                >New invitations will appear here after they are sent.</Empty.Description
-              >
-            </Empty.Header>
-          </Empty.Root>
+          <Empty media={{ icon: UsersIcon, size: 'sm' }}>
+            {#snippet title()}No Pending Invitations{/snippet}
+            {#snippet description()}New invitations will appear here after they are sent.{/snippet}
+          </Empty>
         {:else}
           {#each query.data as user (user.id)}
             <Invited {user} />

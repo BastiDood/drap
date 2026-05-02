@@ -7,8 +7,12 @@
 .claude/**.local.json
 .env
 .env.*
+!.env.example
 node_modules
 scratchpad
+
+# Host-specific Production Files
+/certificate.pem
 
 # Coding Agents
 AGENTS.override.md

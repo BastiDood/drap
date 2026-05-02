@@ -6,7 +6,7 @@
   const { data, children } = $props();
   const { candidateSenders } = $derived(data);
   const designatedSender = $derived(candidateSenders.find(({ isActive }) => isActive));
-  const emailSettingsHref = resolve('/dashboard/email/');
+  const adminsHref = `${resolve('/dashboard/users/')}#draft-admins`;
 </script>
 
 <div class="space-y-4">
@@ -14,17 +14,17 @@
     {#if candidateSenders.length === 0}
       <Callout variant="destructive"
         ><span
-          >No candidate email senders have been added yet. Please <Link href={emailSettingsHref}
-            >nominate a candidate sender</Link
-          > before starting a new draft.</span
+          >No candidate email senders have been added yet. Please <Link href={adminsHref}
+            >volunteer a candidate sender</Link
+          > on the user management page before starting a new draft.</span
         >
       </Callout>
     {:else}
       <Callout variant="warning"
         ><span
-          >No designated email senders have been assigned yet. Please <Link href={emailSettingsHref}
+          >No designated email senders have been assigned yet. Please <Link href={adminsHref}
             >promote a designated sender</Link
-          > before starting a new draft.</span
+          > on the user management page before starting a new draft.</span
         >
       </Callout>
     {/if}
@@ -33,7 +33,7 @@
       <span
         ><Link href="mailto:{designatedSender.email}"
           >{designatedSender.givenName} {designatedSender.familyName}</Link
-        > is the currently designated email sender. <Link href={emailSettingsHref}
+        > is the currently designated email sender. <Link href={adminsHref}
           >You may update the configuration here.</Link
         ></span
       >

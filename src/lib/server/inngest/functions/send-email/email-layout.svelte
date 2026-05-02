@@ -1,5 +1,14 @@
 <script lang="ts">
-  import { Body, Container, Head, Html, Img, Preview, Section, Text } from 'better-svelte-email';
+  import {
+    Body,
+    Container,
+    Head,
+    Html,
+    Img,
+    Preview,
+    Section,
+    Text,
+  } from '@better-svelte-email/components';
   import type { Snippet } from 'svelte';
 
   import { ORIGIN } from '$lib/env';
@@ -19,7 +28,7 @@
   <Body class="bg-stone-100">
     <Preview {preview} />
     <Container class="m-6 mx-auto max-w-2xl overflow-hidden rounded-xl bg-white shadow-sm">
-      <Section class="bg-primary text-center">
+      <Section class="bg-primary py-6 text-center">
         <Img
           src="{ORIGIN}/drap-logo.png"
           alt="DRAP Logo"
@@ -32,11 +41,11 @@
         </Text>
       </Section>
 
-      <Section class="mx-auto mt-4 max-w-xl">
+      <Section class="mx-auto max-w-xl">
         {@render children()}
       </Section>
 
-      <Section class="bg-card">
+      <Section class="bg-card p-6">
         <ConfidentialityNotice />
       </Section>
     </Container>

@@ -37,7 +37,6 @@ export interface DraftLabQuotaSnapshot {
   labName: schema.Lab['name'];
   initialQuota: number;
   lotteryQuota: number;
-  finalizedQuota: number;
 }
 
 export interface DraftAssignmentRecord extends Pick<
@@ -113,6 +112,11 @@ export interface DraftPreferenceAlignment {
   bordaScore: number;
 }
 
+export interface DraftPreferenceAlignmentAggregate {
+  rows: DraftPreferenceAlignmentRow[];
+  bordaScore: number;
+}
+
 export interface DraftSupplyDemandEntry {
   labId: string;
   labName: string;
@@ -128,12 +132,83 @@ export interface DraftSummaryChartData {
 }
 
 export interface DraftPreferenceAlignmentRow {
-  preferenceRank: bigint | null;
-  totalRanked: number | null;
+  preferenceRank: number | null;
   count: number;
 }
 
-export interface DraftLabBordaScore {
+export interface InterventionsStatCards {
+  poolSize: number;
+  totalLotteryQuota: number;
+  delta: number;
+}
+
+export interface DumbbellRow {
   labId: string;
-  bordaScore: number;
+  labName: string;
+  naturalLeftover: number;
+  lotteryQuota: number;
+  gap: number;
+}
+
+export interface InterventionsAggregate {
+  statCards: InterventionsStatCards;
+  dumbbellRows: DumbbellRow[];
+}
+
+export interface LotteryStatCards {
+  poolSize: number;
+  topChoice: number;
+  rankedLab: number;
+  unranked: number;
+  medianRankHonored: number | null;
+}
+
+export interface LotteryOutcomeRow {
+  labId: string;
+  labName: string;
+  preferenceRank: bigint | null;
+  count: number;
+}
+
+export interface LotteryOutcomeBucket {
+  /** Preference rank (1-based), or `null` for "Not Preferred" placements. */
+  rank: number | null;
+  label: string;
+  count: number;
+}
+
+export interface LotteryOutcomeStack {
+  labId: string;
+  labName: string;
+  buckets: LotteryOutcomeBucket[];
+  total: number;
+}
+
+export interface LotteryAggregate {
+  statCards: LotteryStatCards;
+  outcomeStacks: LotteryOutcomeStack[];
+}
+
+export interface DraftStatsRecord {
+  draftId: schema.Draft['id'];
+  activePeriodStart: Date;
+  labId: schema.Lab['id'];
+  draftedStudents: number;
+}
+
+export interface DraftStatsChartSeries {
+  key: string;
+  label: string;
+  color: string;
+}
+
+export interface DraftStatsChartDatum extends Record<string, number | string | null> {
+  year: number;
+}
+
+export interface DraftStatsMetricChartView {
+  config: Record<string, { label: string; color: string }>;
+  series: DraftStatsChartSeries[];
+  data: DraftStatsChartDatum[];
+  maxValue: number;
 }

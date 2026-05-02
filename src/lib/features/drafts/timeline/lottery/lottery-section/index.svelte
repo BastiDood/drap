@@ -23,19 +23,22 @@
       </Button>
     {/snippet}
   </Sheet.Trigger>
-  <Sheet.Content side="right" class="flex w-full flex-col overflow-hidden sm:max-w-[720px]">
-    <Sheet.Header>
+  <Sheet.Content
+    side="right"
+    class="flex w-full flex-col gap-4 overflow-hidden p-4 sm:max-w-[720px]"
+  >
+    <Sheet.Header class="shrink-0 p-0 pe-10">
       <Sheet.Title>Eligible for Lottery</Sheet.Title>
       <Sheet.Description>
         Review quota snapshots and apply manual interventions for undrafted students.
       </Sheet.Description>
     </Sheet.Header>
-    <div class="flex min-h-0 grow flex-col overflow-y-auto px-4 pb-4">
+    <div class="flex min-h-0 grow flex-col gap-6">
       <div class="shrink-0">
         <QuotaSnapshotForm {draftId} mode="lottery" {snapshots} />
       </div>
-      <hr class="my-6 shrink-0" />
-      <div class="flex min-h-0 grow flex-col">
+      <hr class="shrink-0" />
+      <div class="flex min-h-0 grow flex-col overflow-y-auto">
         <Loader {draftId} {labs} />
       </div>
     </div>

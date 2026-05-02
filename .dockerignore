@@ -1,5 +1,5 @@
-# Whitelist mode: exclude everything, then selectively re-include.
-*
+# Whitelist mode: recursively exclude everything, then selectively re-include.
+**
 
 # Package Managers
 !package.json
@@ -13,7 +13,9 @@
 
 # Application Source Code + Assets
 !src/
+!src/**
 !static/
+!static/**
 
 # Documentation
 src/**/*.md

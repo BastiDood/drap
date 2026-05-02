@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { Area, AreaChart, LinearGradient } from 'layerchart';
+  import { Area, AreaChart, LinearGradient } from 'layerchart/svg';
   import { cubicOut } from 'svelte/easing';
-  import { eachDayOfInterval, startOfDay } from 'date-fns';
   import { format } from 'd3-format';
-  import { max, rollup, tickStep } from 'd3-array';
+  import { max } from 'd3-array';
   import type { MotionOptions } from 'layerchart/utils/motion.svelte';
   import { prefersReducedMotion } from 'svelte/motion';
+  import { startOfDay } from 'date-fns';
 
   import * as Card from '$lib/components/ui/card';
   import * as Chart from '$lib/components/ui/chart';
@@ -13,7 +13,9 @@
   import { Badge } from '$lib/components/ui/badge';
 
   interface TimelineData {
-    createdAt: Date;
+    date: Date;
+    label: string;
+    count: number;
   }
 
   interface Props {
@@ -35,32 +37,12 @@
   }
 
   const chartStart = $derived(startOfDay(draftCreatedAt));
-  const chartEnd = $derived(startOfDay(startedAt ?? requestedAt));
+  const chartEnd = $derived(timelineData.at(-1)?.date ?? startOfDay(startedAt ?? requestedAt));
   const registrationClosedDay = $derived(startOfDay(registrationClosedAt));
 
-  const allDaysData = $derived.by(() => {
-    const countByDay = rollup(
-      timelineData,
-      values => values.length,
-      ({ createdAt }) => startOfDay(createdAt).getTime(),
-    );
-    return eachDayOfInterval({ start: chartStart, end: chartEnd }).map(date => ({
-      date,
-      label: formatDayLabel(date),
-      count: countByDay.get(date.getTime()) ?? 0,
-    }));
-  });
-
   const yMax = $derived.by(() => {
-    const value = max(allDaysData, ({ count }) => count);
+    const value = max(timelineData, ({ count }) => count);
     return typeof value === 'undefined' || value === 0 ? 1 : value;
-  });
-
-  const yTicks = $derived.by(() => {
-    const step = Math.max(1, tickStep(0, yMax, 4));
-    const ticks = Array.from({ length: Math.floor(yMax / step) + 1 }, (_, index) => index * step);
-    if (ticks.at(-1) === yMax) return ticks;
-    return [...ticks, yMax];
   });
 
   const annotations = $derived.by(() => {
@@ -132,7 +114,7 @@
       class="h-[500px] w-full"
     >
       <AreaChart
-        data={allDaysData}
+        data={timelineData}
         x="date"
         y="count"
         {annotations}
@@ -145,6 +127,7 @@
         ]}
         points
         yDomain={[0, yMax]}
+        yNice={4}
         props={{
           area: {
             fillOpacity: 0.22,
@@ -158,7 +141,7 @@
             tickLabelProps: { dy: 8 },
           },
           yAxis: {
-            ticks: yTicks,
+            ticks: 4,
             format: value => integerFormat(value),
             motion: axisMotion,
             tickLabelProps: { dx: -8 },
@@ -178,7 +161,8 @@
             labelAccessor={d => {
               assert(typeof d === 'object' && d !== null && 'date' in d);
               assert(d.date instanceof Date, 'expected date');
-              return formatDayLabel(d.date);
+              assert('label' in d && typeof d.label === 'string', 'expected label');
+              return d.label;
             }}
           />
         {/snippet}

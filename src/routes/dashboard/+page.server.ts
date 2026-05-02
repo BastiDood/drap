@@ -1,12 +1,21 @@
 import { AssertionError } from 'node:assert/strict';
 
 import * as v from 'valibot';
+import { and, DrizzleQueryError, eq, sql } from 'drizzle-orm';
 import { DatabaseError } from 'pg';
 import { decode } from 'decode-formdata';
-import { DrizzleQueryError } from 'drizzle-orm';
 import { error, fail, redirect } from '@sveltejs/kit';
 
+import * as schema from '$lib/server/database/schema';
+import { assertOptional, assertSingle } from '$lib/server/assert';
 import { db } from '$lib/server/database';
+import {
+  type DbConnection,
+  getLabById,
+  getUserByEmail,
+  insertDummySession,
+  upsertOpenIdUser,
+} from '$lib/server/database/drizzle';
 import { dev } from '$app/environment';
 import {
   DraftFinalizedBatchEmailEvent,
@@ -16,16 +25,6 @@ import {
   RoundSubmittedBatchEmailEvent,
   UserAssignedBatchEmailEvent,
 } from '$lib/server/inngest/schema';
-import {
-  getLabById,
-  getUserNameByEmail,
-  impersonateUserBySessionId,
-  insertDummySession,
-  updateProfileByUserId,
-  updateSessionUserId,
-  updateUserRole,
-  upsertOpenIdUser,
-} from '$lib/server/database/drizzle';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
@@ -368,10 +367,16 @@ export const actions = {
                 /* eslint-disable @typescript-eslint/init-declarations */
                 let studentGivenName: string;
                 let studentFamilyName: string;
+                let studentAvatarUrl: string;
                 /* eslint-enable @typescript-eslint/init-declarations */
                 try {
-                  ({ givenName: studentGivenName, familyName: studentFamilyName } =
-                    await getUserNameByEmail(db, parsed.studentEmail));
+                  const student = await getUserByEmail(db, parsed.studentEmail);
+                  if (typeof student === 'undefined') throw new AssertionError({ message: '' });
+                  ({
+                    givenName: studentGivenName,
+                    familyName: studentFamilyName,
+                    avatarUrl: studentAvatarUrl,
+                  } = student);
                 } catch (err) {
                   if (err instanceof AssertionError) {
                     logger.fatal('unknown student email', err);
@@ -402,6 +407,7 @@ export const actions = {
                     labName,
                     studentName: `${studentGivenName} ${studentFamilyName}`,
                     studentEmail: parsed.studentEmail,
+                    avatarUrl: studentAvatarUrl,
                     recipientEmail: parsed.recipientEmail,
                     recipientName: `${recipientGivenName} ${recipientFamilyName}`,
                   }),
@@ -442,10 +448,16 @@ export const actions = {
                   /* eslint-disable @typescript-eslint/init-declarations */
                   let studentGivenName: string;
                   let studentFamilyName: string;
+                  let studentAvatarUrl: string;
                   /* eslint-enable @typescript-eslint/init-declarations */
                   try {
-                    ({ givenName: studentGivenName, familyName: studentFamilyName } =
-                      await getUserNameByEmail(db, studentEmail));
+                    const student = await getUserByEmail(db, studentEmail);
+                    if (typeof student === 'undefined') throw new AssertionError({ message: '' });
+                    ({
+                      givenName: studentGivenName,
+                      familyName: studentFamilyName,
+                      avatarUrl: studentAvatarUrl,
+                    } = student);
                   } catch (err) {
                     if (err instanceof AssertionError) {
                       logger.fatal('unknown student email', err);
@@ -461,6 +473,7 @@ export const actions = {
                     labName,
                     studentName: `${studentGivenName} ${studentFamilyName}`,
                     studentEmail,
+                    avatarUrl: studentAvatarUrl,
                   });
                 }
 
@@ -560,3 +573,78 @@ export const actions = {
       }
     : {}),
 };
+
+async function updateSessionUserId(db: DbConnection, sessionId: string, userId: string) {
+  return await tracer.asyncSpan('update-session-user-id', async span => {
+    span.setAttributes({ 'database.session.id': sessionId, 'database.user.id': userId });
+    await db.update(schema.session).set({ userId }).where(eq(schema.session.id, sessionId));
+  });
+}
+
+async function impersonateUserBySessionId(db: DbConnection, sessionId: string, email: string) {
+  return await tracer.asyncSpan('impersonate-user-by-session-id', async span => {
+    span.setAttributes({ 'database.session.id': sessionId, 'database.user.email': email });
+    const user = await db
+      .update(schema.session)
+      .set({ userId: schema.user.id })
+      .from(schema.user)
+      .where(and(eq(schema.session.id, sessionId), eq(schema.user.email, email)))
+      .returning({ id: schema.user.id })
+      .then(assertOptional);
+
+    if (typeof user === 'undefined') {
+      logger.error('missing session or user');
+      return null;
+    }
+
+    logger.info('Switched to user', { 'user.id': user.id });
+    return user.id;
+  });
+}
+
+async function updateProfileByUserId(
+  db: DbConnection,
+  userId: string,
+  studentNumber: bigint | null,
+  given: string,
+  family: string,
+) {
+  return await tracer.asyncSpan('update-profile-by-user-id', async span => {
+    span.setAttribute('database.user.id', userId);
+    await db
+      .update(schema.user)
+      .set({
+        studentNumber: sql`coalesce(${schema.user.studentNumber}, ${studentNumber})`,
+        givenName: given,
+        familyName: family,
+      })
+      .where(and(eq(schema.user.id, userId)));
+  });
+}
+
+async function getUserNameByEmail(db: DbConnection, email: string) {
+  return await tracer.asyncSpan('get-user-name-by-email', async span => {
+    span.setAttribute('database.user.email', email);
+    return await db
+      .select({ givenName: schema.user.givenName, familyName: schema.user.familyName })
+      .from(schema.user)
+      .where(eq(schema.user.email, email))
+      .then(assertSingle);
+  });
+}
+
+async function updateUserRole(
+  db: DbConnection,
+  userId: string,
+  isAdmin: boolean,
+  labId: string | null,
+) {
+  return await tracer.asyncSpan('update-user-role', async span => {
+    span.setAttributes({
+      'database.user.id': userId,
+      'database.user.is_admin': isAdmin,
+    });
+    if (labId !== null) span.setAttribute('database.lab.id', labId);
+    await db.update(schema.user).set({ isAdmin, labId }).where(eq(schema.user.id, userId));
+  });
+}

@@ -1,0 +1,124 @@
+# App and ingress services layered on top of the production internal services.
+# Extends: compose.prod.yaml
+
+x-public-origin: &public-origin ${SCHEME:?required}://${HOST:?required}
+
+services:
+  haproxy:
+    pull_policy: build
+    build: ./docker/haproxy
+    ports:
+      - host_ip: 0.0.0.0
+        published: 80
+        target: 80
+        protocol: tcp
+    environment:
+      HOST: ${HOST:?required}
+      SCHEME: ${SCHEME:?required}
+    networks:
+      - edge
+    depends_on:
+      app:
+        condition: service_started
+        required: true
+    restart: always
+
+  inngest:
+    command:
+      - inngest
+      - start
+      - '--dir'
+      - '/app'
+      - '--sdk-url'
+      - 'http://app:3000/api/inngest'
+    extra_hosts: []
+    networks:
+      - durability
+
+  setup-database:
+    pull_policy: build
+    build:
+      context: .
+      target: migrate
+    profiles:
+      - setup
+    environment:
+      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD:?required}@postgres:5432/postgres
+    volumes:
+      - type: bind
+        source: ./package.json
+        target: /app/package.json
+        read_only: true
+      - type: bind
+        source: ./drizzle.config.js
+        target: /app/drizzle.config.js
+        read_only: true
+      - type: bind
+        source: ./drizzle
+        target: /app/drizzle
+        read_only: true
+      - type: bind
+        source: ./src/lib/server/database/schema
+        target: /app/src/lib/server/database/schema
+        read_only: true
+    networks:
+      - database
+    depends_on:
+      # Wait for the app to start before running migrations. This ensures
+      # the app is not broken before irreversibly applying migrations.
+      app:
+        condition: service_started
+        required: true
+      postgres:
+        condition: service_healthy
+        required: true
+    restart: 'no'
+
+  app:
+    pull_policy: build
+    build:
+      context: .
+      target: deploy
+    environment:
+      ADDRESS_HEADER: X-Forwarded-For
+      BODY_SIZE_LIMIT: 4M
+      DRAP_ASSERT_DOMAIN: up.edu.ph
+      DRAP_ENABLE_EMAILS: 1
+      DRAP_ENCRYPTION_KEY: ${DRAP_ENCRYPTION_KEY:?required}
+      ORIGIN: *public-origin
+      PUBLIC_ORIGIN: *public-origin
+      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD:?required}@postgres:5432/postgres
+      GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:?required}
+      GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:?required}
+      INNGEST_EVENT_KEY: ${INNGEST_EVENT_KEY:?required}
+      INNGEST_SIGNING_KEY: ${INNGEST_SIGNING_KEY:?required}
+      INNGEST_BASE_URL: http://inngest:8288
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://o2:5080/api/default
+      OTEL_EXPORTER_OTLP_HEADERS: ${OTEL_EXPORTER_OTLP_HEADERS:?required}
+      OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      S3_ENDPOINT: http://rustfs:9000
+      S3_REGION: ${S3_REGION:?required}
+      S3_ACCESS_KEY: ${S3_ACCESS_KEY:?required}
+      S3_SECRET_KEY: ${S3_SECRET_KEY:?required}
+      XFF_DEPTH: 1
+    networks:
+      - database
+      - durability
+      - edge
+      - storage
+      - telemetry
+    depends_on:
+      postgres:
+        condition: service_healthy
+        required: true
+      inngest:
+        condition: service_healthy
+        required: true
+      o2:
+        condition: service_healthy
+        required: true
+    restart: always
+
+networks:
+  durability:
+  edge:

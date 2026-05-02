@@ -1,33 +1,31 @@
 <script lang="ts">
-  import DraftedDraftees from '$lib/features/drafts/draftees/drafted/index.svelte';
+  import type { LotteryAggregate } from '$lib/features/drafts/types';
 
   import FinalizeForm from './finalize-form.svelte';
+  import LotteryOutcomeChart from './lottery-outcome-chart.svelte';
+  import StatCards from './stat-cards.svelte';
 
   interface Props {
     draftId: string;
     isReview: boolean;
+    lotteryAggregate: LotteryAggregate;
   }
 
-  const { draftId, isReview }: Props = $props();
+  const { draftId, isReview, lotteryAggregate }: Props = $props();
+
+  const hasLotteryPlacements = $derived(lotteryAggregate.statCards.poolSize > 0);
 </script>
 
-<div class="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
-  <div class="prose max-w-none dark:prose-invert">
-    <h3>{isReview ? 'Review Phase' : 'Lottery Phase'}</h3>
-    {#if isReview}
-      <p>
-        Lottery assignment has completed. Review the results below. When ready, finalize to dispatch
-        emails and synchronize official student lab assignments.
-      </p>
-      <div class="mb-6 flex justify-center">
-        <DraftedDraftees {draftId} />
-      </div>
-      <FinalizeForm {draftId} />
-    {:else}
-      <p>The lottery phase has completed. Review the results below.</p>
-      <div class="flex justify-center">
-        <DraftedDraftees {draftId} />
-      </div>
-    {/if}
-  </div>
+<div class="@container space-y-4">
+  {#if hasLotteryPlacements}
+    <StatCards data={lotteryAggregate.statCards} />
+    <LotteryOutcomeChart stacks={lotteryAggregate.outcomeStacks} />
+  {:else}
+    <p class="text-sm text-muted-foreground">
+      No lottery was necessary — all pool students were placed manually.
+    </p>
+  {/if}
+  {#if isReview}
+    <FinalizeForm {draftId} />
+  {/if}
 </div>

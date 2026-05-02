@@ -1,0 +1,2 @@
+ALTER TABLE "drap"."student_rank" ADD COLUMN "avatar_object_key" uuid;--> statement-breakpoint
+ALTER TABLE "drap"."student_rank" ADD CONSTRAINT "student_rank_avatar_object_key_unique" UNIQUE("avatar_object_key");

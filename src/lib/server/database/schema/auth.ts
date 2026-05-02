@@ -13,7 +13,7 @@ export const session = auth.table(
     id: ulid('id')
       .notNull()
       .primaryKey()
-      .default(sql`gen_ulid()`),
+      .default(sql`gen_random_uuid()`),
     createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
     expiredAt: timestamp('expired_at', { mode: 'date', withTimezone: true }).notNull(),
     userId: ulid('user_id')

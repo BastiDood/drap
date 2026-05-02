@@ -1,16 +1,15 @@
 import * as v from 'valibot';
 import { decode } from 'decode-formdata';
+import { eq, sql } from 'drizzle-orm';
 import { error, redirect } from '@sveltejs/kit';
 
+import * as schema from '$lib/server/database/schema';
 import { db } from '$lib/server/database';
 import {
+  type DbConnection,
   type DrizzleTransaction,
-  deleteLab,
   getActiveDraft,
   getLabRegistry,
-  insertNewLab,
-  lockLabCatalogForMutation,
-  restoreLab,
 } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
@@ -215,5 +214,36 @@ async function assertDraftExpectation(db: DrizzleTransaction, draftId?: string) 
     logger.debug('successfully asserted active draft expectation', {
       'draft.round.active': activeDraft.currRound,
     });
+  });
+}
+
+async function deleteLab(db: DbConnection, id: string) {
+  return await tracer.asyncSpan('delete-lab', async span => {
+    span.setAttribute('database.lab.id', id);
+    await db
+      .update(schema.lab)
+      .set({ deletedAt: sql`now()` })
+      .where(eq(schema.lab.id, id));
+  });
+}
+
+async function insertNewLab(db: DbConnection, id: string, name: string) {
+  return await tracer.asyncSpan('insert-new-lab', async span => {
+    span.setAttribute('database.lab.id', id);
+    await db.insert(schema.lab).values({ id, name });
+  });
+}
+
+async function lockLabCatalogForMutation(db: DrizzleTransaction) {
+  return await tracer.asyncSpan(
+    'lock-lab-catalog-for-mutation',
+    async () => await db.execute(sql`lock table ${schema.lab} in row exclusive mode`),
+  );
+}
+
+async function restoreLab(db: DbConnection, id: string) {
+  return await tracer.asyncSpan('restore-lab', async span => {
+    span.setAttribute('database.lab.id', id);
+    await db.update(schema.lab).set({ deletedAt: null }).where(eq(schema.lab.id, id));
   });
 }

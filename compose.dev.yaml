@@ -19,3 +19,13 @@ services:
       # Development-only credentials!
       ZO_ROOT_USER_EMAIL: admin@example.com
       ZO_ROOT_USER_PASSWORD: password
+
+  rustfs:
+    environment:
+      # Development-only credentials!
+      RUSTFS_ACCESS_KEY: drap
+      RUSTFS_SECRET_KEY: password
+
+  setup-bucket:
+    environment:
+      MC_HOST_drap: http://drap:password@rustfs:9000

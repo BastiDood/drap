@@ -157,66 +157,69 @@
   const lateOnly = $derived(table.getColumn('isLate')?.getFilterValue() === true);
 </script>
 
-{#if variant === 'registration-sheet'}
-  <div class="mx-4 mb-4 flex gap-2">
-    <Input
-      placeholder="Search students..."
-      value={globalFilter}
-      oninput={event => {
-        table.setGlobalFilter(event.currentTarget.value === '' ? null : event.currentTarget.value);
-      }}
-      class="flex-1"
-    />
-    <Button
-      variant={lateOnly ? 'secondary' : 'outline'}
-      onclick={() => {
-        table.getColumn('isLate')?.setFilterValue(lateOnly ? null : true);
-      }}
-    >
-      Late Only
-    </Button>
-  </div>
-{/if}
+<div class="flex min-h-0 grow flex-col gap-4">
+  {#if variant === 'registration-sheet'}
+    <div class="flex shrink-0 gap-2">
+      <Input
+        placeholder="Search students..."
+        value={globalFilter}
+        oninput={event => {
+          table.setGlobalFilter(
+            event.currentTarget.value === '' ? null : event.currentTarget.value,
+          );
+        }}
+        class="flex-1"
+      />
+      <Button
+        variant={lateOnly ? 'secondary' : 'outline'}
+        onclick={() => {
+          table.getColumn('isLate')?.setFilterValue(lateOnly ? null : true);
+        }}
+      >
+        Late Only
+      </Button>
+    </div>
+  {/if}
 
-<!-- Table -->
-<div class="mx-4 rounded-sm">
-  <Table.Root>
-    <Table.Header>
-      {#each headerGroups as headerGroup (headerGroup.id)}
-        <Table.Row>
-          {#each headerGroup.headers as header (header.id)}
-            <Table.Head colspan={header.colSpan}>
-              {#if !header.isPlaceholder}
-                <FlexRender
-                  content={header.column.columnDef.header}
-                  context={header.getContext()}
-                />
+  <div class="min-h-0 grow overflow-y-auto rounded-sm">
+    <Table.Root>
+      <Table.Header>
+        {#each headerGroups as headerGroup (headerGroup.id)}
+          <Table.Row>
+            {#each headerGroup.headers as header (header.id)}
+              <Table.Head colspan={header.colSpan}>
+                {#if !header.isPlaceholder}
+                  <FlexRender
+                    content={header.column.columnDef.header}
+                    context={header.getContext()}
+                  />
+                {/if}
+              </Table.Head>
+            {/each}
+          </Table.Row>
+        {/each}
+      </Table.Header>
+      <Table.Body>
+        {#each rows as row (row.id)}
+          <Table.Row>
+            {#each row.getVisibleCells() as cell (cell.id)}
+              <Table.Cell>
+                <FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
+              </Table.Cell>
+            {/each}
+          </Table.Row>
+        {:else}
+          <Table.Row>
+            <Table.Cell colspan={visibleColumnCount}>
+              {#if variant === 'registration-sheet'}
+                <div class="my-8">{@render children?.()}</div>
+              {:else}
+                <p class="text-center my-8 text-xl empty:hidden">{@render children?.()}</p>
               {/if}
-            </Table.Head>
-          {/each}
-        </Table.Row>
-      {/each}
-    </Table.Header>
-    <Table.Body>
-      {#each rows as row (row.id)}
-        <Table.Row>
-          {#each row.getVisibleCells() as cell (cell.id)}
-            <Table.Cell>
-              <FlexRender content={cell.column.columnDef.cell} context={cell.getContext()} />
             </Table.Cell>
-          {/each}
-        </Table.Row>
-      {:else}
-        <Table.Row>
-          <Table.Cell colspan={visibleColumnCount}>
-            {#if variant === 'registration-sheet'}
-              <div class="my-8">{@render children?.()}</div>
-            {:else}
-              <p class="text-center my-8 text-xl empty:hidden">{@render children?.()}</p>
-            {/if}
-          </Table.Cell>
-        </Table.Row>
-      {/each}
-    </Table.Body>
-  </Table.Root>
+          </Table.Row>
+        {/each}
+      </Table.Body>
+    </Table.Root>
+  </div>
 </div>

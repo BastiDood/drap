@@ -1,7 +1,7 @@
 <script lang="ts">
   import AvailableDraftees from '$lib/features/drafts/draftees/available/index.svelte';
-  import DraftedDraftees from '$lib/features/drafts/draftees/drafted/index.svelte';
   import InterestedDraftees from '$lib/features/drafts/draftees/interested/index.svelte';
+  import LabMembers from '$lib/features/drafts/draftees/drafted/lab-members/index.svelte';
   import { Badge } from '$lib/components/ui/badge';
   import { cn } from '$lib/components/ui/utils';
   import type { Lab } from '$lib/features/drafts/types';
@@ -33,7 +33,7 @@
   </div>
   <div class="flex gap-1 lg:self-start">
     <!-- Members -->
-    <DraftedDraftees {draftId} {lab} />
+    <LabMembers {draftId} {lab} />
     <!-- Preferred -->
     <AvailableDraftees {draftId} {round} {lab} variant="see-preferred" />
     <!-- Interested -->

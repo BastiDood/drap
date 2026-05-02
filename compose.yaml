@@ -6,45 +6,122 @@ services:
     pull_policy: build
     build: ./docker/postgres
     ports:
-      - 5432:5432
+      - host_ip: 127.0.0.1
+        published: 5432
+        target: 5432
+        protocol: tcp
     volumes:
       - postgres:/var/lib/postgresql/data
     networks:
       - database
     restart: always
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready']
+      test:
+        - 'CMD'
+        - 'pg_isready'
       interval: 5s
       timeout: 5s
       retries: 5
 
   inngest:
-    image: inngest/inngest:v1.17.9
+    image: inngest/inngest:v1.19.1
     extra_hosts:
       - host.docker.internal:host-gateway
     networks:
       - queue
     ports:
-      - 8288:8288
+      - host_ip: 127.0.0.1
+        published: 8288
+        target: 8288
+        protocol: tcp
     restart: always
+    healthcheck:
+      test:
+        - 'CMD'
+        - 'curl'
+        - '--fail'
+        - 'http://localhost:8288/health'
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   o2:
-    image: public.ecr.aws/zinclabs/openobserve:v0.70.3
+    pull_policy: build
+    build: ./docker/openobserve
     environment:
       ZO_DATA_DIR: /data
     ports:
-      - 5080:5080
+      - host_ip: 127.0.0.1
+        published: 5080
+        target: 5080
+        protocol: tcp
     volumes:
       - open-observe:/data
     networks:
       - telemetry
     restart: always
+    healthcheck:
+      test:
+        - 'CMD'
+        - '/httpget'
+        - 'http://localhost:5080/healthz'
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  rustfs:
+    pull_policy: build
+    build: ./docker/rustfs
+    ports:
+      - host_ip: 127.0.0.1
+        published: 9000
+        target: 9000
+        protocol: tcp
+      - host_ip: 127.0.0.1
+        published: 9001
+        target: 9001
+        protocol: tcp
+    volumes:
+      - rustfs-data:/data
+      - rustfs-logs:/logs
+    networks:
+      - storage
+    restart: always
+    healthcheck:
+      test:
+        - 'CMD'
+        - '/health'
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  setup-bucket:
+    image: minio/mc:RELEASE.2025-08-13T08-35-41Z
+    profiles:
+      - setup
+    depends_on:
+      rustfs:
+        condition: service_healthy
+        required: true
+    command:
+      - mb
+      - --ignore-existing
+      - drap/draft-student-avatar
+    networks:
+      - storage
+    restart: 'no'
 
 volumes:
   open-observe:
   postgres:
+  rustfs-data:
+  rustfs-logs:
 
 networks:
   database:
   queue:
+  storage:
   telemetry:

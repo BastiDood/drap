@@ -5,7 +5,7 @@
   import { toast } from 'svelte-sonner';
   import { useQueryClient } from '@tanstack/svelte-query'; // eslint-disable-line no-restricted-imports
 
-  import * as Empty from '$lib/components/ui/empty';
+  import Empty from '$lib/components/empty.svelte';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import type { DraftRegistrationAllowlistEntry } from '$lib/features/drafts/types';
@@ -156,16 +156,9 @@
       </Table>
     </div>
   {:else}
-    <Empty.Root>
-      <Empty.Media variant="icon">
-        <UsersIcon class="size-6" />
-      </Empty.Media>
-      <Empty.Header>
-        <Empty.Title>No students on the allowlist</Empty.Title>
-        <Empty.Content>
-          <Button variant="outline" size="sm" href="#allowlist-email">Add a student</Button>
-        </Empty.Content>
-      </Empty.Header>
-    </Empty.Root>
+    <Empty media={{ icon: UsersIcon, size: 'sm' }}>
+      {#snippet title()}No students on the allowlist{/snippet}
+      <Button variant="outline" size="sm" href="#allowlist-email">Add a student</Button>
+    </Empty>
   {/if}
 </section>

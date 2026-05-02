@@ -1,4 +1,4 @@
-import { insertNewLabs } from '$lib/server/database/drizzle';
+import * as schema from '$lib/server/database/schema';
 
 import { testDatabase } from './database';
 
@@ -6,7 +6,7 @@ export const testLabs = testDatabase.extend<object, { labs: void }>({
   labs: [
     async ({ database }, use) => {
       // Totally random labs with zero bias whatsoever...
-      await insertNewLabs(database, [
+      await database.insert(schema.lab).values([
         { id: 'ndsl', name: 'Networks and Distributed Systems Laboratory' },
         { id: 'csl', name: 'Computer Security Laboratory' },
         { id: 'scl', name: 'Scientific Computing Laboratory' },

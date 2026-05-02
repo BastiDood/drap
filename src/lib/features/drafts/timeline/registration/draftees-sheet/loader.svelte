@@ -8,7 +8,7 @@
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
   import UsersIcon from '@lucide/svelte/icons/users';
 
-  import * as Empty from '$lib/components/ui/empty';
+  import Empty from '$lib/components/empty.svelte';
   import { createFetchDrafteesQuery } from '$lib/queries/fetch-draftees';
   import { createFetchDraftLateRegistrantsQuery } from '$lib/queries/fetch-draft-late-registrants';
 
@@ -21,25 +21,15 @@
 </script>
 
 {#if drafteesQuery.isPending || lateQuery.isPending}
-  <Empty.Root class="min-h-40 grow">
-    <Empty.Media>
-      <Loader2Icon class="size-5 animate-spin text-muted-foreground" />
-    </Empty.Media>
-    <Empty.Header>
-      <Empty.Title>Loading Draftees</Empty.Title>
-      <Empty.Description>Fetching registered and late draftees.</Empty.Description>
-    </Empty.Header>
-  </Empty.Root>
+  <Empty media={{ icon: Loader2Icon, size: 'sm', iconClass: 'animate-spin' }}>
+    {#snippet title()}Loading Draftees{/snippet}
+    {#snippet description()}Fetching registered and late draftees...{/snippet}
+  </Empty>
 {:else if drafteesQuery.isError || lateQuery.isError}
-  <Empty.Root class="min-h-40 grow">
-    <Empty.Media variant="icon">
-      <UsersIcon class="size-5" />
-    </Empty.Media>
-    <Empty.Header>
-      <Empty.Title class="text-destructive">Failed to Load Draftees</Empty.Title>
-      <Empty.Description>Please try again in a moment.</Empty.Description>
-    </Empty.Header>
-  </Empty.Root>
+  <Empty variant="destructive" media={{ icon: UsersIcon, size: 'sm' }}>
+    {#snippet title()}Failed to Load Draftees{/snippet}
+    {#snippet description()}Please try again in a moment.{/snippet}
+  </Empty>
 {:else}
   <DrafteesSheetContent draftees={drafteesQuery.data} lateRegistrants={lateQuery.data} />
 {/if}

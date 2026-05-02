@@ -9,6 +9,7 @@ import {
   text,
   timestamp,
   unique,
+  uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
 import { eq, isNull, sql } from 'drizzle-orm';
@@ -147,6 +148,8 @@ export const studentRank = app.table(
     userId: ulid('user_id')
       .notNull()
       .references(() => user.id, { onUpdate: 'cascade' }),
+    // Points to the avatar object key in the `draft-student-avatar` bucket.
+    avatarObjectKey: uuid('avatar_object_key').unique(),
   },
   ({ draftId, userId }) => [primaryKey({ columns: [draftId, userId] })],
 );

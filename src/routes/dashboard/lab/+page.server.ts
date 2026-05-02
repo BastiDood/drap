@@ -1,11 +1,10 @@
+import { and, asc, desc, eq, isNotNull, isNull } from 'drizzle-orm';
 import { error, redirect } from '@sveltejs/kit';
 
+import * as schema from '$lib/server/database/schema';
+import { assertOptional } from '$lib/server/assert';
 import { db } from '$lib/server/database';
-import {
-  getDrafts,
-  getLabMembers,
-  getUserLabAssignmentDraftId,
-} from '$lib/server/database/drizzle';
+import { type DbConnection, getDrafts } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
@@ -66,5 +65,91 @@ export async function load({ locals: { session } }) {
 
     const drafts = await getDrafts(db);
     return { ...info, drafts };
+  });
+}
+
+async function getLabMembers(db: DbConnection, labId: string, draftId?: bigint) {
+  return await tracer.asyncSpan('get-lab-members', async span => {
+    span.setAttribute('database.lab.id', labId);
+    if (typeof draftId !== 'undefined') span.setAttribute('database.draft.id', draftId.toString());
+    const labInfo = await db.query.lab.findFirst({
+      columns: { name: true },
+      where: ({ id }) => eq(id, labId),
+    });
+
+    const heads = await db.query.user.findMany({
+      columns: {
+        email: true,
+        givenName: true,
+        familyName: true,
+        avatarUrl: true,
+      },
+      where: (table, { and }) =>
+        and(isNotNull(table.id), eq(table.labId, labId), eq(table.isAdmin, true)),
+      orderBy: ({ familyName }) => familyName,
+    });
+
+    const faculty = await db
+      .select({
+        email: schema.user.email,
+        givenName: schema.user.givenName,
+        familyName: schema.user.familyName,
+        avatarUrl: schema.user.avatarUrl,
+      })
+      .from(schema.user)
+      .leftJoin(
+        schema.facultyChoiceUser,
+        eq(schema.user.id, schema.facultyChoiceUser.studentUserId),
+      )
+      .where(
+        and(
+          eq(schema.user.labId, labId),
+          eq(schema.user.isAdmin, false),
+          isNull(schema.facultyChoiceUser.studentUserId),
+        ),
+      );
+
+    const membersQuery =
+      typeof draftId === 'undefined'
+        ? db
+            .select({
+              draftId: schema.labMemberView.draftId,
+              email: schema.labMemberView.email,
+              givenName: schema.labMemberView.givenName,
+              familyName: schema.labMemberView.familyName,
+              avatarUrl: schema.labMemberView.avatarUrl,
+            })
+            .from(schema.labMemberView)
+            .where(eq(schema.labMemberView.draftLab, labId))
+            .orderBy(({ draftId, familyName }) => [asc(draftId), asc(familyName)])
+        : db
+            .select({
+              draftId: schema.labMemberView.draftId,
+              email: schema.labMemberView.email,
+              givenName: schema.labMemberView.givenName,
+              familyName: schema.labMemberView.familyName,
+              avatarUrl: schema.labMemberView.avatarUrl,
+            })
+            .from(schema.labMemberView)
+            .where(
+              and(
+                eq(schema.labMemberView.draftLab, labId),
+                eq(schema.labMemberView.draftId, draftId),
+              ),
+            )
+            .orderBy(({ draftId, familyName }) => [asc(draftId), asc(familyName)]);
+    return { lab: labInfo?.name, heads, members: await membersQuery, faculty };
+  });
+}
+
+async function getUserLabAssignmentDraftId(db: DbConnection, userId: string, labId: string) {
+  return await tracer.asyncSpan('get-user-lab-assignment-draft-id', async span => {
+    span.setAttributes({ 'database.user.id': userId, 'database.lab.id': labId });
+    return await db
+      .select({ draftId: schema.labMemberView.draftId })
+      .from(schema.labMemberView)
+      .where(and(eq(schema.labMemberView.userId, userId), eq(schema.labMemberView.draftLab, labId)))
+      .orderBy(desc(schema.labMemberView.draftId))
+      .then(assertOptional);
   });
 }

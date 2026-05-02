@@ -1,5 +1,5 @@
 <script>
-  import { Section, Text } from 'better-svelte-email';
+  import { Section, Text } from '@better-svelte-email/components';
 </script>
 
 <Section class="mx-auto max-w-xl">

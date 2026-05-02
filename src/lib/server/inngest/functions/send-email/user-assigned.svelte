@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Heading, Section, Text } from 'better-svelte-email';
+  import { Button, Heading, Section, Text } from '@better-svelte-email/components';
 
   import { ORIGIN } from '$lib/env';
 
@@ -15,17 +15,19 @@
 
 <EmailLayout preview="You have been assigned to {labName}">
   <Section>
-    <Heading class="text-2xl font-bold text-foreground" as="h1">Lab Assignment</Heading>
-    <Text class="mt-4 text-base leading-relaxed text-muted-foreground">
-      Hello, <strong class="text-foreground">{userName}</strong>!
-    </Text>
-    <Text class="text-base leading-relaxed text-muted-foreground">
-      We are pleased to inform you that you have been assigned to the <strong
-        class="text-foreground">{labName}</strong
-      >.
-    </Text>
-    <Section class="my-6 rounded-lg bg-secondary/30 text-secondary-foreground">
-      <Section class="mx-auto max-w-md">
+    <Section class="p-4">
+      <Heading class="text-2xl font-bold text-foreground" as="h1">Lab Assignment</Heading>
+      <Text class="mt-4 text-base leading-relaxed text-muted-foreground">
+        Hello, <strong class="text-foreground">{userName}</strong>!
+      </Text>
+      <Text class="text-base leading-relaxed text-muted-foreground">
+        We are pleased to inform you that you have been assigned to the <strong
+          class="text-foreground">{labName}</strong
+        >.
+      </Text>
+    </Section>
+    <Section class="px-4 pb-4">
+      <Section class="mx-auto max-w-md rounded-lg bg-secondary/30 p-4 text-secondary-foreground">
         <Text class="text-sm">
           You can view more details about your lab assignment through your dashboard.
         </Text>

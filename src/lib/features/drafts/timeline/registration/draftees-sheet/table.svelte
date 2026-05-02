@@ -13,20 +13,15 @@
 <script lang="ts">
   import UsersIcon from '@lucide/svelte/icons/users';
 
-  import * as Empty from '$lib/components/ui/empty';
   import DataTable from '$lib/features/drafts/draftees/data-table.svelte';
+  import Empty from '$lib/components/empty.svelte';
 
   const { students }: Props = $props();
 </script>
 
 <DataTable data={students} variant="registration-sheet">
-  <Empty.Root class="min-h-40 grow">
-    <Empty.Media variant="icon">
-      <UsersIcon class="size-5" />
-    </Empty.Media>
-    <Empty.Header>
-      <Empty.Title>No Matching Draftees</Empty.Title>
-      <Empty.Description>Adjust the search or turn off the late-only filter.</Empty.Description>
-    </Empty.Header>
-  </Empty.Root>
+  <Empty media={{ icon: UsersIcon, size: 'sm' }} class="min-h-40 grow">
+    {#snippet title()}No Matching Draftees{/snippet}
+    {#snippet description()}Adjust the search or turn off the late-only filter.{/snippet}
+  </Empty>
 </DataTable>

@@ -8,7 +8,7 @@
 <script lang="ts">
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
 
-  import Empty from '$lib/components/ui/empty/empty.svelte';
+  import Empty from '$lib/components/empty.svelte';
   import { createFetchDraftAssignmentsQuery } from '$lib/queries/fetch-draft-assignments';
 
   import Display from './display.svelte';
@@ -19,11 +19,15 @@
 </script>
 
 {#if query.isPending}
-  <div class="flex h-full items-center justify-center">
-    <Loader2Icon class="size-20 animate-spin" />
-  </div>
+  <Empty media={{ icon: Loader2Icon, size: 'lg', iconClass: 'animate-spin' }}>
+    {#snippet title()}Loading Assignments{/snippet}
+    {#snippet description()}Fetching draft assignments...{/snippet}
+  </Empty>
 {:else if query.isError}
-  <Empty>Uh oh! An error has occurred.</Empty>
+  <Empty variant="destructive">
+    {#snippet title()}Unable to Load Data{/snippet}
+    {#snippet description()}Uh oh! An error has occurred.{/snippet}
+  </Empty>
 {:else}
   {@const regularDrafted = query.data.filter(
     ({ round }) => round !== null && round > 0 && round <= maxRounds,

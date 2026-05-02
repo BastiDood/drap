@@ -1,23 +1,16 @@
 <script lang="ts">
   import CalendarIcon from '@lucide/svelte/icons/calendar';
 
-  import * as Empty from '$lib/components/ui/empty';
+  import Empty from '$lib/components/empty.svelte';
   import { Button } from '$lib/components/ui/button';
   import { resolve } from '$app/paths';
 </script>
 
-<Empty.Root>
-  <Empty.Media>
-    <CalendarIcon class="size-12 text-muted-foreground" />
-  </Empty.Media>
-  <Empty.Header>
-    <Empty.Title>No Active Draft</Empty.Title>
-    <Empty.Description>
-      There's no draft currently open for registration. Check back later when the next draft period
-      begins.
-    </Empty.Description>
-  </Empty.Header>
-  <Empty.Content>
-    <Button href={resolve('/history/')}>View Draft History</Button>
-  </Empty.Content>
-</Empty.Root>
+<Empty media={{ icon: CalendarIcon, size: 'md' }}>
+  {#snippet title()}No Active Draft{/snippet}
+  {#snippet description()}
+    There's no draft currently open for registration. Check back later when the next draft period
+    begins.
+  {/snippet}
+  <Button href={resolve('/history/')}>View Draft History</Button>
+</Empty>

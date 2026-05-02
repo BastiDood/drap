@@ -114,7 +114,7 @@
 </script>
 
 <!-- Table -->
-<div class="mx-4 rounded-sm">
+<div class="rounded-sm">
   <Table.Root>
     <!-- Header Row -->
     <Table.Header>

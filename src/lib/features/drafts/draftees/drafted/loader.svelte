@@ -3,34 +3,31 @@
   import type { Snippet } from 'svelte';
 
   import DataTable from '$lib/features/drafts/draftees/data-table.svelte';
-  import Empty from '$lib/components/ui/empty/empty.svelte';
+  import Empty from '$lib/components/empty.svelte';
   import { createFetchDrafteesQuery } from '$lib/queries/fetch-draftees';
-  import type { Lab } from '$lib/features/drafts/types';
 
   export interface Props {
     draftId: string;
-    lab?: Lab;
     children?: Snippet;
   }
 
-  const { draftId, lab, children }: Props = $props();
+  const { draftId, children }: Props = $props();
 
   const query = $derived(
-    createFetchDrafteesQuery(draftId, students => {
-      const drafted = students.filter(({ labId }) => labId !== null);
-      return typeof lab === 'undefined'
-        ? drafted
-        : drafted.filter(student => student.labId === lab.id);
-    }),
+    createFetchDrafteesQuery(draftId, students => students.filter(({ labId }) => labId !== null)),
   );
 </script>
 
 {#if query.isPending}
-  <div class="flex h-full items-center justify-center">
-    <Loader2Icon class="size-20 animate-spin" />
-  </div>
+  <Empty media={{ icon: Loader2Icon, size: 'lg', iconClass: 'animate-spin' }}>
+    {#snippet title()}Loading Draftees{/snippet}
+    {#snippet description()}Fetching drafted students...{/snippet}
+  </Empty>
 {:else if query.isError}
-  <Empty>Uh oh! An error has occurred.</Empty>
+  <Empty variant="destructive">
+    {#snippet title()}Unable to Load Data{/snippet}
+    {#snippet description()}Uh oh! An error has occurred.{/snippet}
+  </Empty>
 {:else}
   <DataTable data={query.data} {children} />
 {/if}

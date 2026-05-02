@@ -3,6 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { getOrdinalSuffix } from './ordinal';
 
 describe('getOrdinalSuffix', () => {
+  it('returns th for zero', () => {
+    expect(getOrdinalSuffix(0)).toBe('th');
+  });
+
   it('returns st, nd, and rd for ordinary cases', () => {
     expect(getOrdinalSuffix(1)).toBe('st');
     expect(getOrdinalSuffix(2)).toBe('nd');

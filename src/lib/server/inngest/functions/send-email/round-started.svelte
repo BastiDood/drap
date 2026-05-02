@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button, Heading, Section, Text } from 'better-svelte-email';
+  import { Button, Heading, Section, Text } from '@better-svelte-email/components';
 
   import { ORIGIN } from '$lib/env';
 
@@ -19,20 +19,28 @@
     : `Round #${round} started - Draft #${draftId}`}
 >
   <Section>
-    <Heading class="text-2xl font-bold text-foreground" as="h1">
+    <Section class="p-4">
+      <Heading class="text-2xl font-bold text-foreground" as="h1">
+        {#if round === null}
+          DRAP Lottery Round Started
+        {:else}
+          DRAP Round #{round} Started
+        {/if}
+      </Heading>
+      <Text class="text-base">Hello,</Text>
       {#if round === null}
-        DRAP Lottery Round Started
+        <Text class="text-base">
+          The <strong>lottery round</strong> for Draft <strong>#{draftId}</strong> has begun.
+        </Text>
       {:else}
-        DRAP Round #{round} Started
+        <Text class="text-base">
+          <strong>Round #{round}</strong> for Draft <strong>#{draftId}</strong> has begun.
+        </Text>
       {/if}
-    </Heading>
-    <Text class="text-base">Hello,</Text>
+    </Section>
     {#if round === null}
-      <Text class="text-base">
-        The <strong>lottery round</strong> for Draft <strong>#{draftId}</strong> has begun.
-      </Text>
-      <Section class="my-6 rounded-lg bg-secondary/30 text-secondary-foreground">
-        <Section class="mx-auto max-w-md">
+      <Section class="px-4 pb-4">
+        <Section class="mx-auto max-w-md rounded-lg bg-secondary/30 p-4 text-secondary-foreground">
           <Text class="font-semibold">Action Required for Lab Heads</Text>
           <Text class="text-sm">
             Please coordinate with the draft administrators for the next steps.
@@ -40,11 +48,8 @@
         </Section>
       </Section>
     {:else}
-      <Text class="text-base">
-        <strong>Round #{round}</strong> for Draft <strong>#{draftId}</strong> has begun.
-      </Text>
-      <Section class="my-6 rounded-lg bg-secondary/30 text-secondary-foreground">
-        <Section class="mx-auto max-w-md">
+      <Section class="px-4 pb-4">
+        <Section class="mx-auto max-w-md rounded-lg bg-secondary/30 p-4 text-secondary-foreground">
           <Text class="font-semibold">Action Required for Lab Heads</Text>
           <Text class="text-sm">
             Kindly check the students module to see the list of students who have chosen your lab.

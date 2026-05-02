@@ -2,7 +2,7 @@ import Content from './empty-content.svelte';
 import Description from './empty-description.svelte';
 import Header from './empty-header.svelte';
 import Media from './empty-media.svelte';
-import Root from './empty.svelte';
+import Root from './empty-root.svelte';
 import Title from './empty-title.svelte';
 
 export {

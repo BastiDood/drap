@@ -16,7 +16,7 @@
   import { toast } from 'svelte-sonner';
 
   import * as Card from '$lib/components/ui/card';
-  import * as Empty from '$lib/components/ui/empty';
+  import Empty from '$lib/components/empty.svelte';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
@@ -24,36 +24,38 @@
   import { TextArea } from '$lib/components/ui/textarea';
   import { Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui/tooltip';
 
+  import AvatarConsent from './avatar-consent.svelte';
   import { DebouncedMirror } from './debounced-mirror.svelte';
 
   interface Props {
-    userId: string;
-    draftId: bigint;
-    maxRounds: number;
+    user: Pick<schema.User, 'id' | 'avatarUrl'>;
+    draft: Pick<schema.Draft, 'id' | 'maxRounds'>;
     availableLabs: Pick<schema.Lab, 'id' | 'name'>[];
   }
 
-  let { userId, draftId, maxRounds, availableLabs = $bindable() }: Props = $props();
+  let { user, draft, availableLabs = $bindable() }: Props = $props();
 
   const persistedSelectedLabs = $derived(
-    new PersistedState<typeof availableLabs>(`selected-labs-${userId}-${draftId}`, [], {
+    new PersistedState<typeof availableLabs>(`selected-labs-${user.id}-${draft.id}`, [], {
       syncTabs: true,
     }),
   );
 
   const persistedAvailableLabs = $derived(
-    new PersistedState<typeof availableLabs>(`available-labs-${userId}-${draftId}`, availableLabs, {
-      syncTabs: true,
-    }),
+    new PersistedState<typeof availableLabs>(
+      `available-labs-${user.id}-${draft.id}`,
+      availableLabs,
+      { syncTabs: true },
+    ),
   );
 
-  const remaining = $derived(maxRounds - persistedSelectedLabs.current.length);
+  const remaining = $derived(draft.maxRounds - persistedSelectedLabs.current.length);
   const hasRemaining = $derived(remaining > 0);
 
   const LabRemarksSchema = v.record(v.string(), v.string());
   const labRemarks = $derived(
     new DebouncedMirror({
-      key: `lab-remarks-${userId}-${draftId}`,
+      key: `lab-remarks-${user.id}-${draft.id}`,
       schema: LabRemarksSchema,
       debounceMs: 500,
     }),
@@ -67,7 +69,7 @@
   }
 
   function selectLab(index: number) {
-    if (persistedSelectedLabs.current.length >= maxRounds) return;
+    if (persistedSelectedLabs.current.length >= draft.maxRounds) return;
     persistedSelectedLabs.current.push(...persistedAvailableLabs.current.splice(index, 1));
   }
 
@@ -108,6 +110,7 @@
 
 <form
   method="post"
+  enctype="multipart/form-data"
   action="/dashboard/student/?/submit"
   class="space-y-4"
   use:enhance={({ submitter, cancel }) => {
@@ -138,15 +141,26 @@
           persistedSelectedLabs.disconnect();
           labRemarks.clear();
           break;
-        case 'failure':
-          switch (result.status) {
+        case 'failure': {
+          const { data, status } = result;
+          switch (status) {
             case 403:
               toast.error('You have already set your lab preferences before.');
+              break;
+            case 400:
+            case 413:
+            case 415:
+              toast.error(
+                typeof data?.message === 'string'
+                  ? data.message
+                  : 'Your avatar could not be processed.',
+              );
               break;
             default:
               break;
           }
           break;
+        }
         default:
           toast.error(
             typeof result.status === 'undefined'
@@ -158,19 +172,20 @@
     };
   }}
 >
-  <input type="hidden" name="draft" value={draftId} />
+  <input type="hidden" name="draft" value={draft.id} />
   <h1 class="text-3xl font-semibold">Select Lab Preference</h1>
   <p>
     Select your preferred labs from the list of available labs and rank them by order of preference.
   </p>
-  <div class="mt-8 grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+  <AvatarConsent avatarUrl={user.avatarUrl} />
+  <div class="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
     <Card.Root variant="soft" class="flex h-full">
       <Card.Header>
         <Card.Title class="text-2xl">Available Labs</Card.Title>
       </Card.Header>
       <Card.Content class="flex grow flex-col">
         <ul
-          inert={persistedSelectedLabs.current.length >= maxRounds}
+          inert={persistedSelectedLabs.current.length >= draft.maxRounds}
           class="space-y-2 empty:hidden inert:opacity-20"
         >
           {#each persistedAvailableLabs.current as { id, name }, idx (id)}
@@ -188,15 +203,10 @@
         </ul>
         {#if persistedAvailableLabs.current.length === 0}
           <div class="flex grow items-center justify-center">
-            <Empty.Root>
-              <Empty.Media variant="icon">
-                <InboxIcon />
-              </Empty.Media>
-              <Empty.Header>
-                <Empty.Title>No more labs available</Empty.Title>
-                <Empty.Description>There are no more labs remaining in the list.</Empty.Description>
-              </Empty.Header>
-            </Empty.Root>
+            <Empty media={{ icon: InboxIcon, size: 'sm' }}>
+              {#snippet title()}No more labs available{/snippet}
+              {#snippet description()}There are no more labs remaining in the list.{/snippet}
+            </Empty>
           </div>
         {/if}
       </Card.Content>
@@ -294,17 +304,12 @@
         </ol>
         {#if persistedSelectedLabs.current.length === 0}
           <div class="flex grow items-center justify-center">
-            <Empty.Root>
-              <Empty.Media variant="icon">
-                <BoxSelectIcon />
-              </Empty.Media>
-              <Empty.Header>
-                <Empty.Title>No labs selected</Empty.Title>
-                <Empty.Description>
-                  Click on a lab from the available list to add it to your ranking.
-                </Empty.Description>
-              </Empty.Header>
-            </Empty.Root>
+            <Empty media={{ icon: BoxSelectIcon, size: 'sm' }}>
+              {#snippet title()}No labs selected{/snippet}
+              {#snippet description()}
+                Click on a lab from the available list to add it to your ranking.
+              {/snippet}
+            </Empty>
           </div>
         {/if}
       </Card.Content>

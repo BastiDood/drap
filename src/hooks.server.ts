@@ -5,7 +5,6 @@ export async function handle({ event, resolve }) {
   if (typeof sid !== 'undefined') {
     // Dynamic import required to avoid invocation during pre-rendering.
     const { db } = await import('$lib/server/database');
-    const { getUserFromValidSession } = await import('$lib/server/database/drizzle');
     const { logger, tracer } = await import('./hooks.telemetry');
 
     await tracer.asyncSpan('http-request', async span => {
@@ -34,7 +33,15 @@ export async function handle({ event, resolve }) {
       const sid = cookies.get('sid');
       if (typeof sid !== 'undefined') {
         logger.trace('finding session...');
-        const user = await getUserFromValidSession(db, sid);
+        const user = await tracer.asyncSpan('get-user-from-valid-session', async span => {
+          span.setAttribute('database.session.id', sid);
+          const result = await db.query.session.findFirst({
+            columns: {},
+            with: { user: true },
+            where: ({ id }, { eq }) => eq(id, sid),
+          });
+          return result?.user;
+        });
 
         locals.session = { id: sid, user };
         span.setAttributes({ 'http.session.id': sid });

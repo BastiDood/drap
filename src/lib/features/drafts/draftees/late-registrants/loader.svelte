@@ -3,7 +3,7 @@
   import type { Snippet } from 'svelte';
 
   import DataTable from '$lib/features/drafts/draftees/data-table.svelte';
-  import Empty from '$lib/components/ui/empty/empty.svelte';
+  import Empty from '$lib/components/empty.svelte';
   import { createFetchDraftLateRegistrantsQuery } from '$lib/queries/fetch-draft-late-registrants';
 
   export interface Props {
@@ -17,11 +17,15 @@
 </script>
 
 {#if query.isPending}
-  <div class="flex h-full items-center justify-center">
-    <Loader2Icon class="size-20 animate-spin" />
-  </div>
+  <Empty media={{ icon: Loader2Icon, size: 'lg', iconClass: 'animate-spin' }}>
+    {#snippet title()}Loading Draftees{/snippet}
+    {#snippet description()}Fetching late registrants...{/snippet}
+  </Empty>
 {:else if query.isError}
-  <Empty>Uh oh! An error has occurred.</Empty>
+  <Empty variant="destructive">
+    {#snippet title()}Unable to Load Data{/snippet}
+    {#snippet description()}Uh oh! An error has occurred.{/snippet}
+  </Empty>
 {:else}
   <DataTable data={query.data} {children} />
 {/if}

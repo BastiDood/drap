@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { Area, AreaChart, LinearGradient } from 'layerchart';
+  import { Area, AreaChart, LinearGradient } from 'layerchart/svg';
   import { cubicOut } from 'svelte/easing';
-  import { cumsum, tickStep } from 'd3-array';
+  import { cumsum } from 'd3-array';
   import { format } from 'd3-format';
   import type { MotionOptions } from 'layerchart/utils/motion.svelte';
   import { prefersReducedMotion } from 'svelte/motion';
@@ -52,16 +52,6 @@
   const axisLabelByTooltipLabel = $derived(
     new Map(chart.phases.map(({ tooltipLabel, axisLabel }) => [tooltipLabel, axisLabel])),
   );
-
-  const yTicks = $derived.by(() => {
-    const step = Math.max(1, tickStep(0, chartMax, 4));
-    const ticks = Array.from(
-      { length: Math.floor(chartMax / step) + 1 },
-      (_, index) => index * step,
-    );
-    if (ticks.at(-1) === chartMax) return ticks;
-    return [...ticks, chartMax];
-  });
 
   const chartTitle = $derived.by(() => {
     if (chartMode === 'assigned') return 'Students Assigned';
@@ -159,6 +149,7 @@
         points
         grid
         yDomain={[0, chartMax]}
+        yNice={4}
         props={{
           area: {
             fillOpacity: 0.22,
@@ -173,7 +164,6 @@
             class: 'draft-rounds-chart-point',
             motion: chartMotion,
           },
-          tooltip: { context: { mode: 'band' } },
           xAxis: {
             grid: false,
             format: value => axisLabelByTooltipLabel.get(value) ?? `${value}`,
@@ -181,7 +171,7 @@
             tickLabelProps: { dy: 8 },
           },
           yAxis: {
-            ticks: yTicks,
+            ticks: 4,
             format: value => integerFormat(value),
             motion: axisMotion,
             tickLabelProps: { dx: -8 },

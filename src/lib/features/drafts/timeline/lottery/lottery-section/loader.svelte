@@ -4,7 +4,7 @@
   import { toast } from 'svelte-sonner';
   import { useQueryClient } from '@tanstack/svelte-query'; // eslint-disable-line no-restricted-imports
 
-  import Empty from '$lib/components/ui/empty/empty.svelte';
+  import Empty from '$lib/components/empty.svelte';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import { createFetchDrafteesQuery } from '$lib/queries/fetch-draftees';
@@ -27,11 +27,15 @@
 </script>
 
 {#if query.isPending}
-  <div class="flex h-full items-center justify-center">
-    <Loader2Icon class="size-20 animate-spin" />
-  </div>
+  <Empty media={{ icon: Loader2Icon, size: 'lg', iconClass: 'animate-spin' }}>
+    {#snippet title()}Loading Lottery{/snippet}
+    {#snippet description()}Fetching lottery data...{/snippet}
+  </Empty>
 {:else if query.isError}
-  <Empty>Uh oh! An error has occurred.</Empty>
+  <Empty variant="destructive">
+    {#snippet title()}Unable to Load Data{/snippet}
+    {#snippet description()}Uh oh! An error has occurred.{/snippet}
+  </Empty>
 {:else if query.data.length > 0}
   <form
     method="post"

@@ -1,6 +1,6 @@
 <script lang="ts">
   import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
-  import { BarChart } from 'layerchart';
+  import { BarChart } from 'layerchart/svg';
 
   import * as Card from '$lib/components/ui/card';
   import * as Chart from '$lib/components/ui/chart';
@@ -57,7 +57,7 @@
                 <mo>&sum;</mo><mi>q</mi>
                 <mo>)</mo>
               </math>
-              — the lab's share of total available capacity, combining both initial and lottery quotas.
+              — the lab's share of total initial quota across all labs in the draft.
             </li>
             <li>
               <strong>Demand</strong>
@@ -117,7 +117,6 @@
           yAxis: {
             grid: false,
           },
-          tooltip: { context: { mode: 'band' } },
         }}
       >
         {#snippet tooltip()}

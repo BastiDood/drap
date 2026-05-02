@@ -6,7 +6,7 @@
   import ShuffleIcon from '@lucide/svelte/icons/shuffle';
   import UserXIcon from '@lucide/svelte/icons/user-x';
 
-  import * as Empty from '$lib/components/ui/empty';
+  import Empty from '$lib/components/empty.svelte';
   import PreviousPicks from '$lib/features/faculty/previous-picks/index.svelte';
   import StatCards from '$lib/features/faculty/stat-cards/index.svelte';
 
@@ -20,18 +20,13 @@
 </script>
 
 {#if typeof info === 'undefined'}
-  <Empty.Root>
-    <Empty.Media variant="icon">
-      <BanIcon class="size-5 text-muted-foreground" />
-    </Empty.Media>
-    <Empty.Header>
-      <Empty.Title>Lab Excluded from This Draft</Empty.Title>
-      <Empty.Description>
-        Your lab was not included in the current draft's lineup. Contact the draft administrators if
-        you believe this is an error.
-      </Empty.Description>
-    </Empty.Header>
-  </Empty.Root>
+  <Empty media={{ icon: BanIcon, size: 'sm' }}>
+    {#snippet title()}Lab Excluded from This Draft{/snippet}
+    {#snippet description()}
+      Your lab was not included in the current draft's lineup. Contact the draft administrators if
+      you believe this is an error.
+    {/snippet}
+  </Empty>
 {:else}
   {@const {
     students,
@@ -42,50 +37,35 @@
     autoAcknowledgeReason,
   } = info}
   {#if currRound === null}
-    <Empty.Root>
-      <Empty.Media variant="icon">
-        <Clock3Icon class="size-5 text-muted-foreground" />
-      </Empty.Media>
-      <Empty.Header>
-        <Empty.Title>Draft Under Review</Empty.Title>
-        <Empty.Description>
-          The draft is now in review. Lottery assignment has already run, and draft administrators
-          are validating results before finalization.
-        </Empty.Description>
-      </Empty.Header>
-    </Empty.Root>
+    <Empty media={{ icon: Clock3Icon, size: 'sm' }}>
+      {#snippet title()}Draft Under Review{/snippet}
+      {#snippet description()}
+        The draft is now in review. Lottery assignment has already run, and draft administrators are
+        validating results before finalization.
+      {/snippet}
+    </Empty>
     {#if researchers.length > 0}
       <PreviousPicks {researchers} />
     {/if}
   {:else if currRound > maxRounds}
-    <Empty.Root>
-      <Empty.Media variant="icon">
-        <ShuffleIcon class="size-5 text-muted-foreground" />
-      </Empty.Media>
-      <Empty.Header>
-        <Empty.Title>Lottery Stage</Empty.Title>
-        <Empty.Description>
-          The draft is now in the lottery stage. Kindly contact the draft administrators on how to
-          proceed.
-        </Empty.Description>
-      </Empty.Header>
-    </Empty.Root>
+    <Empty media={{ icon: ShuffleIcon, size: 'sm' }}>
+      {#snippet title()}Lottery Stage{/snippet}
+      {#snippet description()}
+        The draft is now in the lottery stage. Kindly contact the draft administrators on how to
+        proceed.
+      {/snippet}
+    </Empty>
     {#if researchers.length > 0}
       <PreviousPicks {researchers} />
     {/if}
   {:else if currRound === 0}
-    <Empty.Root>
-      <Empty.Media variant="icon">
-        <InfoIcon class="size-5 text-muted-foreground" />
-      </Empty.Media>
-      <Empty.Header>
-        <Empty.Title>Registration Still Open</Empty.Title>
-        <Empty.Description>
-          Students are still registering for this draft. Kindly wait for the draft administrators to
-          officially open the draft.
-        </Empty.Description>
-      </Empty.Header>
-    </Empty.Root>
+    <Empty media={{ icon: InfoIcon, size: 'sm' }}>
+      {#snippet title()}Registration Still Open{/snippet}
+      {#snippet description()}
+        Students are still registering for this draft. Kindly wait for the draft administrators to
+        officially open the draft.
+      {/snippet}
+    </Empty>
   {:else}
     {@const currentRoundSelections =
       currRound === null ? [] : researchers.filter(({ round }) => round === currRound)}
@@ -98,34 +78,24 @@
       {autoAcknowledgeReason}
     />
     {#if autoAcknowledgeReason === 'quota-exhausted'}
-      <Empty.Root>
-        <Empty.Media variant="icon">
-          <CircleSlashIcon class="size-5 text-muted-foreground" />
-        </Empty.Media>
-        <Empty.Header>
-          <Empty.Title>No Slots Remaining</Empty.Title>
-          <Empty.Description>
-            This lab has no more draft slots remaining for the rest of this draft. No action is
-            required for the rest of this draft.
-          </Empty.Description>
-        </Empty.Header>
-      </Empty.Root>
+      <Empty media={{ icon: CircleSlashIcon, size: 'sm' }}>
+        {#snippet title()}No Slots Remaining{/snippet}
+        {#snippet description()}
+          This lab has no more draft slots remaining for the rest of this draft. No action is
+          required for the rest of this draft.
+        {/snippet}
+      </Empty>
       {#if researchers.length > 0}
         <PreviousPicks {researchers} />
       {/if}
     {:else if autoAcknowledgeReason === 'no-preferences'}
-      <Empty.Root>
-        <Empty.Media variant="icon">
-          <UserXIcon class="size-5 text-muted-foreground" />
-        </Empty.Media>
-        <Empty.Header>
-          <Empty.Title>No Student Preferences This Round</Empty.Title>
-          <Empty.Description>
-            No undrafted students have selected this lab in this round. No action is required until
-            the next one.
-          </Empty.Description>
-        </Empty.Header>
-      </Empty.Root>
+      <Empty media={{ icon: UserXIcon, size: 'sm' }}>
+        {#snippet title()}No Student Preferences This Round{/snippet}
+        {#snippet description()}
+          No undrafted students have selected this lab in this round. No action is required until
+          the next one.
+        {/snippet}
+      </Empty>
       {#if researchers.length > 0}
         <PreviousPicks {researchers} />
       {/if}

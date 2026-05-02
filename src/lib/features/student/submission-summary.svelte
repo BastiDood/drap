@@ -36,14 +36,14 @@
       <Card.Title class="text-lg">Your Lab Preferences</Card.Title>
     </div>
     <Card.Description>
-      <div>
+      <span class="flex flex-wrap items-center gap-2">
         <span class="inline-flex items-center gap-1"
           ><CheckCircleIcon class="size-4 opacity-50" />Submitted on</span
         >
         <span class="inline-flex items-center gap-1"><Calendar class="size-4" />{creationDate}</span
         >
         <span class="inline-flex items-center gap-1"><Clock class="size-4" />{creationTime}</span>
-      </div>
+      </span>
     </Card.Description>
   </Card.Header>
   <Card.Content>

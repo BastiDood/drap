@@ -3,8 +3,8 @@
   import { SvelteSet } from 'svelte/reactivity';
   import { toast } from 'svelte-sonner';
 
-  import * as Avatar from '$lib/components/ui/avatar';
   import * as Popover from '$lib/components/ui/popover';
+  import DraftAvatar from '$lib/components/draft-avatar.svelte';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
@@ -13,8 +13,9 @@
 
   interface Student extends Pick<
     schema.User,
-    'id' | 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
+    'id' | 'email' | 'givenName' | 'familyName' | 'studentNumber'
   > {
+    avatarObjectKey: schema.StudentRank['avatarObjectKey'];
     remark: schema.StudentRankLab['remark'];
   }
 
@@ -123,7 +124,7 @@
     <input type="hidden" name="students" value={id} />
   {/each}
   <ul class="space-y-1">
-    {#each students as { id, email, givenName, familyName, avatarUrl, studentNumber, remark } (id)}
+    {#each students as { id, email, givenName, familyName, avatarObjectKey, studentNumber, remark } (id)}
       {@const selected = hasSelection(id)}
       <li
         data-selected={selected}
@@ -135,10 +136,17 @@
           onclick={toggleSelection.bind(null, id)}
         >
           <div class="flex items-center gap-3 p-2">
-            <Avatar.Root class="size-10">
-              <Avatar.Image src={avatarUrl} alt="{givenName} {familyName}" />
-              <Avatar.Fallback>{givenName[0]}{familyName[0]}</Avatar.Fallback>
-            </Avatar.Root>
+            {#if avatarObjectKey === null}
+              <DraftAvatar class="size-10" />
+            {:else}
+              <DraftAvatar
+                avatar={{
+                  objectKey: avatarObjectKey,
+                  alt: `${givenName} ${familyName}`,
+                }}
+                class="size-10"
+              />
+            {/if}
             <div class="flex flex-col">
               <strong class="text-start"
                 ><span class="uppercase">{familyName}</span>, {givenName}</strong

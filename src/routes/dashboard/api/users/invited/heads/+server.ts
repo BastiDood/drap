@@ -1,7 +1,9 @@
+import { and, eq, isNotNull, isNull } from 'drizzle-orm';
 import { error, json } from '@sveltejs/kit';
 
+import * as schema from '$lib/server/database/schema';
 import { db } from '$lib/server/database';
-import { getInvitedHeads } from '$lib/server/database/drizzle';
+import type { DbConnection } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
@@ -37,4 +39,30 @@ export async function GET({ locals: { session } }) {
     const heads = await getInvitedHeads(db);
     return json(heads);
   });
+}
+
+async function getInvitedHeads(db: DbConnection) {
+  return await tracer.asyncSpan(
+    'get-invited-heads',
+    async () =>
+      await db
+        .select({
+          id: schema.user.id,
+          email: schema.user.email,
+          givenName: schema.user.givenName,
+          familyName: schema.user.familyName,
+          avatarUrl: schema.user.avatarUrl,
+          labId: schema.lab.id,
+          labName: schema.lab.name,
+        })
+        .from(schema.user)
+        .leftJoin(schema.lab, eq(schema.user.labId, schema.lab.id))
+        .where(
+          and(
+            eq(schema.user.isAdmin, true),
+            isNull(schema.user.googleUserId),
+            isNotNull(schema.user.labId),
+          ),
+        ),
+  );
 }

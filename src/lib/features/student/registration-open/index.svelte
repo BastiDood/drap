@@ -7,7 +7,7 @@
   import LabPreferenceForm from './lab-preference-form.svelte';
 
   interface Props {
-    user: Pick<schema.User, 'id'>;
+    user: Pick<schema.User, 'id' | 'avatarUrl'>;
     draft: Pick<schema.Draft, 'id' | 'maxRounds' | 'registrationClosedAt'>;
     availableLabs: Pick<schema.Lab, 'id' | 'name'>[];
   }
@@ -25,10 +25,5 @@
       your lab preferences before the deadline.
     </p>
   </Callout>
-  <LabPreferenceForm
-    userId={user.id}
-    draftId={draft.id}
-    maxRounds={draft.maxRounds}
-    bind:availableLabs
-  />
+  <LabPreferenceForm {user} {draft} bind:availableLabs />
 </div>

@@ -1,25 +1,34 @@
-import assert from 'node:assert/strict';
+import assert, { strictEqual } from 'node:assert/strict';
 
 import * as v from 'valibot';
+import {
+  and,
+  count,
+  countDistinct,
+  eq,
+  inArray,
+  isNotNull,
+  isNull,
+  ne,
+  or,
+  sql,
+} from 'drizzle-orm';
 import { decode } from 'decode-formdata';
 import { error, fail, redirect } from '@sveltejs/kit';
 
+import * as schema from '$lib/server/database/schema';
+import { assertOptional, assertSingle } from '$lib/server/assert';
 import {
   autoAcknowledgeLabsWithoutPreferences,
+  type DbConnection,
+  type DrizzleTransaction,
   getDraftByIdForUpdate,
   getFacultyAndStaff,
-  getFacultyChoiceForLabInDraftRound,
-  getLabAndRemainingStudentsInDraftWithLabPreference,
-  getLabAutoAcknowledgeStatusInDraftRound,
   getLabById,
-  getLabQuotaAndSelectedStudentCountInDraft,
-  getLabSelectedStudentCountInDraftRound,
   getPendingLabCountInDraft,
-  getValidStaffEmails,
   incrementDraftRound,
-  upsertFacultyChoice,
-  validateStudentsChoseLabInRound,
 } from '$lib/server/database/drizzle';
+import { coerceNumber } from '$lib/coerce';
 import { db } from '$lib/server/database';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
@@ -385,4 +394,440 @@ class RoundMismatchError extends Error {
     super(`expected round ${expectedRound} but got round ${currentRound}`);
     this.name = 'RoundMismatchError';
   }
+}
+
+async function getValidStaffEmails(db: DbConnection) {
+  return await tracer.asyncSpan('get-valid-staff-emails', async () => {
+    const results = await db
+      .select({ email: schema.user.email })
+      .from(schema.user)
+      .where(
+        and(
+          eq(schema.user.isAdmin, true),
+          isNull(schema.user.labId),
+          isNotNull(schema.user.googleUserId),
+        ),
+      );
+    return results.map(({ email }) => email);
+  });
+}
+
+async function getLabAndRemainingStudentsInDraftWithLabPreference(
+  db: DbConnection,
+  draftId: bigint,
+  labId: string,
+) {
+  return await tracer.asyncSpan(
+    'get-lab-and-remaining-students-in-draft-with-lab-preference',
+    async span => {
+      span.setAttributes({ 'database.draft.id': draftId.toString(), 'database.lab.id': labId });
+      const labInfo = await db
+        .select({
+          name: schema.lab.name,
+          quota: schema.draftLabQuota.initialQuota,
+        })
+        .from(schema.draftLabQuota)
+        .innerJoin(schema.lab, eq(schema.draftLabQuota.labId, schema.lab.id))
+        .where(
+          and(eq(schema.draftLabQuota.draftId, draftId), eq(schema.draftLabQuota.labId, labId)),
+        )
+        .then(assertOptional);
+      if (typeof labInfo === 'undefined') return;
+
+      const students = await db
+        .select({
+          id: schema.user.id,
+          email: schema.user.email,
+          givenName: schema.user.givenName,
+          familyName: schema.user.familyName,
+          avatarObjectKey: schema.studentRank.avatarObjectKey,
+          studentNumber: schema.user.studentNumber,
+          remark: schema.studentRankLab.remark,
+        })
+        .from(schema.studentRank)
+        .innerJoin(schema.draft, eq(schema.studentRank.draftId, schema.draft.id))
+        .leftJoin(
+          schema.facultyChoiceUser,
+          and(
+            eq(schema.studentRank.draftId, schema.facultyChoiceUser.draftId),
+            eq(schema.studentRank.userId, schema.facultyChoiceUser.studentUserId),
+          ),
+        )
+        .innerJoin(
+          schema.studentRankLab,
+          and(
+            eq(schema.studentRank.draftId, schema.studentRankLab.draftId),
+            eq(schema.studentRank.userId, schema.studentRankLab.userId),
+          ),
+        )
+        .innerJoin(schema.user, eq(schema.studentRank.userId, schema.user.id))
+        .where(
+          and(
+            eq(schema.studentRank.draftId, draftId),
+            or(
+              isNull(schema.facultyChoiceUser.studentUserId),
+              and(
+                eq(schema.facultyChoiceUser.labId, labId),
+                eq(schema.facultyChoiceUser.round, schema.draft.currRound),
+              ),
+            ),
+            eq(schema.studentRankLab.index, schema.draft.currRound),
+            eq(schema.studentRankLab.labId, labId),
+          ),
+        )
+        .orderBy(schema.user.familyName);
+
+      const researchers = await db
+        .select({
+          id: schema.user.id,
+          round: sql`${schema.facultyChoiceUser.round}`.mapWith(coerceNumber),
+          email: schema.user.email,
+          givenName: schema.user.givenName,
+          familyName: schema.user.familyName,
+          avatarObjectKey: schema.studentRank.avatarObjectKey,
+          studentNumber: schema.user.studentNumber,
+        })
+        .from(schema.facultyChoiceUser)
+        .innerJoin(schema.user, eq(schema.facultyChoiceUser.studentUserId, schema.user.id))
+        .leftJoin(
+          schema.studentRank,
+          and(
+            eq(schema.studentRank.draftId, schema.facultyChoiceUser.draftId),
+            eq(schema.studentRank.userId, schema.facultyChoiceUser.studentUserId),
+          ),
+        )
+        .where(
+          and(
+            eq(schema.facultyChoiceUser.draftId, draftId),
+            eq(schema.facultyChoiceUser.labId, labId),
+            isNotNull(schema.facultyChoiceUser.round),
+          ),
+        );
+
+      const choice = await db
+        .select({ userId: schema.facultyChoice.userId })
+        .from(schema.facultyChoice)
+        .innerJoin(
+          schema.draft,
+          and(
+            eq(schema.facultyChoice.draftId, schema.draft.id),
+            eq(schema.facultyChoice.round, schema.draft.currRound),
+          ),
+        )
+        .where(
+          and(eq(schema.facultyChoice.draftId, draftId), eq(schema.facultyChoice.labId, labId)),
+        )
+        .then(assertOptional);
+
+      // eslint-disable-next-line @typescript-eslint/init-declarations
+      let submissionSource: 'faculty' | 'system' | undefined;
+      if (typeof choice !== 'undefined')
+        submissionSource = choice.userId === null ? 'system' : 'faculty';
+
+      const remainingQuota = labInfo.quota - researchers.length;
+
+      // eslint-disable-next-line @typescript-eslint/init-declarations
+      let autoAcknowledgeReason: 'quota-exhausted' | 'no-preferences' | undefined;
+      if (remainingQuota <= 0) autoAcknowledgeReason = 'quota-exhausted';
+      else if (students.length === 0) autoAcknowledgeReason = 'no-preferences';
+
+      return {
+        lab: labInfo,
+        students,
+        researchers,
+        submissionSource,
+        remainingQuota,
+        autoAcknowledgeReason,
+      };
+    },
+  );
+}
+
+async function getLabAutoAcknowledgeStatusInDraftRound(
+  db: DbConnection,
+  draftId: bigint,
+  labId: string,
+  currRound: number,
+) {
+  return await tracer.asyncSpan('get-lab-auto-acknowledge-status-in-draft-round', async span => {
+    span.setAttributes({
+      'database.draft.id': draftId.toString(),
+      'database.lab.id': labId,
+      'database.round': currRound,
+    });
+
+    const row = await db
+      .select({
+        initialQuota: schema.draftLabQuota.initialQuota,
+        totalDrafted: count(schema.facultyChoiceUser.studentUserId),
+        submissionLabId: schema.facultyChoice.labId,
+        submissionUserId: schema.facultyChoice.userId,
+      })
+      .from(schema.draftLabQuota)
+      .leftJoin(
+        schema.facultyChoiceUser,
+        and(
+          eq(schema.facultyChoiceUser.draftId, draftId),
+          eq(schema.facultyChoiceUser.labId, labId),
+        ),
+      )
+      .leftJoin(
+        schema.facultyChoice,
+        and(
+          eq(schema.facultyChoice.draftId, draftId),
+          eq(schema.facultyChoice.round, currRound),
+          eq(schema.facultyChoice.labId, labId),
+        ),
+      )
+      .where(and(eq(schema.draftLabQuota.draftId, draftId), eq(schema.draftLabQuota.labId, labId)))
+      .groupBy(
+        schema.draftLabQuota.initialQuota,
+        schema.facultyChoice.labId,
+        schema.facultyChoice.userId,
+      )
+      .then(assertOptional);
+    if (typeof row === 'undefined') return;
+
+    const { initialQuota, totalDrafted, submissionLabId, submissionUserId } = row;
+
+    // eslint-disable-next-line @typescript-eslint/init-declarations
+    let autoAcknowledgeReason: 'quota-exhausted' | 'no-preferences' | undefined;
+    if (totalDrafted >= initialQuota) {
+      autoAcknowledgeReason = 'quota-exhausted';
+    } else {
+      const { preferrerCount } = await db
+        .select({ preferrerCount: countDistinct(schema.studentRankLab.userId) })
+        .from(schema.studentRankLab)
+        .leftJoin(
+          schema.facultyChoiceUser,
+          and(
+            eq(schema.studentRankLab.draftId, schema.facultyChoiceUser.draftId),
+            eq(schema.studentRankLab.userId, schema.facultyChoiceUser.studentUserId),
+          ),
+        )
+        .where(
+          and(
+            eq(schema.studentRankLab.draftId, draftId),
+            eq(schema.studentRankLab.labId, labId),
+            eq(schema.studentRankLab.index, BigInt(currRound)),
+            or(
+              isNull(schema.facultyChoiceUser.studentUserId),
+              and(
+                eq(schema.facultyChoiceUser.labId, labId),
+                eq(schema.facultyChoiceUser.round, currRound),
+              ),
+            ),
+          ),
+        )
+        .then(assertSingle);
+      if (preferrerCount === 0) autoAcknowledgeReason = 'no-preferences';
+    }
+
+    // eslint-disable-next-line @typescript-eslint/init-declarations
+    let submissionSource: 'faculty' | 'system' | undefined;
+    if (submissionLabId !== null)
+      submissionSource = submissionUserId === null ? 'system' : 'faculty';
+
+    return { autoAcknowledgeReason, submissionSource };
+  });
+}
+
+async function getLabQuotaAndSelectedStudentCountInDraft(
+  db: DbConnection,
+  draftId: bigint,
+  labId: string,
+) {
+  return await tracer.asyncSpan('get-lab-quota-and-selected-student-count-in-draft', async span => {
+    span.setAttributes({ 'database.draft.id': draftId.toString(), 'database.lab.id': labId });
+
+    const labInfo = await db
+      .select({ quota: schema.draftLabQuota.initialQuota })
+      .from(schema.draftLabQuota)
+      .where(and(eq(schema.draftLabQuota.draftId, draftId), eq(schema.draftLabQuota.labId, labId)))
+      .then(assertOptional);
+
+    const draftCount = await db
+      .select({ studentCount: count(schema.facultyChoiceUser.studentUserId) })
+      .from(schema.facultyChoiceUser)
+      .where(
+        and(
+          eq(schema.facultyChoiceUser.draftId, draftId),
+          eq(schema.facultyChoiceUser.labId, labId),
+        ),
+      )
+      .then(assertSingle);
+
+    return {
+      quota: labInfo?.quota,
+      selected: draftCount.studentCount,
+    };
+  });
+}
+
+async function getFacultyChoiceForLabInDraftRound(
+  db: DbConnection,
+  draftId: bigint,
+  round: number,
+  labId: string,
+) {
+  return await tracer.asyncSpan('get-faculty-choice-for-lab-in-draft-round', async span => {
+    span.setAttributes({
+      'database.draft.id': draftId.toString(),
+      'database.round': round,
+      'database.lab.id': labId,
+    });
+    return await db
+      .select({
+        draftId: schema.facultyChoice.draftId,
+        round: schema.facultyChoice.round,
+        labId: schema.facultyChoice.labId,
+        userId: schema.facultyChoice.userId,
+      })
+      .from(schema.facultyChoice)
+      .where(
+        and(
+          eq(schema.facultyChoice.draftId, draftId),
+          eq(schema.facultyChoice.round, round),
+          eq(schema.facultyChoice.labId, labId),
+        ),
+      )
+      .then(assertOptional);
+  });
+}
+
+async function getLabSelectedStudentCountInDraftRound(
+  db: DbConnection,
+  draftId: bigint,
+  labId: string,
+  round: number,
+) {
+  return await tracer.asyncSpan('get-lab-selected-student-count-in-draft-round', async span => {
+    span.setAttributes({
+      'database.draft.id': draftId.toString(),
+      'database.lab.id': labId,
+      'database.round': round,
+    });
+    const { studentCount } = await db
+      .select({ studentCount: count(schema.facultyChoiceUser.studentUserId) })
+      .from(schema.facultyChoiceUser)
+      .where(
+        and(
+          eq(schema.facultyChoiceUser.draftId, draftId),
+          eq(schema.facultyChoiceUser.labId, labId),
+          eq(schema.facultyChoiceUser.round, round),
+        ),
+      )
+      .then(assertSingle);
+    return studentCount;
+  });
+}
+
+async function validateStudentsChoseLabInRound(
+  db: DrizzleTransaction,
+  draftId: bigint,
+  labId: string,
+  round: number,
+  studentUserIds: string[],
+) {
+  return await tracer.asyncSpan('validate-students-chose-lab-in-round', async span => {
+    span.setAttributes({
+      'database.draft.id': draftId.toString(),
+      'database.lab.id': labId,
+      'database.round': round,
+      'database.student.count': studentUserIds.length,
+    });
+
+    if (studentUserIds.length === 0) return new Set();
+
+    const draftedByOtherLab = db
+      .select({ studentUserId: schema.facultyChoiceUser.studentUserId })
+      .from(schema.facultyChoiceUser)
+      .where(
+        and(
+          eq(schema.facultyChoiceUser.draftId, draftId),
+          or(
+            ne(schema.facultyChoiceUser.labId, labId),
+            ne(schema.facultyChoiceUser.round, round),
+            isNull(schema.facultyChoiceUser.round),
+          ),
+        ),
+      );
+
+    const validRows = await db
+      .select({ userId: schema.studentRankLab.userId })
+      .from(schema.studentRankLab)
+      .where(
+        and(
+          eq(schema.studentRankLab.draftId, draftId),
+          eq(schema.studentRankLab.labId, labId),
+          eq(schema.studentRankLab.index, BigInt(round)),
+          inArray(schema.studentRankLab.userId, studentUserIds),
+          sql`${schema.studentRankLab.userId} not in (${draftedByOtherLab})`,
+        ),
+      )
+      .for('update');
+
+    return new Set(validRows.map(({ userId }) => userId));
+  });
+}
+
+async function upsertFacultyChoice(
+  db: DrizzleTransaction,
+  draftId: bigint,
+  round: number,
+  labId: string,
+  facultyUserId: string,
+  studentUserIds: string[],
+) {
+  return await tracer.asyncSpan('upsert-faculty-choice', async span => {
+    span.setAttributes({
+      'database.draft.id': draftId.toString(),
+      'database.lab.id': labId,
+      'database.user.id': facultyUserId,
+    });
+
+    await db
+      .insert(schema.facultyChoice)
+      .values({ draftId, round, labId, userId: facultyUserId })
+      .onConflictDoUpdate({
+        target: [
+          schema.facultyChoice.draftId,
+          schema.facultyChoice.round,
+          schema.facultyChoice.labId,
+        ],
+        set: { userId: facultyUserId, createdAt: sql`now()` },
+      });
+
+    await db
+      .delete(schema.facultyChoiceUser)
+      .where(
+        and(
+          eq(schema.facultyChoiceUser.draftId, draftId),
+          eq(schema.facultyChoiceUser.labId, labId),
+          eq(schema.facultyChoiceUser.round, round),
+        ),
+      );
+
+    if (studentUserIds.length > 0) {
+      const { rowCount: facultyChoiceUserRowCount } = await db
+        .insert(schema.facultyChoiceUser)
+        .values(
+          studentUserIds.map(
+            studentUserId =>
+              ({
+                draftId,
+                round,
+                labId,
+                facultyUserId,
+                studentUserId,
+              }) satisfies schema.NewFacultyChoiceUser,
+          ),
+        );
+      strictEqual(
+        facultyChoiceUserRowCount,
+        studentUserIds.length,
+        'upsertFacultyChoice::facultyChoiceUser => unexpected insertion count',
+      );
+    }
+  });
 }

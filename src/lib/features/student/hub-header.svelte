@@ -50,12 +50,12 @@
       {/snippet}
     </Sheet.Trigger>
   </div>
-  <Sheet.Content side="right" class="p-6">
-    <Sheet.Header>
+  <Sheet.Content side="right" class="flex flex-col gap-4 overflow-hidden p-6 sm:max-w-md">
+    <Sheet.Header class="shrink-0 p-0 pe-10">
       <Sheet.Title>Edit Profile</Sheet.Title>
       <Sheet.Description>Update your name and personal information.</Sheet.Description>
     </Sheet.Header>
-    <div class="py-4">
+    <div class="min-h-0 grow overflow-y-auto">
       <ProfileForm {user} onSuccess={handleSuccess} />
     </div>
   </Sheet.Content>

@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { getChartContext, Tooltip as TooltipPrimitive } from 'layerchart';
+  import { getChartContext } from 'layerchart';
   import type { HTMLAttributes } from 'svelte/elements';
   import type { Snippet } from 'svelte';
+  import { Tooltip as TooltipPrimitive } from 'layerchart/svg';
 
   import { cn, type WithElementRef, type WithoutChildren } from '$lib/components/ui/utils';
 
@@ -59,7 +60,9 @@
   const ctx = getChartContext();
 
   const tooltipPayload: TooltipPayload[] = $derived(
-    ctx.tooltip.series.filter(({ visible }) => visible),
+    ctx.tooltip.series.filter(
+      ({ visible, value }) => visible && value !== null && typeof value !== 'undefined',
+    ),
   );
 
   const formattedLabel = $derived.by(() => {
@@ -101,74 +104,76 @@
   {/if}
 {/snippet}
 
-<TooltipPrimitive.Root variant="none">
-  <div
-    bind:this={ref}
-    class={cn(
-      'grid min-w-36 items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl',
-      className,
-    )}
-    {...restProps}
-  >
-    {#if !nestLabel}
-      {@render tooltipLabel()}
-    {/if}
-    <div class="grid gap-1.5">
-      {#each tooltipPayload as item, i (item.key + i)}
-        {@const key = nameKey || item.key || item.label || 'value'}
-        {@const itemConfig = getPayloadConfigFromPayload(chart.config, item, key)}
-        {@const indicatorColor = color || item.color}
-        <div
-          class={cn(
-            'flex w-full flex-wrap items-stretch gap-2 [&>svg]:size-2.5 [&>svg]:text-muted-foreground',
-            indicator === 'dot' && 'items-center',
-          )}
-        >
-          {#if typeof formatter !== 'undefined' && typeof item.value !== 'undefined' && item.label}
-            {@render formatter({
-              value: item.value,
-              label: item.label,
-              item,
-              index: i,
-              payload: tooltipPayload,
-            })}
-          {:else}
-            {#if typeof itemConfig?.icon !== 'undefined'}
-              <itemConfig.icon />
-            {:else if !hideIndicator}
-              <div
-                style="--color-bg: {indicatorColor}; --color-border: {indicatorColor};"
-                class={cn('shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg)', {
-                  'size-2.5': indicator === 'dot',
-                  'h-full w-1': indicator === 'line',
-                  'w-0 border-[1.5px] border-dashed bg-transparent': indicator === 'dashed',
-                  'my-0.5': nestLabel && indicator === 'dashed',
-                })}
-              ></div>
-            {/if}
-            <div
-              class={cn(
-                'flex shrink-0 grow justify-between leading-none',
-                nestLabel ? 'items-end' : 'items-center',
-              )}
-            >
-              <div class="grid gap-1.5">
-                {#if nestLabel}
-                  {@render tooltipLabel()}
-                {/if}
-                <span class="text-muted-foreground">
-                  {itemConfig?.label || item.label}
-                </span>
-              </div>
-              {#if typeof item.value !== 'undefined' && item.value !== null}
-                <span class="font-mono font-medium text-foreground tabular-nums">
-                  {valueFormatter === null ? item.value : valueFormatter(item.value)}
-                </span>
+<TooltipPrimitive.Root variant="none" portal={false}>
+  {#if tooltipPayload.length > 0}
+    <div
+      bind:this={ref}
+      class={cn(
+        'grid min-w-36 items-start gap-1.5 rounded-lg border border-border/50 bg-background px-2.5 py-1.5 text-xs shadow-xl',
+        className,
+      )}
+      {...restProps}
+    >
+      {#if !nestLabel}
+        {@render tooltipLabel()}
+      {/if}
+      <div class="grid gap-1.5">
+        {#each tooltipPayload as item, i (item.key + i)}
+          {@const key = nameKey || item.key || item.label || 'value'}
+          {@const itemConfig = getPayloadConfigFromPayload(chart.config, item, key)}
+          {@const indicatorColor = color || item.color}
+          <div
+            class={cn(
+              'flex w-full flex-wrap items-stretch gap-2 [&>svg]:size-2.5 [&>svg]:text-muted-foreground',
+              indicator === 'dot' && 'items-center',
+            )}
+          >
+            {#if typeof formatter !== 'undefined' && typeof item.value !== 'undefined' && item.label}
+              {@render formatter({
+                value: item.value,
+                label: item.label,
+                item,
+                index: i,
+                payload: tooltipPayload,
+              })}
+            {:else}
+              {#if typeof itemConfig?.icon !== 'undefined'}
+                <itemConfig.icon />
+              {:else if !hideIndicator}
+                <div
+                  style="--color-bg: {indicatorColor}; --color-border: {indicatorColor};"
+                  class={cn('shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg)', {
+                    'size-2.5': indicator === 'dot',
+                    'h-full w-1': indicator === 'line',
+                    'w-0 border-[1.5px] border-dashed bg-transparent': indicator === 'dashed',
+                    'my-0.5': nestLabel && indicator === 'dashed',
+                  })}
+                ></div>
               {/if}
-            </div>
-          {/if}
-        </div>
-      {/each}
+              <div
+                class={cn(
+                  'flex shrink-0 grow justify-between leading-none',
+                  nestLabel ? 'items-end' : 'items-center',
+                )}
+              >
+                <div class="grid gap-1.5">
+                  {#if nestLabel}
+                    {@render tooltipLabel()}
+                  {/if}
+                  <span class="text-muted-foreground">
+                    {itemConfig?.label || item.label}
+                  </span>
+                </div>
+                {#if typeof item.value !== 'undefined' && item.value !== null}
+                  <span class="font-mono font-medium text-foreground tabular-nums">
+                    {valueFormatter === null ? item.value : valueFormatter(item.value)}
+                  </span>
+                {/if}
+              </div>
+            {/if}
+          </div>
+        {/each}
+      </div>
     </div>
-  </div>
+  {/if}
 </TooltipPrimitive.Root>

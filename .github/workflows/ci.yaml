@@ -14,21 +14,31 @@ jobs:
       # Backing service credentials (CI-only values)
       POSTGRES_PASSWORD: password
 
-      # SvelteKit app env vars
-      POSTGRES_URL: postgresql://postgres:password@localhost:5432/postgres
+      # SvelteKit
       ORIGIN: http://localhost:4173
       PUBLIC_ORIGIN: http://localhost:4173
+
+      # Google OAuth
       GOOGLE_OAUTH_CLIENT_ID: stub
       GOOGLE_OAUTH_CLIENT_SECRET: stub
 
       # Inngest
       INNGEST_DEV: http://localhost:8288
 
+      # PostgreSQL
+      POSTGRES_URL: postgresql://postgres:password@localhost:5432/postgres
+
+      # RustFS S3
+      S3_ENDPOINT: http://localhost:9000
+      S3_REGION: drap
+      S3_ACCESS_KEY: drap
+      S3_SECRET_KEY: password
+
       # OpenTelemetry
       OTEL_SDK_DISABLED: true
 
       # DRAP
-      DRAP_ENCRYPTION_KEY: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'
+      DRAP_ENCRYPTION_KEY: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
     steps:
       - name: Checkout
@@ -70,7 +80,10 @@ jobs:
         run: pnpm build
 
       - name: Start Docker Services
-        run: pnpm docker:ci
+        run: pnpm docker:dev:ci
+
+      - name: Bootstrap RustFS Bucket
+        run: pnpm docker:dev:setup:bucket
 
       - name: Run Database Migrations
         run: pnpm db:migrate

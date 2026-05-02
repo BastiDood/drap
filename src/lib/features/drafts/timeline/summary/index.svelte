@@ -5,8 +5,8 @@
   import UsersIcon from '@lucide/svelte/icons/users';
 
   import * as Alert from '$lib/components/ui/alert';
-  import * as Card from '$lib/components/ui/card';
   import DraftAssignments from '$lib/features/drafts/assignments/index.svelte';
+  import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
   import type {
     Draft,
     DraftAssignmentSummary,
@@ -20,7 +20,7 @@
 
   interface Props {
     draftId: string;
-    draft: Pick<Draft, 'activePeriodStart' | 'activePeriodEnd' | 'maxRounds'>;
+    draft: Pick<Draft, 'maxRounds'>;
     totalStudents: number;
     assignmentSummary: DraftAssignmentSummary;
     draftSummaryChartData: DraftSummaryChartData;
@@ -47,37 +47,34 @@
       </Alert.Description>
     </Alert.Root>
   {:else}
-    <Alert.Root variant="success">
+    <Alert.Root variant="success" class="grid-cols-[auto_1fr_auto] items-center gap-x-3">
       <CheckCircle2Icon class="text-success" />
       <Alert.Title>Draft Finalized</Alert.Title>
       <Alert.Description>
         This draft has been completed. All students have been assigned to their respective labs.
       </Alert.Description>
+      <div class="col-start-2 mt-2 sm:col-start-3 sm:row-span-2 sm:row-start-1 sm:mt-0">
+        <DraftAssignments {draftId} maxRounds={draft.maxRounds} />
+      </div>
     </Alert.Root>
   {/if}
-  <div class="flex flex-wrap gap-2">
-    <Card.Root variant="soft" class="preset-tonal-muted max-w-56 min-w-40 flex-1 gap-2 py-4">
-      <Card.Header class="flex flex-row items-center justify-between space-y-0 pb-0">
-        <Card.Title class="text-sm font-medium">Total Students</Card.Title>
-        <UsersIcon class="size-4 text-muted-foreground" />
-      </Card.Header>
-      <Card.Content>
+  <div class="grid w-fit grid-cols-1 gap-2 sm:grid-cols-[repeat(2,minmax(10rem,14rem))]">
+    <StatCard icon={UsersIcon}>
+      {#snippet title()}Total Students{/snippet}
+      {#snippet body()}
         <p id="stat-total-students" class="text-2xl font-bold tabular-nums">{totalStudents}</p>
-        <p class="text-xs text-muted-foreground">All Registered Participants</p>
-      </Card.Content>
-    </Card.Root>
-    <Card.Root variant="soft" class="preset-tonal-muted max-w-56 min-w-40 flex-1 gap-2 py-4">
-      <Card.Header class="flex flex-row items-center justify-between space-y-0 pb-0">
-        <Card.Title class="text-sm font-medium">Participating Labs</Card.Title>
-        <FlaskConicalIcon class="size-4 text-muted-foreground" />
-      </Card.Header>
-      <Card.Content>
+      {/snippet}
+      {#snippet subtitle()}All Registered Participants{/snippet}
+    </StatCard>
+    <StatCard icon={FlaskConicalIcon}>
+      {#snippet title()}Participating Labs{/snippet}
+      {#snippet body()}
         <p id="stat-participating-labs" class="text-2xl font-bold tabular-nums">
           {assignmentSummary.metrics.participatingLabCount}
         </p>
-        <p class="text-xs text-muted-foreground">Active Labs in Draft</p>
-      </Card.Content>
-    </Card.Root>
+      {/snippet}
+      {#snippet subtitle()}Active Labs in Draft{/snippet}
+    </StatCard>
   </div>
   <div class="space-y-4">
     <DraftRoundsChart chart={assignmentSummary.chart} />
@@ -87,5 +84,4 @@
       <PreferenceAlignmentChart data={draftSummaryChartData.preferenceAlignment} />
     </div>
   </div>
-  <DraftAssignments {draftId} maxRounds={draft.maxRounds} />
 </div>

@@ -1,9 +1,12 @@
 <script lang="ts">
+  import AssignedStatsChart from '$lib/features/drafts/stats/assigned-stats-chart.svelte';
+  import { buildAssignedStatsChart } from '$lib/features/drafts/stats/chart-data';
   import { DraftTable, InitDialog } from '$lib/features/drafts';
 
   const { data } = $props();
-  const { drafts } = $derived(data);
+  const { drafts, draftStatsRecords } = $derived(data);
   const [latestDraft] = $derived(drafts);
+  const assignedStatsChart = $derived(buildAssignedStatsChart(draftStatsRecords));
 </script>
 
 <div class="space-y-6">
@@ -17,5 +20,6 @@
       <InitDialog />
     {/if}
   </div>
+  <AssignedStatsChart chart={assignedStatsChart} />
   <DraftTable {drafts} />
 </div>

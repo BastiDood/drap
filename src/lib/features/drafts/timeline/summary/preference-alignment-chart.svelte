@@ -1,12 +1,13 @@
 <script lang="ts">
   import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
   import { format } from 'd3-format';
-  import { PieChart } from 'layerchart';
+  import { PieChart } from 'layerchart/svg';
 
   import * as Card from '$lib/components/ui/card';
   import * as Chart from '$lib/components/ui/chart';
   import * as Popover from '$lib/components/ui/popover';
   import { assert } from '$lib/assert';
+  import { CHART_COLORS } from '$lib/constants';
   import type { DraftPreferenceAlignment } from '$lib/features/drafts/types';
 
   interface Props {
@@ -17,24 +18,24 @@
 
   const NOT_PREFERRED = 'Not Preferred';
 
-  const COLORS = [
-    'var(--chart-1)',
-    'var(--chart-2)',
-    'var(--chart-3)',
-    'var(--chart-4)',
-    'var(--chart-5)',
-  ] as const;
-
   function sliceColor(label: string, i: number) {
     if (label === NOT_PREFERRED) return 'var(--muted-foreground)';
-    const color = COLORS[i % COLORS.length];
+    const color = CHART_COLORS[i % CHART_COLORS.length];
     assert(typeof color === 'string', 'chart color index out of bounds');
     return color;
   }
 
+  const bordaFormat = format('.1~%');
+  const percentFormat = format('.2~%');
+  const integerFormat = format('d');
+
   const chartConfig = $derived(
     Object.fromEntries(
-      data.slices.map(({ label }, i) => [label, { label, color: sliceColor(label, i) }]),
+      data.slices.map(({ label, count }, i) => {
+        let subtitle = `${integerFormat(count)} Student`;
+        if (count > 1) subtitle += 's';
+        return [label, { label: subtitle, color: sliceColor(label, i) }];
+      }),
     ),
   );
 
@@ -47,7 +48,7 @@
     })),
   );
 
-  const percentFormat = format('.0%');
+  const totalAssigned = $derived(data.slices.reduce((sum, { count }) => sum + count, 0));
 </script>
 
 <Card.Root
@@ -85,16 +86,21 @@
         label="label"
         c="color"
         innerRadius={0.6}
+        range={[270, 630]}
         padding={{ right: 100 }}
         legend={{ orientation: 'vertical', placement: 'right' }}
+        props={{ pie: { sort: null } }}
       >
         {#snippet tooltip()}
           <Chart.Tooltip
             indicator="dot"
-            hideLabel
             labelAccessor={d => {
               assert(typeof d === 'object' && d !== null && 'label' in d);
               return d.label;
+            }}
+            valueFormatter={value => {
+              assert(typeof value === 'number');
+              return percentFormat(value / totalAssigned);
             }}
           />
         {/snippet}
@@ -102,7 +108,7 @@
       <div
         class="pointer-events-none absolute inset-0 right-[100px] flex flex-col items-center justify-center"
       >
-        <span class="text-3xl font-bold tabular-nums">{percentFormat(data.bordaScore)}</span>
+        <span class="text-3xl font-bold tabular-nums">{bordaFormat(data.bordaScore)}</span>
         <div class="flex items-center gap-1 text-xs text-muted-foreground">
           <span>Borda Score</span>
           <Popover.Root>

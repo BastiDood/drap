@@ -1,5 +1,6 @@
 import process from 'node:process';
 
+import { AwsInstrumentation } from '@opentelemetry/instrumentation-aws-sdk';
 import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { InngestSpanProcessor } from 'inngest/experimental';
@@ -11,7 +12,7 @@ import { inngest } from '$lib/server/inngest/client';
 
 const sdk = new NodeSDK({
   serviceName: 'drap',
-  instrumentations: [new HttpInstrumentation(), new PgInstrumentation()],
+  instrumentations: [new HttpInstrumentation(), new PgInstrumentation(), new AwsInstrumentation()],
   spanProcessors: [
     new BatchSpanProcessor(new OTLPTraceExporter()),
     new InngestSpanProcessor(inngest),

@@ -7,7 +7,6 @@
   import LockKeyholeIcon from '@lucide/svelte/icons/lock-keyhole';
   import LogInIcon from '@lucide/svelte/icons/log-in';
   import LogOutIcon from '@lucide/svelte/icons/log-out';
-  import MailIcon from '@lucide/svelte/icons/mail';
   import UsersIcon from '@lucide/svelte/icons/users';
   import { mergeProps } from 'bits-ui';
 
@@ -183,22 +182,6 @@
                       >
                         <ClipboardListIcon class="size-5" />
                         <span>Drafts</span>
-                      </a>
-                    {/snippet}
-                  </Sidebar.MenuButton>
-                </Sidebar.MenuItem>
-                <Sidebar.MenuItem>
-                  <Sidebar.MenuButton
-                    isActive={pathname.startsWith('/dashboard/email/')}
-                    tooltipContent="Email"
-                  >
-                    {#snippet child({ props })}
-                      <a
-                        href={resolve('/dashboard/email/')}
-                        {...mergeProps(props, { onclick: closeMobileSidebar })}
-                      >
-                        <MailIcon class="size-5" />
-                        <span>Email</span>
                       </a>
                     {/snippet}
                   </Sidebar.MenuButton>

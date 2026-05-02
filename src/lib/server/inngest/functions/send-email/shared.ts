@@ -1,9 +1,14 @@
-import Renderer, { toPlainText } from 'better-svelte-email/render';
+import { and, eq, gte, isNotNull, isNull, sql } from 'drizzle-orm';
 import type { ComponentProps } from 'svelte';
 import { createMimeMessage } from 'mimetext/node';
 import { NonRetriableError } from 'inngest';
+import type { PgUpdateSetSource } from 'drizzle-orm/pg-core';
+import { toPlainText } from '@better-svelte-email/server';
 
+import * as dbSchema from '$lib/server/database/schema';
+import { assertOptional } from '$lib/server/assert';
 import { db } from '$lib/server/database';
+import { decryptSecret, encryptSecret } from '$lib/crypto';
 import type {
   DraftFinalizedBatchEmailSchema,
   DraftFinalizedFallbackEmailSchema,
@@ -16,12 +21,7 @@ import type {
   UserAssignedBatchEmailSchema,
   UserAssignedFallbackEmailSchema,
 } from '$lib/server/inngest/schema';
-import {
-  type DrizzleTransaction,
-  getDesignatedSenderCredentialsForUpdate,
-  type schema,
-  updateCandidateSender,
-} from '$lib/server/database/drizzle';
+import type { DrizzleTransaction, schema } from '$lib/server/database/drizzle';
 import { ENCRYPTION_KEY } from '$lib/server/env/drap/crypto';
 import { GoogleOAuthClient } from '$lib/server/google';
 import { Logger } from '$lib/server/telemetry/logger';
@@ -32,6 +32,7 @@ import LotteryIntervened from './lottery-intervened.svelte';
 import RoundStarted from './round-started.svelte';
 import RoundSubmitted from './round-submitted.svelte';
 import UserAssigned from './user-assigned.svelte';
+import { emailRenderer } from './renderer';
 
 const SERVICE_NAME = 'inngest.functions.send-email';
 const logger = Logger.byName(SERVICE_NAME);
@@ -53,21 +54,6 @@ type RenderableEmailEvent =
   | { name: 'draft/user.assigned.email.batch'; data: UserAssignedBatchEmailSchema }
   | { name: 'draft/user.assigned.email.fallback'; data: UserAssignedFallbackEmailSchema };
 
-// Resolved hex equivalents of the oklch design tokens from `app.css` :root.
-const renderer = new Renderer({
-  theme: {
-    extend: {
-      colors: {
-        primary: { DEFAULT: '#087542', foreground: '#f2fdf0' },
-        secondary: { DEFAULT: '#96ceae', foreground: '#0d332b' },
-        foreground: '#121815',
-        muted: { DEFAULT: '#c2c9ce', foreground: '#444f47' },
-        card: { DEFAULT: '#e9eff3', foreground: '#36413a' },
-      },
-    },
-  },
-});
-
 export async function createEmailMessage(event: RenderableEmailEvent, sender: SenderIdentity) {
   /* eslint-disable @typescript-eslint/init-declarations */
   let recipient: string;
@@ -83,7 +69,7 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
         event.data.round === null
           ? `[DRAP] Lottery Round for Draft #${event.data.draftId} has begun!`
           : `[DRAP] Round #${event.data.round} for Draft #${event.data.draftId} has begun!`;
-      html = await renderer.render(RoundStarted, {
+      html = await emailRenderer.render(RoundStarted, {
         props: {
           draftId: event.data.draftId,
           round: event.data.round,
@@ -96,7 +82,7 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
       subject = event.data.isCreate
         ? `[DRAP] Acknowledgement from ${event.data.labId.toUpperCase()} for Round #${event.data.round} of Draft #${event.data.draftId}`
         : `[DRAP] Preference Update from ${event.data.labId.toUpperCase()} for Round #${event.data.round} of Draft #${event.data.draftId}`;
-      html = await renderer.render(RoundSubmitted, {
+      html = await emailRenderer.render(RoundSubmitted, {
         props: {
           labName: event.data.labName,
           round: event.data.round,
@@ -109,10 +95,11 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
     case 'draft/lottery.intervened.email.fallback':
       recipient = event.data.recipientEmail;
       subject = `[DRAP] Lottery Intervention for ${event.data.labId.toUpperCase()} in Draft #${event.data.draftId}`;
-      html = await renderer.render(LotteryIntervened, {
+      html = await emailRenderer.render(LotteryIntervened, {
         props: {
           studentName: event.data.studentName,
           studentEmail: event.data.studentEmail,
+          avatarUrl: event.data.avatarUrl,
           labName: event.data.labName,
           draftId: event.data.draftId,
         } satisfies ComponentProps<typeof LotteryIntervened>,
@@ -122,7 +109,7 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
     case 'draft/draft.finalized.email.fallback':
       recipient = event.data.recipientEmail;
       subject = `[DRAP] Draft #${event.data.draftId} Finalized`;
-      html = await renderer.render(DraftFinalized, {
+      html = await emailRenderer.render(DraftFinalized, {
         props: {
           draftId: event.data.draftId,
           lotteryAssignments: event.data.lotteryAssignments,
@@ -133,7 +120,7 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
     case 'draft/user.assigned.email.fallback':
       recipient = event.data.userEmail;
       subject = `[DRAP] Assigned to ${event.data.labId.toUpperCase()}`;
-      html = await renderer.render(UserAssigned, {
+      html = await emailRenderer.render(UserAssigned, {
         props: {
           userName: event.data.userName,
           labName: event.data.labName,
@@ -223,4 +210,101 @@ class RefreshedCredentials {
       return new RefreshedCredentials(client, sender);
     });
   }
+}
+
+async function getDesignatedSenderCredentialsForUpdate(
+  db: DrizzleTransaction,
+  encryptionKey: CryptoKey,
+) {
+  return await tracer.asyncSpan('get-designated-sender-credentials', async () => {
+    const sender = await db
+      .select({
+        id: dbSchema.user.id,
+        email: dbSchema.user.email,
+        givenName: dbSchema.user.givenName,
+        familyName: dbSchema.user.familyName,
+        accessTokenIv: dbSchema.candidateSender.accessTokenIv,
+        accessTokenCipher: dbSchema.candidateSender.accessTokenCipher,
+        refreshTokenIv: dbSchema.candidateSender.refreshTokenIv,
+        refreshTokenCipher: dbSchema.candidateSender.refreshTokenCipher,
+        scopes: dbSchema.candidateSender.scopes,
+        isValid: gte(dbSchema.candidateSender.expiredAt, sql`now()`).mapWith(Boolean),
+      })
+      .from(dbSchema.designatedSender)
+      .innerJoin(
+        dbSchema.candidateSender,
+        eq(dbSchema.designatedSender.candidateSenderUserId, dbSchema.candidateSender.userId),
+      )
+      .innerJoin(
+        dbSchema.user,
+        eq(dbSchema.designatedSender.candidateSenderUserId, dbSchema.user.id),
+      )
+      .where(
+        and(
+          isNotNull(dbSchema.user.googleUserId),
+          eq(dbSchema.user.isAdmin, true),
+          isNull(dbSchema.user.labId),
+        ),
+      )
+      .for('update')
+      .then(assertOptional);
+
+    if (typeof sender === 'undefined') return;
+
+    const [accessToken, refreshToken] = await Promise.all([
+      decryptSecret(encryptionKey, sender.accessTokenIv, sender.accessTokenCipher),
+      decryptSecret(encryptionKey, sender.refreshTokenIv, sender.refreshTokenCipher),
+    ]);
+
+    return {
+      id: sender.id,
+      email: sender.email,
+      givenName: sender.givenName,
+      familyName: sender.familyName,
+      accessToken,
+      refreshToken,
+      scopes: sender.scopes,
+      isValid: sender.isValid,
+    };
+  });
+}
+
+async function updateCandidateSender(
+  db: DrizzleTransaction,
+  userId: string,
+  expiresIn: number,
+  scopes: string[],
+  encryptionKey: CryptoKey,
+  accessToken: string,
+  refreshToken?: string | undefined,
+) {
+  return await tracer.asyncSpan('update-candidate-sender', async span => {
+    span.setAttributes({
+      'database.user.id': userId,
+      'database.candidate_sender.expires_in': expiresIn,
+    });
+
+    const encryptedAccessToken = await encryptSecret(encryptionKey, accessToken);
+    const update: PgUpdateSetSource<typeof dbSchema.candidateSender> = {
+      userId,
+      scopes,
+      accessTokenIv: Buffer.from(encryptedAccessToken.iv),
+      accessTokenCipher: Buffer.from(encryptedAccessToken.cipher),
+      refreshTokenIv: dbSchema.candidateSender.refreshTokenIv,
+      refreshTokenCipher: dbSchema.candidateSender.refreshTokenCipher,
+      expiredAt: sql`now() + make_interval(secs => ${expiresIn})`,
+    };
+
+    if (typeof refreshToken !== 'undefined') {
+      const { iv, cipher } = await encryptSecret(encryptionKey, refreshToken);
+      update.refreshTokenIv = Buffer.from(iv);
+      update.refreshTokenCipher = Buffer.from(cipher);
+    }
+
+    const { rowCount } = await db
+      .update(dbSchema.candidateSender)
+      .set(update)
+      .where(eq(dbSchema.candidateSender.userId, userId));
+    logger.debug('updated candidate sender', { rowCount });
+  });
 }

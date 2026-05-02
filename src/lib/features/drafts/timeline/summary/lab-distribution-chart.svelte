@@ -1,9 +1,11 @@
 <script lang="ts">
-  import { PieChart } from 'layerchart';
+  import { format } from 'd3-format';
+  import { PieChart } from 'layerchart/svg';
 
   import * as Card from '$lib/components/ui/card';
   import * as Chart from '$lib/components/ui/chart';
   import { assert } from '$lib/assert';
+  import { CHART_COLORS } from '$lib/constants';
   import type { DraftLabDistributionEntry } from '$lib/features/drafts/types';
 
   interface Props {
@@ -12,16 +14,8 @@
 
   const { data }: Props = $props();
 
-  const COLORS = [
-    'var(--chart-1)',
-    'var(--chart-2)',
-    'var(--chart-3)',
-    'var(--chart-4)',
-    'var(--chart-5)',
-  ] as const;
-
   function chartColor(i: number) {
-    const color = COLORS[i % COLORS.length];
+    const color = CHART_COLORS[i % CHART_COLORS.length];
     assert(typeof color === 'string', 'chart color index out of bounds');
     return color;
   }
@@ -30,12 +24,22 @@
     return entry.labId === null ? 'Unassigned' : entry.labId.toUpperCase();
   }
 
+  const percentFormat = format('.2~%');
+  const integerFormat = format('d');
+
   const chartConfig = $derived(
     Object.fromEntries(
-      data.map((entry, i) => [
-        shortLabel(entry),
-        { label: shortLabel(entry), color: chartColor(i) },
-      ]),
+      data.map((entry, i) => {
+        let subtitle = `${integerFormat(entry.count)} Student`;
+        if (entry.count > 1) subtitle += 's';
+        return [
+          shortLabel(entry),
+          {
+            label: subtitle,
+            color: chartColor(i),
+          },
+        ];
+      }),
     ),
   );
 
@@ -48,6 +52,8 @@
       color: chartColor(i),
     })),
   );
+
+  const totalAssigned = $derived(data.reduce((sum, { count }) => sum + count, 0));
 </script>
 
 <Card.Root
@@ -74,6 +80,10 @@
             labelAccessor={d => {
               assert(typeof d === 'object' && d !== null && 'labName' in d);
               return d.labName;
+            }}
+            valueFormatter={value => {
+              assert(typeof value === 'number');
+              return percentFormat(value / totalAssigned);
             }}
           />
         {/snippet}
