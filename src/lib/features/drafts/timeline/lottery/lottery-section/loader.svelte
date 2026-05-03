@@ -16,9 +16,10 @@
   interface Props {
     draftId: string;
     labs: Pick<Lab, 'id' | 'name'>[];
+    onSuccess?: () => void;
   }
 
-  const { draftId, labs }: Props = $props();
+  const { draftId, labs, onSuccess }: Props = $props();
   const queryClient = useQueryClient();
 
   const query = $derived(
@@ -56,7 +57,10 @@
         await queryClient.invalidateQueries({
           queryKey: ['drafts', draftId],
         });
-        if (result.type === 'success') toast.success('Successfully applied the interventions.');
+        if (result.type === 'success') {
+          toast.success('Successfully applied the interventions.');
+          onSuccess?.();
+        }
       };
     }}
   >

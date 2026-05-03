@@ -10,14 +10,19 @@
   import * as Popover from '$lib/components/ui/popover';
   import DraftedDraftees from '$lib/features/drafts/draftees/drafted/index.svelte';
   import { assert } from '$lib/assert';
-  import type { DumbbellRow } from '$lib/features/drafts/types';
+  import type { DraftLabQuotaSnapshot, DumbbellRow, Lab } from '$lib/features/drafts/types';
+
+  import EditLotteryQuota from './edit-lottery-quota.svelte';
+  import ShowEligibleStudents from './show-eligible-students.svelte';
 
   interface Props {
     draftId: string;
+    labs: Pick<Lab, 'id' | 'name'>[];
+    snapshots: DraftLabQuotaSnapshot[];
     rows: DumbbellRow[];
   }
 
-  const { draftId, rows }: Props = $props();
+  const { draftId, labs, snapshots, rows }: Props = $props();
 
   const integerFormat = format('d');
 
@@ -119,7 +124,10 @@
           Regular-round vacancies compared with final lottery quota.
         </Card.Description>
       </div>
-      <DraftedDraftees {draftId} triggerSize="sm" />
+      <div class="flex w-full flex-col gap-2 sm:flex-row sm:gap-2">
+        <EditLotteryQuota {draftId} {snapshots} />
+        <ShowEligibleStudents {draftId} {labs} />
+      </div>
     </div>
   </Card.Header>
   <Card.Content>
@@ -166,5 +174,8 @@
         </BarChart>
       </Chart.Container>
     {/if}
+    <div class="mt-4 flex justify-end">
+      <DraftedDraftees {draftId} triggerSize="sm" />
+    </div>
   </Card.Content>
 </Card.Root>
