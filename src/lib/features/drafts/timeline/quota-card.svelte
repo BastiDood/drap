@@ -86,7 +86,7 @@
 </Card.Root>
 
 <Sheet.Root bind:open>
-  <Sheet.Content side="right" class="flex w-full min-w-fit flex-col gap-4 p-4">
+  <Sheet.Content side="right" class="flex w-full flex-col gap-4 p-4 sm:max-w-[720px]">
     <Sheet.Header>
       <Sheet.Title>Update Draft Quota</Sheet.Title>
       <Sheet.Description>

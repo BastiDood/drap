@@ -62,14 +62,14 @@
     <Table.Root>
       <Table.Header>
         <Table.Row>
-          <Table.Head class="w-full">Laboratory</Table.Head>
+          <Table.Head class="whitespace-normal">Laboratory</Table.Head>
           <Table.Head class="w-0 text-right">Quota</Table.Head>
         </Table.Row>
       </Table.Header>
       <Table.Body>
         {#each snapshots as { labId, labName, initialQuota, lotteryQuota } (labId)}
           <Table.Row>
-            <Table.Cell class="w-full">{labName}</Table.Cell>
+            <Table.Cell class="break-words whitespace-normal">{labName}</Table.Cell>
             <Table.Cell class="w-0">
               {@const quotaInputId = `quota-input-${mode}-${labId}`}
               {@const committedQuota = mode === 'initial' ? initialQuota : lotteryQuota}
