@@ -27,7 +27,10 @@
   const hasQuota = $derived(totalQuota > 0);
 </script>
 
-<Card.Root class="preset-tonal-muted mx-auto max-w-2xl bg-linear-to-br via-background">
+<Card.Root
+  data-testid={mode === 'initial' ? 'quota-card-initial' : 'quota-card-lottery'}
+  class="preset-tonal-muted mx-auto max-w-2xl bg-linear-to-br via-background"
+>
   <Card.Header>
     <Card.Title class="flex items-center gap-1.5">
       {mode === 'initial' ? 'Initial Quota Distribution' : 'Lottery Quota Distribution'}
@@ -52,6 +55,9 @@
       {#if hasQuota}
         <button
           type="button"
+          data-testid={mode === 'initial'
+            ? 'quota-pie-chart-button-initial'
+            : 'quota-pie-chart-button-lottery'}
           class="group w-full cursor-pointer rounded-md p-4 transition-colors duration-150 hover:bg-muted/30"
           onclick={() => {
             open = true;

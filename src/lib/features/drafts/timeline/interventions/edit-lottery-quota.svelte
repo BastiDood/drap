@@ -25,7 +25,7 @@
       </Button>
     {/snippet}
   </Sheet.Trigger>
-  <Sheet.Content side="right" class="flex w-full flex-col gap-4 p-4 sm:max-w-md">
+  <Sheet.Content side="right" class="flex w-full flex-col gap-4 p-4 sm:max-w-[720px]">
     <Sheet.Header>
       <Sheet.Title>Update Draft Quota</Sheet.Title>
       <Sheet.Description>Edit the lottery quota values for each lab.</Sheet.Description>

@@ -20,7 +20,7 @@
   const deltaWarning = $derived(!isHistorical && data.delta !== 0);
 </script>
 
-<Card.Root class="preset-tonal-muted mx-auto max-w-2xl bg-linear-to-br via-background">
+<Card.Root class="preset-tonal-muted w-full bg-linear-to-br via-background">
   <Card.Header class="pb-2">
     <Card.Title class="flex items-center gap-1.5">
       Intervetion Stats
@@ -29,22 +29,15 @@
           <CircleHelpIcon class="size-3.5 text-muted-foreground" />
         </Popover.Trigger>
         <Popover.Content class="max-w-xs space-y-2 text-sm font-normal">
-          <p>
-            Statistics for the interventions phase, where remaining undrafted students are prepared
-            for random assignment.
-          </p>
           <ul class="list-disc space-y-1.5 pl-4">
             <li>
-              <strong>Pool Size</strong> is the number of students not yet assigned to a lab after regular
-              rounds.
+              <strong>Pool Size:</strong> Undrafted students after regular rounds
             </li>
             <li>
-              <strong>Lottery Quota</strong> is the total number of seats allocated across all labs for
-              the lottery.
+              <strong>Lottery Quota:</strong> Total seats for lottery
             </li>
             <li>
-              <strong>Delta</strong> is the difference between lottery quota and remaining vacancies.
-              A non-zero delta should be resolved before running the lottery.
+              <strong>Delta:</strong> Vacancies minus quota. Resolve non-zero before running lottery.
             </li>
           </ul>
         </Popover.Content>

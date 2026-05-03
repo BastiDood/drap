@@ -37,7 +37,7 @@
     <Sheet.Header class="shrink-0 p-0 pe-10">
       <Sheet.Title>Show Eligible Students</Sheet.Title>
       <Sheet.Description>
-        Apply manual interventions for undrafted students eligible for lottery.
+        Manually assign undrafted students to labs before running lottery.
       </Sheet.Description>
     </Sheet.Header>
     <div class="flex min-h-0 grow flex-col overflow-y-auto">

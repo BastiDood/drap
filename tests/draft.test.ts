@@ -973,6 +973,7 @@ test.describe('Draft Lifecycle', () => {
 
     test('shows initial snapshot quotas as placeholders', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
+      await adminPage.getByRole('button', { name: 'Add Draft Quota' }).click();
       const editor = adminPage.locator('#draft-quota-editor-initial');
       await expect(editor).toBeVisible();
 
@@ -988,6 +989,7 @@ test.describe('Draft Lifecycle', () => {
     test.describe('initial snapshot updates', () => {
       test('updates initial snapshots', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/drafts/1/');
+        await adminPage.getByRole('button', { name: 'Add Draft Quota' }).click();
         const editor = adminPage.locator('#draft-quota-editor-initial');
         await expect(editor).toBeVisible();
 
@@ -1006,6 +1008,11 @@ test.describe('Draft Lifecycle', () => {
 
       test('shows committed placeholders after update', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/drafts/1/');
+        await adminPage.waitForLoadState('networkidle');
+
+        const quotaButton = adminPage.getByRole('button', { name: /Click to edit/iu });
+        await expect(quotaButton).toBeVisible();
+        await quotaButton.click();
         const editor = adminPage.locator('#draft-quota-editor-initial');
         await expect(editor).toBeVisible();
 
@@ -1016,72 +1023,6 @@ test.describe('Draft Lifecycle', () => {
         const ndslInput = editor.locator('input[name="ndsl"]');
         await expect(ndslInput).toHaveValue('');
         await expect(ndslInput).toHaveAttribute('placeholder', '2');
-      });
-    });
-
-    test.describe('Quota Pie Chart Card', () => {
-      test('displays initial quota pie chart after snapshots are set', async ({ adminPage }) => {
-        await adminPage.goto('/dashboard/drafts/1/');
-        const card = adminPage
-          .getByText('Initial Quota Distribution')
-          .locator('..')
-          .locator('..')
-          .locator('..');
-        await expect(card).toBeVisible();
-
-        // Check that the pie chart is rendered
-        await expect(card.locator('[data-slot="card-content"]')).toBeVisible();
-      });
-
-      test('clicking pie chart card opens edit sheet', async ({ adminPage }) => {
-        await adminPage.goto('/dashboard/drafts/1/');
-        const card = adminPage
-          .getByText('Initial Quota Distribution')
-          .locator('..')
-          .locator('..')
-          .locator('..');
-
-        // Click the pie chart area to open edit sheet
-        await card.locator('button[type="button"]').first().click();
-
-        // Verify the edit sheet opens
-        const sheet = adminPage.locator('[data-slot="sheet-content"]').last();
-        await expect(sheet).toBeVisible();
-        await expect(sheet.getByText('Update Draft Quota')).toBeVisible();
-
-        // Close the sheet
-        await adminPage.keyboard.press('Escape');
-        await expect(sheet).toBeHidden();
-      });
-
-      test('legend shows percentages next to quota values', async ({ adminPage }) => {
-        await adminPage.goto('/dashboard/drafts/1/');
-        const card = adminPage
-          .getByText('Initial Quota Distribution')
-          .locator('..')
-          .locator('..')
-          .locator('..');
-
-        // Check that legend items contain percentages (e.g., "2 (40%)")
-        const legendItems = card
-          .locator('[data-slot="card-content"] span')
-          .filter({ hasText: /\(\d+%\)/u });
-        await expect(legendItems.first()).toBeVisible();
-      });
-
-      test('"Click to edit" text appears on hover', async ({ adminPage }) => {
-        await adminPage.goto('/dashboard/drafts/1/');
-        const card = adminPage
-          .getByText('Initial Quota Distribution')
-          .locator('..')
-          .locator('..')
-          .locator('..');
-
-        // Hover over the button containing the pie chart
-        await card.locator('button[type="button"]').first().hover();
-
-        // The "Click to edit" text should become visible (opacity-100)
-        await expect(card.getByText('Click to edit')).toBeVisible();
       });
     });
 
@@ -1907,9 +1848,9 @@ test.describe('Draft Lifecycle', () => {
       await expect(
         adminPage.getByRole('heading', { name: 'Interventions', exact: true }),
       ).toBeVisible();
-      await expectVisibleButtons(adminPage, ['Eligible for Lottery', 'See Drafted']);
+      await expectVisibleButtons(adminPage, ['Show Eligible Students', 'See Drafted']);
 
-      await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
+      await adminPage.getByRole('button', { name: 'Show Eligible Students' }).first().click();
       await expect(adminPage.getByRole('button', { name: 'Apply Interventions' })).toBeVisible();
     });
 
@@ -1972,7 +1913,7 @@ test.describe('Draft Lifecycle', () => {
   test.describe('Lottery Phase', () => {
     test('draft enters lottery phase', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
-      await expect(adminPage.getByRole('heading', { name: 'Interventions Phase' })).toBeVisible();
+      await expect(adminPage.getByRole('heading', { name: 'Interventions' })).toBeVisible();
       await expectSheetContents(
         adminPage,
         'See Drafted',
@@ -1981,7 +1922,7 @@ test.describe('Draft Lifecycle', () => {
       );
     });
 
-    test('eligible for lottery does not fetch before the sheet opens', async ({ adminPage }) => {
+    test('show eligible students does not fetch before the sheet opens', async ({ adminPage }) => {
       const noResponseBeforeOpen = expect(
         adminPage.waitForResponse(
           response => new URL(response.url()).pathname === '/dashboard/drafts/1/draftees',
@@ -1990,19 +1931,44 @@ test.describe('Draft Lifecycle', () => {
       ).rejects.toThrow();
 
       await adminPage.goto('/dashboard/drafts/1/');
-      await expectVisibleButtons(adminPage, ['Eligible for Lottery']);
+      await expectVisibleButtons(adminPage, ['Show Eligible Students']);
       await adminPage.waitForLoadState('networkidle');
       await noResponseBeforeOpen;
     });
 
-    test('eligible for lottery fetches when the sheet opens', async ({ adminPage }) => {
+    test('show eligible students fetches when the sheet opens', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
-      await expectVisibleButtons(adminPage, ['Eligible for Lottery']);
+      await expectVisibleButtons(adminPage, ['Show Eligible Students']);
       const responsePromise = adminPage.waitForResponse(
         response => new URL(response.url()).pathname === '/dashboard/drafts/1/draftees',
       );
-      await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
+      await adminPage.getByRole('button', { name: 'Show Eligible Students' }).first().click();
       await responsePromise;
+    });
+
+    test('edit lottery quota button opens sheet', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+      await expect(adminPage.getByRole('button', { name: 'Edit Lottery Quota' })).toBeVisible();
+      await adminPage.getByRole('button', { name: 'Edit Lottery Quota' }).click();
+
+      const sheet = adminPage.locator('[data-slot="sheet-content"]').last();
+      await expect(sheet).toBeVisible();
+      await expect(sheet.getByText('Update Draft Quota')).toBeVisible();
+
+      await adminPage.keyboard.press('Escape');
+      await expect(sheet).toBeHidden();
+    });
+
+    test('interventions sheet does not contain quota editor', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+      await adminPage.getByRole('button', { name: 'Show Eligible Students' }).click();
+
+      const sheet = adminPage.locator('[data-slot="sheet-content"]').last();
+      await expect(sheet).toBeVisible();
+      await expect(sheet.locator('#draft-quota-editor-lottery')).toHaveCount(0);
+
+      await adminPage.keyboard.press('Escape');
+      await expect(sheet).toBeHidden();
     });
   });
 
@@ -2057,7 +2023,7 @@ test.describe('Draft Lifecycle', () => {
   test.describe('Manual Intervention', () => {
     test('assigns first eligible student to a lab', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
-      await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
+      await adminPage.getByRole('button', { name: 'Show Eligible Students' }).first().click();
       const interventionForm = adminPage.locator('form[action*="intervene"]');
       await expect(interventionForm).toBeVisible();
 
@@ -2074,12 +2040,13 @@ test.describe('Draft Lifecycle', () => {
     });
   });
 
-  test.describe('Adjust Quotas for Remaining Students', () => {
+  test.describe('Edit Lottery Quota', () => {
     test.describe('lottery snapshot updates', () => {
       test('partially updates lottery snapshots', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/drafts/1/');
-        await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
-        const editor = adminPage.locator('#draft-quota-editor-lottery');
+        await adminPage.getByRole('button', { name: 'Edit Lottery Quota' }).click();
+        const sheet = adminPage.locator('[data-slot="sheet-content"]').last();
+        const editor = sheet.locator('#draft-quota-editor-lottery');
         await expect(editor).toBeVisible();
 
         const ndslInput = editor.locator('input[name="ndsl"]');
@@ -2099,8 +2066,9 @@ test.describe('Draft Lifecycle', () => {
 
       test('shows committed placeholders after lottery snapshot update', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/drafts/1/');
-        await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
-        const editor = adminPage.locator('#draft-quota-editor-lottery');
+        await adminPage.getByRole('button', { name: 'Edit Lottery Quota' }).click();
+        const sheet = adminPage.locator('[data-slot="sheet-content"]').last();
+        const editor = sheet.locator('#draft-quota-editor-lottery');
         await expect(editor).toBeVisible();
 
         const aclInput = editor.locator('input[name="acl"]');
@@ -2891,6 +2859,7 @@ test.describe('Draft Lifecycle', () => {
       await expect(adminPage.getByText('There are currently')).toBeVisible();
       await expect(adminPage.getByText(/\b3\b/u).first()).toBeVisible();
 
+      await adminPage.getByRole('button', { name: 'Add Draft Quota' }).click();
       const editor = adminPage.locator('#draft-quota-editor-initial');
       await expect(editor).toBeVisible();
 
@@ -3050,9 +3019,9 @@ test.describe('Draft Lifecycle', () => {
 
     test('lottery stage shows zero eligible students', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
-      await expect(adminPage.getByRole('heading', { name: 'Interventions Phase' })).toBeVisible();
-      await expectVisibleButtons(adminPage, ['Eligible for Lottery']);
-      await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
+      await expect(adminPage.getByRole('heading', { name: 'Interventions' })).toBeVisible();
+      await expectVisibleButtons(adminPage, ['Show Eligible Students']);
+      await adminPage.getByRole('button', { name: 'Show Eligible Students' }).first().click();
       await expect(
         adminPage.getByText('Congratulations! All participants have been drafted.'),
       ).toBeVisible();
@@ -3076,7 +3045,8 @@ test.describe('Draft Lifecycle', () => {
   test.describe('Second Draft — Lottery And Finalization', () => {
     test('sets lottery snapshots to zero for Draft #2', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
-      await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
+      await expect(adminPage.locator('main')).toBeVisible();
+      await adminPage.getByRole('button', { name: 'Edit Lottery Quota' }).click();
       const editor = adminPage.locator('#draft-quota-editor-lottery');
       await expect(editor).toBeVisible();
 
