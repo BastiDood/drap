@@ -1,5 +1,6 @@
 <script lang="ts">
   import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
+  import { sum } from 'd3-array';
 
   import * as Card from '$lib/components/ui/card';
   import * as Popover from '$lib/components/ui/popover';
@@ -21,7 +22,7 @@
   let open = $state(false);
 
   const totalQuota = $derived(
-    snapshots.reduce((sum, s) => sum + (mode === 'initial' ? s.initialQuota : s.lotteryQuota), 0),
+    sum(snapshots, s => (mode === 'initial' ? s.initialQuota : s.lotteryQuota)),
   );
 
   const hasQuota = $derived(totalQuota > 0);

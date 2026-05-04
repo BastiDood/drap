@@ -1,5 +1,6 @@
 <script lang="ts">
   import { PieChart } from 'layerchart';
+  import { sum } from 'd3-array';
 
   import * as Chart from '$lib/components/ui/chart';
   import { assert } from '$lib/assert';
@@ -24,7 +25,7 @@
   }
 
   const totalQuota = $derived(
-    snapshots.reduce((sum, s) => sum + (mode === 'initial' ? s.initialQuota : s.lotteryQuota), 0),
+    sum(snapshots, s => (mode === 'initial' ? s.initialQuota : s.lotteryQuota)),
   );
 
   const hasQuota = $derived(totalQuota > 0);

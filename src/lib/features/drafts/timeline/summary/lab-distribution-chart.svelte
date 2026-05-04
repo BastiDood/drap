@@ -1,6 +1,7 @@
 <script lang="ts">
   import { format } from 'd3-format';
   import { PieChart } from 'layerchart/svg';
+  import { sum } from 'd3-array';
 
   import * as Card from '$lib/components/ui/card';
   import * as Chart from '$lib/components/ui/chart';
@@ -53,7 +54,7 @@
     })),
   );
 
-  const totalAssigned = $derived(data.reduce((sum, { count }) => sum + count, 0));
+  const totalAssigned = $derived(sum(data, ({ count }) => count));
 </script>
 
 <Card.Root
