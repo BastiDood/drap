@@ -20,12 +20,7 @@
 <Sheet.Root bind:open>
   <Sheet.Trigger>
     {#snippet child({ props })}
-      <Button
-        variant="outline"
-        class="w-full border-warning text-warning sm:w-auto"
-        size="sm"
-        {...props}
-      >
+      <Button variant="outline" class="w-full sm:w-auto" size="sm" {...props}>
         <UsersIcon class="size-4" />
         <span>Show Eligible Students</span>
       </Button>
