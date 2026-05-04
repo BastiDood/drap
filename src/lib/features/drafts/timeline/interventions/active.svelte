@@ -24,7 +24,6 @@
   <StatCards data={interventionsAggregate.statCards} {isHistorical} />
   <QuotaDumbbellChart {draftId} {labs} {snapshots} rows={interventionsAggregate.dumbbellRows} />
   {#if !isHistorical}
-    <!-- New action buttons will go here -->
     <ConcludeForm {draftId} />
   {/if}
 </div>

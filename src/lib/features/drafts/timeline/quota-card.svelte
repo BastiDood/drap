@@ -47,9 +47,8 @@
         </Popover.Content>
       </Popover.Root>
     </Card.Title>
-    <Card.Description>Current quota allocation across participating labs</Card.Description>
+    <Card.Description>Current Quota Allocation across Participating Labs</Card.Description>
   </Card.Header>
-
   <Card.Content>
     <div class="flex flex-col items-center gap-4">
       {#if hasQuota}
@@ -59,32 +58,23 @@
             ? 'quota-pie-chart-button-initial'
             : 'quota-pie-chart-button-lottery'}
           class="group w-full cursor-pointer rounded-md p-4 transition-colors duration-150 hover:bg-muted/30"
-          onclick={() => {
-            open = true;
-          }}
+          onclick={() => (open = true)}
         >
           <QuotaPieChart {snapshots} {mode} />
           <p
             class="mt-1 text-center text-xs text-muted-foreground opacity-0 transition-opacity duration-150 group-hover:opacity-100"
           >
-            Click to edit
+            Click to Edit
           </p>
         </button>
       {:else}
-        <Button
-          variant="default"
-          class="w-full max-w-xs"
-          onclick={() => {
-            open = true;
-          }}
-        >
+        <Button variant="default" class="w-full max-w-xs" onclick={() => (open = true)}>
           Add Draft Quota
         </Button>
       {/if}
     </div>
   </Card.Content>
 </Card.Root>
-
 <Sheet.Root bind:open>
   <Sheet.Content side="right" class="flex w-full flex-col gap-4 p-4 sm:max-w-[720px]">
     <Sheet.Header>
@@ -95,13 +85,6 @@
           : 'Edit the lottery quota values for each lab.'}
       </Sheet.Description>
     </Sheet.Header>
-    <QuotaSnapshotForm
-      {draftId}
-      {mode}
-      {snapshots}
-      onSuccess={() => {
-        open = false;
-      }}
-    />
+    <QuotaSnapshotForm {draftId} {mode} {snapshots} onSuccess={() => (open = false)} />
   </Sheet.Content>
 </Sheet.Root>

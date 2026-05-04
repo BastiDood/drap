@@ -106,47 +106,10 @@
       case DraftPhase.Registration:
       case DraftPhase.RegistrationClosed:
         return 'pending';
-      case DraftPhase.Intervention:
-      case DraftPhase.Review:
-      case DraftPhase.Finalized:
-        return 'completed';
       default:
-        throw new Error('unreachable');
+        return 'completed';
     }
   });
-
-  type InterventionsRenderedPhase =
-    | DraftPhase.Intervention
-    | DraftPhase.Review
-    | DraftPhase.Finalized;
-  type LotteryRenderedPhase = DraftPhase.Review | DraftPhase.Finalized;
-
-  function interventionsStatusFor(phase: InterventionsRenderedPhase) {
-    switch (phase) {
-      case DraftPhase.Intervention:
-        return 'active';
-      case DraftPhase.Review:
-      case DraftPhase.Finalized:
-        return 'completed';
-      default:
-        throw new Error('unreachable');
-    }
-  }
-
-  function lotteryStatusFor(phase: LotteryRenderedPhase) {
-    switch (phase) {
-      case DraftPhase.Review:
-        return 'active';
-      case DraftPhase.Finalized:
-        return 'completed';
-      default:
-        throw new Error('unreachable');
-    }
-  }
-
-  function lotteryStepTitleFor(phase: LotteryRenderedPhase) {
-    return phase === DraftPhase.Review ? 'Review' : 'Lottery';
-  }
 </script>
 
 <div class="space-y-6">
@@ -164,8 +127,7 @@
     <div class="flex flex-wrap items-start gap-2">
       {#if currentPhase === DraftPhase.Registration || currentPhase === DraftPhase.RegistrationClosed}
         <StartForm {draftId} />
-      {/if}
-      {#if currentPhase !== DraftPhase.Registration && currentPhase !== DraftPhase.RegistrationClosed}
+      {:else}
         <div class="flex flex-wrap gap-2 *:w-full min-[24rem]:*:w-min">
           <Button
             href={resolve(`/dashboard/drafts/${draftId}/students.csv`)}
@@ -198,65 +160,56 @@
       {/if}
     </div>
   </div>
-
   <!-- Timeline (reverse chronological: newest at top) -->
   <div class="pl-1">
-    <!-- Summary (visible in review and finalized phases) -->
-    {#if currentPhase === DraftPhase.Review || currentPhase === DraftPhase.Finalized}
-      <Step title="Summary" status="active" collapsible={false}>
-        {#snippet metadata()}
-          {#if draft.activePeriodEnd !== null}
-            <span class="text-sm text-muted-foreground">{format(draft.activePeriodEnd, 'PPP')}</span
-            >
-          {:else}
-            <span class="text-sm text-muted-foreground">Pending Finalization</span>
-          {/if}
-        {/snippet}
-        <SummaryPhase
-          {draftId}
-          {draft}
-          totalStudents={studentCount}
-          {assignmentSummary}
-          {draftSummaryChartData}
-          isReview={currentPhase === DraftPhase.Review}
-        />
-      </Step>
-    {/if}
-
-    <!-- Lottery: post-intervention only (review + finalized) -->
-    {#if currentPhase === DraftPhase.Review || currentPhase === DraftPhase.Finalized}
-      <Step
-        title={lotteryStepTitleFor(currentPhase)}
-        status={lotteryStatusFor(currentPhase)}
-        open={currentPhase === DraftPhase.Review}
-      >
-        <LotteryCompleted
-          {draftId}
-          isReview={currentPhase === DraftPhase.Review}
-          {lotteryAggregate}
-        />
-      </Step>
-    {/if}
-
-    <!-- Interventions: active during intervention phase, historical after -->
-    {#if currentPhase === DraftPhase.Intervention || currentPhase === DraftPhase.Review || currentPhase === DraftPhase.Finalized}
-      <Step
-        title="Interventions"
-        status={interventionsStatusFor(currentPhase)}
-        open={currentPhase === DraftPhase.Intervention}
-      >
-        <InterventionsActive
-          {draftId}
-          {labs}
-          {snapshots}
-          {interventionsAggregate}
-          isHistorical={currentPhase !== DraftPhase.Intervention}
-        />
-      </Step>
-    {/if}
-
-    <!-- Regular Rounds -->
     {#if currentPhase !== DraftPhase.Registration && currentPhase !== DraftPhase.RegistrationClosed}
+      {#if currentPhase !== DraftPhase.Regular}
+        {#if currentPhase !== DraftPhase.Intervention}
+          <Step title="Summary" status="active" collapsible={false}>
+            {#snippet metadata()}
+              {#if draft.activePeriodEnd !== null}
+                <span class="text-sm text-muted-foreground"
+                  >{format(draft.activePeriodEnd, 'PPP')}</span
+                >
+              {:else}
+                <span class="text-sm text-muted-foreground">Pending Finalization</span>
+              {/if}
+            {/snippet}
+            <SummaryPhase
+              {draftId}
+              {draft}
+              totalStudents={studentCount}
+              {assignmentSummary}
+              {draftSummaryChartData}
+              isReview={currentPhase === DraftPhase.Review}
+            />
+          </Step>
+          <Step
+            title={currentPhase === DraftPhase.Review ? 'Review' : 'Lottery'}
+            status={currentPhase === DraftPhase.Review ? 'active' : 'completed'}
+            open={currentPhase === DraftPhase.Review}
+          >
+            <LotteryCompleted
+              {draftId}
+              isReview={currentPhase === DraftPhase.Review}
+              {lotteryAggregate}
+            />
+          </Step>
+        {/if}
+        <Step
+          title="Interventions"
+          status={currentPhase === DraftPhase.Intervention ? 'active' : 'completed'}
+          open={currentPhase === DraftPhase.Intervention}
+        >
+          <InterventionsActive
+            {draftId}
+            {labs}
+            {snapshots}
+            {interventionsAggregate}
+            isHistorical={currentPhase !== DraftPhase.Intervention}
+          />
+        </Step>
+      {/if}
       <Step
         title="Regular Rounds"
         status={regularStatus}
@@ -294,8 +247,6 @@
         {/if}
       </Step>
     {/if}
-
-    <!-- Registration (always at bottom) -->
     <Step
       title="Registration"
       status={registrationStatus}
