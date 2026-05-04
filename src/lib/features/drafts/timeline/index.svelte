@@ -2,6 +2,7 @@
   import ArrowUpFromLineIcon from '@lucide/svelte/icons/arrow-up-from-line';
   import { format, lightFormat } from 'date-fns';
 
+  import RegisteredDraftees from '$lib/features/drafts/draftees/registered/index.svelte';
   import { Badge } from '$lib/components/ui/badge';
   import { Button } from '$lib/components/ui/button';
   import type {
@@ -114,7 +115,7 @@
 
 <div class="space-y-6">
   <!-- Header -->
-  <div class="flex w-full flex-col justify-between gap-2 lg:flex-row">
+  <div class="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
     <div>
       <h2 class="flex items-center gap-2 text-2xl font-bold">
         <span>Draft #{draftId.toString()}</span>
@@ -124,39 +125,44 @@
         Started {format(draft.activePeriodStart, 'PPP')} &middot; {getPhaseLabel(currentPhase)}
       </p>
     </div>
-    <div class="flex flex-wrap items-start gap-2">
+    <div class="flex flex-wrap gap-2 lg:justify-end">
       {#if currentPhase === DraftPhase.Registration || currentPhase === DraftPhase.RegistrationClosed}
+        {#if studentCount > 0}
+          <RegisteredDraftees {draftId} variant="primary">
+            {currentPhase === DraftPhase.Registration
+              ? 'No students have registered yet.'
+              : 'No students have registered for this draft.'}
+          </RegisteredDraftees>
+        {/if}
         <StartForm {draftId} />
       {:else}
-        <div class="flex flex-wrap gap-2 *:w-full min-[24rem]:*:w-min">
-          <Button
-            href={resolve(`/dashboard/drafts/${draftId}/students.csv`)}
-            download="{lightFormat(requestedAt, 'yyyy-MM-dd')}_{draftId}_students.csv"
-            variant="outline"
-            size="sm"
-          >
-            <ArrowUpFromLineIcon class="size-4" />
-            <span>Student Ranks</span>
-          </Button>
-          <Button
-            href={resolve(`/dashboard/drafts/${draftId}/results.csv`)}
-            download="{lightFormat(requestedAt, 'yyyy-MM-dd')}_{draftId}_results.csv"
-            variant="outline"
-            size="sm"
-          >
-            <ArrowUpFromLineIcon class="size-4" />
-            <span>Results</span>
-          </Button>
-          <Button
-            href={resolve(`/dashboard/drafts/${draftId}/system-logs.csv`)}
-            download="{lightFormat(requestedAt, 'yyyy-MM-dd')}_{draftId}_system-logs.csv"
-            variant="outline"
-            size="sm"
-          >
-            <ArrowUpFromLineIcon class="size-4" />
-            <span>System Logs</span>
-          </Button>
-        </div>
+        <Button
+          href={resolve(`/dashboard/drafts/${draftId}/students.csv`)}
+          download="{lightFormat(requestedAt, 'yyyy-MM-dd')}_{draftId}_students.csv"
+          variant="outline"
+          size="sm"
+        >
+          <ArrowUpFromLineIcon class="size-4" />
+          <span>Student Ranks</span>
+        </Button>
+        <Button
+          href={resolve(`/dashboard/drafts/${draftId}/results.csv`)}
+          download="{lightFormat(requestedAt, 'yyyy-MM-dd')}_{draftId}_results.csv"
+          variant="outline"
+          size="sm"
+        >
+          <ArrowUpFromLineIcon class="size-4" />
+          <span>Results</span>
+        </Button>
+        <Button
+          href={resolve(`/dashboard/drafts/${draftId}/system-logs.csv`)}
+          download="{lightFormat(requestedAt, 'yyyy-MM-dd')}_{draftId}_system-logs.csv"
+          variant="outline"
+          size="sm"
+        >
+          <ArrowUpFromLineIcon class="size-4" />
+          <span>System Logs</span>
+        </Button>
       {/if}
     </div>
   </div>

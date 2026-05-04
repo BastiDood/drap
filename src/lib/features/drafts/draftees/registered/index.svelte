@@ -1,4 +1,5 @@
 <script lang="ts">
+  import UsersIcon from '@lucide/svelte/icons/users';
   import { tv } from 'tailwind-variants';
 
   import * as Sheet from '$lib/components/ui/sheet';
@@ -26,7 +27,8 @@
   <Sheet.Trigger>
     {#snippet child({ props })}
       <Button variant="outline" class={triggerVariants({ variant })} {...props}>
-        See Registered Students
+        <UsersIcon class="size-4" />
+        <span>See Registered Students</span>
       </Button>
     {/snippet}
   </Sheet.Trigger>

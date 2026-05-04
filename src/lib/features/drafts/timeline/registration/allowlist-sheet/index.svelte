@@ -6,6 +6,7 @@
 </script>
 
 <script lang="ts">
+  import UserRoundPlusIcon from '@lucide/svelte/icons/user-round-plus';
   import UsersIcon from '@lucide/svelte/icons/users';
 
   import * as Sheet from '$lib/components/ui/sheet';
@@ -38,24 +39,20 @@
       <Sheet.Trigger>
         {#snippet child({ props })}
           <Button variant="outline" class="border-accent text-accent" {...props}>
-            Manage Allowlist
+            <UserRoundPlusIcon class="size-4" />
+            <span>Manage Allowlist</span>
           </Button>
         {/snippet}
       </Sheet.Trigger>
     </div>
   </div>
-  <Sheet.Content
-    side="right"
-    class="flex w-full flex-col gap-4 overflow-hidden p-4 sm:max-w-[720px]"
-  >
+  <Sheet.Content side="right" class="flex w-full flex-col gap-4 overflow-hidden p-4 sm:max-w-md">
     <Sheet.Header class="shrink-0 p-0 pe-10">
       <Sheet.Title>Draft Registration Allowlist</Sheet.Title>
       <Sheet.Description>
         Allow specific students to submit rankings after the registration deadline has passed.
       </Sheet.Description>
     </Sheet.Header>
-    <div class="flex min-h-0 grow flex-col">
-      <AllowlistContent {draftId} />
-    </div>
+    <AllowlistContent {draftId} />
   </Sheet.Content>
 </Sheet.Root>

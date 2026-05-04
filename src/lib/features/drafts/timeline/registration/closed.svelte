@@ -5,11 +5,10 @@
 
   import * as Alert from '$lib/components/ui/alert';
   import QuotaCard from '$lib/features/drafts/timeline/quota-card.svelte';
-  import RegisteredDraftees from '$lib/features/drafts/draftees/registered/index.svelte';
   import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
   import type { DraftLabQuotaSnapshot } from '$lib/features/drafts/types';
 
-  import { AllowlistSheet } from './allowlist';
+  import { AllowlistSheet } from './allowlist-sheet';
 
   interface Props {
     draftId: string;
@@ -45,11 +44,6 @@
         </StatCard>
       </div>
       <QuotaCard {draftId} mode="initial" {snapshots} />
-      <div class="flex items-center justify-center">
-        <RegisteredDraftees {draftId} variant="primary">
-          No students have registered for this draft.
-        </RegisteredDraftees>
-      </div>
     </div>
   {:else}
     <Alert.Root variant="info">

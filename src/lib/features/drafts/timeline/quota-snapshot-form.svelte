@@ -57,7 +57,6 @@
 >
   <input type="hidden" name="draft" value={draftId} />
   <input type="hidden" name="kind" value={mode} />
-
   <div class="rounded-md border">
     <Table.Root>
       <Table.Header>
@@ -69,7 +68,7 @@
       <Table.Body>
         {#each snapshots as { labId, labName, initialQuota, lotteryQuota } (labId)}
           <Table.Row>
-            <Table.Cell class="break-words whitespace-normal">{labName}</Table.Cell>
+            <Table.Cell class="wrap-break-word whitespace-normal">{labName}</Table.Cell>
             <Table.Cell class="w-0">
               {@const quotaInputId = `quota-input-${mode}-${labId}`}
               {@const committedQuota = mode === 'initial' ? initialQuota : lotteryQuota}

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import CheckIcon from '@lucide/svelte/icons/check';
   import { toast } from 'svelte-sonner';
   import { useQueryClient } from '@tanstack/svelte-query'; // eslint-disable-line no-restricted-imports
 
@@ -52,8 +53,10 @@
       }
     };
   }}
-  class="w-full"
 >
   <input type="hidden" name="draft" value={draftId} />
-  <Button type="submit">Start Draft</Button>
+  <Button type="submit">
+    <CheckIcon class="size-4" />
+    <span>Start Draft</span>
+  </Button>
 </form>
