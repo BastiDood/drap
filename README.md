@@ -355,7 +355,7 @@ nu ./scripts/test-playwright.nu production
 
 ## Acknowledgements
 
-The DRAP project, licensed under the [GNU Affero General Public License v3], was originally developed by [Sebastian Luis S. Ortiz][BastiDood], [Victor Edwin E. Reyes][VeeIsForVanana], and [Ehren A. Castillo][ehrelevant] as a service project under the [UP Center for Student Innovations]. The DRAP [logo](./static/favicon.ico) and [banner](./src/lib/banner.png) were originally designed and created by [Angelica Julianne A. Raborar][Anjellyrika].
+The DRAP project, licensed under the [GNU Affero General Public License v3], was originally developed by [Basti Ortiz][BastiDood], [Victor Reyes][VeeIsForVanana], and [Ehren Castillo][ehrelevant] as a service project under the [UP Center for Student Innovations]. The DRAP [logo](./static/favicon.ico) and [banner](./src/lib/banner.png) were originally designed and created by [Jelly Raborar][Anjellyrika].
 
 [BastiDood]: https://github.com/BastiDood
 [VeeIsForVanana]: https://github.com/VeeIsForVictor
@@ -363,3 +363,25 @@ The DRAP project, licensed under the [GNU Affero General Public License v3], was
 [Anjellyrika]: https://github.com/Anjellyrika
 [UP Center for Student Innovations]: https://up-csi.org/
 [GNU Affero General Public License v3]: ./LICENSE
+
+Special thanks goes to the following contributors for their help in the project in the succeeding years:
+
+- [Yenyen Galinato][galierie]
+- [Harry Quijano][Harry2166]
+- [Michael Real][mcjefdreal]
+- [Ysaac Villamil][LigsQt]
+- [Ehren Castillo][ehrelevant]
+- [Marcus Pascual][syncopascual]
+- [Ervin Mercado][ervnmrcdo]
+- [Benj Lazaro][Enoux]
+- [Jan Albert Quidet][jdquidet]
+
+[galierie]: https://github.com/galierie
+[Harry2166]: https://github.com/Harry2166
+[mcjefdreal]: https://github.com/mcjefdreal
+[LigsQt]: https://github.com/LigsQt
+[ehrelevant]: https://github.com/ehrelevant
+[syncopascual]: https://github.com/syncopascual
+[ervnmrcdo]: https://github.com/ervnmrcdo
+[Enoux]: https://github.com/Enoux
+[jdquidet]: https://github.com/jdquidet
