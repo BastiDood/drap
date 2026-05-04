@@ -302,7 +302,7 @@ export const actions = {
 
       const draftId = BigInt(draft);
       const roundsToNotify: (number | null)[] = [];
-      const started = await db.transaction(
+      await db.transaction(
         async db => {
           const activeDraft = await getDraftByIdForUpdate(db, draftId);
           if (typeof activeDraft === 'undefined' || activeDraft.activePeriodEnd !== null) {
@@ -319,12 +319,6 @@ export const actions = {
               'draft.round.max': activeDraft.maxRounds,
             });
             error(403);
-          }
-
-          const studentCount = await getStudentCountInDraft(db, draftId);
-          if (studentCount <= 0) {
-            logger.warn('no students in draft');
-            return false;
           }
 
           const { startedAt } = await markDraftAsStarted(db, draftId);
@@ -352,18 +346,9 @@ export const actions = {
               break;
             }
           }
-
-          return true;
         },
         { isolationLevel: 'read committed' },
       );
-
-      if (!started) {
-        logger.fatal('cannot start draft without students', void 0, {
-          'draft.id': draftId.toString(),
-        });
-        return fail(497);
-      }
 
       // Dispatch notifications for all rounds that were started
       const facultyAndStaff = await getFacultyAndStaff(db);

@@ -35,19 +35,6 @@
         case 'success':
           toast.success('Draft started.');
           break;
-        case 'failure':
-          switch (result.status) {
-            case 497:
-              toast.error('Cannot start the draft when there are not enough participants.', {
-                duration: Infinity,
-                dismissable: true,
-              });
-              break;
-            default:
-              toast.error('Failed to start the draft.');
-              break;
-          }
-          break;
         default:
           break;
       }
