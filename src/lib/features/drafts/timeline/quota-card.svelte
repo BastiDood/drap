@@ -8,8 +8,9 @@
   import { Button } from '$lib/components/ui/button';
   import type { DraftLabQuotaSnapshot } from '$lib/features/drafts/types';
 
-  import QuotaPieChart from './quota-pie-chart.svelte';
   import QuotaSnapshotForm from './quota-snapshot-form.svelte';
+
+  import QuotaPieChart from './quota-pie-chart/index.svelte';
 
   interface Props {
     draftId: string;

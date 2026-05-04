@@ -9,7 +9,7 @@
   import { CHART_COLORS } from '$lib/constants';
   import type { LotteryOutcomeStack } from '$lib/features/drafts/types';
 
-  import { keyForRank } from './lottery-outcome-chart-utils';
+  import { keyForRank } from './utils';
 
   interface Props {
     stacks: LotteryOutcomeStack[];

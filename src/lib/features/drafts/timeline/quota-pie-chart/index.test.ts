@@ -1,25 +1,21 @@
 import { describe, expect, test } from 'vitest';
 
-import type { DraftLabQuotaSnapshot } from '../types';
+import type { DraftLabQuotaSnapshot } from '$lib/features/drafts/types';
+
+function calculatePercentage(snapshots: DraftLabQuotaSnapshot[], mode: 'initial' | 'lottery') {
+  const totalQuota = snapshots.reduce(
+    (sum, s) => sum + (mode === 'initial' ? s.initialQuota : s.lotteryQuota),
+    0,
+  );
+  return snapshots
+    .filter(s => (mode === 'initial' ? s.initialQuota : s.lotteryQuota) > 0)
+    .map(snapshot => {
+      const quota = mode === 'initial' ? snapshot.initialQuota : snapshot.lotteryQuota;
+      return totalQuota > 0 ? Math.round((quota / totalQuota) * 100) : 0;
+    });
+}
 
 describe('QuotaPieChart - percentage calculation', () => {
-  function calculatePercentage(
-    snapshots: DraftLabQuotaSnapshot[],
-    mode: 'initial' | 'lottery',
-  ): number[] {
-    const totalQuota = snapshots.reduce(
-      (sum, s) => sum + (mode === 'initial' ? s.initialQuota : s.lotteryQuota),
-      0,
-    );
-
-    return snapshots
-      .filter(s => (mode === 'initial' ? s.initialQuota : s.lotteryQuota) > 0)
-      .map(snapshot => {
-        const quota = mode === 'initial' ? snapshot.initialQuota : snapshot.lotteryQuota;
-        return totalQuota > 0 ? Math.round((quota / totalQuota) * 100) : 0;
-      });
-  }
-
   test('calculates correct percentages for multiple labs', () => {
     const snapshots: DraftLabQuotaSnapshot[] = [
       { labId: 'csl', labName: 'CSL', initialQuota: 5, lotteryQuota: 0 },
