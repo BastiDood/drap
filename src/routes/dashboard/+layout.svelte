@@ -24,7 +24,7 @@
 </script>
 
 <QueryClientProvider client={queryClient}>
-  <Toaster richColors closeButton />
+  <Toaster richColors closeButton mobileOffset={{ bottom: '80px' }} />
   <SidebarProvider>
     <div class="flex h-dvh w-full overflow-hidden">
       <SideBar {user} />

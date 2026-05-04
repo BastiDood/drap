@@ -147,6 +147,7 @@
 @theme inline {
   --background-image-dcs: url('$lib/assets/dcs.webp');
   --breakpoint-xs: 30rem;
+  --breakpoint-md: 37.5625rem;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
