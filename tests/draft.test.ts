@@ -3357,8 +3357,8 @@ test.describe('Draft Lifecycle', () => {
 
           const allowlistSheet = adminPage.locator('[data-slot="sheet-content"]').last();
           const allowlistRow = allowlistSheet
-            .locator('tbody tr')
-            .filter({ hasText: 'late.student@up.edu.ph' });
+            .getByRole('link', { name: 'late.student@up.edu.ph' })
+            .locator('xpath=ancestor::div[contains(@class, "border-dashed")][1]');
           await expect(allowlistRow).toBeVisible();
 
           const removeResponsePromise = adminPage.waitForResponse(
@@ -3367,7 +3367,7 @@ test.describe('Draft Lifecycle', () => {
           const refetchAfterRemovePromise = adminPage.waitForResponse(
             `/dashboard/drafts/${thirdDraftId}/allowlist`,
           );
-          await allowlistRow.getByRole('button').click();
+          await allowlistRow.getByRole('button', { name: 'Remove from Allowlist' }).click();
 
           const removeResponse = await removeResponsePromise;
           expect(removeResponse.ok()).toBeTruthy();
@@ -3379,6 +3379,57 @@ test.describe('Draft Lifecycle', () => {
             adminPage.getByText('No students are currently on the allowlist.'),
           ).toBeVisible();
         });
+      });
+    });
+
+    test.describe('Zero Quota Flow', () => {
+      test('starts Draft #3 and reaches interventions through the regular flow', async ({
+        adminPage,
+      }) => {
+        await adminPage.goto(draftDetailPath());
+        adminPage.on('dialog', dialog => dialog.accept());
+
+        const startResponsePromise = adminPage.waitForResponse(
+          `/dashboard/drafts/${thirdDraftId}/?/start`,
+        );
+        await adminPage.getByRole('button', { name: 'Start Draft' }).click();
+        const startResponse = await startResponsePromise;
+        const startResponseData = await startResponse.json();
+        expect(startResponseData.type).toBe('success');
+
+        await expect(adminPage.getByText(/Started .* · Interventions/u)).toBeVisible();
+        await expect(adminPage.getByRole('heading', { name: 'Interventions' })).toBeVisible();
+      });
+
+      test('runs lottery for Draft #3 with zero quota', async ({ adminPage }) => {
+        await adminPage.goto(draftDetailPath());
+        adminPage.on('dialog', dialog => dialog.accept());
+
+        const concludeResponsePromise = adminPage.waitForResponse(
+          `/dashboard/drafts/${thirdDraftId}/?/conclude`,
+        );
+        await adminPage.getByRole('button', { name: 'Run Lottery' }).click();
+        const concludeResponse = await concludeResponsePromise;
+        const concludeResponseData = await concludeResponse.json();
+        expect(concludeResponseData.type).toBe('success');
+
+        await expect(adminPage.getByText(/Started .* · Review/u)).toBeVisible();
+        await expect(adminPage.getByRole('button', { name: 'Finalize Draft' })).toBeVisible();
+      });
+
+      test('finalizes Draft #3 with zero assignments', async ({ adminPage }) => {
+        await adminPage.goto(draftDetailPath());
+        adminPage.on('dialog', dialog => dialog.accept());
+
+        const finalizeResponsePromise = adminPage.waitForResponse(
+          `/dashboard/drafts/${thirdDraftId}/?/finalize`,
+        );
+        await adminPage.getByRole('button', { name: 'Finalize Draft' }).click();
+        const finalizeResponse = await finalizeResponsePromise;
+        const finalizeResponseData = await finalizeResponse.json();
+        expect(finalizeResponseData.type).toBe('success');
+
+        await expect(adminPage.getByText(/Started .* · Finalized/u)).toBeVisible();
       });
     });
   });
