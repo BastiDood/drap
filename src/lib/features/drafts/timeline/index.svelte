@@ -205,7 +205,7 @@
             {draftId}
             {labs}
             {snapshots}
-            {interventionsAggregate}
+            rows={interventionsAggregate.dumbbellRows}
             isHistorical={currentPhase !== DraftPhase.Intervention}
           />
         </Step>

@@ -21,9 +21,10 @@
     labs: Pick<Lab, 'id' | 'name'>[];
     snapshots: DraftLabQuotaSnapshot[];
     rows: DumbbellRow[];
+    isHistorical: boolean;
   }
 
-  const { draftId, labs, snapshots, rows }: Props = $props();
+  const { draftId, labs, snapshots, rows, isHistorical }: Props = $props();
 
   const integerFormat = format('d');
 
@@ -125,10 +126,12 @@
           Regular-round vacancies compared with final lottery quota.
         </Card.Description>
       </div>
-      <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:gap-2">
-        <EditLotteryQuota {draftId} {snapshots} />
-        <EligibleStudentsSheet {draftId} {labs} />
-      </div>
+      {#if !isHistorical}
+        <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:gap-2">
+          <EditLotteryQuota {draftId} {snapshots} />
+          <EligibleStudentsSheet {draftId} {labs} />
+        </div>
+      {/if}
     </div>
   </Card.Header>
   <Card.Content>
