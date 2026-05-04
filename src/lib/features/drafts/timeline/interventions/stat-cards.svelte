@@ -27,7 +27,6 @@
     {/snippet}
     {#snippet subtitle()}Students Eligible for Lottery{/snippet}
   </StatCard>
-
   <StatCard icon={ActivityIcon}>
     {#snippet title()}Lottery Quotas{/snippet}
     {#snippet body()}
@@ -51,7 +50,7 @@
         </p>
       {/snippet}
       {#snippet subtitle()}
-        {deltaWarning ? 'Resolve before running lottery' : 'Ready to run lottery'}
+        {deltaWarning ? 'Must be resolved before running lottery.' : 'Ready to run lottery.'}
       {/snippet}
     </StatCard>
   {/if}

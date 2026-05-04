@@ -126,12 +126,13 @@
           Regular-round vacancies compared with final lottery quota.
         </Card.Description>
       </div>
-      {#if !isHistorical}
-        <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:gap-2">
+      <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:gap-2">
+        {#if !isHistorical}
           <EditLotteryQuota {draftId} {snapshots} />
           <EligibleStudentsSheet {draftId} {labs} />
-        </div>
-      {/if}
+          <DraftedDraftees {draftId} triggerSize="sm" />
+        {/if}
+      </div>
     </div>
   </Card.Header>
   <Card.Content>
@@ -178,8 +179,5 @@
         </BarChart>
       </Chart.Container>
     {/if}
-    <div class="mt-4 flex justify-end">
-      <DraftedDraftees {draftId} triggerSize="sm" />
-    </div>
   </Card.Content>
 </Card.Root>

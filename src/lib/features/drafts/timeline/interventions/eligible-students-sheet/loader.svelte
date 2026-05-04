@@ -37,7 +37,7 @@
     {#snippet title()}Unable to Load Data{/snippet}
     {#snippet description()}Uh oh! An error has occurred.{/snippet}
   </Empty>
-{:else if query.data.length > 0}
+{:else}
   <form
     method="post"
     action="/dashboard/drafts/{draftId}/?/intervene"
@@ -77,8 +77,4 @@
       <span>Apply Interventions</span>
     </Button>
   </form>
-{:else}
-  <p class="prose max-w-none dark:prose-invert">
-    Congratulations! All participants have been drafted. No action is needed here.
-  </p>
 {/if}
