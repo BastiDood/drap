@@ -942,7 +942,8 @@ test.describe('Draft Lifecycle', () => {
 
     test('sees registrant list', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
-      await expect(adminPage.getByText('There are currently')).toBeVisible();
+      await expect(adminPage.getByText('Registered Students', { exact: true })).toBeVisible();
+      await expect(adminPage.getByText('Current Draft Participants')).toBeVisible();
       await expect(adminPage.getByText(/\b8\b/u).first()).toBeVisible();
       await expectVisibleButtons(adminPage, ['See Registered Students']);
     });
@@ -973,7 +974,7 @@ test.describe('Draft Lifecycle', () => {
 
     test('shows initial snapshot quotas as placeholders', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
-      await adminPage.getByRole('button', { name: 'Add Draft Quota' }).click();
+      await adminPage.getByRole('button', { name: 'Setup Quota' }).click();
       const editor = adminPage.locator('#draft-quota-editor-initial');
       await expect(editor).toBeVisible();
 
@@ -989,7 +990,7 @@ test.describe('Draft Lifecycle', () => {
     test.describe('initial snapshot updates', () => {
       test('updates initial snapshots', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/drafts/1/');
-        await adminPage.getByRole('button', { name: 'Add Draft Quota' }).click();
+        await adminPage.getByRole('button', { name: 'Setup Quota' }).click();
         const editor = adminPage.locator('#draft-quota-editor-initial');
         await expect(editor).toBeVisible();
 
@@ -1010,7 +1011,7 @@ test.describe('Draft Lifecycle', () => {
         await adminPage.goto('/dashboard/drafts/1/');
         await adminPage.waitForLoadState('networkidle');
 
-        const quotaButton = adminPage.getByRole('button', { name: /Click to edit/iu });
+        const quotaButton = adminPage.getByRole('button', { name: 'Edit Quota' });
         await expect(quotaButton).toBeVisible();
         await quotaButton.click();
         const editor = adminPage.locator('#draft-quota-editor-initial');
@@ -2856,10 +2857,11 @@ test.describe('Draft Lifecycle', () => {
   test.describe('Second Draft — Regular Flow (No Lottery Assignments)', () => {
     test('updates Draft #2 initial snapshots before start', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
-      await expect(adminPage.getByText('There are currently')).toBeVisible();
+      await expect(adminPage.getByText('Registered Students', { exact: true })).toBeVisible();
+      await expect(adminPage.getByText('Current Draft Participants')).toBeVisible();
       await expect(adminPage.getByText(/\b3\b/u).first()).toBeVisible();
 
-      await adminPage.getByRole('button', { name: 'Add Draft Quota' }).click();
+      await adminPage.getByRole('button', { name: 'Setup Quota' }).click();
       const editor = adminPage.locator('#draft-quota-editor-initial');
       await expect(editor).toBeVisible();
 
@@ -2877,7 +2879,8 @@ test.describe('Draft Lifecycle', () => {
 
     test('starts Draft #2', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
-      await expect(adminPage.getByText('There are currently')).toBeVisible();
+      await expect(adminPage.getByText('Registered Students', { exact: true })).toBeVisible();
+      await expect(adminPage.getByText('Current Draft Participants')).toBeVisible();
       await expect(adminPage.getByText(/\b3\b/u).first()).toBeVisible();
 
       adminPage.on('dialog', dialog => dialog.accept());
@@ -3279,7 +3282,20 @@ test.describe('Draft Lifecycle', () => {
           ).toBeVisible();
         });
 
-        test('lazy-loads the allowlist dialog on open', async ({ adminPage }) => {
+        test('allowlist does not fetch before the sheet opens', async ({ adminPage }) => {
+          const noResponseBeforeOpen = expect(
+            adminPage.waitForResponse(`/dashboard/drafts/${thirdDraftId}/allowlist`, {
+              timeout: 1000,
+            }),
+          ).rejects.toThrow();
+
+          await adminPage.goto(draftDetailPath());
+          await expect(adminPage.getByRole('button', { name: 'Manage Allowlist' })).toBeVisible();
+          await adminPage.waitForLoadState('networkidle');
+          await noResponseBeforeOpen;
+        });
+
+        test('lazy-loads the allowlist sheet on open', async ({ adminPage }) => {
           await adminPage.goto(draftDetailPath());
 
           const allowlistResponsePromise = adminPage.waitForResponse(
@@ -3289,9 +3305,9 @@ test.describe('Draft Lifecycle', () => {
           const allowlistResponse = await allowlistResponsePromise;
           expect(allowlistResponse.ok()).toBeTruthy();
 
-          const allowlistDialog = adminPage.getByRole('dialog');
-          await expect(allowlistDialog).toBeVisible();
-          await expect(allowlistDialog.getByText('No students on the allowlist')).toBeVisible();
+          const allowlistSheet = adminPage.locator('[data-slot="sheet-content"]').last();
+          await expect(allowlistSheet).toBeVisible();
+          await expect(allowlistSheet.getByText('No students on the allowlist')).toBeVisible();
         });
 
         test('adds a late registrant to the allowlist', async ({ adminPage }) => {
@@ -3304,8 +3320,8 @@ test.describe('Draft Lifecycle', () => {
           const allowlistResponse = await allowlistResponsePromise;
           expect(allowlistResponse.ok()).toBeTruthy();
 
-          const allowlistDialog = adminPage.getByRole('dialog');
-          await expect(allowlistDialog.getByText('No students on the allowlist')).toBeVisible();
+          const allowlistSheet = adminPage.locator('[data-slot="sheet-content"]').last();
+          await expect(allowlistSheet.getByText('No students on the allowlist')).toBeVisible();
 
           const addResponsePromise = adminPage.waitForResponse(
             `/dashboard/drafts/${thirdDraftId}/?/add-to-allowlist`,
@@ -3313,8 +3329,8 @@ test.describe('Draft Lifecycle', () => {
           const refetchAfterAddPromise = adminPage.waitForResponse(
             `/dashboard/drafts/${thirdDraftId}/allowlist`,
           );
-          await allowlistDialog.getByLabel('Student Email').fill('late.student@up.edu.ph');
-          await allowlistDialog.getByRole('button', { name: 'Add to Allowlist' }).click();
+          await allowlistSheet.getByLabel('Student Email').fill('late.student@up.edu.ph');
+          await allowlistSheet.getByRole('button', { name: 'Add to Allowlist' }).click();
 
           const addResponse = await addResponsePromise;
           expect(addResponse.ok()).toBeTruthy();
@@ -3323,7 +3339,7 @@ test.describe('Draft Lifecycle', () => {
 
           const refetchAfterAdd = await refetchAfterAddPromise;
           expect(refetchAfterAdd.ok()).toBeTruthy();
-          await expect(allowlistDialog.getByText('late.student@up.edu.ph')).toBeVisible();
+          await expect(allowlistSheet.getByText('late.student@up.edu.ph')).toBeVisible();
           await expect(
             adminPage.getByText('1 student is currently on the allowlist.'),
           ).toBeVisible();
@@ -3339,8 +3355,8 @@ test.describe('Draft Lifecycle', () => {
           const allowlistResponse = await allowlistResponsePromise;
           expect(allowlistResponse.ok()).toBeTruthy();
 
-          const allowlistDialog = adminPage.getByRole('dialog');
-          const allowlistRow = allowlistDialog
+          const allowlistSheet = adminPage.locator('[data-slot="sheet-content"]').last();
+          const allowlistRow = allowlistSheet
             .locator('tbody tr')
             .filter({ hasText: 'late.student@up.edu.ph' });
           await expect(allowlistRow).toBeVisible();
@@ -3358,7 +3374,7 @@ test.describe('Draft Lifecycle', () => {
 
           const refetchAfterRemove = await refetchAfterRemovePromise;
           expect(refetchAfterRemove.ok()).toBeTruthy();
-          await expect(allowlistDialog.getByText('No students on the allowlist')).toBeVisible();
+          await expect(allowlistSheet.getByText('No students on the allowlist')).toBeVisible();
           await expect(
             adminPage.getByText('No students are currently on the allowlist.'),
           ).toBeVisible();
