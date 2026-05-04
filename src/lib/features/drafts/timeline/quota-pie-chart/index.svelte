@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { PieChart } from 'layerchart';
+  import { format } from 'd3-format';
+  import { PieChart } from 'layerchart/svg';
   import { sum } from 'd3-array';
 
   import * as Chart from '$lib/components/ui/chart';
@@ -13,6 +14,8 @@
   }
 
   const { snapshots, mode }: Props = $props();
+  const percentFormat = format('.2~%');
+  const integerFormat = format('d');
 
   function chartColor(i: number) {
     const color = CHART_COLORS[i % CHART_COLORS.length];
@@ -32,13 +35,18 @@
 
   const chartConfig = $derived(
     Object.fromEntries(
-      snapshots.map((snapshot, i) => [
-        shortLabel(snapshot),
-        {
-          label: shortLabel(snapshot),
-          color: chartColor(i),
-        },
-      ]),
+      snapshots.map((snapshot, i) => {
+        const quota = mode === 'initial' ? snapshot.initialQuota : snapshot.lotteryQuota;
+        let label = `${integerFormat(quota)} Student`;
+        if (quota !== 1) label += 's';
+        return [
+          shortLabel(snapshot),
+          {
+            label,
+            color: chartColor(i),
+          },
+        ];
+      }),
     ),
   );
 
@@ -52,7 +60,6 @@
           label: shortLabel(snapshot),
           labName: snapshot.labName,
           value: quota,
-          percentage: totalQuota > 0 ? Math.round((quota / totalQuota) * 100) : 0,
           color: chartColor(i),
         };
       }),
@@ -60,35 +67,29 @@
 </script>
 
 {#if hasQuota}
-  <div class="flex w-full items-center justify-center gap-4">
-    <Chart.Container id="quota-distribution-{mode}" config={chartConfig} class="max-h-56 flex-1">
-      <PieChart
-        data={chartData}
-        key="key"
-        value="value"
-        label="label"
-        c="color"
-        padding={{ right: 15 }}
-      >
-        {#snippet tooltip()}
-          <Chart.Tooltip indicator="dot" />
-        {/snippet}
-      </PieChart>
-    </Chart.Container>
-    <div class="flex flex-col gap-1.5 text-sm">
-      {#each chartData as data (data.key)}
-        <div class="flex items-center gap-2">
-          <span class="size-3 rounded-full" style="background-color: {data.color}"></span>
-          <span class="font-medium">{data.key}</span>
-          <span class="text-muted-foreground">{data.value} ({data.percentage}%)</span>
-        </div>
-      {/each}
-      <div class="mt-2 border-t pt-2">
-        <div class="flex items-center gap-2 font-semibold">
-          <span>Total</span>
-          <span>{totalQuota}</span>
-        </div>
-      </div>
-    </div>
-  </div>
+  <Chart.Container id="quota-distribution-{mode}" config={chartConfig} class="max-h-70 w-full">
+    <PieChart
+      data={chartData}
+      key="key"
+      value="value"
+      label="label"
+      c="color"
+      padding={{ right: 65 }}
+      legend={{ orientation: 'vertical', placement: 'right' }}
+    >
+      {#snippet tooltip()}
+        <Chart.Tooltip
+          indicator="dot"
+          labelAccessor={d => {
+            assert(typeof d === 'object' && d !== null && 'labName' in d);
+            return d.labName;
+          }}
+          valueFormatter={value => {
+            assert(typeof value === 'number');
+            return percentFormat(value / totalQuota);
+          }}
+        />
+      {/snippet}
+    </PieChart>
+  </Chart.Container>
 {/if}

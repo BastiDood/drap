@@ -1,14 +1,15 @@
 <script lang="ts">
-  import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
   import LockIcon from '@lucide/svelte/icons/lock';
+  import UserRoundPlusIcon from '@lucide/svelte/icons/user-round-plus';
+  import UsersIcon from '@lucide/svelte/icons/users';
 
   import * as Alert from '$lib/components/ui/alert';
-  import * as Popover from '$lib/components/ui/popover';
   import QuotaCard from '$lib/features/drafts/timeline/quota-card.svelte';
   import RegisteredDraftees from '$lib/features/drafts/draftees/registered/index.svelte';
+  import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
   import type { DraftLabQuotaSnapshot } from '$lib/features/drafts/types';
 
-  import { AllowlistDialog } from './allowlist';
+  import { AllowlistSheet } from './allowlist';
 
   interface Props {
     draftId: string;
@@ -23,30 +24,26 @@
 <div class="space-y-4">
   {#if studentCount > 0}
     <div class="space-y-4">
-      <section class="prose dark:prose-invert">
-        <h3 class="flex items-center gap-1.5">
-          Registered Students
-          <Popover.Root>
-            <Popover.Trigger class="leading-none transition hover:opacity-80">
-              <CircleHelpIcon class="size-3.5 text-muted-foreground" />
-            </Popover.Trigger>
-            <Popover.Content class="max-w-sm space-y-2 text-sm font-normal">
-              <p>
-                Registration has closed. There are currently <strong>{studentCount}</strong> students
-                who registered for this draft.
-              </p>
-              <p>
-                Use the allowlist to grant additional students access to submit their rankings
-                before starting the draft.
-              </p>
-            </Popover.Content>
-          </Popover.Root>
-        </h3>
-        <p>
-          Registration has closed. There are currently <strong>{studentCount}</strong> students who registered
-          for this draft.
-        </p>
-      </section>
+      <div class="grid w-fit grid-cols-1 gap-2 sm:grid-cols-[repeat(2,minmax(10rem,14rem))]">
+        <StatCard icon={UsersIcon}>
+          {#snippet title()}Registered Students{/snippet}
+          {#snippet body()}
+            <p id="stat-registered-students" class="text-2xl font-bold tabular-nums">
+              {studentCount}
+            </p>
+          {/snippet}
+          {#snippet subtitle()}Registration Closed{/snippet}
+        </StatCard>
+        <StatCard icon={UserRoundPlusIcon}>
+          {#snippet title()}Allowlisted Students{/snippet}
+          {#snippet body()}
+            <p id="stat-allowlisted-students" class="text-2xl font-bold tabular-nums">
+              {allowlistCount}
+            </p>
+          {/snippet}
+          {#snippet subtitle()}Late Registration Access{/snippet}
+        </StatCard>
+      </div>
       <QuotaCard {draftId} mode="initial" {snapshots} />
       <div class="flex items-center justify-center">
         <RegisteredDraftees {draftId} variant="primary">
@@ -62,6 +59,5 @@
       </Alert.Description>
     </Alert.Root>
   {/if}
-
-  <AllowlistDialog {draftId} {allowlistCount} />
+  <AllowlistSheet {draftId} {allowlistCount} />
 </div>

@@ -55,5 +55,5 @@
   class="w-full"
 >
   <input type="hidden" name="draft" value={draftId} />
-  <Button type="submit" size="lg" class="h-12 w-full text-lg">Start Draft</Button>
+  <Button type="submit">Start Draft</Button>
 </form>

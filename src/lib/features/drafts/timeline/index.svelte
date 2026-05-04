@@ -255,7 +255,10 @@
       last
     >
       {#snippet metadata()}
-        <span class="text-sm text-muted-foreground">{studentCount} students</span>
+        <span class="text-sm text-muted-foreground">
+          {studentCount}
+          {studentCount === 1 ? 'Student' : 'Students'}
+        </span>
       {/snippet}
       {#if currentPhase === DraftPhase.Registration}
         <RegistrationActive {draftId} {studentCount} {snapshots} />

@@ -158,7 +158,6 @@
   {:else}
     <Empty media={{ icon: UsersIcon, size: 'sm' }}>
       {#snippet title()}No students on the allowlist{/snippet}
-      <Button variant="outline" size="sm" href="#allowlist-email">Add a student</Button>
     </Empty>
   {/if}
 </section>

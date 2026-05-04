@@ -1,1 +1,1 @@
-export { default as AllowlistDialog } from './dialog.svelte';
+export { default as AllowlistSheet } from './sheet.svelte';
