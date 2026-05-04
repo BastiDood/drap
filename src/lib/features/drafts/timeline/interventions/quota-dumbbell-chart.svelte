@@ -13,7 +13,8 @@
   import type { DraftLabQuotaSnapshot, DumbbellRow, Lab } from '$lib/features/drafts/types';
 
   import EditLotteryQuota from './edit-lottery-quota.svelte';
-  import ShowEligibleStudents from './show-eligible-students.svelte';
+
+  import EligibleStudentsSheet from './eligible-students-sheet/index.svelte';
 
   interface Props {
     draftId: string;
@@ -126,7 +127,7 @@
       </div>
       <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:gap-2">
         <EditLotteryQuota {draftId} {snapshots} />
-        <ShowEligibleStudents {draftId} {labs} />
+        <EligibleStudentsSheet {draftId} {labs} />
       </div>
     </div>
   </Card.Header>

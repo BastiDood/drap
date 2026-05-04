@@ -2,9 +2,10 @@
   import UsersIcon from '@lucide/svelte/icons/users';
 
   import * as Sheet from '$lib/components/ui/sheet';
-  import Loader from '$lib/features/drafts/timeline/lottery/lottery-section/loader.svelte';
   import { Button } from '$lib/components/ui/button';
   import type { Lab } from '$lib/features/drafts/types';
+
+  import Loader from './loader.svelte';
 
   interface Props {
     draftId: string;
