@@ -111,6 +111,18 @@ export default defineConfig(
       'no-constructor-return': 'error',
       'no-div-regex': 'error',
       'no-duplicate-imports': 'error',
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['../**'],
+              message:
+                'Use path alias imports for cross-directory imports. Parent traversal is banned.',
+            },
+          ],
+        },
+      ],
       'no-else-return': 'error',
       'no-empty-function': 'off',
       'no-empty-static-block': 'error',
@@ -217,6 +229,13 @@ export default defineConfig(
       'no-restricted-imports': [
         'error',
         {
+          patterns: [
+            {
+              group: ['../**'],
+              message:
+                'Use `$lib` imports for cross-directory imports. Parent traversal is banned.',
+            },
+          ],
           paths: [
             {
               name: '@tanstack/svelte-query',

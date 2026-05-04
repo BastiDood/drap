@@ -17,13 +17,13 @@
   const deltaWarning = $derived(!isHistorical && data.delta !== 0);
 </script>
 
-<div
-  class="grid w-fit grid-cols-1 gap-2 sm:grid-cols-[repeat(2,minmax(10rem,14rem))] lg:grid-cols-[repeat(3,minmax(10rem,14rem))]"
->
+<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
   <StatCard icon={LayersIcon}>
     {#snippet title()}Pool Size{/snippet}
     {#snippet body()}
-      <p id="stat-interventions-pool" class="text-2xl font-bold tabular-nums">{data.poolSize}</p>
+      <p id="stat-interventions-pool" class="text-2xl font-bold tabular-nums">
+        {data.poolSize}
+      </p>
     {/snippet}
     {#snippet subtitle()}Students Eligible for Lottery{/snippet}
   </StatCard>
@@ -34,7 +34,7 @@
         {data.totalLotteryQuota}
       </p>
     {/snippet}
-    {#snippet subtitle()}Total Seats Allocated{/snippet}
+    {#snippet subtitle()}Seats after Quota Adjustments{/snippet}
   </StatCard>
   {#if !isHistorical}
     <StatCard icon={ScaleIcon}>
@@ -42,13 +42,15 @@
       {#snippet body()}
         <p
           id="stat-interventions-delta"
-          class={cn('text-2xl font-bold tabular-nums', { 'text-warning-foreground': deltaWarning })}
+          class={cn('text-2xl font-bold tabular-nums', {
+            'text-warning-foreground': deltaWarning,
+          })}
         >
           {data.delta > 0 ? '+' : ''}{data.delta}
         </p>
       {/snippet}
       {#snippet subtitle()}
-        {deltaWarning ? 'Resolve before running lottery' : 'Ready to run lottery'}
+        {deltaWarning ? 'Must be resolved before running lottery.' : 'Ready to run lottery.'}
       {/snippet}
     </StatCard>
   {/if}

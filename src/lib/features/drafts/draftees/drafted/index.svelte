@@ -26,7 +26,7 @@
         {#if triggerSize === 'sm'}
           <GraduationCapIcon class="size-4" />
         {/if}
-        <span>{triggerSize === 'sm' ? 'See Drafted' : 'Already Drafted'}</span>
+        <span>See Drafted Students</span>
       </Button>
     {/snippet}
   </Sheet.Trigger>

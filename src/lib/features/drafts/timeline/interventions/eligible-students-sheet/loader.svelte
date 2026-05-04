@@ -16,9 +16,10 @@
   interface Props {
     draftId: string;
     labs: Pick<Lab, 'id' | 'name'>[];
+    onSuccess?: () => void;
   }
 
-  const { draftId, labs }: Props = $props();
+  const { draftId, labs, onSuccess }: Props = $props();
   const queryClient = useQueryClient();
 
   const query = $derived(
@@ -36,7 +37,7 @@
     {#snippet title()}Unable to Load Data{/snippet}
     {#snippet description()}Uh oh! An error has occurred.{/snippet}
   </Empty>
-{:else if query.data.length > 0}
+{:else}
   <form
     method="post"
     action="/dashboard/drafts/{draftId}/?/intervene"
@@ -56,7 +57,10 @@
         await queryClient.invalidateQueries({
           queryKey: ['drafts', draftId],
         });
-        if (result.type === 'success') toast.success('Successfully applied the interventions.');
+        if (result.type === 'success') {
+          toast.success('Successfully applied the interventions.');
+          onSuccess?.();
+        }
       };
     }}
   >
@@ -73,8 +77,4 @@
       <span>Apply Interventions</span>
     </Button>
   </form>
-{:else}
-  <p class="prose max-w-none dark:prose-invert">
-    Congratulations! All participants have been drafted. No action is needed here.
-  </p>
 {/if}

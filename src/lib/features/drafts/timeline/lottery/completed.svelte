@@ -2,8 +2,9 @@
   import type { LotteryAggregate } from '$lib/features/drafts/types';
 
   import FinalizeForm from './finalize-form.svelte';
-  import LotteryOutcomeChart from './lottery-outcome-chart.svelte';
   import StatCards from './stat-cards.svelte';
+
+  import LotteryOutcomeChart from './outcome/index.svelte';
 
   interface Props {
     draftId: string;

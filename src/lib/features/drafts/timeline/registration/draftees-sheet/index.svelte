@@ -14,7 +14,7 @@
 <Sheet.Root>
   <Sheet.Trigger>
     {#snippet child({ props })}
-      <Button variant="outline" class="gap-2" {...props}>View All Draftees</Button>
+      <Button variant="outline" {...props}>View All Draftees</Button>
     {/snippet}
   </Sheet.Trigger>
   <Sheet.Content

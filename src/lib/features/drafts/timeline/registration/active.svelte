@@ -1,12 +1,11 @@
 <script lang="ts">
   import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
+  import UsersIcon from '@lucide/svelte/icons/users';
 
   import * as Alert from '$lib/components/ui/alert';
-  import QuotaSnapshotForm from '$lib/features/drafts/timeline/quota-snapshot-form.svelte';
-  import RegisteredDraftees from '$lib/features/drafts/draftees/registered/index.svelte';
+  import QuotaCard from '$lib/features/drafts/timeline/quota-card.svelte';
+  import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
   import type { DraftLabQuotaSnapshot } from '$lib/features/drafts/types';
-
-  import StartForm from './start-form.svelte';
 
   interface Props {
     draftId: string;
@@ -19,30 +18,17 @@
 
 <div class="space-y-4">
   {#if studentCount > 0}
-    <div>
-      <div class="space-y-4">
-        <section class="prose dark:prose-invert">
-          <h3>Registered Students</h3>
-          <p>
-            There are currently <strong>{studentCount}</strong> students who have registered for
-            this draft. Press the <strong>"Start Draft"</strong> button to close registration and start
-            the draft automation.
+    <div class="space-y-4">
+      <StatCard icon={UsersIcon}>
+        {#snippet title()}Registered Students{/snippet}
+        {#snippet body()}
+          <p id="stat-registered-students" class="text-2xl font-bold tabular-nums">
+            {studentCount}
           </p>
-          <p>
-            Lab heads will be notified when the first round begins. The draft proceeds to the next
-            round when all lab heads have submitted their preferences. This process repeats until
-            the configured maximum number of rounds has elapsed, after which the draft pauses until
-            an administrator <em>manually</em> proceeds with the lottery stage.
-          </p>
-        </section>
-        <QuotaSnapshotForm {draftId} mode="initial" {snapshots} />
-        <div class="flex items-center justify-center">
-          <RegisteredDraftees {draftId} variant="accent">
-            No students have registered yet.
-          </RegisteredDraftees>
-        </div>
-        <StartForm {draftId} />
-      </div>
+        {/snippet}
+        {#snippet subtitle()}Current Draft Participants{/snippet}
+      </StatCard>
+      <QuotaCard {draftId} mode="initial" {snapshots} />
     </div>
   {:else}
     <Alert.Root variant="warning">

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { BarChart } from 'layerchart/svg';
   import { format } from 'd3-format';
+  import { rollup, sort, sum } from 'd3-array';
 
   import * as Card from '$lib/components/ui/card';
   import * as Chart from '$lib/components/ui/chart';
@@ -8,7 +9,7 @@
   import { CHART_COLORS } from '$lib/constants';
   import type { LotteryOutcomeStack } from '$lib/features/drafts/types';
 
-  import { keyForRank } from './lottery-outcome-chart-utils';
+  import { keyForRank } from './utils';
 
   interface Props {
     stacks: LotteryOutcomeStack[];
@@ -16,16 +17,22 @@
 
   const { stacks }: Props = $props();
 
-  // Dedupe by rank across all stacks, sort numerically (null → "Not Preferred" goes last).
-  const allBucketsMeta = $derived(
-    Array.from(
-      new Map(stacks.flatMap(s => s.buckets.map(b => [b.rank, b.label] as const))).entries(),
-    ).sort(([a], [b]) => {
+  // Dedupe by rank across all stacks, sort numerically (null => "Not Preferred" goes last).
+  const allBucketsMeta = $derived.by(() => {
+    const labelByRank = rollup(
+      stacks.flatMap(({ buckets }) => buckets),
+      ([bucket]) => {
+        assert(typeof bucket !== 'undefined', 'lottery outcome bucket must exist');
+        return bucket.label;
+      },
+      ({ rank }) => rank,
+    );
+    return sort(labelByRank, ([a], [b]) => {
       if (a === null) return 1;
       if (b === null) return -1;
       return a - b;
-    }),
-  );
+    });
+  });
 
   function labelColor(label: string, i: number): string {
     if (label === 'Not Preferred') return 'var(--muted-foreground)';
@@ -59,7 +66,11 @@
   const chartData = $derived(
     stacks.map(stack => {
       const row: Record<string, number | string> = { lab: stack.labId.toUpperCase() };
-      const countByRank = new Map(stack.buckets.map(({ rank, count }) => [rank, count]));
+      const countByRank = rollup(
+        stack.buckets,
+        buckets => sum(buckets, ({ count }) => count),
+        ({ rank }) => rank,
+      );
       for (const [rank] of allBucketsMeta) {
         const count = countByRank.get(rank);
         if (typeof count !== 'undefined' && count > 0) row[keyForRank(rank)] = count;

@@ -6,16 +6,15 @@
 </script>
 
 <script lang="ts">
+  import UserRoundPlusIcon from '@lucide/svelte/icons/user-round-plus';
   import UsersIcon from '@lucide/svelte/icons/users';
 
-  import * as Dialog from '$lib/components/ui/dialog';
+  import * as Sheet from '$lib/components/ui/sheet';
   import { Button } from '$lib/components/ui/button';
 
   import AllowlistContent from './content.svelte';
 
   const { draftId, allowlistCount }: Props = $props();
-
-  let open = $state(false);
 
   function getAllowlistSummary(count: number) {
     if (count === 0) return 'No students are currently on the allowlist.';
@@ -24,7 +23,7 @@
   }
 </script>
 
-<Dialog.Root bind:open>
+<Sheet.Root>
   <div class="rounded-lg border border-accent/30 bg-accent/5 p-4">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div class="space-y-1">
@@ -37,25 +36,23 @@
         </p>
         <p class="text-sm text-muted-foreground">{getAllowlistSummary(allowlistCount)}</p>
       </div>
-      <Dialog.Trigger>
+      <Sheet.Trigger>
         {#snippet child({ props })}
           <Button variant="outline" class="border-accent text-accent" {...props}>
-            Manage Allowlist
+            <UserRoundPlusIcon class="size-4" />
+            <span>Manage Allowlist</span>
           </Button>
         {/snippet}
-      </Dialog.Trigger>
+      </Sheet.Trigger>
     </div>
   </div>
-
-  <Dialog.Content class="sm:max-w-4xl">
-    <Dialog.Header>
-      <Dialog.Title>Draft Registration Allowlist</Dialog.Title>
-      <Dialog.Description>
+  <Sheet.Content side="right" class="flex w-full flex-col gap-4 overflow-hidden p-4 sm:max-w-md">
+    <Sheet.Header class="shrink-0 p-0 pe-10">
+      <Sheet.Title>Draft Registration Allowlist</Sheet.Title>
+      <Sheet.Description>
         Allow specific students to submit rankings after the registration deadline has passed.
-      </Dialog.Description>
-    </Dialog.Header>
-    {#if open}
-      <AllowlistContent {draftId} />
-    {/if}
-  </Dialog.Content>
-</Dialog.Root>
+      </Sheet.Description>
+    </Sheet.Header>
+    <AllowlistContent {draftId} />
+  </Sheet.Content>
+</Sheet.Root>

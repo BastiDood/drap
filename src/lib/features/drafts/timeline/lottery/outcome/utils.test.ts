@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
 
-import { keyForRank } from './lottery-outcome-chart-utils';
+import { keyForRank } from './utils';
 
 describe('keyForRank', () => {
   test.each([

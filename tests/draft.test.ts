@@ -942,7 +942,8 @@ test.describe('Draft Lifecycle', () => {
 
     test('sees registrant list', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
-      await expect(adminPage.getByText('There are currently')).toBeVisible();
+      await expect(adminPage.getByText('Registered Students', { exact: true })).toBeVisible();
+      await expect(adminPage.getByText('Current Draft Participants')).toBeVisible();
       await expect(adminPage.getByText(/\b8\b/u).first()).toBeVisible();
       await expectVisibleButtons(adminPage, ['See Registered Students']);
     });
@@ -973,6 +974,7 @@ test.describe('Draft Lifecycle', () => {
 
     test('shows initial snapshot quotas as placeholders', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
+      await adminPage.getByRole('button', { name: 'Setup Quota' }).click();
       const editor = adminPage.locator('#draft-quota-editor-initial');
       await expect(editor).toBeVisible();
 
@@ -988,6 +990,7 @@ test.describe('Draft Lifecycle', () => {
     test.describe('initial snapshot updates', () => {
       test('updates initial snapshots', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/drafts/1/');
+        await adminPage.getByRole('button', { name: 'Setup Quota' }).click();
         const editor = adminPage.locator('#draft-quota-editor-initial');
         await expect(editor).toBeVisible();
 
@@ -1006,6 +1009,11 @@ test.describe('Draft Lifecycle', () => {
 
       test('shows committed placeholders after update', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/drafts/1/');
+        await adminPage.waitForLoadState('networkidle');
+
+        const quotaButton = adminPage.getByRole('button', { name: 'Edit Quota' });
+        await expect(quotaButton).toBeVisible();
+        await quotaButton.click();
         const editor = adminPage.locator('#draft-quota-editor-initial');
         await expect(editor).toBeVisible();
 
@@ -1841,9 +1849,9 @@ test.describe('Draft Lifecycle', () => {
       await expect(
         adminPage.getByRole('heading', { name: 'Interventions', exact: true }),
       ).toBeVisible();
-      await expectVisibleButtons(adminPage, ['Eligible for Lottery', 'See Drafted']);
+      await expectVisibleButtons(adminPage, ['Show Eligible Students', 'See Drafted']);
 
-      await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
+      await adminPage.getByRole('button', { name: 'Show Eligible Students' }).first().click();
       await expect(adminPage.getByRole('button', { name: 'Apply Interventions' })).toBeVisible();
     });
 
@@ -1906,7 +1914,7 @@ test.describe('Draft Lifecycle', () => {
   test.describe('Lottery Phase', () => {
     test('draft enters lottery phase', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
-      await expect(adminPage.getByRole('heading', { name: 'Interventions Phase' })).toBeVisible();
+      await expect(adminPage.getByRole('heading', { name: 'Interventions' })).toBeVisible();
       await expectSheetContents(
         adminPage,
         'See Drafted',
@@ -1915,7 +1923,7 @@ test.describe('Draft Lifecycle', () => {
       );
     });
 
-    test('eligible for lottery does not fetch before the sheet opens', async ({ adminPage }) => {
+    test('show eligible students does not fetch before the sheet opens', async ({ adminPage }) => {
       const noResponseBeforeOpen = expect(
         adminPage.waitForResponse(
           response => new URL(response.url()).pathname === '/dashboard/drafts/1/draftees',
@@ -1924,19 +1932,44 @@ test.describe('Draft Lifecycle', () => {
       ).rejects.toThrow();
 
       await adminPage.goto('/dashboard/drafts/1/');
-      await expectVisibleButtons(adminPage, ['Eligible for Lottery']);
+      await expectVisibleButtons(adminPage, ['Show Eligible Students']);
       await adminPage.waitForLoadState('networkidle');
       await noResponseBeforeOpen;
     });
 
-    test('eligible for lottery fetches when the sheet opens', async ({ adminPage }) => {
+    test('show eligible students fetches when the sheet opens', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
-      await expectVisibleButtons(adminPage, ['Eligible for Lottery']);
+      await expectVisibleButtons(adminPage, ['Show Eligible Students']);
       const responsePromise = adminPage.waitForResponse(
         response => new URL(response.url()).pathname === '/dashboard/drafts/1/draftees',
       );
-      await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
+      await adminPage.getByRole('button', { name: 'Show Eligible Students' }).first().click();
       await responsePromise;
+    });
+
+    test('edit lottery quota button opens sheet', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+      await expect(adminPage.getByRole('button', { name: 'Edit Lottery Quota' })).toBeVisible();
+      await adminPage.getByRole('button', { name: 'Edit Lottery Quota' }).click();
+
+      const sheet = adminPage.locator('[data-slot="sheet-content"]').last();
+      await expect(sheet).toBeVisible();
+      await expect(sheet.getByText('Update Draft Quota')).toBeVisible();
+
+      await adminPage.keyboard.press('Escape');
+      await expect(sheet).toBeHidden();
+    });
+
+    test('interventions sheet does not contain quota editor', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+      await adminPage.getByRole('button', { name: 'Show Eligible Students' }).click();
+
+      const sheet = adminPage.locator('[data-slot="sheet-content"]').last();
+      await expect(sheet).toBeVisible();
+      await expect(sheet.locator('#draft-quota-editor-lottery')).toHaveCount(0);
+
+      await adminPage.keyboard.press('Escape');
+      await expect(sheet).toBeHidden();
     });
   });
 
@@ -1991,7 +2024,7 @@ test.describe('Draft Lifecycle', () => {
   test.describe('Manual Intervention', () => {
     test('assigns first eligible student to a lab', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
-      await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
+      await adminPage.getByRole('button', { name: 'Show Eligible Students' }).first().click();
       const interventionForm = adminPage.locator('form[action*="intervene"]');
       await expect(interventionForm).toBeVisible();
 
@@ -2008,12 +2041,13 @@ test.describe('Draft Lifecycle', () => {
     });
   });
 
-  test.describe('Adjust Quotas for Remaining Students', () => {
+  test.describe('Edit Lottery Quota', () => {
     test.describe('lottery snapshot updates', () => {
       test('partially updates lottery snapshots', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/drafts/1/');
-        await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
-        const editor = adminPage.locator('#draft-quota-editor-lottery');
+        await adminPage.getByRole('button', { name: 'Edit Lottery Quota' }).click();
+        const sheet = adminPage.locator('[data-slot="sheet-content"]').last();
+        const editor = sheet.locator('#draft-quota-editor-lottery');
         await expect(editor).toBeVisible();
 
         const ndslInput = editor.locator('input[name="ndsl"]');
@@ -2033,8 +2067,9 @@ test.describe('Draft Lifecycle', () => {
 
       test('shows committed placeholders after lottery snapshot update', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/drafts/1/');
-        await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
-        const editor = adminPage.locator('#draft-quota-editor-lottery');
+        await adminPage.getByRole('button', { name: 'Edit Lottery Quota' }).click();
+        const sheet = adminPage.locator('[data-slot="sheet-content"]').last();
+        const editor = sheet.locator('#draft-quota-editor-lottery');
         await expect(editor).toBeVisible();
 
         const aclInput = editor.locator('input[name="acl"]');
@@ -2822,9 +2857,11 @@ test.describe('Draft Lifecycle', () => {
   test.describe('Second Draft — Regular Flow (No Lottery Assignments)', () => {
     test('updates Draft #2 initial snapshots before start', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
-      await expect(adminPage.getByText('There are currently')).toBeVisible();
+      await expect(adminPage.getByText('Registered Students', { exact: true })).toBeVisible();
+      await expect(adminPage.getByText('Current Draft Participants')).toBeVisible();
       await expect(adminPage.getByText(/\b3\b/u).first()).toBeVisible();
 
+      await adminPage.getByRole('button', { name: 'Setup Quota' }).click();
       const editor = adminPage.locator('#draft-quota-editor-initial');
       await expect(editor).toBeVisible();
 
@@ -2842,7 +2879,8 @@ test.describe('Draft Lifecycle', () => {
 
     test('starts Draft #2', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
-      await expect(adminPage.getByText('There are currently')).toBeVisible();
+      await expect(adminPage.getByText('Registered Students', { exact: true })).toBeVisible();
+      await expect(adminPage.getByText('Current Draft Participants')).toBeVisible();
       await expect(adminPage.getByText(/\b3\b/u).first()).toBeVisible();
 
       adminPage.on('dialog', dialog => dialog.accept());
@@ -2984,11 +3022,11 @@ test.describe('Draft Lifecycle', () => {
 
     test('lottery stage shows zero eligible students', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
-      await expect(adminPage.getByRole('heading', { name: 'Interventions Phase' })).toBeVisible();
-      await expectVisibleButtons(adminPage, ['Eligible for Lottery']);
-      await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
+      await expect(adminPage.getByRole('heading', { name: 'Interventions' })).toBeVisible();
+      await expectVisibleButtons(adminPage, ['Show Eligible Students']);
+      await adminPage.getByRole('button', { name: 'Show Eligible Students' }).first().click();
       await expect(
-        adminPage.getByText('Congratulations! All participants have been drafted.'),
+        adminPage.getByText('All students for this draft have been drafted. Yippee!'),
       ).toBeVisible();
     });
 
@@ -3010,7 +3048,8 @@ test.describe('Draft Lifecycle', () => {
   test.describe('Second Draft — Lottery And Finalization', () => {
     test('sets lottery snapshots to zero for Draft #2', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
-      await adminPage.getByRole('button', { name: 'Eligible for Lottery' }).first().click();
+      await expect(adminPage.locator('main')).toBeVisible();
+      await adminPage.getByRole('button', { name: 'Edit Lottery Quota' }).click();
       const editor = adminPage.locator('#draft-quota-editor-lottery');
       await expect(editor).toBeVisible();
 
@@ -3243,7 +3282,20 @@ test.describe('Draft Lifecycle', () => {
           ).toBeVisible();
         });
 
-        test('lazy-loads the allowlist dialog on open', async ({ adminPage }) => {
+        test('allowlist does not fetch before the sheet opens', async ({ adminPage }) => {
+          const noResponseBeforeOpen = expect(
+            adminPage.waitForResponse(`/dashboard/drafts/${thirdDraftId}/allowlist`, {
+              timeout: 1000,
+            }),
+          ).rejects.toThrow();
+
+          await adminPage.goto(draftDetailPath());
+          await expect(adminPage.getByRole('button', { name: 'Manage Allowlist' })).toBeVisible();
+          await adminPage.waitForLoadState('networkidle');
+          await noResponseBeforeOpen;
+        });
+
+        test('lazy-loads the allowlist sheet on open', async ({ adminPage }) => {
           await adminPage.goto(draftDetailPath());
 
           const allowlistResponsePromise = adminPage.waitForResponse(
@@ -3253,9 +3305,9 @@ test.describe('Draft Lifecycle', () => {
           const allowlistResponse = await allowlistResponsePromise;
           expect(allowlistResponse.ok()).toBeTruthy();
 
-          const allowlistDialog = adminPage.getByRole('dialog');
-          await expect(allowlistDialog).toBeVisible();
-          await expect(allowlistDialog.getByText('No students on the allowlist')).toBeVisible();
+          const allowlistSheet = adminPage.locator('[data-slot="sheet-content"]').last();
+          await expect(allowlistSheet).toBeVisible();
+          await expect(allowlistSheet.getByText('No students on the allowlist')).toBeVisible();
         });
 
         test('adds a late registrant to the allowlist', async ({ adminPage }) => {
@@ -3268,8 +3320,8 @@ test.describe('Draft Lifecycle', () => {
           const allowlistResponse = await allowlistResponsePromise;
           expect(allowlistResponse.ok()).toBeTruthy();
 
-          const allowlistDialog = adminPage.getByRole('dialog');
-          await expect(allowlistDialog.getByText('No students on the allowlist')).toBeVisible();
+          const allowlistSheet = adminPage.locator('[data-slot="sheet-content"]').last();
+          await expect(allowlistSheet.getByText('No students on the allowlist')).toBeVisible();
 
           const addResponsePromise = adminPage.waitForResponse(
             `/dashboard/drafts/${thirdDraftId}/?/add-to-allowlist`,
@@ -3277,8 +3329,8 @@ test.describe('Draft Lifecycle', () => {
           const refetchAfterAddPromise = adminPage.waitForResponse(
             `/dashboard/drafts/${thirdDraftId}/allowlist`,
           );
-          await allowlistDialog.getByLabel('Student Email').fill('late.student@up.edu.ph');
-          await allowlistDialog.getByRole('button', { name: 'Add to Allowlist' }).click();
+          await allowlistSheet.getByLabel('Student Email').fill('late.student@up.edu.ph');
+          await allowlistSheet.getByRole('button', { name: 'Add to Allowlist' }).click();
 
           const addResponse = await addResponsePromise;
           expect(addResponse.ok()).toBeTruthy();
@@ -3287,7 +3339,7 @@ test.describe('Draft Lifecycle', () => {
 
           const refetchAfterAdd = await refetchAfterAddPromise;
           expect(refetchAfterAdd.ok()).toBeTruthy();
-          await expect(allowlistDialog.getByText('late.student@up.edu.ph')).toBeVisible();
+          await expect(allowlistSheet.getByText('late.student@up.edu.ph')).toBeVisible();
           await expect(
             adminPage.getByText('1 student is currently on the allowlist.'),
           ).toBeVisible();
@@ -3303,10 +3355,10 @@ test.describe('Draft Lifecycle', () => {
           const allowlistResponse = await allowlistResponsePromise;
           expect(allowlistResponse.ok()).toBeTruthy();
 
-          const allowlistDialog = adminPage.getByRole('dialog');
-          const allowlistRow = allowlistDialog
-            .locator('tbody tr')
-            .filter({ hasText: 'late.student@up.edu.ph' });
+          const allowlistSheet = adminPage.locator('[data-slot="sheet-content"]').last();
+          const allowlistRow = allowlistSheet
+            .getByRole('link', { name: 'late.student@up.edu.ph' })
+            .locator('xpath=ancestor::div[contains(@class, "border-dashed")][1]');
           await expect(allowlistRow).toBeVisible();
 
           const removeResponsePromise = adminPage.waitForResponse(
@@ -3315,18 +3367,69 @@ test.describe('Draft Lifecycle', () => {
           const refetchAfterRemovePromise = adminPage.waitForResponse(
             `/dashboard/drafts/${thirdDraftId}/allowlist`,
           );
-          await allowlistRow.getByRole('button').click();
+          await allowlistRow.getByRole('button', { name: 'Remove from Allowlist' }).click();
 
           const removeResponse = await removeResponsePromise;
           expect(removeResponse.ok()).toBeTruthy();
 
           const refetchAfterRemove = await refetchAfterRemovePromise;
           expect(refetchAfterRemove.ok()).toBeTruthy();
-          await expect(allowlistDialog.getByText('No students on the allowlist')).toBeVisible();
+          await expect(allowlistSheet.getByText('No students on the allowlist')).toBeVisible();
           await expect(
             adminPage.getByText('No students are currently on the allowlist.'),
           ).toBeVisible();
         });
+      });
+    });
+
+    test.describe('Zero Quota Flow', () => {
+      test('starts Draft #3 and reaches interventions through the regular flow', async ({
+        adminPage,
+      }) => {
+        await adminPage.goto(draftDetailPath());
+        adminPage.on('dialog', dialog => dialog.accept());
+
+        const startResponsePromise = adminPage.waitForResponse(
+          `/dashboard/drafts/${thirdDraftId}/?/start`,
+        );
+        await adminPage.getByRole('button', { name: 'Start Draft' }).click();
+        const startResponse = await startResponsePromise;
+        const startResponseData = await startResponse.json();
+        expect(startResponseData.type).toBe('success');
+
+        await expect(adminPage.getByText(/Started .* · Interventions/u)).toBeVisible();
+        await expect(adminPage.getByRole('heading', { name: 'Interventions' })).toBeVisible();
+      });
+
+      test('runs lottery for Draft #3 with zero quota', async ({ adminPage }) => {
+        await adminPage.goto(draftDetailPath());
+        adminPage.on('dialog', dialog => dialog.accept());
+
+        const concludeResponsePromise = adminPage.waitForResponse(
+          `/dashboard/drafts/${thirdDraftId}/?/conclude`,
+        );
+        await adminPage.getByRole('button', { name: 'Run Lottery' }).click();
+        const concludeResponse = await concludeResponsePromise;
+        const concludeResponseData = await concludeResponse.json();
+        expect(concludeResponseData.type).toBe('success');
+
+        await expect(adminPage.getByText(/Started .* · Review/u)).toBeVisible();
+        await expect(adminPage.getByRole('button', { name: 'Finalize Draft' })).toBeVisible();
+      });
+
+      test('finalizes Draft #3 with zero assignments', async ({ adminPage }) => {
+        await adminPage.goto(draftDetailPath());
+        adminPage.on('dialog', dialog => dialog.accept());
+
+        const finalizeResponsePromise = adminPage.waitForResponse(
+          `/dashboard/drafts/${thirdDraftId}/?/finalize`,
+        );
+        await adminPage.getByRole('button', { name: 'Finalize Draft' }).click();
+        const finalizeResponse = await finalizeResponsePromise;
+        const finalizeResponseData = await finalizeResponse.json();
+        expect(finalizeResponseData.type).toBe('success');
+
+        await expect(adminPage.getByText(/Started .* · Finalized/u)).toBeVisible();
       });
     });
   });

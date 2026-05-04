@@ -113,10 +113,8 @@
   const { rows } = $derived(table.getRowModel());
 </script>
 
-<!-- Table -->
 <div class="rounded-sm">
   <Table.Root>
-    <!-- Header Row -->
     <Table.Header>
       {#each headerGroups as headerGroup (headerGroup.id)}
         <Table.Row>
@@ -136,8 +134,6 @@
         </Table.Row>
       {/each}
     </Table.Header>
-
-    <!-- Table Rows -->
     <Table.Body>
       {#each rows as row (row.id)}
         <Table.Row>

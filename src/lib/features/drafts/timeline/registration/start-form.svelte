@@ -1,4 +1,5 @@
 <script lang="ts">
+  import CheckIcon from '@lucide/svelte/icons/check';
   import { toast } from 'svelte-sonner';
   import { useQueryClient } from '@tanstack/svelte-query'; // eslint-disable-line no-restricted-imports
 
@@ -34,19 +35,6 @@
         case 'success':
           toast.success('Draft started.');
           break;
-        case 'failure':
-          switch (result.status) {
-            case 497:
-              toast.error('Cannot start the draft when there are not enough participants.', {
-                duration: Infinity,
-                dismissable: true,
-              });
-              break;
-            default:
-              toast.error('Failed to start the draft.');
-              break;
-          }
-          break;
         default:
           break;
       }
@@ -54,11 +42,8 @@
   }}
 >
   <input type="hidden" name="draft" value={draftId} />
-  <Button
-    type="submit"
-    variant="outline"
-    class="w-full border-warning bg-warning/10 text-warning hover:bg-warning/20"
-  >
-    Start Draft
+  <Button type="submit">
+    <CheckIcon class="size-4" />
+    <span>Start Draft</span>
   </Button>
 </form>

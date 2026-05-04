@@ -10,14 +10,21 @@
   import * as Popover from '$lib/components/ui/popover';
   import DraftedDraftees from '$lib/features/drafts/draftees/drafted/index.svelte';
   import { assert } from '$lib/assert';
-  import type { DumbbellRow } from '$lib/features/drafts/types';
+  import type { DraftLabQuotaSnapshot, DumbbellRow, Lab } from '$lib/features/drafts/types';
+
+  import EditLotteryQuota from './edit-lottery-quota.svelte';
+
+  import EligibleStudentsSheet from './eligible-students-sheet/index.svelte';
 
   interface Props {
     draftId: string;
+    labs: Pick<Lab, 'id' | 'name'>[];
+    snapshots: DraftLabQuotaSnapshot[];
     rows: DumbbellRow[];
+    isHistorical: boolean;
   }
 
-  const { draftId, rows }: Props = $props();
+  const { draftId, labs, snapshots, rows, isHistorical }: Props = $props();
 
   const integerFormat = format('d');
 
@@ -62,7 +69,7 @@
   class="overflow-hidden border-border/60 bg-linear-to-br from-muted/40 via-background to-muted/10 shadow-xs"
 >
   <Card.Header class="gap-3">
-    <div class="flex flex-wrap items-start justify-between gap-2">
+    <div class="flex flex-wrap items-center justify-between gap-2 sm:items-start">
       <div class="space-y-1">
         <Card.Title class="flex items-center gap-1.5">
           <span>Regular-Round Vacancies vs. Lottery Quota</span>
@@ -119,7 +126,13 @@
           Regular-round vacancies compared with final lottery quota.
         </Card.Description>
       </div>
-      <DraftedDraftees {draftId} triggerSize="sm" />
+      <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:gap-2">
+        {#if !isHistorical}
+          <EditLotteryQuota {draftId} {snapshots} />
+          <EligibleStudentsSheet {draftId} {labs} />
+          <DraftedDraftees {draftId} triggerSize="sm" />
+        {/if}
+      </div>
     </div>
   </Card.Header>
   <Card.Content>
