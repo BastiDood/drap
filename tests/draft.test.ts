@@ -3023,7 +3023,7 @@ test.describe('Draft Lifecycle', () => {
       await expectVisibleButtons(adminPage, ['Show Eligible Students']);
       await adminPage.getByRole('button', { name: 'Show Eligible Students' }).first().click();
       await expect(
-        adminPage.getByText('Congratulations! All participants have been drafted.'),
+        adminPage.getByText('All students for this draft have been drafted. Yippee!'),
       ).toBeVisible();
     });
 

@@ -30,7 +30,7 @@
 </script>
 
 <Card.Root
-  data-testid={mode === 'initial' ? 'quota-card-initial' : 'quota-card-lottery'}
+  id="quota-card-{mode}"
   class="preset-tonal-muted mx-auto max-w-2xl bg-linear-to-br via-background"
 >
   <Card.Header>
@@ -56,9 +56,7 @@
       {#if hasQuota}
         <button
           type="button"
-          data-testid={mode === 'initial'
-            ? 'quota-pie-chart-button-initial'
-            : 'quota-pie-chart-button-lottery'}
+          id="quota-distribution-trigger-{mode}"
           class="group w-full cursor-pointer rounded-md p-4 transition-colors duration-150 hover:bg-muted/30"
           onclick={() => (open = true)}
         >
