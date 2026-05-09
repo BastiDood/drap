@@ -17,7 +17,7 @@ RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
     --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
     --mount=type=cache,id=pnpm,target=$PNPM_HOME/store \
-    pnpm install --offline
+    pnpm install --offline --frozen-lockfile --config.confirm-modules-purge=false
 
 FROM base AS migrate
 
@@ -37,7 +37,7 @@ RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=bind,source=tsconfig.json,target=tsconfig.json \
     --mount=type=bind,source=src,target=src \
     --mount=type=bind,source=static,target=static \
-    pnpm build && pnpm prune --prod --ignore-scripts
+    pnpm build && pnpm prune --prod --ignore-scripts --config.confirm-modules-purge=false
 
 FROM gcr.io/distroless/nodejs24-debian13:nonroot-${TARGETARCH} AS deploy
 

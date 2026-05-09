@@ -21,7 +21,7 @@
     "docker:dev": "docker compose --file compose.yaml --file compose.dev.yaml up --wait",
     "docker:dev:ci": "docker compose --file compose.yaml --file compose.dev.yaml --file compose.dev.ci.yaml up --wait",
     "docker:prod": "docker compose --file compose.yaml --file compose.prod.yaml up --wait",
-    "docker:prod:app": "docker compose --file compose.yaml --file compose.prod.yaml --file compose.prod.app.yaml up --wait",
+    "docker:prod:app": "docker compose --file compose.yaml --file compose.prod.yaml --file compose.prod.app.yaml up --wait --build",
     "docker:prod:app:tls": "docker compose --file compose.yaml --file compose.prod.yaml --file compose.prod.app.yaml --file compose.prod.app.tls.yaml up --wait",
     "docker:dev:setup:bucket": "docker compose --file compose.yaml --file compose.dev.yaml --profile setup run --rm setup-bucket",
     "docker:prod:setup:bucket": "docker compose --file compose.yaml --file compose.prod.yaml --file compose.prod.app.yaml --profile setup run --rm setup-bucket",
