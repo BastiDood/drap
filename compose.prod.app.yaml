@@ -1,6 +1,8 @@
 # App and ingress services layered on top of the production internal services.
 # Extends: compose.prod.yaml
 
+x-app-port: &app-port 3000
+
 services:
   haproxy:
     pull_policy: build
@@ -11,6 +13,7 @@ services:
         target: 80
         protocol: tcp
     environment:
+      APP_PORT: *app-port
       HOST: ${HOST:?required}
       SCHEME: ${SCHEME:?required}
     networks:
@@ -94,6 +97,7 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://o2:5080/api/default
       OTEL_EXPORTER_OTLP_HEADERS: ${OTEL_EXPORTER_OTLP_HEADERS:?required}
       OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+      PORT: *app-port
       S3_ENDPOINT: http://rustfs:9000
       S3_REGION: ${S3_REGION:?required}
       S3_ACCESS_KEY: ${S3_ACCESS_KEY:?required}

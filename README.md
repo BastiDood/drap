@@ -119,7 +119,7 @@ For `pnpm docker:prod:app`, Compose derives `PUBLIC_ORIGIN` from `SCHEME` and `H
 | `ZO_ROOT_USER_PASSWORD`      | OpenObserve bootstrap admin password.       | Yes          | Use a strong random secret.                                  |
 | `DRIZZLE_MASTERPASS`         | Drizzle Gateway admin password.             | Yes          | Use a strong random secret.                                  |
 
-`pnpm docker:prod:app` already injects `POSTGRES_URL`, `DRAP_ASSERT_DOMAIN`, `DRAP_ENABLE_EMAILS`, `INNGEST_BASE_URL`, `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_EXPORTER_OTLP_PROTOCOL`, `ADDRESS_HEADER`, `XFF_DEPTH`, and the internal `S3_ENDPOINT` internally. It also passes the canonical origin into the app image build, so changing `SCHEME` or `HOST` requires rebuilding the `app` image.
+`pnpm docker:prod:app` already injects `POSTGRES_URL`, `DRAP_ASSERT_DOMAIN`, `DRAP_ENABLE_EMAILS`, `INNGEST_BASE_URL`, `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_EXPORTER_OTLP_PROTOCOL`, `ADDRESS_HEADER`, `XFF_DEPTH`, `PORT`, HAProxy's `APP_PORT`, and the internal `S3_ENDPOINT` internally. It also passes the canonical origin into the app image build, so changing `SCHEME` or `HOST` requires rebuilding the `app` image.
 
 One-shot setup services live behind the Compose `setup` profile so they do not interfere with `docker compose up --wait`. Use `pnpm docker:dev:setup:bucket` or `pnpm docker:prod:setup:bucket` to bootstrap the RustFS bucket after the long-running services are healthy.
 

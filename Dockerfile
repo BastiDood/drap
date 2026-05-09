@@ -48,6 +48,4 @@ COPY --from=build /app/build/ build/
 ARG PUBLIC_ORIGIN
 ENV ORIGIN=${PUBLIC_ORIGIN}
 
-ENV PORT=3000
-EXPOSE ${PORT}
 CMD ["build/index.js"]
