@@ -99,7 +99,7 @@ For host-run app processes, `pnpm docker:dev` already starts PostgreSQL, Inngest
 <details>
 <summary><strong>Production</strong></summary>
 
-For `pnpm docker:prod:app`, Compose derives the canonical origin from `SCHEME` and `HOST` and injects several internal defaults on your behalf. Use `pnpm docker:prod:app:tls` to add the TLS ingress override on top of the app stack.
+For `pnpm docker:prod:app`, Compose derives `PUBLIC_ORIGIN` from `SCHEME` and `HOST` and passes it into the app image build. The value is used for prerendered public metadata during `pnpm build` and baked into the final image as `ORIGIN` for SvelteKit's Node adapter and server-side OAuth handling. Other production settings remain runtime container configuration. Use `pnpm docker:prod:app:tls` to add the TLS ingress override on top of the app stack.
 
 | **Variable**                 | **Used by**                                 | **Required** | **Recommended**                                              |
 | ---------------------------- | ------------------------------------------- | ------------ | ------------------------------------------------------------ |
@@ -119,7 +119,7 @@ For `pnpm docker:prod:app`, Compose derives the canonical origin from `SCHEME` a
 | `ZO_ROOT_USER_PASSWORD`      | OpenObserve bootstrap admin password.       | Yes          | Use a strong random secret.                                  |
 | `DRIZZLE_MASTERPASS`         | Drizzle Gateway admin password.             | Yes          | Use a strong random secret.                                  |
 
-`pnpm docker:prod:app` already injects `POSTGRES_URL`, `DRAP_ASSERT_DOMAIN`, `DRAP_ENABLE_EMAILS`, `INNGEST_BASE_URL`, `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_EXPORTER_OTLP_PROTOCOL`, `ADDRESS_HEADER`, `XFF_DEPTH`, and the internal `S3_ENDPOINT` internally.
+`pnpm docker:prod:app` already injects `POSTGRES_URL`, `DRAP_ASSERT_DOMAIN`, `DRAP_ENABLE_EMAILS`, `INNGEST_BASE_URL`, `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_EXPORTER_OTLP_PROTOCOL`, `ADDRESS_HEADER`, `XFF_DEPTH`, and the internal `S3_ENDPOINT` internally. It also passes the canonical origin into the app image build, so changing `SCHEME` or `HOST` requires rebuilding the `app` image.
 
 One-shot setup services live behind the Compose `setup` profile so they do not interfere with `docker compose up --wait`. Use `pnpm docker:dev:setup:bucket` or `pnpm docker:prod:setup:bucket` to bootstrap the RustFS bucket after the long-running services are healthy.
 
@@ -130,7 +130,7 @@ When `SCHEME=https`, [`compose.prod.app.tls.yaml`](/X:/projects/drap/compose.pro
 [Google Cloud Console]: https://console.cloud.google.com/
 
 > [!IMPORTANT]
-> The OAuth redirect URI is computed as `${ORIGIN}/dashboard/oauth/callback`. In the production compose stack, `ORIGIN` and `PUBLIC_ORIGIN` are both derived from `SCHEME` and `HOST`. When `SCHEME=https`, HAProxy terminates TLS on port `443`, redirects port `80` to `HTTPS`, and emits HSTS on `HTTPS` responses.
+> The OAuth redirect URI is computed as `${ORIGIN}/dashboard/oauth/callback`. In the production compose stack, image-level `ORIGIN` and build-time `PUBLIC_ORIGIN` are both derived from `SCHEME` and `HOST`. When `SCHEME=https`, HAProxy terminates TLS on port `443`, redirects port `80` to `HTTPS`, and emits HSTS on `HTTPS` responses.
 
 [`compose.yaml`]: ./compose.yaml
 

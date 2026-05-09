@@ -28,6 +28,7 @@ FROM base AS build
 
 # Build the app and prune dev dependencies. Bind-mounted source files
 # are not baked into the layer — only build/ and node_modules/ persist.
+ARG PUBLIC_ORIGIN
 RUN --mount=type=bind,source=package.json,target=package.json \
     --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
     --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
@@ -43,6 +44,9 @@ FROM gcr.io/distroless/nodejs24-debian13:nonroot-${TARGETARCH} AS deploy
 WORKDIR /app
 COPY --from=build /app/node_modules node_modules/
 COPY --from=build /app/build/ build/
+
+ARG PUBLIC_ORIGIN
+ENV ORIGIN=${PUBLIC_ORIGIN}
 
 ENV PORT=3000
 EXPOSE ${PORT}
