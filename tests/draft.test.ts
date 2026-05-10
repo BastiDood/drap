@@ -2105,6 +2105,29 @@ test.describe('Draft Lifecycle', () => {
       await expect(adminPage.getByRole('button', { name: 'Finalize Draft' })).toBeVisible();
       await expect(adminPage.getByRole('button', { name: 'View Undrafted' })).toHaveCount(0);
     });
+
+    test('shows lottery-only results in a review sheet', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+
+      const outcomeCard = adminPage
+        .getByText('Per-Lab Lottery Outcome')
+        .locator('xpath=ancestor::*[@data-slot="card"]');
+      await expect(outcomeCard.getByRole('button', { name: 'View Results' })).toBeVisible();
+      await outcomeCard.getByRole('button', { name: 'View Results' }).click();
+
+      const sheet = adminPage.locator('[data-slot="sheet-content"]').last();
+      await expect(sheet).toBeVisible();
+      await expect(sheet.getByRole('heading', { name: 'Lottery Results' })).toBeVisible();
+      await expect(sheet.getByText('Student Number')).toBeVisible();
+      await expect(sheet.getByRole('columnheader', { name: 'Assigned Lab' })).toBeVisible();
+
+      await expect(sheet.locator('tbody tr')).toHaveCount(3);
+      await expect(sheet).toContainText('STUDENT, NoRank');
+      await expect(sheet).toContainText('TOLOTTERY, Partial');
+      await expect(sheet).not.toContainText('BYSTANDER, Idle');
+      await expect(sheet).not.toContainText('Regular Drafted');
+      await expect(sheet).not.toContainText('Intervention Drafted');
+    });
   });
 
   test.describe('Faculty Review Phase', () => {
@@ -3118,6 +3141,21 @@ test.describe('Draft Lifecycle', () => {
       await expect(adminPage.locator('#section-lottery-drafted')).toContainText(
         'Lottery Drafted (0)',
       );
+    });
+
+    test('keeps lottery results sheet available in finalized Draft #1', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+      await adminPage.getByRole('button', { name: 'Lottery' }).click();
+
+      const outcomeCard = adminPage
+        .getByText('Per-Lab Lottery Outcome')
+        .locator('xpath=ancestor::*[@data-slot="card"]');
+      await expect(outcomeCard.getByRole('button', { name: 'View Results' })).toBeVisible();
+      await outcomeCard.getByRole('button', { name: 'View Results' }).click();
+
+      const sheet = adminPage.locator('[data-slot="sheet-content"]').last();
+      await expect(sheet.getByRole('heading', { name: 'Lottery Results' })).toBeVisible();
+      await expect(sheet.locator('tbody tr')).toHaveCount(3);
     });
 
     test.describe('drafts table and history', () => {

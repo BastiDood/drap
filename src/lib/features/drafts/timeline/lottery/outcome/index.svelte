@@ -11,11 +11,14 @@
 
   import { keyForRank } from './utils';
 
+  import LotteryResultsSheet from './results-sheet/index.svelte';
+
   interface Props {
+    draftId: string;
     stacks: LotteryOutcomeStack[];
   }
 
-  const { stacks }: Props = $props();
+  const { draftId, stacks }: Props = $props();
 
   // Dedupe by rank across all stacks, sort numerically (null => "Not Preferred" goes last).
   const allBucketsMeta = $derived.by(() => {
@@ -87,11 +90,18 @@
 <Card.Root
   class="overflow-hidden border-border/60 bg-linear-to-br from-muted/40 via-background to-muted/10 shadow-xs"
 >
-  <Card.Header>
-    <Card.Title>Per-Lab Lottery Outcome</Card.Title>
-    <Card.Description>
-      Lottery-placed students by lab, broken down by preference rank quality
-    </Card.Description>
+  <Card.Header class="gap-3">
+    <div class="flex flex-wrap items-center justify-between gap-2 sm:items-start">
+      <div class="space-y-1">
+        <Card.Title>Per-Lab Lottery Outcome</Card.Title>
+        <Card.Description>
+          Lottery-placed students by lab, broken down by preference rank quality
+        </Card.Description>
+      </div>
+      <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:gap-2">
+        <LotteryResultsSheet {draftId} />
+      </div>
+    </div>
   </Card.Header>
   <Card.Content>
     <Chart.Container id="lottery-outcome-chart" config={chartConfig} class="max-h-[400px] w-full">

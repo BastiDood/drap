@@ -88,7 +88,7 @@
     <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
       <div class="space-y-1.5 lg:flex-1">
         <div class="flex flex-wrap items-center gap-2">
-          <Card.Title>Registrants per day</Card.Title>
+          <Card.Title>Registrants per Day</Card.Title>
           <Badge variant="default">Draft Creation to Start</Badge>
         </div>
         <Card.Description>Shows how many students registered each day</Card.Description>
