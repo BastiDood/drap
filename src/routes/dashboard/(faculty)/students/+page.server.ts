@@ -23,7 +23,7 @@ import {
   type DbConnection,
   type DrizzleTransaction,
   getDraftByIdForUpdate,
-  getFacultyAndStaff,
+  getDraftNotificationRecipients,
   getLabById,
   getPendingLabCountInDraft,
   incrementDraftRound,
@@ -336,10 +336,10 @@ export const actions = {
         );
 
         // Dispatch notifications after successful transaction
-        const [staffEmails, { name: labName }, facultyAndStaff] = await Promise.all([
-          getValidStaffEmails(db),
+        const [{ name: labName }, staffEmails, facultyAndStaff] = await Promise.all([
           getLabById(db, lab),
-          getFacultyAndStaff(db),
+          getDraftAdminEmails(db, draftId),
+          getDraftNotificationRecipients(db, draftId),
         ]);
 
         // CREATE: notify staff + all faculty
@@ -396,8 +396,9 @@ class RoundMismatchError extends Error {
   }
 }
 
-async function getValidStaffEmails(db: DbConnection) {
-  return await tracer.asyncSpan('get-valid-staff-emails', async () => {
+async function getDraftAdminEmails(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-draft-admin-emails', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
     const results = await db
       .select({ email: schema.user.email })
       .from(schema.user)

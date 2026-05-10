@@ -8,6 +8,7 @@ import {
   eq,
   getTableColumns,
   gte,
+  inArray,
   isNotNull,
   isNull,
   lt,
@@ -147,6 +148,34 @@ export async function getFacultyAndStaff(db: DbConnection) {
       .from(schema.user)
       .leftJoin(schema.lab, eq(schema.user.labId, schema.lab.id))
       .where(and(eq(schema.user.isAdmin, true), isNotNull(schema.user.googleUserId)));
+  });
+}
+
+export async function getDraftNotificationRecipients(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-draft-notification-recipients', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    const draftLabIds = db
+      .select({ labId: schema.draftLabQuota.labId })
+      .from(schema.draftLabQuota)
+      .where(eq(schema.draftLabQuota.draftId, draftId));
+    return await db
+      .select({
+        id: schema.user.id,
+        email: schema.user.email,
+        givenName: schema.user.givenName,
+        familyName: schema.user.familyName,
+        avatarUrl: schema.user.avatarUrl,
+        labName: schema.lab.name,
+      })
+      .from(schema.user)
+      .leftJoin(schema.lab, eq(schema.user.labId, schema.lab.id))
+      .where(
+        and(
+          schema.user.isAdmin,
+          isNotNull(schema.user.googleUserId),
+          or(isNull(schema.user.labId), inArray(schema.user.labId, draftLabIds)),
+        ),
+      );
   });
 }
 

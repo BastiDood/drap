@@ -17,7 +17,7 @@ import {
   getDraftById,
   getDraftByIdForUpdate,
   getDraftLabQuotaLabIds,
-  getFacultyAndStaff,
+  getDraftNotificationRecipients,
   getLabById,
   getPendingLabCountInDraft,
   getUserByEmail,
@@ -351,7 +351,7 @@ export const actions = {
       );
 
       // Dispatch notifications for all rounds that were started
-      const facultyAndStaff = await getFacultyAndStaff(db);
+      const facultyAndStaff = await getDraftNotificationRecipients(db, draftId);
       await inngest.send(
         roundsToNotify.flatMap(round =>
           facultyAndStaff.map(({ email, givenName, familyName }) =>
@@ -560,7 +560,7 @@ export const actions = {
       }
 
       // Dispatch lottery intervention notifications for each pair
-      const facultyAndStaff = await getFacultyAndStaff(db);
+      const facultyAndStaff = await getDraftNotificationRecipients(db, draftId);
       for (const [studentUserId, labId] of pairs) {
         const [{ name: labName }, student] = await Promise.all([
           getLabById(db, labId),
@@ -760,7 +760,7 @@ export const actions = {
       );
 
       const [facultyAndStaff, assignments] = await Promise.all([
-        getFacultyAndStaff(db),
+        getDraftNotificationRecipients(db, draftId),
         getDraftAssignmentRecords(db, draftId),
       ]);
 
