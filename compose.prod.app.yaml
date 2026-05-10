@@ -47,10 +47,6 @@ services:
       POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD:?required}@postgres:5432/postgres
     volumes:
       - type: bind
-        source: ./package.json
-        target: /app/package.json
-        read_only: true
-      - type: bind
         source: ./drizzle.config.js
         target: /app/drizzle.config.js
         read_only: true

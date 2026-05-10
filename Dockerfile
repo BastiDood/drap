@@ -6,38 +6,29 @@ RUN corepack enable pnpm
 
 WORKDIR /app
 
-# Fetch dependencies into the pnpm store (lockfile-only).
-RUN --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
-    --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
-    --mount=type=cache,id=pnpm,target=$PNPM_HOME/store \
+# Fetch dependencies into the pnpm store.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+RUN --mount=type=cache,id=pnpm,target=$PNPM_HOME/store \
     pnpm fetch
 
 # Install node_modules/ from the cached store.
-RUN --mount=type=bind,source=package.json,target=package.json \
-    --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
-    --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
-    --mount=type=cache,id=pnpm,target=$PNPM_HOME/store \
+RUN --mount=type=cache,id=pnpm,target=$PNPM_HOME/store \
     pnpm install --offline --frozen-lockfile --config.confirm-modules-purge=false
 
 FROM base AS migrate
 
-# Migration files are provided as bind mounts.
-ENTRYPOINT ["pnpm", "db:migrate"]
+# Drizzle config, migration files, and schema files are provided as bind mounts.
+ENTRYPOINT ["pnpm", "exec", "drizzle-kit", "migrate"]
 
 FROM base AS build
 
-# Build the app and prune dev dependencies. Bind-mounted source files
-# are not baked into the layer — only build/ and node_modules/ persist.
+# Build the app and prune dev dependencies. The final image only copies
+# build/ and node_modules/ from this stage.
 ARG PUBLIC_ORIGIN
-RUN --mount=type=bind,source=package.json,target=package.json \
-    --mount=type=bind,source=pnpm-lock.yaml,target=pnpm-lock.yaml \
-    --mount=type=bind,source=pnpm-workspace.yaml,target=pnpm-workspace.yaml \
-    --mount=type=bind,source=svelte.config.js,target=svelte.config.js \
-    --mount=type=bind,source=vite.config.js,target=vite.config.js \
-    --mount=type=bind,source=tsconfig.json,target=tsconfig.json \
-    --mount=type=bind,source=src,target=src \
-    --mount=type=bind,source=static,target=static \
-    pnpm build && pnpm prune --prod --ignore-scripts --config.confirm-modules-purge=false
+COPY svelte.config.js vite.config.js tsconfig.json ./
+COPY static/ static/
+COPY src/ src/
+RUN pnpm build && pnpm prune --prod --ignore-scripts --config.confirm-modules-purge=false
 
 FROM gcr.io/distroless/nodejs24-debian13:nonroot-${TARGETARCH} AS deploy
 
