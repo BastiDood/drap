@@ -115,12 +115,13 @@ services:
       DRAP_ASSERT_DOMAIN: up.edu.ph
       DRAP_ENABLE_EMAILS: 1
       DRAP_ENCRYPTION_KEY: ${DRAP_ENCRYPTION_KEY:?required}
-      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD:?required}@postgres:5432/postgres
+      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD:?required}@postgres
       GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:?required}
       GOOGLE_OAUTH_CLIENT_SECRET: ${GOOGLE_OAUTH_CLIENT_SECRET:?required}
       INNGEST_EVENT_KEY: ${INNGEST_EVENT_KEY:?required}
       INNGEST_SIGNING_KEY: ${INNGEST_SIGNING_KEY:?required}
       INNGEST_BASE_URL: http://inngest:8288
+      INNGEST_SERVE_ORIGIN: http://app:3000
       OTEL_EXPORTER_OTLP_ENDPOINT: http://o2:5080/api/default
       OTEL_EXPORTER_OTLP_HEADERS: ${OTEL_EXPORTER_OTLP_HEADERS:?required}
       OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
