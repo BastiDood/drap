@@ -31,7 +31,7 @@ export default {
         ],
         'script-src-attr': ['unsafe-inline'],
         'style-src': ['self'],
-        'style-src-elem': ['self'],
+        'style-src-elem': ['self', 'unsafe-inline'],
         'style-src-attr': ['unsafe-inline'],
       },
     },
