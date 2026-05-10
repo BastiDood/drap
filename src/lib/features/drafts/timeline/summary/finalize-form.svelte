@@ -43,7 +43,11 @@
   }}
 >
   <input type="hidden" name="draft" value={draftId} />
-  <Button type="submit" size="lg" class="w-full">
+  <Button
+    type="submit"
+    size="lg"
+    class="w-full bg-warning text-warning-foreground hover:bg-warning/80"
+  >
     <CheckIcon class="size-6" />
     <span>Finalize Draft</span>
   </Button>

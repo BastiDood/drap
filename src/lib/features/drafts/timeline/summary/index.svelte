@@ -14,6 +14,7 @@
   } from '$lib/features/drafts/types';
 
   import DraftRoundsChart from './draft-rounds-chart.svelte';
+  import FinalizeForm from './finalize-form.svelte';
   import LabDistributionChart from './lab-distribution-chart.svelte';
   import PreferenceAlignmentChart from './preference-alignment-chart.svelte';
   import SupplyDemandChart from './supply-demand-chart.svelte';
@@ -39,12 +40,15 @@
 
 <div class="@container space-y-4">
   {#if isReview}
-    <Alert.Root variant="warning">
+    <Alert.Root variant="warning" class="grid-cols-[auto_1fr_auto] items-center gap-x-3">
       <SparklesIcon class="text-accent" />
       <Alert.Title>Draft Review</Alert.Title>
       <Alert.Description>
         Lottery assignments are complete. Review results below before finalizing.
       </Alert.Description>
+      <div class="col-start-2 mt-2 sm:col-start-3 sm:row-span-2 sm:row-start-1 sm:mt-0">
+        <FinalizeForm {draftId} />
+      </div>
     </Alert.Root>
   {:else}
     <Alert.Root variant="success" class="grid-cols-[auto_1fr_auto] items-center gap-x-3">

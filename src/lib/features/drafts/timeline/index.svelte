@@ -195,11 +195,7 @@
             status={currentPhase === DraftPhase.Review ? 'active' : 'completed'}
             open={currentPhase === DraftPhase.Review}
           >
-            <LotteryCompleted
-              {draftId}
-              isReview={currentPhase === DraftPhase.Review}
-              {lotteryAggregate}
-            />
+            <LotteryCompleted {lotteryAggregate} />
           </Step>
         {/if}
         <Step

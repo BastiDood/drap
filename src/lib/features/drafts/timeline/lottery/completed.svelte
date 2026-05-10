@@ -1,18 +1,15 @@
 <script lang="ts">
   import type { LotteryAggregate } from '$lib/features/drafts/types';
 
-  import FinalizeForm from './finalize-form.svelte';
   import StatCards from './stat-cards.svelte';
 
   import LotteryOutcomeChart from './outcome/index.svelte';
 
   interface Props {
-    draftId: string;
-    isReview: boolean;
     lotteryAggregate: LotteryAggregate;
   }
 
-  const { draftId, isReview, lotteryAggregate }: Props = $props();
+  const { lotteryAggregate }: Props = $props();
 
   const hasLotteryPlacements = $derived(lotteryAggregate.statCards.poolSize > 0);
 </script>
@@ -25,8 +22,5 @@
     <p class="text-sm text-muted-foreground">
       No lottery was necessary — all pool students were placed manually.
     </p>
-  {/if}
-  {#if isReview}
-    <FinalizeForm {draftId} />
   {/if}
 </div>
