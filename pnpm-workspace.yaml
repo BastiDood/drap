@@ -12,6 +12,9 @@ engineStrict: true
 
 minimumReleaseAge: 1440 # 1 Day
 
+minimumReleaseAgeExclude:
+  - layerchart@2.0.0-next.63
+
 strictDepBuilds: true
 
 trustPolicy: no-downgrade
