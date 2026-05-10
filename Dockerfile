@@ -22,9 +22,11 @@ ENTRYPOINT ["pnpm", "exec", "drizzle-kit", "migrate"]
 
 FROM base AS build
 
+ARG PUBLIC_ORIGIN
+ENV ORIGIN=${PUBLIC_ORIGIN}
+
 # Build the app and prune dev dependencies. The final image only copies
 # build/ and node_modules/ from this stage.
-ARG PUBLIC_ORIGIN
 COPY svelte.config.js vite.config.js tsconfig.json ./
 COPY static/ static/
 COPY src/ src/
