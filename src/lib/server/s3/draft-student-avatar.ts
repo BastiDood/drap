@@ -7,7 +7,8 @@ import { getStreamAsBuffer } from 'get-stream';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 import { assertPayloadSize, assertSecureCdnUrl, normalizeImageContentType } from './util';
-import { s3 } from './client';
+// TODO: import defer { s3 } from './client';
+// https://github.com/rolldown/rolldown/issues/4857
 
 const MAX_AVATAR_BYTES = 4 * 1024 * 1024;
 const DRAFT_AVATAR_BUCKET = 'draft-student-avatar';
@@ -16,6 +17,7 @@ const SERVICE_NAME = 's3.draft-student-avatar';
 const tracer = Tracer.byName(SERVICE_NAME);
 
 async function putDraftAvatarObject(objectKey: string, contentType: string, bytes: Buffer) {
+  const { s3 } = await import('./client');
   return await tracer.asyncSpan('put-draft-avatar-object', async span => {
     span.setAttributes({
       'draft.avatar.object_key': objectKey,
@@ -34,6 +36,7 @@ async function putDraftAvatarObject(objectKey: string, contentType: string, byte
 }
 
 export async function getDraftAvatarObject(objectKey: string) {
+  const { s3 } = await import('./client');
   return await tracer.asyncSpan('get-draft-avatar-object', async span => {
     span.setAttributes({ 'draft.avatar.object_key': objectKey });
     return await s3.send(
@@ -46,6 +49,7 @@ export async function getDraftAvatarObject(objectKey: string) {
 }
 
 export async function deleteDraftAvatarObject(objectKey: string) {
+  const { s3 } = await import('./client');
   return await tracer.asyncSpan('delete-draft-avatar-object', async span => {
     span.setAttributes({ 'draft.avatar.object_key': objectKey });
     await s3.send(
