@@ -1,48 +1,9 @@
-# Production overrides (`inngest` prod mode, `redis`, observability, Drizzle).
+# Production overrides (observability, Drizzle, production credentials).
 
 services:
   postgres:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
-
-  redis:
-    image: redis:8.6.1-alpine3.23
-    command:
-      - redis-server
-      - '--appendonly'
-      - 'yes'
-    volumes:
-      - redis:/data
-    networks:
-      - queue
-    restart: always
-    healthcheck:
-      test:
-        - 'CMD'
-        - 'redis-cli'
-        - 'ping'
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
-  inngest:
-    command:
-      - inngest
-      - start
-      - '--sqlite-dir'
-      - '/app'
-      - '--sdk-url'
-      - 'http://host.docker.internal:4173/api/inngest'
-    environment:
-      INNGEST_EVENT_KEY: ${INNGEST_EVENT_KEY:?required}
-      INNGEST_SIGNING_KEY: ${INNGEST_SIGNING_KEY:?required}
-      INNGEST_REDIS_URI: redis://redis:6379
-    volumes:
-      - inngest:/app
-    depends_on:
-      redis:
-        condition: service_healthy
-        required: true
 
   o2:
     environment:
@@ -76,6 +37,4 @@ services:
     restart: always
 
 volumes:
-  redis:
-  inngest:
   drizzle-gateway:

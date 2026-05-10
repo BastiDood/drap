@@ -24,17 +24,48 @@ services:
         required: true
     restart: always
 
+  redis:
+    image: redis:8.6.1-alpine3.23
+    command:
+      - redis-server
+      - '--appendonly'
+      - 'yes'
+    volumes:
+      - redis:/data
+    networks:
+      - queue
+    restart: always
+    healthcheck:
+      test:
+        - 'CMD'
+        - 'redis-cli'
+        - 'ping'
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   inngest:
     command:
       - inngest
       - start
-      - '--dir'
+      - '--sqlite-dir'
       - '/app'
       - '--sdk-url'
       - 'http://app:3000/api/inngest'
-    extra_hosts: []
+    extra_hosts: !reset []
+    environment:
+      INNGEST_EVENT_KEY: ${INNGEST_EVENT_KEY:?required}
+      INNGEST_SIGNING_KEY: ${INNGEST_SIGNING_KEY:?required}
+      INNGEST_REDIS_URI: redis://redis:6379
+    volumes:
+      - inngest:/app
     networks:
+      - queue
       - durability
+    depends_on:
+      redis:
+        condition: service_healthy
+        required: true
 
   setup-database:
     pull_policy: build
@@ -120,3 +151,7 @@ services:
 networks:
   durability:
   edge:
+
+volumes:
+  redis:
+  inngest:

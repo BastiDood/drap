@@ -119,7 +119,7 @@ For `pnpm docker:prod:app`, Compose derives `PUBLIC_ORIGIN` from `SCHEME` and `H
 | `ZO_ROOT_USER_PASSWORD`      | OpenObserve bootstrap admin password.       | Yes          | Use a strong random secret.                                  |
 | `DRIZZLE_MASTERPASS`         | Drizzle Gateway admin password.             | Yes          | Use a strong random secret.                                  |
 
-`pnpm docker:prod:app` already injects `POSTGRES_URL`, `DRAP_ASSERT_DOMAIN`, `DRAP_ENABLE_EMAILS`, `INNGEST_BASE_URL`, `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_EXPORTER_OTLP_PROTOCOL`, `ADDRESS_HEADER`, `XFF_DEPTH`, `PORT`, HAProxy's `APP_PORT`, and the internal `S3_ENDPOINT` internally. It also passes the canonical origin into the app image build, so changing `SCHEME` or `HOST` requires rebuilding the `app` image.
+`pnpm docker:prod:app` already injects `POSTGRES_URL`, `DRAP_ASSERT_DOMAIN`, `DRAP_ENABLE_EMAILS`, `INNGEST_BASE_URL`, `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_EXPORTER_OTLP_PROTOCOL`, `ADDRESS_HEADER`, `XFF_DEPTH`, `PORT`, HAProxy's `APP_PORT`, and the internal `S3_ENDPOINT` internally. It also configures Inngest to call the app through the internal Compose network at `http://app:3000/api/inngest` and passes the canonical origin into the app image build, so changing `SCHEME` or `HOST` requires rebuilding the `app` image.
 
 One-shot setup services live behind the Compose `setup` profile so they do not interfere with `docker compose up --wait`. Use `pnpm docker:dev:setup:bucket` or `pnpm docker:prod:setup:bucket` to bootstrap the RustFS bucket after the long-running services are healthy.
 
@@ -222,9 +222,9 @@ flowchart TD
 | `pnpm docker:dev`               | `compose.yaml` + `compose.dev.yaml`                                                          | base services plus dev overrides, including `o2` and `rustfs`                         |
 | `pnpm docker:dev:ci`            | `compose.yaml` + `compose.dev.yaml` + `compose.dev.ci.yaml`                                  | dev-style backing services with CI Inngest SDK URL override, excluding `o2` via reset |
 | `pnpm docker:dev:setup:bucket`  | `compose.yaml` + `compose.dev.yaml` + `setup` profile                                        | one-shot `setup-bucket` bootstrap for the dev stack                                   |
-| `pnpm docker:prod`              | `compose.yaml` + `compose.prod.yaml`                                                         | `postgres` (prod), `inngest` (prod), `redis`, `o2`, `rustfs`, `drizzle-gateway`       |
+| `pnpm docker:prod`              | `compose.yaml` + `compose.prod.yaml`                                                         | production backing services: `postgres`, `o2`, `rustfs`, `drizzle-gateway`            |
 | `pnpm docker:prod:setup:bucket` | `compose.yaml` + `compose.prod.yaml` + `compose.prod.app.yaml` + `setup` profile             | one-shot `setup-bucket` bootstrap for the production app stack                        |
-| `pnpm docker:prod:app`          | `compose.yaml` + `compose.prod.yaml` + `compose.prod.app.yaml`                               | prod services + `haproxy` ingress + `app`                                             |
+| `pnpm docker:prod:app`          | `compose.yaml` + `compose.prod.yaml` + `compose.prod.app.yaml`                               | prod services + `redis`, `inngest`, `haproxy` ingress, and `app`                      |
 | `pnpm docker:prod:app:tls`      | `compose.yaml` + `compose.prod.yaml` + `compose.prod.app.yaml` + `compose.prod.app.tls.yaml` | app stack + TLS ingress override on port `443`                                        |
 
 > [!NOTE]
@@ -262,7 +262,7 @@ node --env-file=.env build/index.js
 
 ```bash
 # Or, spin up production internal services (compose.yaml + compose.prod.yaml):
-# postgres (prod), inngest (prod mode), redis, o2, rustfs, drizzle-gateway
+# postgres (prod), o2, rustfs, drizzle-gateway
 pnpm docker:prod
 
 # Bootstrap the RustFS bucket after the stack is healthy.
@@ -272,7 +272,7 @@ pnpm docker:prod:setup:bucket
 
 ```bash
 # Or, spin up full production environment (+ compose.prod.app.yaml):
-# prod services + HAProxy ingress + app
+# prod services + Redis, Inngest, HAProxy ingress, and app
 # SCHEME=http uses port 80 only
 pnpm docker:prod:app
 ```
