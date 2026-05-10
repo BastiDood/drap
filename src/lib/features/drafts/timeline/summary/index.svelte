@@ -6,11 +6,13 @@
 
   import * as Alert from '$lib/components/ui/alert';
   import DraftAssignments from '$lib/features/drafts/assignments/index.svelte';
+  import LotteryCompleted from '$lib/features/drafts/timeline/lottery/completed.svelte';
   import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
   import type {
     Draft,
     DraftAssignmentSummary,
     DraftSummaryChartData,
+    LotteryAggregate,
   } from '$lib/features/drafts/types';
 
   import DraftRoundsChart from './draft-rounds-chart.svelte';
@@ -25,6 +27,7 @@
     totalStudents: number;
     assignmentSummary: DraftAssignmentSummary;
     draftSummaryChartData: DraftSummaryChartData;
+    lotteryAggregate: LotteryAggregate;
     isReview: boolean;
   }
 
@@ -34,6 +37,7 @@
     totalStudents,
     assignmentSummary,
     draftSummaryChartData,
+    lotteryAggregate,
     isReview,
   }: Props = $props();
 </script>
@@ -87,5 +91,8 @@
       <LabDistributionChart data={draftSummaryChartData.labDistribution} />
       <PreferenceAlignmentChart data={draftSummaryChartData.preferenceAlignment} />
     </div>
+    {#if isReview}
+      <LotteryCompleted {draftId} {lotteryAggregate} />
+    {/if}
   </div>
 </div>

@@ -45,10 +45,10 @@
   <input type="hidden" name="draft" value={draftId} />
   <Button
     type="submit"
-    size="lg"
+    size="sm"
     class="w-full bg-warning text-warning-foreground hover:bg-warning/80"
   >
-    <CheckIcon class="size-6" />
+    <CheckIcon class="size-4" />
     <span>Finalize Draft</span>
   </Button>
 </form>

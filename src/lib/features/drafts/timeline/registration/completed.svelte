@@ -1,7 +1,9 @@
 <script lang="ts">
-  import RegistrantsChart from './registrants-chart.svelte';
+  import UsersIcon from '@lucide/svelte/icons/users';
 
-  import DrafteesSheet from './draftees-sheet/index.svelte';
+  import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
+
+  import RegistrantsChart from './registrants-chart.svelte';
 
   interface TimelineData {
     date: Date;
@@ -32,25 +34,30 @@
   }: Props = $props();
 </script>
 
-<div class="space-y-6">
-  <div class="prose dark:prose-invert">
-    <p>
-      <strong>{studentCount}</strong> students registered for this draft.
-    </p>
-    {#if lateRegistrantsCount > 0}
-      <p>
-        <strong>{lateRegistrantsCount}</strong> students registered after registration closed.
-      </p>
-    {/if}
+<div class="space-y-4">
+  <div class="grid w-fit grid-cols-1 gap-2 sm:grid-cols-[repeat(1,minmax(10rem,14rem))]">
+    <StatCard icon={UsersIcon}>
+      {#snippet title()}Registered Students{/snippet}
+      {#snippet body()}
+        <p id="stat-registered-students" class="text-2xl font-bold tabular-nums">
+          {studentCount}
+        </p>
+      {/snippet}
+      {#snippet subtitle()}
+        {#if lateRegistrantsCount > 0}
+          {lateRegistrantsCount} Late Registrants Included
+        {:else}
+          Final Registration Count
+        {/if}
+      {/snippet}
+    </StatCard>
   </div>
   <RegistrantsChart
+    {draftId}
     {draftCreatedAt}
     {registrationClosedAt}
     {startedAt}
     {requestedAt}
     {timelineData}
   />
-  <div class="flex justify-end">
-    <DrafteesSheet {draftId} />
-  </div>
 </div>

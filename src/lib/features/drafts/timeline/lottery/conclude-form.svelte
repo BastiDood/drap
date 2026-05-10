@@ -49,8 +49,8 @@
   }}
 >
   <input type="hidden" name="draft" value={draftId} />
-  <Button type="submit" size="lg" class="w-full">
-    <ArrowRightIcon class="size-6" />
+  <Button type="submit" size="sm" class="w-full">
+    <ArrowRightIcon class="size-4" />
     <span>Run Lottery</span>
   </Button>
 </form>

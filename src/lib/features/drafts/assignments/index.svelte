@@ -10,7 +10,7 @@
 <Sheet.Root>
   <Sheet.Trigger>
     {#snippet child({ props })}
-      <Button {...props}>See Results</Button>
+      <Button size="sm" {...props}>See Results</Button>
     {/snippet}
   </Sheet.Trigger>
   <Sheet.Content side="right" class="flex min-w-[50%] flex-col gap-4 overflow-hidden p-4">

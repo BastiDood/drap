@@ -1,4 +1,6 @@
 <script lang="ts">
+  import UsersIcon from '@lucide/svelte/icons/users';
+
   import * as Sheet from '$lib/components/ui/sheet';
   import { Button } from '$lib/components/ui/button';
 
@@ -14,7 +16,10 @@
 <Sheet.Root>
   <Sheet.Trigger>
     {#snippet child({ props })}
-      <Button variant="outline" {...props}>View All Draftees</Button>
+      <Button variant="outline" size="sm" {...props}>
+        <UsersIcon class="size-4" />
+        <span>View All Draftees</span>
+      </Button>
     {/snippet}
   </Sheet.Trigger>
   <Sheet.Content

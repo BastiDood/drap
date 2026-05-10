@@ -18,7 +18,7 @@
 
 <div class="space-y-4">
   {#if studentCount > 0}
-    <div class="space-y-4">
+    <div class="grid w-fit grid-cols-1 gap-2 sm:grid-cols-[repeat(1,minmax(10rem,14rem))]">
       <StatCard icon={UsersIcon}>
         {#snippet title()}Registered Students{/snippet}
         {#snippet body()}
@@ -28,7 +28,6 @@
         {/snippet}
         {#snippet subtitle()}Current Draft Participants{/snippet}
       </StatCard>
-      <QuotaCard {draftId} mode="initial" {snapshots} />
     </div>
   {:else}
     <Alert.Root variant="warning">
@@ -39,4 +38,5 @@
       </Alert.Description>
     </Alert.Root>
   {/if}
+  <QuotaCard {draftId} mode="initial" {snapshots} />
 </div>

@@ -1,10 +1,12 @@
 <script lang="ts">
+  import ChartColumnIcon from '@lucide/svelte/icons/chart-column';
   import { BarChart } from 'layerchart/svg';
   import { cubicOut } from 'svelte/easing';
   import { format } from 'd3-format';
   import { prefersReducedMotion } from 'svelte/motion';
 
   import * as Chart from '$lib/components/ui/chart';
+  import * as Empty from '$lib/components/ui/empty';
   import { assert } from '$lib/assert';
   import { CHART_COLORS } from '$lib/constants';
   import type { DraftAssignmentSummary } from '$lib/features/drafts/types';
@@ -70,7 +72,17 @@
 </script>
 
 {#if chartData.length === 0}
-  <p class="text-sm text-muted-foreground">No regular-round data is available yet.</p>
+  <Empty.Root class="h-64 w-full">
+    <Empty.Media variant="icon" class="bg-warning/15 text-warning">
+      <ChartColumnIcon />
+    </Empty.Media>
+    <Empty.Header>
+      <Empty.Title>No regular-round data</Empty.Title>
+      <Empty.Description>
+        Round distributions will appear once faculty selections have been recorded.
+      </Empty.Description>
+    </Empty.Header>
+  </Empty.Root>
 {:else}
   <Chart.Container id="regular-round-summary-chart" config={chartConfig} class="max-h-96 w-full">
     <BarChart

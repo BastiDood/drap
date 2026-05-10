@@ -1,5 +1,6 @@
 <script lang="ts">
   import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
   import { BarChart } from 'layerchart/svg';
   import { format } from 'd3-format';
   import { max } from 'd3-array';
@@ -7,6 +8,7 @@
 
   import * as Card from '$lib/components/ui/card';
   import * as Chart from '$lib/components/ui/chart';
+  import * as Empty from '$lib/components/ui/empty';
   import * as Popover from '$lib/components/ui/popover';
   import DraftedDraftees from '$lib/features/drafts/draftees/drafted/index.svelte';
   import { assert } from '$lib/assert';
@@ -137,7 +139,17 @@
   </Card.Header>
   <Card.Content>
     {#if rows.length === 0}
-      <p class="text-sm text-muted-foreground">No quota data available.</p>
+      <Empty.Root class="h-72 w-full">
+        <Empty.Media variant="icon" class="bg-warning/15 text-warning">
+          <TriangleAlertIcon />
+        </Empty.Media>
+        <Empty.Header>
+          <Empty.Title>No quota data</Empty.Title>
+          <Empty.Description>
+            Lottery quota comparisons will appear once draft lab quota snapshots are available.
+          </Empty.Description>
+        </Empty.Header>
+      </Empty.Root>
     {:else}
       <Chart.Container
         id="quota-dumbbell-chart"

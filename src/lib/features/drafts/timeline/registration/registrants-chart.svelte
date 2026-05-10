@@ -12,6 +12,8 @@
   import { assert } from '$lib/assert';
   import { Badge } from '$lib/components/ui/badge';
 
+  import DrafteesSheet from './draftees-sheet/index.svelte';
+
   interface TimelineData {
     date: Date;
     label: string;
@@ -19,6 +21,7 @@
   }
 
   interface Props {
+    draftId: string;
     draftCreatedAt: Date;
     registrationClosedAt: Date;
     startedAt: Date | null;
@@ -26,8 +29,14 @@
     timelineData: TimelineData[];
   }
 
-  const { draftCreatedAt, registrationClosedAt, startedAt, requestedAt, timelineData }: Props =
-    $props();
+  const {
+    draftId,
+    draftCreatedAt,
+    registrationClosedAt,
+    startedAt,
+    requestedAt,
+    timelineData,
+  }: Props = $props();
 
   const integerFormat = format('d');
   const dayFormat = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
@@ -93,12 +102,8 @@
         </div>
         <Card.Description>Shows how many students registered each day</Card.Description>
       </div>
-      <div class="text-sm text-muted-foreground">
-        {#if startedAt === null}
-          Current: {requestedAt.toLocaleDateString()}
-        {:else}
-          Draft Started: {startedAt.toLocaleDateString()}
-        {/if}
+      <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:gap-2">
+        <DrafteesSheet {draftId} />
       </div>
     </div>
   </Card.Header>

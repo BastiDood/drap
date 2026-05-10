@@ -22,28 +22,25 @@
 
 <div class="space-y-4">
   {#if studentCount > 0}
-    <div class="space-y-4">
-      <div class="grid w-fit grid-cols-1 gap-2 sm:grid-cols-[repeat(2,minmax(10rem,14rem))]">
-        <StatCard icon={UsersIcon}>
-          {#snippet title()}Registered Students{/snippet}
-          {#snippet body()}
-            <p id="stat-registered-students" class="text-2xl font-bold tabular-nums">
-              {studentCount}
-            </p>
-          {/snippet}
-          {#snippet subtitle()}Registration Closed{/snippet}
-        </StatCard>
-        <StatCard icon={UserRoundPlusIcon}>
-          {#snippet title()}Allowlisted Students{/snippet}
-          {#snippet body()}
-            <p id="stat-allowlisted-students" class="text-2xl font-bold tabular-nums">
-              {allowlistCount}
-            </p>
-          {/snippet}
-          {#snippet subtitle()}Late Registration Access{/snippet}
-        </StatCard>
-      </div>
-      <QuotaCard {draftId} mode="initial" {snapshots} />
+    <div class="grid w-fit grid-cols-1 gap-2 sm:grid-cols-[repeat(2,minmax(10rem,14rem))]">
+      <StatCard icon={UsersIcon}>
+        {#snippet title()}Registered Students{/snippet}
+        {#snippet body()}
+          <p id="stat-registered-students" class="text-2xl font-bold tabular-nums">
+            {studentCount}
+          </p>
+        {/snippet}
+        {#snippet subtitle()}Registration Closed{/snippet}
+      </StatCard>
+      <StatCard icon={UserRoundPlusIcon}>
+        {#snippet title()}Allowlisted Students{/snippet}
+        {#snippet body()}
+          <p id="stat-allowlisted-students" class="text-2xl font-bold tabular-nums">
+            {allowlistCount}
+          </p>
+        {/snippet}
+        {#snippet subtitle()}Late Registration Access{/snippet}
+      </StatCard>
     </div>
   {:else}
     <Alert.Root variant="info">
@@ -53,5 +50,6 @@
       </Alert.Description>
     </Alert.Root>
   {/if}
+  <QuotaCard {draftId} mode="initial" {snapshots} />
   <AllowlistSheet {draftId} {allowlistCount} />
 </div>

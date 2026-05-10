@@ -1,10 +1,12 @@
 <script lang="ts">
+  import ChartNoAxesColumnIcon from '@lucide/svelte/icons/chart-no-axes-column';
   import { BarChart } from 'layerchart/svg';
   import { format } from 'd3-format';
   import { rollup, sort, sum } from 'd3-array';
 
   import * as Card from '$lib/components/ui/card';
   import * as Chart from '$lib/components/ui/chart';
+  import * as Empty from '$lib/components/ui/empty';
   import { assert } from '$lib/assert';
   import { CHART_COLORS } from '$lib/constants';
   import type { LotteryOutcomeStack } from '$lib/features/drafts/types';
@@ -104,43 +106,57 @@
     </div>
   </Card.Header>
   <Card.Content>
-    <Chart.Container id="lottery-outcome-chart" config={chartConfig} class="max-h-[400px] w-full">
-      <BarChart
-        data={chartData}
-        x="lab"
-        series={chartSeries}
-        seriesLayout="stack"
-        legend
-        grid
-        groupPadding={0.15}
-        bandPadding={0.25}
-        props={{
-          xAxis: {
-            grid: false,
-            tickLabelProps: { dy: 8 },
-          },
-          yAxis: {
-            ticks: 4,
-            format: (value: number) => integerFormat(value),
-            tickLabelProps: { dx: -8 },
-          },
-        }}
-      >
-        {#snippet tooltip()}
-          <Chart.Tooltip
-            indicator="dot"
-            labelAccessor={d => {
-              assert(typeof d === 'object' && d !== null && 'lab' in d);
-              return d.lab;
-            }}
-            labelFormatter={value => {
-              assert(typeof value === 'string');
-              return labNameById.get(value) ?? value;
-            }}
-            valueFormatter={value => integerFormat(Number(value))}
-          />
-        {/snippet}
-      </BarChart>
-    </Chart.Container>
+    {#if chartData.length === 0}
+      <Empty.Root class="h-72 w-full">
+        <Empty.Media variant="icon" class="bg-warning/15 text-warning">
+          <ChartNoAxesColumnIcon />
+        </Empty.Media>
+        <Empty.Header>
+          <Empty.Title>No lottery placements</Empty.Title>
+          <Empty.Description>
+            No students were assigned through lottery randomization for this draft.
+          </Empty.Description>
+        </Empty.Header>
+      </Empty.Root>
+    {:else}
+      <Chart.Container id="lottery-outcome-chart" config={chartConfig} class="max-h-[400px] w-full">
+        <BarChart
+          data={chartData}
+          x="lab"
+          series={chartSeries}
+          seriesLayout="stack"
+          legend
+          grid
+          groupPadding={0.15}
+          bandPadding={0.25}
+          props={{
+            xAxis: {
+              grid: false,
+              tickLabelProps: { dy: 8 },
+            },
+            yAxis: {
+              ticks: 4,
+              format: (value: number) => integerFormat(value),
+              tickLabelProps: { dx: -8 },
+            },
+          }}
+        >
+          {#snippet tooltip()}
+            <Chart.Tooltip
+              indicator="dot"
+              labelAccessor={d => {
+                assert(typeof d === 'object' && d !== null && 'lab' in d);
+                return d.lab;
+              }}
+              labelFormatter={value => {
+                assert(typeof value === 'string');
+                return labNameById.get(value) ?? value;
+              }}
+              valueFormatter={value => integerFormat(Number(value))}
+            />
+          {/snippet}
+        </BarChart>
+      </Chart.Container>
+    {/if}
   </Card.Content>
 </Card.Root>

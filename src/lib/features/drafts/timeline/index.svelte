@@ -187,16 +187,15 @@
               totalStudents={studentCount}
               {assignmentSummary}
               {draftSummaryChartData}
+              {lotteryAggregate}
               isReview={currentPhase === DraftPhase.Review}
             />
           </Step>
-          <Step
-            title={currentPhase === DraftPhase.Review ? 'Review' : 'Lottery'}
-            status={currentPhase === DraftPhase.Review ? 'active' : 'completed'}
-            open={currentPhase === DraftPhase.Review}
-          >
-            <LotteryCompleted {draftId} {lotteryAggregate} />
-          </Step>
+          {#if currentPhase === DraftPhase.Finalized}
+            <Step title="Lottery" status="completed">
+              <LotteryCompleted {draftId} {lotteryAggregate} />
+            </Step>
+          {/if}
         {/if}
         <Step
           title="Interventions"
@@ -233,7 +232,7 @@
             {assignmentSummary}
             showUndrafted
           />
-        {:else if currentPhase === DraftPhase.Review || currentPhase === DraftPhase.Finalized}
+        {:else if currentPhase === DraftPhase.Intervention || currentPhase === DraftPhase.Review || currentPhase === DraftPhase.Finalized}
           <RegularPhase
             {draftId}
             {requestedAt}
@@ -242,10 +241,6 @@
             {assignmentSummary}
             showUndrafted={false}
           />
-        {:else}
-          <p class="text-muted-foreground">
-            Regular rounds have been completed. {draft.maxRounds} rounds were executed.
-          </p>
         {/if}
       </Step>
     {/if}
