@@ -4,18 +4,11 @@ allowBuilds:
   msgpackr-extract: false
   protobufjs: false
 
-blockExoticSubdeps: true
-
 cleanupUnusedCatalogs: true
 
 engineStrict: true
 
-minimumReleaseAge: 1440 # 1 Day
-
-minimumReleaseAgeExclude:
-  - layerchart@2.0.0-next.63
-
-strictDepBuilds: true
+minimumReleaseAgeStrict: true
 
 trustPolicy: no-downgrade
 
