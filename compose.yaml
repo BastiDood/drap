@@ -38,9 +38,10 @@ services:
     healthcheck:
       test:
         - 'CMD'
-        - 'curl'
-        - '--fail'
-        - 'http://localhost:8288/health'
+        - 'inngest'
+        - 'alpha'
+        - 'doctor'
+        - 'healthcheck'
       interval: 30s
       timeout: 10s
       retries: 3
