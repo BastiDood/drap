@@ -822,7 +822,6 @@ export const actions = {
       const data = await request.formData();
       const payload = decode(data);
 
-      // eslint-disable-next-line @typescript-eslint/init-declarations
       let parsed: v.InferOutput<typeof AllowlistAddFormData>;
       try {
         parsed = v.parse(AllowlistAddFormData, payload);
@@ -919,7 +918,6 @@ export const actions = {
       const data = await request.formData();
       const payload = decode(data);
 
-      // eslint-disable-next-line @typescript-eslint/init-declarations
       let parsed: v.InferOutput<typeof AllowlistRemoveFormData>;
       try {
         parsed = v.parse(AllowlistRemoveFormData, payload);

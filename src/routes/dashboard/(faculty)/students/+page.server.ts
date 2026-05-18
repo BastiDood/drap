@@ -520,14 +520,12 @@ async function getLabAndRemainingStudentsInDraftWithLabPreference(
         )
         .then(assertOptional);
 
-      // eslint-disable-next-line @typescript-eslint/init-declarations
       let submissionSource: 'faculty' | 'system' | undefined;
       if (typeof choice !== 'undefined')
         submissionSource = choice.userId === null ? 'system' : 'faculty';
 
       const remainingQuota = labInfo.quota - researchers.length;
 
-      // eslint-disable-next-line @typescript-eslint/init-declarations
       let autoAcknowledgeReason: 'quota-exhausted' | 'no-preferences' | undefined;
       if (remainingQuota <= 0) autoAcknowledgeReason = 'quota-exhausted';
       else if (students.length === 0) autoAcknowledgeReason = 'no-preferences';
@@ -591,7 +589,6 @@ async function getLabAutoAcknowledgeStatusInDraftRound(
 
     const { initialQuota, totalDrafted, submissionLabId, submissionUserId } = row;
 
-    // eslint-disable-next-line @typescript-eslint/init-declarations
     let autoAcknowledgeReason: 'quota-exhausted' | 'no-preferences' | undefined;
     if (totalDrafted >= initialQuota) {
       autoAcknowledgeReason = 'quota-exhausted';
@@ -624,7 +621,6 @@ async function getLabAutoAcknowledgeStatusInDraftRound(
       if (preferrerCount === 0) autoAcknowledgeReason = 'no-preferences';
     }
 
-    // eslint-disable-next-line @typescript-eslint/init-declarations
     let submissionSource: 'faculty' | 'system' | undefined;
     if (submissionLabId !== null)
       submissionSource = submissionUserId === null ? 'system' : 'faculty';

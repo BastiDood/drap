@@ -70,7 +70,6 @@
 
     const [item] = tooltipPayload;
 
-    // eslint-disable-next-line @typescript-eslint/init-declarations
     let value: unknown;
     if (typeof label === 'string') {
       value = chart.config[label as keyof typeof chart.config]?.label ?? label;

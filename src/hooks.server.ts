@@ -8,7 +8,6 @@ export async function handle({ event, resolve }) {
     const { logger, tracer } = await import('./hooks.telemetry');
 
     await tracer.asyncSpan('http-request', async span => {
-      // eslint-disable-next-line @typescript-eslint/init-declarations
       let clientAddress: string | undefined;
       try {
         clientAddress = getClientAddress();

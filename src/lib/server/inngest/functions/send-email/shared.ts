@@ -55,11 +55,9 @@ type RenderableEmailEvent =
   | { name: 'draft/user.assigned.email.fallback'; data: UserAssignedFallbackEmailSchema };
 
 export async function createEmailMessage(event: RenderableEmailEvent, sender: SenderIdentity) {
-  /* eslint-disable @typescript-eslint/init-declarations */
   let recipient: string;
   let subject: string;
   let html: string;
-  /* eslint-enable @typescript-eslint/init-declarations */
 
   switch (event.name) {
     case 'draft/round.started.email.batch':
@@ -186,7 +184,6 @@ class RefreshedCredentials {
         throw error;
       }
 
-      // eslint-disable-next-line @typescript-eslint/init-declarations
       let client: GoogleOAuthClient;
       if (sender.isValid) {
         client = new GoogleOAuthClient(sender.accessToken, sender.scopes);

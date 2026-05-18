@@ -92,7 +92,6 @@ export const sendBatchedEmails = inngest.createFunction(
           const messages = new Map(messageEntries);
           logger.debug('sending emails', { 'messages.count': messages.size });
 
-          // eslint-disable-next-line @typescript-eslint/init-declarations
           let results: Map<string, GmailBatchSendResult>;
           try {
             results = await client.sendEmails(messages);

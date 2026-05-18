@@ -41,7 +41,6 @@ export async function load({ locals: { session } }) {
     if (labId !== null) span.setAttribute('session.user.lab_id', labId);
     if (googleUserId !== null) span.setAttribute('session.user.google_id', googleUserId);
 
-    // eslint-disable-next-line @typescript-eslint/init-declarations
     let info: Awaited<ReturnType<typeof getLabMembers>>;
     if (isAdmin) {
       logger.debug('admin accessing the lab page');

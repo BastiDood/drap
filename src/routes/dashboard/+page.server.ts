@@ -180,7 +180,7 @@ export const actions = {
             }
 
             const data = await request.formData();
-            // eslint-disable-next-line @typescript-eslint/init-declarations
+
             let parsed: DevRoleFormOutput;
             try {
               parsed = v.parse(DevRoleFormData, decode(data, { booleans: ['isAdmin'] }));
@@ -223,7 +223,7 @@ export const actions = {
         async dummy({ cookies, locals: { session }, request }) {
           return await tracer.asyncSpan('action.dummy', async span => {
             const data = await request.formData();
-            // eslint-disable-next-line @typescript-eslint/init-declarations
+
             let parsed: DevDummyFormOutput;
             try {
               parsed = v.parse(DevDummyFormData, decode(data));
@@ -289,7 +289,6 @@ export const actions = {
               numbers: ['draftId', 'round'],
             });
 
-            // eslint-disable-next-line @typescript-eslint/init-declarations
             let parsed: SendEmailFormOutput;
             try {
               parsed = v.parse(SendEmailFormData, decoded);
@@ -304,10 +303,9 @@ export const actions = {
             logger.info('dispatching email event...');
             switch (parsed.event) {
               case 'draft/round.started.email.batch': {
-                /* eslint-disable @typescript-eslint/init-declarations */
                 let givenName: string;
                 let familyName: string;
-                /* eslint-enable @typescript-eslint/init-declarations */
+
                 try {
                   ({ givenName, familyName } = await getUserNameByEmail(db, parsed.recipientEmail));
                 } catch (err) {
@@ -328,7 +326,6 @@ export const actions = {
                 break;
               }
               case 'draft/round.submitted.email.batch': {
-                // eslint-disable-next-line @typescript-eslint/init-declarations
                 let labName: string;
                 try {
                   ({ name: labName } = await getLabById(db, parsed.labId));
@@ -352,7 +349,6 @@ export const actions = {
                 break;
               }
               case 'draft/lottery.intervened.email.batch': {
-                // eslint-disable-next-line @typescript-eslint/init-declarations
                 let labName: string;
                 try {
                   ({ name: labName } = await getLabById(db, parsed.labId));
@@ -364,11 +360,10 @@ export const actions = {
                   throw err;
                 }
 
-                /* eslint-disable @typescript-eslint/init-declarations */
                 let studentGivenName: string;
                 let studentFamilyName: string;
                 let studentAvatarUrl: string;
-                /* eslint-enable @typescript-eslint/init-declarations */
+
                 try {
                   const student = await getUserByEmail(db, parsed.studentEmail);
                   if (typeof student === 'undefined') throw new AssertionError({ message: '' });
@@ -385,10 +380,9 @@ export const actions = {
                   throw err;
                 }
 
-                /* eslint-disable @typescript-eslint/init-declarations */
                 let recipientGivenName: string;
                 let recipientFamilyName: string;
-                /* eslint-enable @typescript-eslint/init-declarations */
+
                 try {
                   ({ givenName: recipientGivenName, familyName: recipientFamilyName } =
                     await getUserNameByEmail(db, parsed.recipientEmail));
@@ -415,10 +409,9 @@ export const actions = {
                 break;
               }
               case 'draft/draft.finalized.email.batch': {
-                /* eslint-disable @typescript-eslint/init-declarations */
                 let givenName: string;
                 let familyName: string;
-                /* eslint-enable @typescript-eslint/init-declarations */
+
                 try {
                   ({ givenName, familyName } = await getUserNameByEmail(db, parsed.recipientEmail));
                 } catch (err) {
@@ -431,7 +424,6 @@ export const actions = {
 
                 const lotteryAssignments: DraftFinalizedBatchEmailSchema['lotteryAssignments'] = [];
                 for (const { labId, studentEmail } of parsed.lotteryAssignments) {
-                  // eslint-disable-next-line @typescript-eslint/init-declarations
                   let labName: string;
                   try {
                     ({ name: labName } = await getLabById(db, labId));
@@ -445,11 +437,10 @@ export const actions = {
                     throw err;
                   }
 
-                  /* eslint-disable @typescript-eslint/init-declarations */
                   let studentGivenName: string;
                   let studentFamilyName: string;
                   let studentAvatarUrl: string;
-                  /* eslint-enable @typescript-eslint/init-declarations */
+
                   try {
                     const student = await getUserByEmail(db, studentEmail);
                     if (typeof student === 'undefined') throw new AssertionError({ message: '' });
@@ -488,7 +479,6 @@ export const actions = {
                 break;
               }
               case 'draft/user.assigned.email.batch': {
-                // eslint-disable-next-line @typescript-eslint/init-declarations
                 let labName: string;
                 try {
                   ({ name: labName } = await getLabById(db, parsed.labId));
@@ -500,10 +490,9 @@ export const actions = {
                   throw err;
                 }
 
-                /* eslint-disable @typescript-eslint/init-declarations */
                 let userGivenName: string;
                 let userFamilyName: string;
-                /* eslint-enable @typescript-eslint/init-declarations */
+
                 try {
                   ({ givenName: userGivenName, familyName: userFamilyName } =
                     await getUserNameByEmail(db, parsed.userEmail));
@@ -538,7 +527,7 @@ export const actions = {
             }
 
             const data = await request.formData();
-            // eslint-disable-next-line @typescript-eslint/init-declarations
+
             let parsed: DevUserFormOutput;
             try {
               parsed = v.parse(DevUserFormData, decode(data));

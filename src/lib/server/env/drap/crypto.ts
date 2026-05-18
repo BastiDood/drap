@@ -4,7 +4,6 @@ import { Buffer } from 'node:buffer';
 import { building } from '$app/environment';
 import { env } from '$env/dynamic/private';
 
-// eslint-disable-next-line @typescript-eslint/init-declarations
 let buffer: Buffer<ArrayBuffer>;
 if (building) {
   // A mock key for builds is fine for now.

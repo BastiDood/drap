@@ -93,7 +93,6 @@ export async function load({ locals: { session } }) {
       studentNumber,
     };
 
-    // eslint-disable-next-line @typescript-eslint/init-declarations
     let lab: Pick<schema.Lab, 'name'> | undefined;
     if (labId !== null) lab = await getLabById(db, labId);
 
@@ -268,7 +267,6 @@ export const actions = {
         error(400);
       }
 
-      // eslint-disable-next-line @typescript-eslint/init-declarations
       let objectKey: string | undefined;
       try {
         await db.transaction(

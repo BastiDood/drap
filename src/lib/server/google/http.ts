@@ -190,7 +190,6 @@ function parseApplicationHttpResponse(data: Buffer) {
     span.setAttribute('http.response.data.size', data.length);
     const parser = new HTTPParser(HTTPParser.RESPONSE);
 
-    // eslint-disable-next-line @typescript-eslint/init-declarations
     let status: number | undefined;
     const bodyChunks: Buffer[] = [];
 
