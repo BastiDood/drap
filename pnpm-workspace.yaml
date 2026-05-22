@@ -8,6 +8,10 @@ cleanupUnusedCatalogs: true
 
 engineStrict: true
 
+minimumReleaseAgeExclude:
+  - itertools@2.7.1
+  - prettier-plugin-svelte@4.0.1
+
 minimumReleaseAgeStrict: true
 
 trustPolicy: no-downgrade
