@@ -787,9 +787,9 @@ export const actions = {
         { isolationLevel: 'read committed' },
       );
 
-      const draftAdmins = await getDraftAdmins(db);
+      const facultyAndStaff = await getDraftNotificationRecipients(db, draftId);
       await inngest.send(
-        draftAdmins.map(({ email, givenName, familyName }) =>
+        facultyAndStaff.map(({ email, givenName, familyName }) =>
           DraftFinalizationBatchEmailEvent.create({
             draftId: Number(draftId),
             recipientEmail: email,
