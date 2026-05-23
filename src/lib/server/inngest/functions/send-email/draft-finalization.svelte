@@ -15,7 +15,7 @@
 <EmailLayout preview="Draft #{draftId} finalized">
   <Section>
     <Section class="p-4">
-      <Heading class="text-2xl font-bold text-foreground" as="h1">Draft Finalization</Heading>
+      <Heading class="text-2xl font-bold text-foreground" as="h1">Draft Finalized</Heading>
       <Text class="text-base">
         Draft <strong class="text-foreground">#{draftId}</strong> has been finalized. Assignments have
         been synced.

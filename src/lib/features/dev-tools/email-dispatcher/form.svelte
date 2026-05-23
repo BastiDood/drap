@@ -80,7 +80,7 @@
           >Draft Concluded</NativeSelect.Option
         >
         <NativeSelect.Option value="draft/draft.finalization.email.batch"
-          >Draft Finalization</NativeSelect.Option
+          >Draft Finalized</NativeSelect.Option
         >
         <NativeSelect.Option value="draft/user.assigned.email.batch"
           >User Assigned</NativeSelect.Option
