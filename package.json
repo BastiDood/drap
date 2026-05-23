@@ -32,7 +32,7 @@
     "ui": "shadcn-svelte add --yes"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1051.0",
+    "@aws-sdk/client-s3": "^3.1052.0",
     "@better-svelte-email/components": "^2.1.0",
     "@better-svelte-email/server": "^2.1.0",
     "@icons-pack/svelte-simple-icons": "^7.2.0",
@@ -63,7 +63,7 @@
     "inngest": "^4.4.0",
     "itertools": "^2.7.1",
     "jose": "^6.2.3",
-    "layerchart": "2.0.0-next.63",
+    "layerchart": "2.0.0-next.64",
     "mime-types": "^3.0.2",
     "mimetext": "^3.0.28",
     "mode-watcher": "^1.1.0",
