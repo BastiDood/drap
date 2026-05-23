@@ -47,30 +47,20 @@ services:
       retries: 3
       start_period: 40s
 
-  o2:
-    pull_policy: build
-    build: ./docker/openobserve
+  otel-gui:
+    image: ghcr.io/metafab/otel-gui:v1.3.0
     environment:
-      ZO_DATA_DIR: /data
+      HOST: 0.0.0.0
+      PORT: 4318
+      OTEL_GUI_MAX_TRACES: 10000
     ports:
       - host_ip: 127.0.0.1
-        published: 5080
-        target: 5080
+        published: 4318
+        target: 4318
         protocol: tcp
-    volumes:
-      - open-observe:/data
     networks:
       - telemetry
     restart: always
-    healthcheck:
-      test:
-        - 'CMD'
-        - '/httpget'
-        - 'http://localhost:5080/healthz'
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
 
   rustfs:
     pull_policy: build
@@ -116,7 +106,6 @@ services:
     restart: 'no'
 
 volumes:
-  open-observe:
   postgres:
   rustfs-data:
   rustfs-logs:

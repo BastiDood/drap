@@ -1,4 +1,4 @@
-# Development overrides (`inngest` dev mode, `o2`, dev credentials).
+# Development overrides (`inngest` dev mode, dev credentials).
 
 services:
   postgres:
@@ -13,12 +13,6 @@ services:
       - '--no-discovery'
       - '--sdk-url'
       - 'http://host.docker.internal:5173/api/inngest' # Vite
-
-  o2:
-    environment:
-      # Development-only credentials!
-      ZO_ROOT_USER_EMAIL: admin@example.com
-      ZO_ROOT_USER_PASSWORD: password
 
   rustfs:
     environment:
