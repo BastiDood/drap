@@ -25,6 +25,7 @@ services:
       PORT: 4983
       STORE_PATH: /app
       MASTERPASS: ${DRIZZLE_MASTERPASS:?required}
+      POSTGRES_URL: postgresql://postgres:${POSTGRES_PASSWORD:?required}@postgres
     volumes:
       - drizzle-gateway:/app
     networks:
