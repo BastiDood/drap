@@ -140,7 +140,7 @@
             <span>For Students</span>
           </span>
         </Accordion.Trigger>
-        <Accordion.Content class="prose px-4 dark:prose-invert">
+        <Accordion.Content class="prose max-w-none px-4 dark:prose-invert">
           <ol>
             <li>
               Go to your <Link href={resolve('/dashboard/')}>profile</Link> and set your student number.
@@ -166,7 +166,7 @@
             <span>For Lab Heads</span>
           </span>
         </Accordion.Trigger>
-        <Accordion.Content class="prose px-4 dark:prose-invert">
+        <Accordion.Content class="prose max-w-none px-4 dark:prose-invert">
           <ol>
             <li>Wait for the administrators to open a draft.</li>
             <li>
@@ -198,7 +198,7 @@
             <span>For Administrators</span>
           </span>
         </Accordion.Trigger>
-        <Accordion.Content class="prose px-4 dark:prose-invert">
+        <Accordion.Content class="prose max-w-none px-4 dark:prose-invert">
           <ol>
             <li>Maintain the <Link href={resolve('/dashboard/labs/')}>lab catalog</Link>.</li>
             <li>Initialize a <Link href={resolve('/dashboard/drafts/')}>new draft</Link>.</li>

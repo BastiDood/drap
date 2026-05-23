@@ -3,8 +3,10 @@ import assert from 'node:assert/strict';
 import { NonRetriableError } from 'inngest';
 
 import {
-  DraftFinalizedBatchEmailEvent,
-  DraftFinalizedFallbackEmailEvent,
+  DraftConcludedBatchEmailEvent,
+  DraftConcludedFallbackEmailEvent,
+  DraftFinalizationBatchEmailEvent,
+  DraftFinalizationFallbackEmailEvent,
   LotteryInterventionBatchEmailEvent,
   LotteryInterventionFallbackEmailEvent,
   RoundStartedBatchEmailEvent,
@@ -41,8 +43,10 @@ type FollowupEvent =
   | ReturnType<typeof RoundSubmittedFallbackEmailEvent.create>
   | ReturnType<typeof LotteryInterventionBatchEmailEvent.create>
   | ReturnType<typeof LotteryInterventionFallbackEmailEvent.create>
-  | ReturnType<typeof DraftFinalizedBatchEmailEvent.create>
-  | ReturnType<typeof DraftFinalizedFallbackEmailEvent.create>
+  | ReturnType<typeof DraftConcludedBatchEmailEvent.create>
+  | ReturnType<typeof DraftConcludedFallbackEmailEvent.create>
+  | ReturnType<typeof DraftFinalizationBatchEmailEvent.create>
+  | ReturnType<typeof DraftFinalizationFallbackEmailEvent.create>
   | ReturnType<typeof UserAssignedBatchEmailEvent.create>
   | ReturnType<typeof UserAssignedFallbackEmailEvent.create>;
 
@@ -55,7 +59,8 @@ export const sendBatchedEmails = inngest.createFunction(
       RoundStartedBatchEmailEvent,
       RoundSubmittedBatchEmailEvent,
       LotteryInterventionBatchEmailEvent,
-      DraftFinalizedBatchEmailEvent,
+      DraftConcludedBatchEmailEvent,
+      DraftFinalizationBatchEmailEvent,
       UserAssignedBatchEmailEvent,
     ],
   },
@@ -71,7 +76,8 @@ export const sendBatchedEmails = inngest.createFunction(
                 case 'draft/round.started.email.batch':
                 case 'draft/round.submitted.email.batch':
                 case 'draft/lottery.intervened.email.batch':
-                case 'draft/draft.finalized.email.batch':
+                case 'draft/draft.concluded.email.batch':
+                case 'draft/draft.finalization.email.batch':
                 case 'draft/user.assigned.email.batch':
                   return [event.id, event] as const;
                 default:
@@ -163,9 +169,17 @@ export const sendBatchedEmails = inngest.createFunction(
                     ),
                   );
                   break;
-                case 'draft/draft.finalized.email.batch':
+                case 'draft/draft.concluded.email.batch':
                   followupEvents.push(
-                    DraftFinalizedBatchEmailEvent.create(
+                    DraftConcludedBatchEmailEvent.create(
+                      { ...event.data, attempt: nextAttempt },
+                      options,
+                    ),
+                  );
+                  break;
+                case 'draft/draft.finalization.email.batch':
+                  followupEvents.push(
+                    DraftFinalizationBatchEmailEvent.create(
                       { ...event.data, attempt: nextAttempt },
                       options,
                     ),
@@ -212,10 +226,17 @@ export const sendBatchedEmails = inngest.createFunction(
                   );
                   break;
                 }
-                case 'draft/draft.finalized.email.batch': {
+                case 'draft/draft.concluded.email.batch': {
                   const { attempt: _, ...data } = event.data;
                   followupEvents.push(
-                    DraftFinalizedFallbackEmailEvent.create({ id: event.id, ...data }, options),
+                    DraftConcludedFallbackEmailEvent.create({ id: event.id, ...data }, options),
+                  );
+                  break;
+                }
+                case 'draft/draft.finalization.email.batch': {
+                  const { attempt: _, ...data } = event.data;
+                  followupEvents.push(
+                    DraftFinalizationFallbackEmailEvent.create({ id: event.id, ...data }, options),
                   );
                   break;
                 }

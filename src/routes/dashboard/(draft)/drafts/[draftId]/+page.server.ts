@@ -13,6 +13,7 @@ import {
   autoAcknowledgeLabsWithoutPreferences,
   type DbConnection,
   type DrizzleTransaction,
+  getDraftAdmins,
   getDraftAssignmentRecords,
   getDraftById,
   getDraftByIdForUpdate,
@@ -26,7 +27,8 @@ import {
 import { coerceDate, coerceNullableNumber, coerceNumber } from '$lib/coerce';
 import { db } from '$lib/server/database';
 import {
-  DraftFinalizedBatchEmailEvent,
+  DraftConcludedBatchEmailEvent,
+  DraftFinalizationBatchEmailEvent,
   LotteryInterventionBatchEmailEvent,
   RoundStartedBatchEmailEvent,
   UserAssignedBatchEmailEvent,
@@ -692,6 +694,32 @@ export const actions = {
         }
         throw err;
       }
+
+      const [draftAdmins, assignments] = await Promise.all([
+        getDraftAdmins(db),
+        getDraftAssignmentRecords(db, draftId),
+      ]);
+
+      const lotteryAssignments = assignments
+        .filter(({ round }) => round === null)
+        .map(({ labId, labName, givenName, familyName, email, avatarUrl }) => ({
+          labId,
+          labName,
+          studentName: `${givenName} ${familyName}`,
+          studentEmail: email,
+          avatarUrl,
+        }));
+
+      await inngest.send(
+        draftAdmins.map(({ email, givenName, familyName }) =>
+          DraftConcludedBatchEmailEvent.create({
+            draftId: Number(draftId),
+            recipientEmail: email,
+            recipientName: `${givenName} ${familyName}`,
+            lotteryAssignments,
+          }),
+        ),
+      );
     });
   },
 
@@ -759,28 +787,13 @@ export const actions = {
         { isolationLevel: 'read committed' },
       );
 
-      const [facultyAndStaff, assignments] = await Promise.all([
-        getDraftNotificationRecipients(db, draftId),
-        getDraftAssignmentRecords(db, draftId),
-      ]);
-
-      const lotteryAssignments = assignments
-        .filter(({ round }) => round === null)
-        .map(({ labId, labName, givenName, familyName, email, avatarUrl }) => ({
-          labId,
-          labName,
-          studentName: `${givenName} ${familyName}`,
-          studentEmail: email,
-          avatarUrl,
-        }));
-
+      const facultyAndStaff = await getDraftNotificationRecipients(db, draftId);
       await inngest.send(
         facultyAndStaff.map(({ email, givenName, familyName }) =>
-          DraftFinalizedBatchEmailEvent.create({
+          DraftFinalizationBatchEmailEvent.create({
             draftId: Number(draftId),
             recipientEmail: email,
             recipientName: `${givenName} ${familyName}`,
-            lotteryAssignments,
           }),
         ),
       );

@@ -18,8 +18,9 @@ import {
 } from '$lib/server/database/drizzle';
 import { dev } from '$app/environment';
 import {
-  DraftFinalizedBatchEmailEvent,
-  type DraftFinalizedBatchEmailSchema,
+  DraftConcludedBatchEmailEvent,
+  type DraftConcludedBatchEmailSchema,
+  DraftFinalizationBatchEmailEvent,
   LotteryInterventionBatchEmailEvent,
   RoundStartedBatchEmailEvent,
   RoundSubmittedBatchEmailEvent,
@@ -100,10 +101,15 @@ const SendEmailFormData = v.variant('event', [
     recipientEmail: v.string(),
   }),
   v.object({
-    event: v.literal('draft/draft.finalized.email.batch'),
+    event: v.literal('draft/draft.concluded.email.batch'),
     draftId: v.number(),
     recipientEmail: v.string(),
     lotteryAssignments: v.optional(v.array(LotteryAssignmentFormData), []),
+  }),
+  v.object({
+    event: v.literal('draft/draft.finalization.email.batch'),
+    draftId: v.number(),
+    recipientEmail: v.string(),
   }),
   v.object({
     event: v.literal('draft/user.assigned.email.batch'),
@@ -408,7 +414,7 @@ export const actions = {
                 );
                 break;
               }
-              case 'draft/draft.finalized.email.batch': {
+              case 'draft/draft.concluded.email.batch': {
                 let givenName: string;
                 let familyName: string;
 
@@ -422,7 +428,7 @@ export const actions = {
                   throw err;
                 }
 
-                const lotteryAssignments: DraftFinalizedBatchEmailSchema['lotteryAssignments'] = [];
+                const lotteryAssignments: DraftConcludedBatchEmailSchema['lotteryAssignments'] = [];
                 for (const { labId, studentEmail } of parsed.lotteryAssignments) {
                   let labName: string;
                   try {
@@ -469,11 +475,33 @@ export const actions = {
                 }
 
                 await inngest.send(
-                  DraftFinalizedBatchEmailEvent.create({
+                  DraftConcludedBatchEmailEvent.create({
                     draftId: parsed.draftId,
                     recipientEmail: parsed.recipientEmail,
                     recipientName: `${givenName} ${familyName}`,
                     lotteryAssignments,
+                  }),
+                );
+                break;
+              }
+              case 'draft/draft.finalization.email.batch': {
+                let givenName: string;
+                let familyName: string;
+
+                try {
+                  ({ givenName, familyName } = await getUserNameByEmail(db, parsed.recipientEmail));
+                } catch (err) {
+                  if (err instanceof AssertionError) {
+                    logger.fatal('unknown recipient email', err);
+                    return fail(404, { message: 'Recipient email is not a user in the database.' });
+                  }
+                  throw err;
+                }
+                await inngest.send(
+                  DraftFinalizationBatchEmailEvent.create({
+                    draftId: parsed.draftId,
+                    recipientEmail: parsed.recipientEmail,
+                    recipientName: `${givenName} ${familyName}`,
                   }),
                 );
                 break;

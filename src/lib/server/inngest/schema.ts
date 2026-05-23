@@ -97,7 +97,7 @@ export type LotteryInterventionFallbackEmailSchema = v.InferOutput<
   typeof LotteryInterventionFallbackEmailEvent.schema
 >;
 
-export const DraftFinalizedBatchEmailEvent = eventType('draft/draft.finalized.email.batch', {
+export const DraftConcludedBatchEmailEvent = eventType('draft/draft.concluded.email.batch', {
   schema: v.object({
     draftId: v.number(),
     recipientEmail: v.string(),
@@ -114,11 +114,11 @@ export const DraftFinalizedBatchEmailEvent = eventType('draft/draft.finalized.em
     attempt: EmailAttempt,
   }),
 });
-export type DraftFinalizedBatchEmailSchema = v.InferOutput<
-  typeof DraftFinalizedBatchEmailEvent.schema
+export type DraftConcludedBatchEmailSchema = v.InferOutput<
+  typeof DraftConcludedBatchEmailEvent.schema
 >;
 
-export const DraftFinalizedFallbackEmailEvent = eventType('draft/draft.finalized.email.fallback', {
+export const DraftConcludedFallbackEmailEvent = eventType('draft/draft.concluded.email.fallback', {
   schema: v.object({
     id: v.string(),
     draftId: v.number(),
@@ -135,8 +135,35 @@ export const DraftFinalizedFallbackEmailEvent = eventType('draft/draft.finalized
     ),
   }),
 });
-export type DraftFinalizedFallbackEmailSchema = v.InferOutput<
-  typeof DraftFinalizedFallbackEmailEvent.schema
+export type DraftConcludedFallbackEmailSchema = v.InferOutput<
+  typeof DraftConcludedFallbackEmailEvent.schema
+>;
+
+export const DraftFinalizationBatchEmailEvent = eventType('draft/draft.finalization.email.batch', {
+  schema: v.object({
+    draftId: v.number(),
+    recipientEmail: v.string(),
+    recipientName: v.string(),
+    attempt: EmailAttempt,
+  }),
+});
+export type DraftFinalizationBatchEmailSchema = v.InferOutput<
+  typeof DraftFinalizationBatchEmailEvent.schema
+>;
+
+export const DraftFinalizationFallbackEmailEvent = eventType(
+  'draft/draft.finalization.email.fallback',
+  {
+    schema: v.object({
+      id: v.string(),
+      draftId: v.number(),
+      recipientEmail: v.string(),
+      recipientName: v.string(),
+    }),
+  },
+);
+export type DraftFinalizationFallbackEmailSchema = v.InferOutput<
+  typeof DraftFinalizationFallbackEmailEvent.schema
 >;
 
 export const UserAssignedBatchEmailEvent = eventType('draft/user.assigned.email.batch', {

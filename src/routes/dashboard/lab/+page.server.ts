@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNotNull, isNull } from 'drizzle-orm';
+import { and, asc, desc, eq, isNotNull, isNull, sql } from 'drizzle-orm';
 import { error, redirect } from '@sveltejs/kit';
 
 import * as schema from '$lib/server/database/schema';
@@ -119,7 +119,13 @@ async function getLabMembers(db: DbConnection, labId: string, draftId?: bigint) 
               avatarUrl: schema.labMemberView.avatarUrl,
             })
             .from(schema.labMemberView)
-            .where(eq(schema.labMemberView.draftLab, labId))
+            .innerJoin(schema.draft, eq(schema.labMemberView.draftId, schema.draft.id))
+            .where(
+              and(
+                eq(schema.labMemberView.draftLab, labId),
+                isNotNull(sql`upper(${schema.draft.activePeriod})`),
+              ),
+            )
             .orderBy(({ draftId, familyName }) => [asc(draftId), asc(familyName)])
         : db
             .select({
@@ -130,10 +136,12 @@ async function getLabMembers(db: DbConnection, labId: string, draftId?: bigint) 
               avatarUrl: schema.labMemberView.avatarUrl,
             })
             .from(schema.labMemberView)
+            .innerJoin(schema.draft, eq(schema.labMemberView.draftId, schema.draft.id))
             .where(
               and(
                 eq(schema.labMemberView.draftLab, labId),
                 eq(schema.labMemberView.draftId, draftId),
+                isNotNull(sql`upper(${schema.draft.activePeriod})`),
               ),
             )
             .orderBy(({ draftId, familyName }) => [asc(draftId), asc(familyName)]);
@@ -147,7 +155,14 @@ async function getUserLabAssignmentDraftId(db: DbConnection, userId: string, lab
     return await db
       .select({ draftId: schema.labMemberView.draftId })
       .from(schema.labMemberView)
-      .where(and(eq(schema.labMemberView.userId, userId), eq(schema.labMemberView.draftLab, labId)))
+      .innerJoin(schema.draft, eq(schema.labMemberView.draftId, schema.draft.id))
+      .where(
+        and(
+          eq(schema.labMemberView.userId, userId),
+          eq(schema.labMemberView.draftLab, labId),
+          isNotNull(sql`upper(${schema.draft.activePeriod})`),
+        ),
+      )
       .orderBy(desc(schema.labMemberView.draftId))
       .then(assertOptional);
   });

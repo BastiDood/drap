@@ -34,7 +34,7 @@
           {...props}
           variant="outline"
           size="icon-lg"
-          class="bg-background hover:bg-accent dark:bg-input dark:hover:bg-input/80"
+          class="bg-background hover:bg-accent dark:bg-input dark:hover:bg-input"
         >
           <BugIcon class="size-4" />
         </Button>

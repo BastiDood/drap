@@ -76,7 +76,10 @@
         <NativeSelect.Option value="draft/lottery.intervened.email.batch"
           >Lottery Intervened</NativeSelect.Option
         >
-        <NativeSelect.Option value="draft/draft.finalized.email.batch"
+        <NativeSelect.Option value="draft/draft.concluded.email.batch"
+          >Draft Concluded</NativeSelect.Option
+        >
+        <NativeSelect.Option value="draft/draft.finalization.email.batch"
           >Draft Finalized</NativeSelect.Option
         >
         <NativeSelect.Option value="draft/user.assigned.email.batch"
@@ -168,7 +171,7 @@
           placeholder="example@up.edu.ph"
         />
       </div>
-    {:else if selectedEvent === 'draft/draft.finalized.email.batch'}
+    {:else if selectedEvent === 'draft/draft.concluded.email.batch'}
       <div class="space-y-2">
         <Label for="draftId">Draft ID</Label>
         <Input type="number" name="draftId" id="draftId" min="1" required placeholder="1" />
@@ -184,6 +187,21 @@
         />
       </div>
       <LotteryAssignmentsInput />
+    {:else if selectedEvent === 'draft/draft.finalization.email.batch'}
+      <div class="space-y-2">
+        <Label for="draftId">Draft ID</Label>
+        <Input type="number" name="draftId" id="draftId" min="1" required placeholder="1" />
+      </div>
+      <div class="space-y-2">
+        <Label for="recipientEmail">Recipient Email</Label>
+        <Input
+          type="email"
+          name="recipientEmail"
+          id="recipientEmail"
+          required
+          placeholder="example@up.edu.ph"
+        />
+      </div>
     {:else if selectedEvent === 'draft/user.assigned.email.batch'}
       <div class="space-y-2">
         <Label for="labId">Lab ID</Label>
