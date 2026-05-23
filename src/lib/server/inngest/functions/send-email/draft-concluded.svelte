@@ -54,21 +54,19 @@
   });
 </script>
 
-<EmailLayout preview="Draft #{draftId} is finalized - View final assignments">
+<EmailLayout preview="Draft #{draftId} concluded - Finalize the draft">
   <Section>
     <Section class="p-4">
-      <Heading class="text-2xl font-bold text-foreground" as="h1">Draft Finalized</Heading>
+      <Heading class="text-2xl font-bold text-foreground" as="h1">Draft Concluded</Heading>
       <Text class="text-base">
-        Draft <strong class="text-foreground">#{draftId}</strong> has just been finalized. All registered
-        students have been assigned to their respective research labs.
+        Draft <strong class="text-foreground">#{draftId}</strong> has concluded and the lottery results
+        are ready for review. Please finalize the draft once the assignments below are approved.
       </Text>
     </Section>
     {#if groupedLotteryAssignments.length > 0}
       <Section class="px-4 pb-4">
         <Section class="mx-auto max-w-md rounded-lg bg-card p-4 text-card-foreground">
-          <Heading class="text-lg font-semibold text-foreground" as="h2">
-            Finalized Lottery Results
-          </Heading>
+          <Heading class="text-lg font-semibold text-foreground" as="h2">Lottery Results</Heading>
           {#each groupedLotteryAssignments as group (group.labId)}
             <Section class="my-3 rounded-md border border-muted px-3 py-2">
               <Text class="mb-2 text-sm font-semibold">{group.labName}</Text>
@@ -108,15 +106,15 @@
     {/if}
     <Section class="px-4 pb-4">
       <Section class="mx-auto max-w-md rounded-lg bg-secondary/30 p-4 text-secondary-foreground">
-        <Text class="text-sm">See the new roster of researchers through the lab module.</Text>
+        <Text class="text-sm">Review the lottery results and finalize the draft in DRAP.</Text>
         <Button
-          href="{ORIGIN}/dashboard/"
+          href="{ORIGIN}/dashboard/drafts/{draftId}/"
           target="_blank"
           pX={24}
           pY={12}
           class="mb-4 rounded-md bg-primary font-medium text-primary-foreground hover:bg-primary/90"
         >
-          Go to Dashboard
+          Review Draft
         </Button>
       </Section>
     </Section>

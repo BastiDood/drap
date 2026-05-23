@@ -10,8 +10,10 @@ import { assertOptional } from '$lib/server/assert';
 import { db } from '$lib/server/database';
 import { decryptSecret, encryptSecret } from '$lib/crypto';
 import type {
-  DraftFinalizedBatchEmailSchema,
-  DraftFinalizedFallbackEmailSchema,
+  DraftConcludedBatchEmailSchema,
+  DraftConcludedFallbackEmailSchema,
+  DraftFinalizationBatchEmailSchema,
+  DraftFinalizationFallbackEmailSchema,
   LotteryInterventionBatchEmailSchema,
   LotteryInterventionFallbackEmailSchema,
   RoundStartedBatchEmailSchema,
@@ -27,7 +29,8 @@ import { GoogleOAuthClient } from '$lib/server/google';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
-import DraftFinalized from './draft-finalized.svelte';
+import DraftConcluded from './draft-concluded.svelte';
+import DraftFinalization from './draft-finalization.svelte';
 import LotteryIntervened from './lottery-intervened.svelte';
 import RoundStarted from './round-started.svelte';
 import RoundSubmitted from './round-submitted.svelte';
@@ -49,8 +52,16 @@ type RenderableEmailEvent =
       name: 'draft/lottery.intervened.email.fallback';
       data: LotteryInterventionFallbackEmailSchema;
     }
-  | { name: 'draft/draft.finalized.email.batch'; data: DraftFinalizedBatchEmailSchema }
-  | { name: 'draft/draft.finalized.email.fallback'; data: DraftFinalizedFallbackEmailSchema }
+  | { name: 'draft/draft.concluded.email.batch'; data: DraftConcludedBatchEmailSchema }
+  | { name: 'draft/draft.concluded.email.fallback'; data: DraftConcludedFallbackEmailSchema }
+  | {
+      name: 'draft/draft.finalization.email.batch';
+      data: DraftFinalizationBatchEmailSchema;
+    }
+  | {
+      name: 'draft/draft.finalization.email.fallback';
+      data: DraftFinalizationFallbackEmailSchema;
+    }
   | { name: 'draft/user.assigned.email.batch'; data: UserAssignedBatchEmailSchema }
   | { name: 'draft/user.assigned.email.fallback'; data: UserAssignedFallbackEmailSchema };
 
@@ -103,15 +114,25 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
         } satisfies ComponentProps<typeof LotteryIntervened>,
       });
       break;
-    case 'draft/draft.finalized.email.batch':
-    case 'draft/draft.finalized.email.fallback':
+    case 'draft/draft.concluded.email.batch':
+    case 'draft/draft.concluded.email.fallback':
       recipient = event.data.recipientEmail;
-      subject = `[DRAP] Draft #${event.data.draftId} Finalized`;
-      html = await emailRenderer.render(DraftFinalized, {
+      subject = `[DRAP] Draft #${event.data.draftId} Concluded`;
+      html = await emailRenderer.render(DraftConcluded, {
         props: {
           draftId: event.data.draftId,
           lotteryAssignments: event.data.lotteryAssignments,
-        } satisfies ComponentProps<typeof DraftFinalized>,
+        } satisfies ComponentProps<typeof DraftConcluded>,
+      });
+      break;
+    case 'draft/draft.finalization.email.batch':
+    case 'draft/draft.finalization.email.fallback':
+      recipient = event.data.recipientEmail;
+      subject = `[DRAP] Draft #${event.data.draftId} Finalized`;
+      html = await emailRenderer.render(DraftFinalization, {
+        props: {
+          draftId: event.data.draftId,
+        } satisfies ComponentProps<typeof DraftFinalization>,
       });
       break;
     case 'draft/user.assigned.email.batch':

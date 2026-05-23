@@ -1,7 +1,8 @@
 import { NonRetriableError } from 'inngest';
 
 import {
-  DraftFinalizedFallbackEmailEvent,
+  DraftConcludedFallbackEmailEvent,
+  DraftFinalizationFallbackEmailEvent,
   LotteryInterventionFallbackEmailEvent,
   RoundStartedFallbackEmailEvent,
   RoundSubmittedFallbackEmailEvent,
@@ -27,7 +28,8 @@ export const sendEmailFallback = inngest.createFunction(
       RoundStartedFallbackEmailEvent,
       RoundSubmittedFallbackEmailEvent,
       LotteryInterventionFallbackEmailEvent,
-      DraftFinalizedFallbackEmailEvent,
+      DraftConcludedFallbackEmailEvent,
+      DraftFinalizationFallbackEmailEvent,
       UserAssignedFallbackEmailEvent,
     ],
   },
@@ -41,7 +43,8 @@ export const sendEmailFallback = inngest.createFunction(
             case 'draft/round.started.email.fallback':
             case 'draft/round.submitted.email.fallback':
             case 'draft/lottery.intervened.email.fallback':
-            case 'draft/draft.finalized.email.fallback':
+            case 'draft/draft.concluded.email.fallback':
+            case 'draft/draft.finalization.email.fallback':
             case 'draft/user.assigned.email.fallback':
               break;
             default:

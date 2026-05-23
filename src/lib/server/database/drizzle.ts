@@ -151,6 +151,29 @@ export async function getFacultyAndStaff(db: DbConnection) {
   });
 }
 
+export async function getDraftAdmins(db: DbConnection) {
+  return await tracer.asyncSpan(
+    'get-draft-admins',
+    async () =>
+      await db
+        .select({
+          id: schema.user.id,
+          email: schema.user.email,
+          givenName: schema.user.givenName,
+          familyName: schema.user.familyName,
+          avatarUrl: schema.user.avatarUrl,
+        })
+        .from(schema.user)
+        .where(
+          and(
+            eq(schema.user.isAdmin, true),
+            isNotNull(schema.user.googleUserId),
+            isNull(schema.user.labId),
+          ),
+        ),
+  );
+}
+
 export async function getDraftNotificationRecipients(db: DbConnection, draftId: bigint) {
   return await tracer.asyncSpan('get-draft-notification-recipients', async span => {
     span.setAttribute('database.draft.id', draftId.toString());
