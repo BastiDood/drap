@@ -224,7 +224,7 @@
                     </div>
                   </li>
                 {:else}
-                  <li class="preset-tonal-accent rounded-lg border px-3 py-1.5">
+                  <li class="preset-tonal-warning rounded-lg border px-3 py-1.5">
                     <div class="flex items-center gap-3">
                       <SparklesIcon class="size-4" />
                       <span>
@@ -237,7 +237,7 @@
               {:else if round !== null}
                 {@const ordinal = round + getOrdinalSuffix(round)}
                 {#if isSystem}
-                  <li class="preset-tonal-warning rounded-lg border px-3 py-1.5">
+                  <li class="preset-tonal-muted rounded-lg border px-3 py-1.5">
                     <div class="flex items-center gap-3">
                       <CogIcon class="size-4" />
                       <span>
