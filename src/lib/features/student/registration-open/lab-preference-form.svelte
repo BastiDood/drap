@@ -112,7 +112,7 @@
   method="post"
   enctype="multipart/form-data"
   action="/dashboard/student/?/submit"
-  class="space-y-4"
+  class="@container space-y-4"
   use:enhance={({ submitter, cancel }) => {
     const message =
       persistedSelectedLabs.current.length === 0
@@ -178,7 +178,7 @@
     Select your preferred labs from the list of available labs and rank them by order of preference.
   </p>
   <AvatarConsent avatarUrl={user.avatarUrl} />
-  <div class="grid grid-cols-1 items-start gap-4 md:grid-cols-2">
+  <div class="grid grid-cols-1 items-start gap-4 @xl:grid-cols-2">
     <Card.Root variant="soft" class="flex h-full">
       <Card.Header>
         <Card.Title class="text-2xl">Available Labs</Card.Title>

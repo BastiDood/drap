@@ -89,21 +89,21 @@
 </script>
 
 <Card.Root
-  class="overflow-hidden border-border/60 bg-linear-to-br from-muted/40 via-background to-muted/10 shadow-xs"
+  class="@container overflow-hidden border-border/60 bg-linear-to-br from-muted/40 via-background to-muted/10 shadow-xs"
 >
   <Card.Header class="gap-5">
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-      <div class="space-y-1.5 lg:grow">
+    <div class="flex flex-col gap-4 @5xl:flex-row @5xl:items-start @5xl:justify-between">
+      <div class="space-y-1.5 @5xl:grow">
         <Card.Title id="draft-rounds-chart-title">{chartTitle} per Phase</Card.Title>
         <Card.Description>
           Visualizes student assignments or remaining lab quota across draft phases.
         </Card.Description>
       </div>
-      <div class="flex flex-col gap-2 sm:flex-row lg:shrink-0 lg:justify-end">
+      <div class="flex flex-col gap-2 @lg:flex-row @5xl:shrink-0 @5xl:justify-end">
         <NativeSelect.Root
           id="draft-rounds-chart-mode"
           bind:value={chartMode}
-          class="w-full bg-background/80 sm:w-auto"
+          class="w-full bg-background/80 @lg:w-auto"
         >
           <NativeSelect.Option value="assigned">Assigned</NativeSelect.Option>
           <NativeSelect.Option value="remaining">Remaining</NativeSelect.Option>
@@ -111,7 +111,7 @@
         <NativeSelect.Root
           id="draft-rounds-chart-lab"
           bind:value={selectedLabId}
-          class="w-full bg-background/80 sm:w-auto"
+          class="w-full bg-background/80 @lg:w-auto"
         >
           <NativeSelect.Option value="">All Labs</NativeSelect.Option>
           {#each chart.labs as { id, name } (id)}

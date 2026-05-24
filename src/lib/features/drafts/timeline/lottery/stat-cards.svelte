@@ -6,6 +6,7 @@
   import ThumbsUpIcon from '@lucide/svelte/icons/thumbs-up';
 
   import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
+  import StatCardGroup from '$lib/features/drafts/timeline/stat-card-group.svelte';
   import type { LotteryStatCards } from '$lib/features/drafts/types';
 
   interface Props {
@@ -19,7 +20,7 @@
   );
 </script>
 
-<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+<StatCardGroup columns="five">
   <StatCard icon={LayersIcon}>
     {#snippet title()}Pool Size{/snippet}
     {#snippet body()}
@@ -59,4 +60,4 @@
     {/snippet}
     {#snippet subtitle()}Among Ranked Placements{/snippet}
   </StatCard>
-</div>
+</StatCardGroup>

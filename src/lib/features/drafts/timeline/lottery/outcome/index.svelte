@@ -90,17 +90,17 @@
 </script>
 
 <Card.Root
-  class="overflow-hidden border-border/60 bg-linear-to-br from-muted/40 via-background to-muted/10 shadow-xs"
+  class="@container overflow-hidden border-border/60 bg-linear-to-br from-muted/40 via-background to-muted/10 shadow-xs"
 >
   <Card.Header class="gap-3">
-    <div class="flex flex-wrap items-center justify-between gap-2 sm:items-start">
+    <div class="flex flex-wrap items-center justify-between gap-2 @lg:items-start">
       <div class="space-y-1">
         <Card.Title>Per-Lab Lottery Outcome</Card.Title>
         <Card.Description>
           Lottery-placed students by lab, broken down by preference rank quality
         </Card.Description>
       </div>
-      <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:gap-2">
+      <div class="flex w-full flex-col gap-2 @lg:w-auto @lg:flex-row @lg:gap-2">
         <LotteryResultsSheet {draftId} />
       </div>
     </div>

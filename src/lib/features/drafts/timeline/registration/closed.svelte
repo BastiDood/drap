@@ -6,6 +6,7 @@
   import * as Alert from '$lib/components/ui/alert';
   import QuotaCard from '$lib/features/drafts/timeline/quota-card.svelte';
   import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
+  import StatCardGroup from '$lib/features/drafts/timeline/stat-card-group.svelte';
   import type { DraftLabQuotaSnapshot } from '$lib/features/drafts/types';
 
   import { AllowlistSheet } from './allowlist-sheet';
@@ -22,7 +23,7 @@
 
 <div class="space-y-4">
   {#if studentCount > 0}
-    <div class="grid w-fit grid-cols-1 gap-2 sm:grid-cols-[repeat(2,minmax(10rem,14rem))]">
+    <StatCardGroup columns="two">
       <StatCard icon={UsersIcon}>
         {#snippet title()}Registered Students{/snippet}
         {#snippet body()}
@@ -41,7 +42,7 @@
         {/snippet}
         {#snippet subtitle()}Late Registration Access{/snippet}
       </StatCard>
-    </div>
+    </StatCardGroup>
   {:else}
     <Alert.Root variant="info">
       <LockIcon />

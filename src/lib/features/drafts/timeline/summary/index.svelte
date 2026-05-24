@@ -8,6 +8,7 @@
   import DraftAssignments from '$lib/features/drafts/assignments/index.svelte';
   import LotteryCompleted from '$lib/features/drafts/timeline/lottery/completed.svelte';
   import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
+  import StatCardGroup from '$lib/features/drafts/timeline/stat-card-group.svelte';
   import type {
     Draft,
     DraftAssignmentSummary,
@@ -66,7 +67,7 @@
       </div>
     </Alert.Root>
   {/if}
-  <div class="grid w-fit grid-cols-1 gap-2 sm:grid-cols-[repeat(2,minmax(10rem,14rem))]">
+  <StatCardGroup columns="two">
     <StatCard icon={UsersIcon}>
       {#snippet title()}Total Students{/snippet}
       {#snippet body()}
@@ -83,11 +84,11 @@
       {/snippet}
       {#snippet subtitle()}Active Labs in Draft{/snippet}
     </StatCard>
-  </div>
+  </StatCardGroup>
   <div class="space-y-4">
     <DraftRoundsChart chart={assignmentSummary.chart} />
     <SupplyDemandChart data={draftSummaryChartData.supplyVsDemand} />
-    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+    <div class="grid grid-cols-1 gap-4 @5xl:grid-cols-2">
       <LabDistributionChart data={draftSummaryChartData.labDistribution} />
       <PreferenceAlignmentChart data={draftSummaryChartData.preferenceAlignment} />
     </div>

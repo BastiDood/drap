@@ -36,10 +36,10 @@
   });
 </script>
 
-<Card.Root {id}>
+<Card.Root {id} class="@container">
   <Card.Header class="gap-3 pb-2">
     <div
-      class="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+      class="flex flex-col items-start gap-2 @lg:flex-row @lg:items-center @lg:justify-between @lg:gap-4"
     >
       <Card.Title class="text-2xl">Draft Administrators</Card.Title>
       {@render children?.()}
@@ -53,7 +53,7 @@
     {#if registeredAdmins.length === 0}
       <p class="text-sm text-muted-foreground">No registered users.</p>
     {:else}
-      <ul class="space-y-2">
+      <ul class="@container space-y-2">
         {#each registeredAdmins as user (user.id)}
           <li>
             <AdminRow
