@@ -15,8 +15,10 @@
       name: 'Basti Ortiz',
       avatar: 'https://avatars.githubusercontent.com/u/39114273',
       roles: { '2024': 'Lead Engineer', '2025': 'Lead Engineer', '2026': 'Project Head' },
-      github: 'BastiDood',
       website: 'https://bastidood.dev/',
+      email: 'ortiz@bastidood.dev',
+      github: 'BastiDood',
+      linkedin: 'basti-ortiz',
     },
     {
       name: 'Jelly Raborar',
@@ -89,14 +91,11 @@
   ];
 
   function getContributorsByYear(year: ContributorYear) {
-    return CONTRIBUTORS.reduce<ContributorCardProps[]>(
-      (acc, { name, roles, avatar, website, github }) => {
-        const role = roles[year];
-        if (typeof role !== 'undefined') acc.push({ name, role, avatar, website, github });
-        return acc;
-      },
-      [],
-    );
+    return CONTRIBUTORS.reduce<ContributorCardProps[]>((acc, { roles, ...rest }) => {
+      const role = roles[year];
+      if (typeof role !== 'undefined') acc.push({ ...rest, role });
+      return acc;
+    }, []);
   }
 </script>
 
@@ -109,8 +108,8 @@
   </Tabs.List>
   <Tabs.Content value="all">
     <div class="grid grid-cols-2 gap-2 @xl:grid-cols-4">
-      {#each CONTRIBUTORS as { name, avatar, website, github } (name)}
-        <ContributorCard {name} {avatar} {website} {github} />
+      {#each CONTRIBUTORS as contributor (contributor.name)}
+        <ContributorCard {...contributor} />
       {/each}
     </div>
   </Tabs.Content>
@@ -118,8 +117,8 @@
     {@const contributors = getContributorsByYear(year)}
     <Tabs.Content value={year}>
       <div class="grid grid-cols-2 gap-2 @xl:grid-cols-4">
-        {#each contributors as { name, role, avatar, website, github } (name)}
-          <ContributorCard {name} {role} {avatar} {website} {github} />
+        {#each contributors as contributor (contributor.name)}
+          <ContributorCard {...contributor} />
         {/each}
       </div>
     </Tabs.Content>

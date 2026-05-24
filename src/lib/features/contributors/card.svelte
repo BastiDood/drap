@@ -4,19 +4,22 @@
     role?: string;
     avatar?: string;
     website?: string;
+    email?: string;
     github?: string;
+    linkedin?: string;
   }
 </script>
 
 <script lang="ts">
-  import GithubIcon from '@icons-pack/svelte-simple-icons/icons/SiGithub';
   import GlobeIcon from '@lucide/svelte/icons/globe';
+  import MailIcon from '@lucide/svelte/icons/mail';
+  import { SvglGitHubLogo, SvglLinkedInLogo } from '@selemondev/svgl-svelte';
 
   import * as Avatar from '$lib/components/ui/avatar';
   import * as Card from '$lib/components/ui/card';
   import Link from '$lib/components/link.svelte';
 
-  const { name, role, avatar, website, github }: Props = $props();
+  const { name, role, avatar, website, email, github, linkedin }: Props = $props();
 </script>
 
 <Card.Root class="flex flex-col items-center gap-4 p-4 text-center">
@@ -42,6 +45,16 @@
         <GlobeIcon class="size-5" />
       </Link>
     {/if}
+    {#if typeof email !== 'undefined'}
+      <Link
+        href="mailto:{email}"
+        target="_blank"
+        rel="external"
+        class="text-xs text-muted-foreground hover:underline"
+      >
+        <MailIcon class="size-5" />
+      </Link>
+    {/if}
     {#if typeof github !== 'undefined'}
       <Link
         href="https://github.com/{github}"
@@ -49,7 +62,17 @@
         rel="external"
         class="text-xs text-muted-foreground hover:underline"
       >
-        <GithubIcon class="size-5" />
+        <SvglGitHubLogo width={20} height={20} class="[&_path]:fill-current" />
+      </Link>
+    {/if}
+    {#if typeof linkedin !== 'undefined'}
+      <Link
+        href="https://www.linkedin.com/in/{linkedin}"
+        target="_blank"
+        rel="external"
+        class="text-xs text-muted-foreground hover:underline"
+      >
+        <SvglLinkedInLogo width={20} height={20} class="[&_path]:fill-current" />
       </Link>
     {/if}
   </div>

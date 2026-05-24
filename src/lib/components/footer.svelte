@@ -1,9 +1,9 @@
 <script lang="ts">
   import BugIcon from '@lucide/svelte/icons/bug';
   import GitForkIcon from '@lucide/svelte/icons/git-fork';
-  import GithubIcon from '@icons-pack/svelte-simple-icons/icons/SiGithub';
   import HistoryIcon from '@lucide/svelte/icons/history';
   import LockIcon from '@lucide/svelte/icons/lock';
+  import { SvglGitHubLogo } from '@selemondev/svgl-svelte';
 
   import Logo from '$lib/assets/logo-DRAP-icon-colored.svg';
   import { resolve } from '$app/paths';
@@ -49,7 +49,7 @@
           rel="noopener noreferrer"
           class="inline-flex w-fit items-center gap-1 transition duration-150 hover:text-muted-foreground/80 dark:hover:text-secondary"
         >
-          <GithubIcon size={16} />
+          <SvglGitHubLogo width={16} height={16} class="[&_path]:fill-current" />
           <span>View Source</span>
         </a>
         <a
