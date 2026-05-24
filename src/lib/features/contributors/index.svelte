@@ -100,7 +100,7 @@
   }
 </script>
 
-<Tabs.Root value="all" class="mt-6">
+<Tabs.Root value="all">
   <Tabs.List class="w-full">
     <Tabs.Trigger value="all">All</Tabs.Trigger>
     {#each CONTRIBUTOR_YEARS as year (year)}
