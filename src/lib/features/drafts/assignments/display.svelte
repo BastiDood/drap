@@ -14,9 +14,9 @@
   const { regularDrafted, interventionDrafted, lotteryDrafted }: Props = $props();
 </script>
 
-<div class="grid grid-cols-1 gap-2">
-  <div id="section-regular-drafted" class="mb-8">
-    <h3 class="mb-4 text-2xl font-bold">Regular Drafted ({regularDrafted.length})</h3>
+<div class="flex flex-col gap-8">
+  <div id="section-regular-drafted" class="grid gap-4">
+    <h3 class="text-2xl font-bold">Regular Drafted ({regularDrafted.length})</h3>
     <div class="space-y-2">
       {#each regularDrafted as { id, email, givenName, familyName, studentNumber, labId, round } (id)}
         <div class="flex items-center justify-between space-y-1">
@@ -44,8 +44,8 @@
     </div>
   </div>
 
-  <div id="section-intervention-drafted" class="mb-8">
-    <h3 class="mb-4 text-2xl font-bold">Intervention Drafted ({interventionDrafted.length})</h3>
+  <div id="section-intervention-drafted" class="grid gap-4">
+    <h3 class="text-2xl font-bold">Intervention Drafted ({interventionDrafted.length})</h3>
     <div class="space-y-2">
       {#each interventionDrafted as { id, email, givenName, familyName, studentNumber, labId, assignedAt } (id)}
         <div class="flex items-center justify-between space-y-1">
@@ -78,8 +78,8 @@
       {/each}
     </div>
   </div>
-  <div id="section-lottery-drafted" class="mb-8">
-    <h3 class="mb-4 text-2xl font-bold">Lottery Drafted ({lotteryDrafted.length})</h3>
+  <div id="section-lottery-drafted" class="grid gap-4">
+    <h3 class="text-2xl font-bold">Lottery Drafted ({lotteryDrafted.length})</h3>
     <div class="space-y-2">
       {#each lotteryDrafted as { id, email, givenName, familyName, studentNumber, labId } (id)}
         <div class="flex items-center justify-between space-y-1">

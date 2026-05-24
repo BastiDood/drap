@@ -17,7 +17,7 @@
     {size}
     class="h-auto max-w-full gap-2 py-2 text-left leading-tight whitespace-normal"
   >
-    <ShieldAlertIcon class="size-6 md:size-4" />
+    <ShieldAlertIcon class="size-6 @lg:size-4" />
     <span>Volunteer as Candidate Sender</span>
   </Button>
 </form>

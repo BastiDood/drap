@@ -2,6 +2,7 @@
   import UsersIcon from '@lucide/svelte/icons/users';
 
   import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
+  import StatCardGroup from '$lib/features/drafts/timeline/stat-card-group.svelte';
 
   import RegistrantsChart from './registrants-chart.svelte';
 
@@ -35,7 +36,7 @@
 </script>
 
 <div class="space-y-4">
-  <div class="grid w-fit grid-cols-1 gap-2 sm:grid-cols-[repeat(1,minmax(10rem,14rem))]">
+  <StatCardGroup columns="one">
     <StatCard icon={UsersIcon}>
       {#snippet title()}Registered Students{/snippet}
       {#snippet body()}
@@ -51,7 +52,7 @@
         {/if}
       {/snippet}
     </StatCard>
-  </div>
+  </StatCardGroup>
   <RegistrantsChart
     {draftId}
     {draftCreatedAt}

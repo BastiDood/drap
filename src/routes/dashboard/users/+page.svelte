@@ -15,8 +15,8 @@
   );
 </script>
 
-<h2 class="mb-6 scroll-m-20 text-3xl font-semibold tracking-tight">Users</h2>
 <div class="space-y-6">
+  <h2 class="scroll-m-20 text-3xl font-semibold tracking-tight">Users</h2>
   <Card.Root>
     <Card.Header
       class="flex flex-col items-start gap-2 pb-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:space-y-0"

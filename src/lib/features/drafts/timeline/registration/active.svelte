@@ -5,6 +5,7 @@
   import * as Alert from '$lib/components/ui/alert';
   import QuotaCard from '$lib/features/drafts/timeline/quota-card.svelte';
   import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
+  import StatCardGroup from '$lib/features/drafts/timeline/stat-card-group.svelte';
   import type { DraftLabQuotaSnapshot } from '$lib/features/drafts/types';
 
   interface Props {
@@ -18,7 +19,7 @@
 
 <div class="space-y-4">
   {#if studentCount > 0}
-    <div class="grid w-fit grid-cols-1 gap-2 sm:grid-cols-[repeat(1,minmax(10rem,14rem))]">
+    <StatCardGroup columns="one">
       <StatCard icon={UsersIcon}>
         {#snippet title()}Registered Students{/snippet}
         {#snippet body()}
@@ -28,7 +29,7 @@
         {/snippet}
         {#snippet subtitle()}Current Draft Participants{/snippet}
       </StatCard>
-    </div>
+    </StatCardGroup>
   {:else}
     <Alert.Root variant="warning">
       <TriangleAlertIcon />

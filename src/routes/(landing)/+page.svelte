@@ -11,8 +11,10 @@
   import { ContributorTabs } from '$lib/features/contributors';
 </script>
 
-<Hero />
-<div class="mb-8 px-10 lg:px-56">
+<div class="m-6">
+  <Hero />
+</div>
+<div class="space-y-8 px-10 pb-8 lg:px-56">
   <section class="prose max-w-none dark:prose-invert">
     <p>
       Welcome to <strong>DRAP</strong>: the <strong>Draft Ranking Automated Processor</strong> for
@@ -25,7 +27,7 @@
     </p>
   </section>
 
-  <section class="my-8 prose max-w-none dark:prose-invert prose-h3:mt-0 prose-h3:mb-2 prose-li:m-0">
+  <section class="prose max-w-none dark:prose-invert prose-h3:mt-0 prose-h3:mb-2 prose-li:m-0">
     <h2 class="border-b border-border pb-2">How It Works</h2>
     <ol class="mx-auto max-w-prose pl-0">
       <li class="grid grid-cols-[auto_1fr] gap-4">
@@ -122,8 +124,8 @@
     </ol>
   </section>
 
-  <section class="my-8">
-    <div class="my-6 prose max-w-none dark:prose-invert">
+  <section class="space-y-6">
+    <div class="prose max-w-none dark:prose-invert">
       <h2 class="border-b border-border pb-2">Getting Started</h2>
       <p>
         All interactions with the application require UP Mail authentication. The next steps depend
@@ -231,7 +233,7 @@
     </Accordion.Root>
   </section>
 
-  <section class="my-8">
+  <section>
     <div class="prose max-w-none dark:prose-invert">
       <h2 class="border-b border-border pb-2">Acknowledgements</h2>
       <p>
@@ -254,12 +256,10 @@
     </div>
   </section>
 
-  <section class="my-8">
-    <div class="prose max-w-none dark:prose-invert">
-      <h2 class="border-b border-border pb-2">Contributors</h2>
-      <div class="not-prose contents">
-        <ContributorTabs />
-      </div>
+  <section class="space-y-6 prose max-w-none dark:prose-invert">
+    <h2 class="border-b border-border pb-2">Contributors</h2>
+    <div class="not-prose">
+      <ContributorTabs />
     </div>
   </section>
 </div>

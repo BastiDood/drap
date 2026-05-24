@@ -100,7 +100,7 @@
   }
 </script>
 
-<Tabs.Root value="all" class="mt-6">
+<Tabs.Root value="all" class="@container">
   <Tabs.List class="w-full">
     <Tabs.Trigger value="all">All</Tabs.Trigger>
     {#each CONTRIBUTOR_YEARS as year (year)}
@@ -108,7 +108,7 @@
     {/each}
   </Tabs.List>
   <Tabs.Content value="all">
-    <div class="grid grid-cols-2 gap-2 md:grid-cols-4">
+    <div class="grid grid-cols-2 gap-2 @xl:grid-cols-4">
       {#each CONTRIBUTORS as { name, avatar, website, github } (name)}
         <ContributorCard {name} {avatar} {website} {github} />
       {/each}
@@ -117,7 +117,7 @@
   {#each CONTRIBUTOR_YEARS as year (year)}
     {@const contributors = getContributorsByYear(year)}
     <Tabs.Content value={year}>
-      <div class="grid grid-cols-2 gap-2 md:grid-cols-4">
+      <div class="grid grid-cols-2 gap-2 @xl:grid-cols-4">
         {#each contributors as { name, role, avatar, website, github } (name)}
           <ContributorCard {name} {role} {avatar} {website} {github} />
         {/each}

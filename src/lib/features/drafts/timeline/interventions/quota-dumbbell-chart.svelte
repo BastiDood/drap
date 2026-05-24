@@ -68,10 +68,10 @@
 </script>
 
 <Card.Root
-  class="overflow-hidden border-border/60 bg-linear-to-br from-muted/40 via-background to-muted/10 shadow-xs"
+  class="@container overflow-hidden border-border/60 bg-linear-to-br from-muted/40 via-background to-muted/10 shadow-xs"
 >
   <Card.Header class="gap-3">
-    <div class="flex flex-wrap items-center justify-between gap-2 sm:items-start">
+    <div class="flex flex-wrap items-center justify-between gap-2 @lg:items-start">
       <div class="space-y-1">
         <Card.Title class="flex items-center gap-1.5">
           <span>Regular-Round Vacancies vs. Lottery Quota</span>
@@ -128,7 +128,7 @@
           Regular-round vacancies compared with final lottery quota.
         </Card.Description>
       </div>
-      <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:gap-2">
+      <div class="flex w-full flex-col gap-2 @lg:w-auto @lg:flex-row @lg:gap-2">
         {#if !isHistorical}
           <EditLotteryQuota {draftId} {snapshots} />
           <EligibleStudentsSheet {draftId} {labs} />

@@ -91,18 +91,18 @@
 </script>
 
 <Card.Root
-  class="overflow-hidden border-border/60 bg-linear-to-br from-muted/40 via-background to-muted/10 shadow-xs"
+  class="@container overflow-hidden border-border/60 bg-linear-to-br from-muted/40 via-background to-muted/10 shadow-xs"
 >
   <Card.Header class="gap-5">
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-      <div class="space-y-1.5 lg:flex-1">
+    <div class="flex flex-col gap-4 @5xl:flex-row @5xl:items-start @5xl:justify-between">
+      <div class="space-y-1.5 @5xl:flex-1">
         <div class="flex flex-wrap items-center gap-2">
           <Card.Title>Registrants per Day</Card.Title>
           <Badge variant="default">Draft Creation to Start</Badge>
         </div>
         <Card.Description>Shows how many students registered each day</Card.Description>
       </div>
-      <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:gap-2">
+      <div class="flex w-full flex-col gap-2 @lg:w-auto @lg:flex-row @lg:gap-2">
         <DrafteesSheet {draftId} />
       </div>
     </div>

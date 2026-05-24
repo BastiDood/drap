@@ -4,6 +4,7 @@
   import ScaleIcon from '@lucide/svelte/icons/scale';
 
   import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
+  import StatCardGroup from '$lib/features/drafts/timeline/stat-card-group.svelte';
   import { cn } from '$lib/components/ui/utils';
   import type { InterventionsStatCards } from '$lib/features/drafts/types';
 
@@ -17,7 +18,7 @@
   const deltaWarning = $derived(!isHistorical && data.delta !== 0);
 </script>
 
-<div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+<StatCardGroup columns="five">
   <StatCard icon={LayersIcon}>
     {#snippet title()}Pool Size{/snippet}
     {#snippet body()}
@@ -54,4 +55,4 @@
       {/snippet}
     </StatCard>
   {/if}
-</div>
+</StatCardGroup>
