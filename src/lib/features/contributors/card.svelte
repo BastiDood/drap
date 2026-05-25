@@ -67,7 +67,7 @@
     {/if}
     {#if typeof linkedin !== 'undefined'}
       <Link
-        href="https://www.linkedin.com/in/{linkedin}"
+        href="https://www.linkedin.com/in/{linkedin}/"
         target="_blank"
         rel="external"
         class="text-xs text-muted-foreground hover:underline"
