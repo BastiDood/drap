@@ -62,7 +62,8 @@
       avatar: 'https://avatars.githubusercontent.com/u/59799738',
       roles: { '2025': 'Engineer', '2026': 'App Team: Engineer' },
       github: 'ehrelevant',
-      website: 'https://www.ehrencastillo.tech/',
+      website: 'https://www.ehrelevant.dev/',
+      linkedin: 'ehren-castillo',
     },
     {
       name: 'Marcus Pascual',
