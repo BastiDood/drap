@@ -36,7 +36,9 @@ async function expectPreviousPicksTab(page: Page, round: number, studentNames: R
 }
 
 async function expectNoPreviousPicks(page: Page) {
-  await expect(page.locator('#previous-picks')).toHaveCount(0);
+  const panel = page.locator('#previous-picks');
+  await expect(panel).toBeVisible();
+  await expect(panel.locator('[data-slot="empty"]')).toBeVisible();
 }
 
 async function expectStudentsCallout(
@@ -49,7 +51,7 @@ async function expectStudentsCallout(
   } = {},
 ) {
   await page.goto('/dashboard/students/');
-  const emptyState = page.locator('[data-slot="empty"]');
+  const emptyState = page.locator('[data-slot="empty"]').filter({ hasText: expected });
   await expect(emptyState).toBeVisible();
   if (typeof options.title !== 'undefined') await expect(emptyState).toContainText(options.title);
   await expect(emptyState).toContainText(expected);
