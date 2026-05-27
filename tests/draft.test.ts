@@ -394,6 +394,70 @@ test.describe('Draft Lifecycle', () => {
     });
   });
 
+  test.describe('Lab Head Demotion', () => {
+    test('lab head card shows demote button for each lab head', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/users/');
+      await expect(adminPage.getByRole('button', { name: 'Demote', exact: true })).toHaveCount(5);
+    });
+
+    test('demote removes a lab head from the section', async ({ adminPage, ndslHeadUserId }) => {
+      await adminPage.goto('/dashboard/users/');
+      await expect(adminPage.getByText('ndsl@up.edu.ph')).toBeVisible();
+      await expect(adminPage.getByRole('button', { name: 'Demote', exact: true })).toHaveCount(5);
+
+      const status = await adminPage.evaluate(async userId => {
+        const data = new FormData();
+        data.set('userId', userId);
+        const response = await fetch('/dashboard/users/?/demote-head', {
+          method: 'POST',
+          body: data,
+        });
+        return response.status;
+      }, ndslHeadUserId);
+      expect(status).toBe(200);
+
+      await adminPage.reload();
+      await expect(adminPage.getByText('ndsl@up.edu.ph')).not.toBeVisible();
+      await expect(adminPage.getByRole('button', { name: 'Demote', exact: true })).toHaveCount(4);
+    });
+
+    test('demoting a non-lab-head returns 404', async ({ adminPage, adminUserId }) => {
+      const status = await adminPage.evaluate(async userId => {
+        const data = new FormData();
+        data.set('userId', userId);
+        const response = await fetch('/dashboard/users/?/demote-head', {
+          method: 'POST',
+          body: data,
+        });
+        return response.status;
+      }, adminUserId);
+      expect(status).toBe(404);
+    });
+
+    test('re-inviting a demoted lab head restores them', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/users/');
+      await expect(adminPage.getByText('ndsl@up.edu.ph')).not.toBeVisible();
+      await expect(adminPage.getByRole('button', { name: 'Demote', exact: true })).toHaveCount(4);
+
+      await adminPage.getByRole('button', { name: 'Manage Invitations' }).first().click();
+      const sheet = adminPage.getByRole('dialog');
+      await expect(sheet).toBeVisible();
+      await sheet.locator('select#lab-select').selectOption('ndsl');
+      await sheet.locator('input#faculty-email').fill('ndsl@up.edu.ph');
+
+      const responsePromise = adminPage.waitForResponse('/dashboard/users/?/faculty');
+      await sheet.getByRole('button', { name: 'Invite' }).click();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
+
+      await adminPage.keyboard.press('Escape');
+      await adminPage.reload();
+      await expect(adminPage.getByText('ndsl@up.edu.ph')).toBeVisible();
+      await expect(adminPage.getByRole('button', { name: 'Demote', exact: true })).toHaveCount(5);
+    });
+  });
+
   test.describe('Student Profile Registration', () => {
     test('Eager lands on /dashboard/student/', async ({ eagerDrafteePage }) => {
       await expect(eagerDrafteePage).toHaveURL('/dashboard/student/');
