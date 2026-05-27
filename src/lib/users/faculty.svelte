@@ -82,12 +82,8 @@
         }}
       >
         <input type="hidden" name="userId" value={id} />
-        <Button
-          type="submit"
-          variant="destructive"
-          class="h-auto max-w-full gap-2 py-2 text-left leading-tight whitespace-normal"
-        >
-          <ArrowDownIcon class="size-6 @lg:size-4" />
+        <Button type="submit" variant="destructive" size="sm">
+          <ArrowDownIcon class="size-4" />
           <span>Demote</span>
         </Button>
       </form>
