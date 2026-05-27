@@ -321,7 +321,13 @@ async function inviteNewFacultyOrStaff(db: DbConnection, email: string, labId: s
     const { rowCount } = await db
       .insert(schema.user)
       .values({ email, labId, isAdmin: true })
-      .onConflictDoNothing({ target: schema.user.email });
+      .onConflictDoUpdate({
+        target: schema.user.email,
+        set: { isAdmin: true, labId },
+        setWhere: labId === null
+          ? isNull(schema.user.googleUserId)
+          : eq(schema.user.isAdmin, false),
+      });
     switch (rowCount) {
       case 0:
         return false;
