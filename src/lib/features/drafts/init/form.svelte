@@ -30,17 +30,26 @@
     const closesAt = new Date(closesAtRaw);
     formData.set('closesAt', closesAt.toISOString());
 
-    const rounds = formData.get('rounds');
-    assert(typeof rounds === 'string');
-    if (
-      // eslint-disable-next-line no-alert
-      !confirm(
-        `Are you sure you want to start a new draft with ${rounds} rounds and with registration that closes at ${format(closesAt, 'PPPpp')}?`,
-      )
-    ) {
+    const rawRounds = formData.get('rounds');
+    assert(typeof rawRounds === 'string');
+    const rounds = Number.parseInt(rawRounds, 10);
+
+    let message: string;
+    switch (rounds) {
+      case 1:
+        message = 'Are you sure you want to start a new draft with only a single round?';
+        break;
+      default:
+        message = `Are you sure you want to start a new draft with ${rounds} rounds?`;
+        break;
+    }
+
+    // eslint-disable-next-line no-alert
+    if (!confirm(message)) {
       cancel();
       return;
     }
+
     assert(submitter !== null);
     assert(submitter instanceof HTMLButtonElement);
     submitter.disabled = true;

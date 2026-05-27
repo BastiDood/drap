@@ -76,8 +76,22 @@
   action="/dashboard/students/?/rankings"
   use:enhance={({ formData, submitter, cancel }) => {
     const count = formData.getAll('students').length;
+
+    let message: string;
+    switch (count) {
+      case 0:
+        message = 'Are you sure you want to waive this round?';
+        break;
+      case 1:
+        message = 'Are you sure you want to select only one student?';
+        break;
+      default:
+        message = `Are you sure you want to select these ${count} students?`;
+        break;
+    }
+
     // eslint-disable-next-line no-alert
-    if (!confirm(`Are you sure you want to select these ${count} students?`)) {
+    if (!confirm(message)) {
       cancel();
       return;
     }
