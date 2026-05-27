@@ -5,7 +5,7 @@
   import CircleCheckIcon from '@lucide/svelte/icons/circle-check';
   import ClockIcon from '@lucide/svelte/icons/clock';
   import CogIcon from '@lucide/svelte/icons/cog';
-  import DicesIcon from '@lucide/svelte/icons/dices';
+  import Dice6Icon from '@lucide/svelte/icons/dice-6';
   import PlayIcon from '@lucide/svelte/icons/play';
   import ScaleIcon from '@lucide/svelte/icons/scale';
   import SparklesIcon from '@lucide/svelte/icons/sparkles';
@@ -283,7 +283,7 @@
               {:else}
                 <li class="preset-tonal-accent rounded-lg border px-3 py-1.5">
                   <div class="flex items-center gap-3">
-                    <DicesIcon class="size-4" />
+                    <Dice6Icon class="size-4" />
                     <span>
                       The <strong class="uppercase">{labId}</strong> has obtained a batch of draftees
                       from lottery randomization.
