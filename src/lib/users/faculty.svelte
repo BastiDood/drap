@@ -54,7 +54,9 @@
         action="/dashboard/users/?/demote-head"
         use:enhance={({ submitter, cancel }) => {
           // eslint-disable-next-line no-alert
-          if (!confirm(`Are you sure you want to demote ${familyName}, ${givenName} to Lab Faculty?`)) {
+          if (
+            !confirm(`Are you sure you want to demote ${familyName}, ${givenName} to Lab Faculty?`)
+          ) {
             cancel();
             return;
           }

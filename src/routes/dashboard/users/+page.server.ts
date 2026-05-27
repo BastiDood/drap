@@ -324,9 +324,8 @@ async function inviteNewFacultyOrStaff(db: DbConnection, email: string, labId: s
       .onConflictDoUpdate({
         target: schema.user.email,
         set: { isAdmin: true, labId },
-        setWhere: labId === null
-          ? isNull(schema.user.googleUserId)
-          : eq(schema.user.isAdmin, false),
+        setWhere:
+          labId === null ? isNull(schema.user.googleUserId) : eq(schema.user.isAdmin, false),
       });
     switch (rowCount) {
       case 0:
