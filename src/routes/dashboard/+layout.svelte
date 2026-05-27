@@ -29,7 +29,7 @@
     <div class="flex h-dvh w-full overflow-hidden">
       <SideBar {user} />
       <div class="flex min-w-0 grow flex-col">
-        <main class="m-4 grow space-y-4 overflow-y-auto">
+        <main class="m-4 flex grow flex-col gap-4 overflow-y-auto">
           {@render children?.()}
         </main>
         <BottomNav />

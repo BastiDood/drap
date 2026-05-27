@@ -6,6 +6,7 @@
   import * as Popover from '$lib/components/ui/popover';
   import DraftAvatar from '$lib/components/draft-avatar.svelte';
   import { assert } from '$lib/assert';
+  import { Badge } from '$lib/components/ui/badge';
   import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
   import { Progress } from '$lib/components/ui/progress';
@@ -116,14 +117,20 @@
       resetSelectionState();
     };
   }}
-  class="flex flex-col gap-4 inert:opacity-20"
+  class="flex min-h-0 grow flex-col inert:opacity-20"
 >
   <input type="hidden" name="draft" value={draft} />
   <input type="hidden" name="round" value={round} />
   {#each selectedIds as id (id)}
     <input type="hidden" name="students" value={id} />
   {/each}
-  <ul class="space-y-1">
+  <div id="selection-progress" class="flex items-center gap-3 pb-3">
+    <Progress value={selectedIds.length} max={remainingQuota} />
+    <Badge variant="secondary" class="tabular-nums"
+      >{selectedIds.length}/{remainingQuota} Slots</Badge
+    >
+  </div>
+  <ul class="min-h-0 grow space-y-2 overflow-y-auto">
     {#each students as { id, email, givenName, familyName, avatarObjectKey, studentNumber, remark } (id)}
       {@const selected = hasSelection(id)}
       <li
@@ -132,10 +139,10 @@
       >
         <button
           type="button"
-          class="flex w-full flex-col gap-3 p-2"
+          class="flex w-full flex-col gap-3 p-3"
           onclick={toggleSelection.bind(null, id)}
         >
-          <div class="flex items-center gap-3 p-2">
+          <div class="flex items-center gap-3">
             {#if avatarObjectKey === null}
               <DraftAvatar class="size-10" />
             {:else}
@@ -168,13 +175,7 @@
       </li>
     {/each}
   </ul>
-  <div id="selection-progress" class="flex items-center gap-3">
-    <Progress value={selectedIds.length} max={remainingQuota} />
-    <span class="text-sm whitespace-nowrap text-muted-foreground tabular-nums">
-      {selectedIds.length} / {remainingQuota} slots
-    </span>
-  </div>
-  <div class="flex items-center gap-2">
+  <div class="flex items-center gap-2 pt-3">
     <Button type="submit" class="grow" {disabled}>
       {hasExistingSubmission ? 'Update Selection' : 'Submit Selection'}
     </Button>

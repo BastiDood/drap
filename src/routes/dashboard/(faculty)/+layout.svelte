@@ -45,4 +45,6 @@
     </p>
   </Alert.Description>
 </Alert.Root>
-{@render children?.()}
+<div class="min-h-0 flex grow flex-col gap-4">
+  {@render children?.()}
+</div>
