@@ -28,6 +28,10 @@ const DeleteInviteFormData = v.object({
   id: v.pipe(v.string(), v.minLength(1)),
 });
 
+const DemoteHeadFormData = v.object({
+  userId: v.pipe(v.string(), v.minLength(1)),
+});
+
 const SenderFormData = v.object({
   userId: v.pipe(v.string(), v.minLength(1)),
 });
@@ -242,6 +246,39 @@ export const actions = {
       error(404, 'Designated sender does not exist.');
     });
   },
+  async 'demote-head'({ locals: { session }, request }) {
+    if (typeof session?.user === 'undefined') {
+      logger.fatal('attempt to demote lab head without session');
+      error(401);
+    }
+
+    if (
+      !session.user.isAdmin ||
+      session.user.googleUserId === null ||
+      session.user.labId !== null
+    ) {
+      logger.fatal('insufficient permissions to demote lab head', void 0, {
+        'user.is_admin': session.user.isAdmin,
+        'user.google_id': session.user.googleUserId,
+        'user.lab_id': session.user.labId,
+      });
+      error(403);
+    }
+
+    return await tracer.asyncSpan('action.demote-head', async () => {
+      const data = await request.formData();
+      const { userId } = v.parse(DemoteHeadFormData, decode(data));
+      logger.debug('demoting lab head', { 'user.id': userId });
+
+      if (await demoteLabHead(db, userId)) {
+        logger.info('lab head demoted to member', { 'user.id': userId });
+        return;
+      }
+
+      logger.fatal('user is not a lab head', void 0, { 'user.id': userId });
+      error(404, 'User is not a lab head.');
+    });
+  },
   async remove({ locals: { session }, request }) {
     if (typeof session?.user === 'undefined') {
       logger.fatal('attempt to remove sender without session');
@@ -284,7 +321,12 @@ async function inviteNewFacultyOrStaff(db: DbConnection, email: string, labId: s
     const { rowCount } = await db
       .insert(schema.user)
       .values({ email, labId, isAdmin: true })
-      .onConflictDoNothing({ target: schema.user.email });
+      .onConflictDoUpdate({
+        target: schema.user.email,
+        set: { isAdmin: true, labId },
+        setWhere:
+          labId === null ? isNull(schema.user.googleUserId) : eq(schema.user.isAdmin, false),
+      });
     switch (rowCount) {
       case 0:
         return false;
@@ -381,6 +423,30 @@ async function deleteDesignatedSender(db: DbConnection, userId: string) {
         return true;
       default:
         assertFail(`deleteDesignatedSender => unexpected delete count ${rowCount}`);
+    }
+  });
+}
+
+async function demoteLabHead(db: DbConnection, userId: string) {
+  return await tracer.asyncSpan('demote-lab-head', async span => {
+    span.setAttribute('database.user.id', userId);
+    const { rowCount } = await db
+      .update(schema.user)
+      .set({ isAdmin: false })
+      .where(
+        and(
+          eq(schema.user.id, userId),
+          eq(schema.user.isAdmin, true),
+          isNotNull(schema.user.labId),
+        ),
+      );
+    switch (rowCount) {
+      case 0:
+        return false;
+      case 1:
+        return true;
+      default:
+        assertFail(`demoteLabHead => unexpected update count ${rowCount}`);
     }
   });
 }

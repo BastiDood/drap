@@ -27,11 +27,13 @@
     }
     return themeContents.join('\n');
   });
+
+  const STYLE_TAG = 'style';
 </script>
 
 {#if themeContents}
   {#key id}
-    <svelte:element this={'style'}>
+    <svelte:element this={STYLE_TAG}>
       {themeContents}
     </svelte:element>
   {/key}

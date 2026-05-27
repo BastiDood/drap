@@ -29,7 +29,7 @@
         <p class="text-sm text-muted-foreground">No registered users.</p>
       {:else}
         <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {#each registeredHeads as { id, ...user } (id)}
+          {#each registeredHeads as user (user.id)}
             <Faculty {user} />
           {/each}
         </div>
