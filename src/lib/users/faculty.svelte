@@ -55,7 +55,9 @@
         use:enhance={({ submitter, cancel }) => {
           // eslint-disable-next-line no-alert
           if (
-            !confirm(`Are you sure you want to demote ${familyName}, ${givenName} to Lab Faculty?`)
+            !confirm(
+              `Are you sure you want to demote ${givenName} ${familyName} as a lab faculty member?`,
+            )
           ) {
             cancel();
             return;
@@ -68,7 +70,7 @@
             await update();
             switch (result.type) {
               case 'success':
-                toast.success(`${familyName}, ${givenName} demoted to Lab Faculty.`);
+                toast.success(`${givenName} ${familyName} demoted as a lab faculty member.`);
                 break;
               case 'failure':
                 toast.error('Failed to demote lab head.');
