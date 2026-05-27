@@ -75,10 +75,10 @@
     />
     <div class="@container min-h-0 grow">
       <div
-        class="grid h-full grid-cols-1 grid-rows-[auto_1fr] gap-2 @md:grid-cols-2 @md:grid-rows-[1fr]"
+        class="grid h-full grid-cols-1 grid-rows-2 gap-2 @3xl:grid-cols-2 @3xl:grid-rows-[1fr]"
       >
         <PreviousPicks {researchers} />
-        <Card.Root variant="soft" class="min-h-0">
+        <Card.Root variant="soft">
           <Card.Header>
             <Card.Title>Student Selection</Card.Title>
           </Card.Header>

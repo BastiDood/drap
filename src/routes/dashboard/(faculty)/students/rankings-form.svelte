@@ -1,5 +1,6 @@
 <script lang="ts">
   import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
+  import MessageSquareTextIcon from '@lucide/svelte/icons/message-square-text';
   import { SvelteSet } from 'svelte/reactivity';
   import { toast } from 'svelte-sonner';
 
@@ -139,7 +140,7 @@
       >
         <button
           type="button"
-          class="flex w-full flex-col gap-3 p-3"
+          class="flex w-full flex-col gap-2 p-3"
           onclick={toggleSelection.bind(null, id)}
         >
           <div class="flex items-center gap-3">
@@ -155,20 +156,22 @@
               />
             {/if}
             <div class="flex flex-col">
-              <strong class="text-start"
-                ><span class="uppercase">{familyName}</span>, {givenName}</strong
-              >
-              {#if studentNumber !== null}
-                <span class="text-start text-sm opacity-50">{studentNumber}</span>
-              {/if}
-              <span class="text-start text-xs opacity-50">{email}</span>
+              <div class="flex items-center gap-1.5">
+                <strong class="text-start"
+                  ><span class="uppercase">{familyName}</span>, {givenName}</strong
+                >
+                {#if studentNumber !== null}
+                  <Badge variant="outline">{studentNumber}</Badge>
+                {/if}
+              </div>
+              <div class="text-start text-xs opacity-50">{email}</div>
             </div>
           </div>
           {#if remark.length > 0}
-            <div class="flex flex-col gap-2">
-              <span class="text-start"><strong>Remarks</strong></span>
+            <div class="flex items-start gap-1.5">
+              <MessageSquareTextIcon class="size-3.5 shrink-0" />
               <pre
-                class="text-start font-sans text-sm whitespace-pre-wrap opacity-90">{remark}</pre>
+                class="text-start font-sans text-xs whitespace-pre-wrap text-muted-foreground">{remark}</pre>
             </div>
           {/if}
         </button>

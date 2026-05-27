@@ -25,7 +25,7 @@
   const latestRound = $derived(Math.max(...Object.keys(researchersByRound).map(Number)).toString());
 </script>
 
-<Card.Root id="previous-picks" variant="soft" class="min-h-0">
+<Card.Root id="previous-picks" variant="soft">
   <Card.Header>
     <Card.Title>Previous Picks</Card.Title>
   </Card.Header>
