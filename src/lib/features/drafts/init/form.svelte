@@ -6,7 +6,6 @@
 
 <script lang="ts">
   import CalendarDaysIcon from '@lucide/svelte/icons/calendar-days';
-  import { format } from 'date-fns';
   import { toast } from 'svelte-sonner';
 
   import { assert } from '$lib/assert';

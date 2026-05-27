@@ -74,9 +74,7 @@
       {autoAcknowledgeReason}
     />
     <div class="@container min-h-0 grow">
-      <div
-        class="grid h-full grid-cols-1 grid-rows-2 gap-2 @3xl:grid-cols-2 @3xl:grid-rows-[1fr]"
-      >
+      <div class="grid h-full grid-cols-1 grid-rows-2 gap-2 @3xl:grid-cols-2 @3xl:grid-rows-[1fr]">
         <PreviousPicks {researchers} />
         <Card.Root variant="soft">
           <Card.Header>
