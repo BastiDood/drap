@@ -1,10 +1,12 @@
 <script lang="ts">
   import CalendarDaysIcon from '@lucide/svelte/icons/calendar-days';
-  import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
+  import CheckIcon from '@lucide/svelte/icons/check';
   import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
+  import CircleCheckIcon from '@lucide/svelte/icons/circle-check';
   import ClockIcon from '@lucide/svelte/icons/clock';
   import CogIcon from '@lucide/svelte/icons/cog';
-  import RefreshCwIcon from '@lucide/svelte/icons/refresh-cw';
+  import DicesIcon from '@lucide/svelte/icons/dices';
+  import PlayIcon from '@lucide/svelte/icons/play';
   import ScaleIcon from '@lucide/svelte/icons/scale';
   import SparklesIcon from '@lucide/svelte/icons/sparkles';
   import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
@@ -125,7 +127,7 @@
   <div
     class="preset-tonal-success mb-2 flex items-center gap-3 rounded-lg border-2 px-4 py-3 text-sm"
   >
-    <CheckCircleIcon class="size-6" />
+    <CircleCheckIcon class="size-6" />
     <p>
       This draft was held from <strong
         ><time datetime={startIsoString}>{startDateTime}</time></strong
@@ -200,11 +202,17 @@
           {#each groupedTimelineEntries as entry (entry.key)}
             {#if entry.type === 'draft-finalized'}
               <li class="preset-tonal-primary rounded-lg border px-3 py-1.5">
-                <span class="flex-auto">Draft #{draftId} was finalized.</span>
+                <div class="flex items-center gap-3">
+                  <CheckIcon class="size-4" />
+                  <span class="flex-auto">Draft #{draftId} was finalized.</span>
+                </div>
               </li>
             {:else if entry.type === 'draft-created'}
               <li class="preset-tonal-success rounded-lg border px-3 py-1.5">
-                Draft #{draftId} was created.
+                <div class="flex items-center gap-3">
+                  <PlayIcon class="size-4" />
+                  <span>Draft #{draftId} was created.</span>
+                </div>
               </li>
             {:else}
               {@const { isSystem, labId, round } = entry}
@@ -275,7 +283,7 @@
               {:else}
                 <li class="preset-tonal-accent rounded-lg border px-3 py-1.5">
                   <div class="flex items-center gap-3">
-                    <RefreshCwIcon class="size-4" />
+                    <DicesIcon class="size-4" />
                     <span>
                       The <strong class="uppercase">{labId}</strong> has obtained a batch of draftees
                       from lottery randomization.
