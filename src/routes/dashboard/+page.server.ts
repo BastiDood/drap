@@ -8,6 +8,7 @@ import { error, fail, redirect } from '@sveltejs/kit';
 
 import * as schema from '$lib/server/database/schema';
 import { assertOptional, assertSingle } from '$lib/server/assert';
+import { coerceNumber } from '$lib/coerce';
 import { db } from '$lib/server/database';
 import {
   type DbConnection,
@@ -321,9 +322,11 @@ export const actions = {
                   }
                   throw err;
                 }
+
                 await inngest.send(
                   RoundStartedBatchEmailEvent.create({
                     draftId: parsed.draftId,
+                    draftYear: await getDraftYear(db, parsed.draftId),
                     round: parsed.round,
                     recipientEmail: parsed.recipientEmail,
                     recipientName: `${givenName} ${familyName}`,
@@ -333,6 +336,7 @@ export const actions = {
               }
               case 'draft/round.submitted.email.batch': {
                 let labName: string;
+
                 try {
                   ({ name: labName } = await getLabById(db, parsed.labId));
                 } catch (err) {
@@ -342,9 +346,11 @@ export const actions = {
                   }
                   throw err;
                 }
+
                 await inngest.send(
                   RoundSubmittedBatchEmailEvent.create({
                     draftId: parsed.draftId,
+                    draftYear: await getDraftYear(db, parsed.draftId),
                     round: parsed.round,
                     labId: parsed.labId,
                     labName,
@@ -403,6 +409,7 @@ export const actions = {
                 await inngest.send(
                   LotteryInterventionBatchEmailEvent.create({
                     draftId: parsed.draftId,
+                    draftYear: await getDraftYear(db, parsed.draftId),
                     labId: parsed.labId,
                     labName,
                     studentName: `${studentGivenName} ${studentFamilyName}`,
@@ -477,6 +484,7 @@ export const actions = {
                 await inngest.send(
                   DraftConcludedBatchEmailEvent.create({
                     draftId: parsed.draftId,
+                    draftYear: await getDraftYear(db, parsed.draftId),
                     recipientEmail: parsed.recipientEmail,
                     recipientName: `${givenName} ${familyName}`,
                     lotteryAssignments,
@@ -497,9 +505,11 @@ export const actions = {
                   }
                   throw err;
                 }
+
                 await inngest.send(
                   DraftFinalizationBatchEmailEvent.create({
                     draftId: parsed.draftId,
+                    draftYear: await getDraftYear(db, parsed.draftId),
                     recipientEmail: parsed.recipientEmail,
                     recipientName: `${givenName} ${familyName}`,
                   }),
@@ -647,6 +657,23 @@ async function getUserNameByEmail(db: DbConnection, email: string) {
       .from(schema.user)
       .where(eq(schema.user.email, email))
       .then(assertSingle);
+  });
+}
+
+async function getDraftYear(db: DbConnection, draftId: number) {
+  return await tracer.asyncSpan('get-draft-year', async span => {
+    span.setAttribute('database.draft.id', draftId);
+    const { draftYear } = await db
+      .select({
+        draftYear: sql`extract(year from lower(${schema.draft.activePeriod}))`.mapWith(
+          coerceNumber,
+        ),
+      })
+      .from(schema.draft)
+      .where(eq(schema.draft.id, BigInt(draftId)))
+      .then(assertSingle);
+
+    return draftYear;
   });
 }
 

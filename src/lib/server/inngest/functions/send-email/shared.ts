@@ -72,69 +72,76 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
 
   switch (event.name) {
     case 'draft/round.started.email.batch':
-    case 'draft/round.started.email.fallback':
+    case 'draft/round.started.email.fallback': {
       recipient = event.data.recipientEmail;
       subject =
         event.data.round === null
-          ? `[DRAP] Lottery Round for Draft #${event.data.draftId} has begun!`
-          : `[DRAP] Round #${event.data.round} for Draft #${event.data.draftId} has begun!`;
+          ? `[DRAP] Lottery Round for Draft ${event.data.draftYear} has begun!`
+          : `[DRAP] Round #${event.data.round} for Draft ${event.data.draftYear} has begun!`;
       html = await emailRenderer.render(RoundStarted, {
         props: {
-          draftId: event.data.draftId,
+          draftYear: event.data.draftYear,
           round: event.data.round,
         } satisfies ComponentProps<typeof RoundStarted>,
       });
       break;
+    }
     case 'draft/round.submitted.email.batch':
-    case 'draft/round.submitted.email.fallback':
+    case 'draft/round.submitted.email.fallback': {
       recipient = event.data.recipientEmail;
       subject = event.data.isCreate
-        ? `[DRAP] Acknowledgement from ${event.data.labId.toUpperCase()} for Round #${event.data.round} of Draft #${event.data.draftId}`
-        : `[DRAP] Preference Update from ${event.data.labId.toUpperCase()} for Round #${event.data.round} of Draft #${event.data.draftId}`;
+        ? `[DRAP] Acknowledgement from ${event.data.labId.toUpperCase()} for Round #${event.data.round} of Draft ${event.data.draftYear}`
+        : `[DRAP] Preference Update from ${event.data.labId.toUpperCase()} for Round #${event.data.round} of Draft ${event.data.draftYear}`;
       html = await emailRenderer.render(RoundSubmitted, {
         props: {
           labName: event.data.labName,
           round: event.data.round,
-          draftId: event.data.draftId,
+          draftYear: event.data.draftYear,
           isCreate: event.data.isCreate,
         } satisfies ComponentProps<typeof RoundSubmitted>,
       });
       break;
+    }
     case 'draft/lottery.intervened.email.batch':
-    case 'draft/lottery.intervened.email.fallback':
+    case 'draft/lottery.intervened.email.fallback': {
       recipient = event.data.recipientEmail;
-      subject = `[DRAP] Lottery Intervention for ${event.data.labId.toUpperCase()} in Draft #${event.data.draftId}`;
+      subject = `[DRAP] Lottery Intervention for ${event.data.labId.toUpperCase()} in Draft ${event.data.draftYear}`;
       html = await emailRenderer.render(LotteryIntervened, {
         props: {
           studentName: event.data.studentName,
           studentEmail: event.data.studentEmail,
           avatarUrl: event.data.avatarUrl,
           labName: event.data.labName,
-          draftId: event.data.draftId,
+          draftYear: event.data.draftYear,
         } satisfies ComponentProps<typeof LotteryIntervened>,
       });
       break;
+    }
     case 'draft/draft.concluded.email.batch':
-    case 'draft/draft.concluded.email.fallback':
+    case 'draft/draft.concluded.email.fallback': {
       recipient = event.data.recipientEmail;
-      subject = `[DRAP] Draft #${event.data.draftId} Concluded`;
+      subject = `[DRAP] Draft ${event.data.draftYear} Concluded`;
       html = await emailRenderer.render(DraftConcluded, {
         props: {
           draftId: event.data.draftId,
+          draftYear: event.data.draftYear,
           lotteryAssignments: event.data.lotteryAssignments,
         } satisfies ComponentProps<typeof DraftConcluded>,
       });
       break;
+    }
     case 'draft/draft.finalization.email.batch':
-    case 'draft/draft.finalization.email.fallback':
+    case 'draft/draft.finalization.email.fallback': {
       recipient = event.data.recipientEmail;
-      subject = `[DRAP] Draft #${event.data.draftId} Finalized`;
+      subject = `[DRAP] Draft ${event.data.draftYear} Finalized`;
       html = await emailRenderer.render(DraftFinalization, {
         props: {
           draftId: event.data.draftId,
+          draftYear: event.data.draftYear,
         } satisfies ComponentProps<typeof DraftFinalization>,
       });
       break;
+    }
     case 'draft/user.assigned.email.batch':
     case 'draft/user.assigned.email.fallback':
       recipient = event.data.userEmail;

@@ -22,7 +22,7 @@
         {#if activePeriodEnd !== null}
           <!-- Finalized Draft -->
           {@const end = format(activePeriodEnd, 'PPPpp')}
-          <li>
+          <li data-draft-id={draftId}>
             <a
               href={resolve(`/history/${draftId}/`)}
               class="preset-tonal-muted flex items-center gap-3 rounded-lg border-3 px-4 py-4 transition duration-150 hover:brightness-120 dark:hover:brightness-110"
@@ -37,7 +37,7 @@
           </li>
         {:else if currRound === null}
           <!-- Review Stage -->
-          <li>
+          <li data-draft-id={draftId}>
             <a
               href={resolve(`/history/${draftId}/`)}
               class="preset-tonal-accent flex items-center gap-3 rounded-lg border-3 px-4 py-4 transition duration-150 hover:brightness-115 dark:hover:brightness-110"
@@ -52,7 +52,7 @@
           </li>
         {:else if currRound > maxRounds}
           <!-- Lottery Stage -->
-          <li>
+          <li data-draft-id={draftId}>
             <a
               href={resolve(`/history/${draftId}/`)}
               class="preset-tonal-accent flex items-center gap-3 rounded-lg border-3 px-4 py-4 transition duration-150 hover:brightness-115 dark:hover:brightness-110"
@@ -67,7 +67,7 @@
           </li>
         {:else if currRound === 0}
           <!-- Registration Stage -->
-          <li>
+          <li data-draft-id={draftId}>
             <a
               href={resolve(`/history/${draftId}/`)}
               class="preset-tonal-secondary flex items-center gap-3 rounded-lg border-3 px-4 py-4 transition duration-150 hover:brightness-115 dark:hover:brightness-110"
@@ -82,7 +82,7 @@
           </li>
         {:else}
           <!-- Regular Draft Process -->
-          <li>
+          <li data-draft-id={draftId}>
             <a
               href={resolve(`/history/${draftId}/`)}
               class="preset-tonal-primary flex items-center gap-3 rounded-lg border-3 px-4 py-4 transition duration-150 hover:brightness-120 dark:hover:brightness-110"

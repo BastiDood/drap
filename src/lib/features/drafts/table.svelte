@@ -75,7 +75,7 @@
   <Table.Body>
     {#each drafts as draft (draft.id)}
       {@const status = getStatus(draft)}
-      <Table.Row>
+      <Table.Row data-draft-id={draft.id}>
         <Table.Cell class="font-mono">{draft.activePeriodStart.getFullYear()}</Table.Cell>
         <Table.Cell>
           <Badge variant={getStatusVariant(status)}>{getStatusLabel(status)}</Badge>

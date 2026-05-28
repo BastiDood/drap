@@ -304,7 +304,7 @@ export const actions = {
 
       const draftId = BigInt(draft);
       const roundsToNotify: (number | null)[] = [];
-      await db.transaction(
+      const draftYear = await db.transaction(
         async db => {
           const activeDraft = await getDraftByIdForUpdate(db, draftId);
           if (typeof activeDraft === 'undefined' || activeDraft.activePeriodEnd !== null) {
@@ -348,6 +348,8 @@ export const actions = {
               break;
             }
           }
+
+          return activeDraft.activePeriodStart.getFullYear();
         },
         { isolationLevel: 'read committed' },
       );
@@ -359,6 +361,7 @@ export const actions = {
           facultyAndStaff.map(({ email, givenName, familyName }) =>
             RoundStartedBatchEmailEvent.create({
               draftId: Number(draftId),
+              draftYear,
               round,
               recipientEmail: email,
               recipientName: `${givenName} ${familyName}`,
@@ -515,7 +518,7 @@ export const actions = {
       }
 
       logger.debug('intervening draft with pairs', { 'draft.pair_count': pairs.length });
-      const result = await db.transaction(
+      const { result, draftYear } = await db.transaction(
         async db => {
           const activeDraft = await getDraftByIdForUpdate(db, draftId);
 
@@ -551,7 +554,10 @@ export const actions = {
             error(400);
           }
 
-          return await insertLotteryChoices(db, draftId, user.id, pairs, 'intervention');
+          return {
+            result: await insertLotteryChoices(db, draftId, user.id, pairs, 'intervention'),
+            draftYear: activeDraft.activePeriodStart.getFullYear(),
+          };
         },
         { isolationLevel: 'read committed' },
       );
@@ -572,6 +578,7 @@ export const actions = {
           facultyAndStaff.map(({ email, givenName, familyName }) =>
             LotteryInterventionBatchEmailEvent.create({
               draftId: Number(draftId),
+              draftYear,
               labId,
               labName,
               studentName: `${student.givenName} ${student.familyName}`,
@@ -620,8 +627,9 @@ export const actions = {
       const draftId = BigInt(draft);
       logger.debug('running lottery and entering review', { 'draft.id': draft });
 
+      let draftYear: number;
       try {
-        await db.transaction(
+        draftYear = await db.transaction(
           async db => {
             const activeDraft = await getDraftByIdForUpdate(db, draftId);
             if (typeof activeDraft === 'undefined' || activeDraft.activePeriodEnd !== null) {
@@ -683,10 +691,11 @@ export const actions = {
               logger.fatal('draft must exist prior to entering review');
               error(404);
             }
+
+            return activeDraft.activePeriodStart.getFullYear();
           },
           { isolationLevel: 'read committed' },
         );
-        logger.info('draft review started');
       } catch (err) {
         if (err === ZIP_NOT_EQUAL) {
           logger.fatal('cannot conclude draft because schedule and quota mismatched');
@@ -694,6 +703,8 @@ export const actions = {
         }
         throw err;
       }
+
+      logger.info('draft review started');
 
       const [draftAdmins, assignments] = await Promise.all([
         getDraftAdmins(db),
@@ -714,6 +725,7 @@ export const actions = {
         draftAdmins.map(({ email, givenName, familyName }) =>
           DraftConcludedBatchEmailEvent.create({
             draftId: Number(draftId),
+            draftYear,
             recipientEmail: email,
             recipientName: `${givenName} ${familyName}`,
             lotteryAssignments,
@@ -755,7 +767,7 @@ export const actions = {
       logger.debug('finalizing draft', { 'draft.id': draft });
 
       let userAssignments: { userId: string; labId: string }[] = [];
-      await db.transaction(
+      const draftYear = await db.transaction(
         async db => {
           const activeDraft = await getDraftByIdForUpdate(db, draftId);
 
@@ -783,6 +795,8 @@ export const actions = {
           const results = await syncResultsToUsers(db, draftId);
           logger.debug('draft results synced', { 'draft.result_count': results.length });
           userAssignments = results;
+
+          return activeDraft.activePeriodStart.getFullYear();
         },
         { isolationLevel: 'read committed' },
       );
@@ -792,6 +806,7 @@ export const actions = {
         facultyAndStaff.map(({ email, givenName, familyName }) =>
           DraftFinalizationBatchEmailEvent.create({
             draftId: Number(draftId),
+            draftYear,
             recipientEmail: email,
             recipientName: `${givenName} ${familyName}`,
           }),

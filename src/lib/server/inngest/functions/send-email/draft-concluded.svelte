@@ -29,10 +29,11 @@
 
   interface Props {
     draftId: number;
+    draftYear: number;
     lotteryAssignments: LotteryAssignment[];
   }
 
-  const { draftId, lotteryAssignments }: Props = $props();
+  const { draftId, draftYear, lotteryAssignments }: Props = $props();
   const groupedLotteryAssignments = $derived.by(() => {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity -- local grouping container in derived computation
     const grouped = new Map<string, GroupedLotteryAssignment>();
@@ -54,12 +55,12 @@
   });
 </script>
 
-<EmailLayout preview="Draft #{draftId} concluded - Finalize the draft">
+<EmailLayout preview="Draft {draftYear} concluded - Finalize the draft">
   <Section>
     <Section class="p-4">
       <Heading class="text-2xl font-bold text-foreground" as="h1">Draft Concluded</Heading>
       <Text class="text-base">
-        Draft <strong class="text-foreground">#{draftId}</strong> has concluded and the lottery results
+        <strong class="text-foreground">Draft {draftYear}</strong> has concluded and the lottery results
         are ready for review. Please finalize the draft once the assignments below are approved.
       </Text>
     </Section>

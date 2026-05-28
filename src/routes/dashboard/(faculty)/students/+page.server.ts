@@ -162,7 +162,7 @@ export const actions = {
 
       const draftId = BigInt(draft);
       try {
-        const { submittedRound, roundsToNotify, isCreate } = await db.transaction(
+        const { submittedRound, roundsToNotify, isCreate, draftYear } = await db.transaction(
           async db => {
             const activeDraft = await getDraftByIdForUpdate(db, draftId);
             if (typeof activeDraft === 'undefined' || activeDraft.activePeriodEnd !== null) {
@@ -330,6 +330,7 @@ export const actions = {
               submittedRound,
               roundsToNotify,
               isCreate: typeof existingChoice === 'undefined',
+              draftYear: activeDraft.activePeriodStart.getFullYear(),
             };
           },
           { isolationLevel: 'read committed' },
@@ -350,6 +351,7 @@ export const actions = {
         const roundSubmittedEvents = Array.from(initialRecipients, email =>
           RoundSubmittedBatchEmailEvent.create({
             draftId: Number(draftId),
+            draftYear,
             round: submittedRound,
             labId: lab,
             labName,
@@ -362,6 +364,7 @@ export const actions = {
           facultyAndStaff.map(({ email, givenName, familyName }) =>
             RoundStartedBatchEmailEvent.create({
               draftId: Number(draftId),
+              draftYear,
               round,
               recipientEmail: email,
               recipientName: `${givenName} ${familyName}`,

@@ -59,8 +59,8 @@
           {#if typeof draft !== 'undefined'}
             {@const draftYear = draft.activePeriodStart.getFullYear()}
             {@const start = format(draft.activePeriodStart, 'PPPpp')}
-            <Accordion.Item value="draft-{draftId}">
-              <Accordion.Trigger>
+            <Accordion.Item value="draft-{draftId}" data-draft-id={draftId}>
+              <Accordion.Trigger data-draft-id={draftId}>
                 <div class="flex flex-col items-start text-left">
                   <span class="text-lg font-semibold">Draft {draftYear}</span>
                   <small class="text-muted-foreground">
