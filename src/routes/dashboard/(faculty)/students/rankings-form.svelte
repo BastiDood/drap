@@ -1,11 +1,13 @@
 <script lang="ts">
   import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
+  import MessageSquareTextIcon from '@lucide/svelte/icons/message-square-text';
   import { SvelteSet } from 'svelte/reactivity';
   import { toast } from 'svelte-sonner';
 
   import * as Popover from '$lib/components/ui/popover';
   import DraftAvatar from '$lib/components/draft-avatar.svelte';
   import { assert } from '$lib/assert';
+  import { Badge } from '$lib/components/ui/badge';
   import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
   import { Progress } from '$lib/components/ui/progress';
@@ -74,8 +76,22 @@
   action="/dashboard/students/?/rankings"
   use:enhance={({ formData, submitter, cancel }) => {
     const count = formData.getAll('students').length;
+
+    let message: string;
+    switch (count) {
+      case 0:
+        message = 'Are you sure you want to waive this round?';
+        break;
+      case 1:
+        message = 'Are you sure you want to select only one student?';
+        break;
+      default:
+        message = `Are you sure you want to select these ${count} students?`;
+        break;
+    }
+
     // eslint-disable-next-line no-alert
-    if (!confirm(`Are you sure you want to select these ${count} students?`)) {
+    if (!confirm(message)) {
       cancel();
       return;
     }
@@ -116,14 +132,20 @@
       resetSelectionState();
     };
   }}
-  class="flex flex-col gap-4 inert:opacity-20"
+  class="flex min-h-0 grow flex-col inert:opacity-20"
 >
   <input type="hidden" name="draft" value={draft} />
   <input type="hidden" name="round" value={round} />
   {#each selectedIds as id (id)}
     <input type="hidden" name="students" value={id} />
   {/each}
-  <ul class="space-y-1">
+  <div id="selection-progress" class="flex items-center gap-3 pb-3">
+    <Progress value={selectedIds.length} max={remainingQuota} />
+    <Badge variant="secondary" class="tabular-nums"
+      >{selectedIds.length}/{remainingQuota} Slots</Badge
+    >
+  </div>
+  <ul class="min-h-0 grow space-y-2 overflow-y-auto">
     {#each students as { id, email, givenName, familyName, avatarObjectKey, studentNumber, remark } (id)}
       {@const selected = hasSelection(id)}
       <li
@@ -132,10 +154,10 @@
       >
         <button
           type="button"
-          class="flex w-full flex-col gap-3 p-2"
+          class="flex w-full flex-col gap-2 p-3"
           onclick={toggleSelection.bind(null, id)}
         >
-          <div class="flex items-center gap-3 p-2">
+          <div class="flex items-center gap-3">
             {#if avatarObjectKey === null}
               <DraftAvatar class="size-10" />
             {:else}
@@ -148,36 +170,34 @@
               />
             {/if}
             <div class="flex flex-col">
-              <strong class="text-start"
-                ><span class="uppercase">{familyName}</span>, {givenName}</strong
-              >
-              {#if studentNumber !== null}
-                <span class="text-start text-sm opacity-50">{studentNumber}</span>
-              {/if}
-              <span class="text-start text-xs opacity-50">{email}</span>
+              <div class="flex items-center gap-1.5">
+                <strong class="text-start"
+                  ><span class="uppercase">{familyName}</span>, {givenName}</strong
+                >
+                {#if studentNumber !== null}
+                  <Badge variant="outline">{studentNumber}</Badge>
+                {/if}
+              </div>
+              <div class="text-start text-xs opacity-50">{email}</div>
             </div>
           </div>
           {#if remark.length > 0}
-            <div class="flex flex-col gap-2">
-              <span class="text-start"><strong>Remarks</strong></span>
+            <div class="flex items-start gap-1.5">
+              <MessageSquareTextIcon class="size-3.5 shrink-0" />
               <pre
-                class="text-start font-sans text-sm whitespace-pre-wrap opacity-90">{remark}</pre>
+                class="text-start font-sans text-xs whitespace-pre-wrap text-muted-foreground">{remark}</pre>
             </div>
           {/if}
         </button>
       </li>
     {/each}
   </ul>
-  <div id="selection-progress" class="flex items-center gap-3">
-    <Progress value={selectedIds.length} max={remainingQuota} />
-    <span class="text-sm whitespace-nowrap text-muted-foreground tabular-nums">
-      {selectedIds.length} / {remainingQuota} slots
-    </span>
-  </div>
-  <div class="flex items-center gap-2">
-    <Button type="submit" class="grow" {disabled}>
-      {hasExistingSubmission ? 'Update Selection' : 'Submit Selection'}
-    </Button>
+  <div class="flex items-center gap-2 pt-3">
+    {#if hasExistingSubmission}
+      <Button type="submit" variant="outline" class="grow" {disabled}>Update Selection</Button>
+    {:else}
+      <Button type="submit" class="grow" {disabled}>Submit Selection</Button>
+    {/if}
     <Popover.Root>
       <Popover.Trigger>
         <CircleHelpIcon class="size-4 text-muted-foreground" />

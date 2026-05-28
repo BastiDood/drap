@@ -6,6 +6,7 @@
   import ShuffleIcon from '@lucide/svelte/icons/shuffle';
   import UserXIcon from '@lucide/svelte/icons/user-x';
 
+  import * as Card from '$lib/components/ui/card';
   import Empty from '$lib/components/empty.svelte';
   import PreviousPicks from '$lib/features/faculty/previous-picks/index.svelte';
   import StatCards from '$lib/features/faculty/stat-cards/index.svelte';
@@ -44,9 +45,7 @@
         validating results before finalization.
       {/snippet}
     </Empty>
-    {#if researchers.length > 0}
-      <PreviousPicks {researchers} />
-    {/if}
+    <PreviousPicks {researchers} />
   {:else if currRound > maxRounds}
     <Empty media={{ icon: ShuffleIcon, size: 'sm' }}>
       {#snippet title()}Lottery Stage{/snippet}
@@ -55,9 +54,7 @@
         proceed.
       {/snippet}
     </Empty>
-    {#if researchers.length > 0}
-      <PreviousPicks {researchers} />
-    {/if}
+    <PreviousPicks {researchers} />
   {:else if currRound === 0}
     <Empty media={{ icon: InfoIcon, size: 'sm' }}>
       {#snippet title()}Registration Still Open{/snippet}
@@ -67,8 +64,7 @@
       {/snippet}
     </Empty>
   {:else}
-    {@const currentRoundSelections =
-      currRound === null ? [] : researchers.filter(({ round }) => round === currRound)}
+    {@const currentRoundSelections = researchers.filter(({ round }) => round === currRound)}
     {@const currentRoundSelectionIds = currentRoundSelections.map(({ id }) => id)}
     <StatCards
       {quota}
@@ -77,46 +73,55 @@
       {submissionSource}
       {autoAcknowledgeReason}
     />
-    {#if autoAcknowledgeReason === 'quota-exhausted'}
-      <Empty media={{ icon: CircleSlashIcon, size: 'sm' }}>
-        {#snippet title()}No Slots Remaining{/snippet}
-        {#snippet description()}
-          This lab has no more draft slots remaining for the rest of this draft. No action is
-          required for the rest of this draft.
-        {/snippet}
-      </Empty>
-      {#if researchers.length > 0}
+    <div class="@container min-h-0 grow">
+      <div class="grid h-full grid-cols-1 grid-rows-2 gap-2 @3xl:grid-cols-2 @3xl:grid-rows-[1fr]">
         <PreviousPicks {researchers} />
-      {/if}
-    {:else if autoAcknowledgeReason === 'no-preferences'}
-      <Empty media={{ icon: UserXIcon, size: 'sm' }}>
-        {#snippet title()}No Student Preferences This Round{/snippet}
-        {#snippet description()}
-          No undrafted students have selected this lab in this round. No action is required until
-          the next one.
-        {/snippet}
-      </Empty>
-      {#if researchers.length > 0}
-        <PreviousPicks {researchers} />
-      {/if}
-    {:else if students.length > 0}
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-[auto_1fr]">
-        {#if researchers.length > 0}
-          <PreviousPicks {researchers} />
-        {/if}
-        {#if submissionSource === 'faculty'}
-          <RankingsForm
-            draft={id}
-            round={currRound}
-            {students}
-            remainingQuota={remainingQuota + currentRoundSelections.length}
-            initialSelectedIds={currentRoundSelectionIds}
-            hasExistingSubmission
-          />
-        {:else}
-          <RankingsForm draft={id} round={currRound} {students} {remainingQuota} />
-        {/if}
+        <Card.Root variant="soft">
+          <Card.Header>
+            <Card.Title>Student Selection</Card.Title>
+          </Card.Header>
+          <Card.Content class="min-h-0 flex grow flex-col">
+            {#if autoAcknowledgeReason === 'quota-exhausted'}
+              <Empty media={{ icon: CircleSlashIcon, size: 'sm' }}>
+                {#snippet title()}No Slots Remaining{/snippet}
+                {#snippet description()}
+                  This lab has no more draft slots remaining for the rest of this draft. No action
+                  is required for the rest of this draft.
+                {/snippet}
+              </Empty>
+            {:else if autoAcknowledgeReason === 'no-preferences'}
+              <Empty media={{ icon: UserXIcon, size: 'sm' }}>
+                {#snippet title()}No Student Preferences This Round{/snippet}
+                {#snippet description()}
+                  No undrafted students have selected this lab in this round. No action is required
+                  until the next one.
+                {/snippet}
+              </Empty>
+            {:else if students.length > 0}
+              {#if submissionSource === 'faculty'}
+                <RankingsForm
+                  draft={id}
+                  round={currRound}
+                  {students}
+                  remainingQuota={remainingQuota + currentRoundSelections.length}
+                  initialSelectedIds={currentRoundSelectionIds}
+                  hasExistingSubmission
+                />
+              {:else}
+                <RankingsForm draft={id} round={currRound} {students} {remainingQuota} />
+              {/if}
+            {:else}
+              <Empty media={{ icon: UserXIcon, size: 'sm' }}>
+                {#snippet title()}No Students Available{/snippet}
+                {#snippet description()}
+                  There are no students to select from this round. This may resolve in the next
+                  round.
+                {/snippet}
+              </Empty>
+            {/if}
+          </Card.Content>
+        </Card.Root>
       </div>
-    {/if}
+    </div>
   {/if}
 {/if}

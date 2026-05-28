@@ -36,7 +36,9 @@ async function expectPreviousPicksTab(page: Page, round: number, studentNames: R
 }
 
 async function expectNoPreviousPicks(page: Page) {
-  await expect(page.locator('#previous-picks')).toHaveCount(0);
+  const panel = page.locator('#previous-picks');
+  await expect(panel).toBeVisible();
+  await expect(panel.locator('[data-slot="empty"]')).toBeVisible();
 }
 
 async function expectStudentsCallout(
@@ -49,7 +51,7 @@ async function expectStudentsCallout(
   } = {},
 ) {
   await page.goto('/dashboard/students/');
-  const emptyState = page.locator('[data-slot="empty"]');
+  const emptyState = page.locator('[data-slot="empty"]').filter({ hasText: expected });
   await expect(emptyState).toBeVisible();
   if (typeof options.title !== 'undefined') await expect(emptyState).toContainText(options.title);
   await expect(emptyState).toContainText(expected);
@@ -1249,7 +1251,7 @@ test.describe('Draft Lifecycle', () => {
         await ndslHeadPage.goto('/dashboard/students/');
         await expectStatCards(ndslHeadPage, { quota: 2, remaining: 2, drafted: 0 });
         await expectNoPreviousPicks(ndslHeadPage);
-        await expect(ndslHeadPage.locator('#selection-progress')).toContainText('0 / 2 slots');
+        await expect(ndslHeadPage.locator('#selection-progress')).toContainText('0/2 Slots');
         await expect(ndslHeadPage.getByRole('button', { name: 'Submit Selection' })).toBeVisible();
       });
 
@@ -1264,7 +1266,7 @@ test.describe('Draft Lifecycle', () => {
         await ndslHeadPage.getByRole('button', { name: /Eager/u }).click();
         await expect(ndslHeadPage.locator('li[data-selected="true"]')).toHaveCount(1);
         await expect(ndslHeadPage.locator('li[data-selected="true"]')).toContainText(/Eager/u);
-        await expect(ndslHeadPage.locator('#selection-progress')).toHaveText(/1 \/ 2 slots/u);
+        await expect(ndslHeadPage.locator('#selection-progress')).toHaveText(/1\/2 Slots/u);
         ndslHeadPage.on('dialog', dialog => dialog.accept());
         const responsePromise = ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
         await ndslHeadPage.getByRole('button', { name: 'Submit Selection' }).click();
@@ -1310,7 +1312,7 @@ test.describe('Draft Lifecycle', () => {
 
         // Original saved selection should still be visible after reload
         await expectPreviousPicksTab(ndslHeadPage, 1, [/Partial/u]);
-        await expect(ndslHeadPage.locator('#selection-progress')).toContainText('1 /');
+        await expect(ndslHeadPage.locator('#selection-progress')).toContainText('1/');
       });
 
       test('can edit to empty selection', async ({ ndslHeadPage }) => {
@@ -1318,7 +1320,7 @@ test.describe('Draft Lifecycle', () => {
 
         // Deselect the current pick (Partial from previous test)
         await ndslHeadPage.getByRole('button', { name: /Partial/u }).click();
-        await expect(ndslHeadPage.locator('#selection-progress')).toContainText('0 /');
+        await expect(ndslHeadPage.locator('#selection-progress')).toContainText('0/');
 
         ndslHeadPage.on('dialog', dialog => dialog.accept());
         const responsePromise = ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
@@ -1377,7 +1379,7 @@ test.describe('Draft Lifecycle', () => {
         await expect(ndslHeadPage.getByRole('button', { name: 'Update Selection' })).toBeVisible();
 
         // Eager should already be selected (from previous test)
-        await expect(ndslHeadPage.locator('#selection-progress')).toContainText('1 /');
+        await expect(ndslHeadPage.locator('#selection-progress')).toContainText('1/');
 
         // Submit without changes
         ndslHeadPage.on('dialog', dialog => dialog.accept());
@@ -1696,7 +1698,7 @@ test.describe('Draft Lifecycle', () => {
       test('before submission: Previous Picks Round 1 with Patient', async ({ cslHeadPage }) => {
         await cslHeadPage.goto('/dashboard/students/');
         await expectStatCards(cslHeadPage, { quota: 2, remaining: 1, drafted: 1 });
-        await expect(cslHeadPage.locator('#selection-progress')).toContainText('0 / 1 slots');
+        await expect(cslHeadPage.locator('#selection-progress')).toContainText('0/1 Slots');
         await expectPreviousPicksTab(cslHeadPage, 1, [
           /Candidate, Patient/u,
           /202012346/u,
@@ -1710,7 +1712,7 @@ test.describe('Draft Lifecycle', () => {
         await cslHeadPage.getByRole('button', { name: /Partial/u }).click();
         await expect(cslHeadPage.locator('li[data-selected="true"]')).toHaveCount(1);
         await expect(cslHeadPage.locator('li[data-selected="true"]')).toContainText(/Partial/u);
-        await expect(cslHeadPage.locator('#selection-progress')).toHaveText(/1 \/ 1 slots/u);
+        await expect(cslHeadPage.locator('#selection-progress')).toHaveText(/1\/1 Slots/u);
         cslHeadPage.on('dialog', dialog => dialog.accept());
         const responsePromise = cslHeadPage.waitForResponse('/dashboard/students/?/rankings');
         await cslHeadPage.getByRole('button', { name: 'Submit Selection' }).click();
@@ -1775,7 +1777,7 @@ test.describe('Draft Lifecycle', () => {
       test('before submission: Previous Picks Round 1 with Eager', async ({ ndslHeadPage }) => {
         await ndslHeadPage.goto('/dashboard/students/');
         await expectStatCards(ndslHeadPage, { quota: 2, remaining: 1, drafted: 1 });
-        await expect(ndslHeadPage.locator('#selection-progress')).toContainText('0 / 1 slots');
+        await expect(ndslHeadPage.locator('#selection-progress')).toContainText('0/1 Slots');
         await expectPreviousPicksTab(ndslHeadPage, 1, [
           /Draftee, Eager/u,
           /202012345/u,
@@ -1789,7 +1791,7 @@ test.describe('Draft Lifecycle', () => {
         await ndslHeadPage.getByRole('button', { name: /Unlucky/u }).click();
         await expect(ndslHeadPage.locator('li[data-selected="true"]')).toHaveCount(1);
         await expect(ndslHeadPage.locator('li[data-selected="true"]')).toContainText(/Unlucky/u);
-        await expect(ndslHeadPage.locator('#selection-progress')).toHaveText(/1 \/ 1 slots/u);
+        await expect(ndslHeadPage.locator('#selection-progress')).toHaveText(/1\/1 Slots/u);
         ndslHeadPage.on('dialog', dialog => dialog.accept());
         const responsePromise = ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
         await ndslHeadPage.getByRole('button', { name: 'Submit Selection' }).click();

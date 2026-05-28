@@ -114,10 +114,20 @@
   action="/dashboard/student/?/submit"
   class="@container space-y-4"
   use:enhance={({ submitter, cancel }) => {
-    const message =
-      persistedSelectedLabs.current.length === 0
-        ? 'Are you sure you want to skip lab preferences? You will go directly to the lottery.'
-        : `Are you sure you want to select ${persistedSelectedLabs.current.length} labs?`;
+    let message: string;
+    const labCount = persistedSelectedLabs.current.length;
+    switch (labCount) {
+      case 0:
+        message =
+          'Are you sure you want to skip lab preferences? You will go directly to the lottery.';
+        break;
+      case 1:
+        message = 'Are you sure you want to select only one lab?';
+        break;
+      default:
+        message = `Are you sure you want to select these ${labCount} labs?`;
+        break;
+    }
 
     // eslint-disable-next-line no-alert
     if (!confirm(message)) {
