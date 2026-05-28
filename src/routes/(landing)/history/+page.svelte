@@ -1,5 +1,5 @@
 <script lang="ts">
-  import CheckIcon from '@lucide/svelte/icons/check';
+  import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
   import ClockIcon from '@lucide/svelte/icons/clock';
   import ScaleIcon from '@lucide/svelte/icons/scale';
   import SparklesIcon from '@lucide/svelte/icons/sparkles';
@@ -26,7 +26,7 @@
               href={resolve(`/history/${draftId}/`)}
               class="preset-tonal-muted flex items-center gap-3 rounded-lg border-3 px-4 py-4 transition duration-150 hover:brightness-120 dark:hover:brightness-110"
             >
-              <CheckIcon class="size-8" />
+              <CheckCircleIcon class="size-8" />
               <span
                 ><strong>Draft #{draftId}</strong> was held from
                 <time datetime={activePeriodStart.toISOString()}>{start}</time> –
