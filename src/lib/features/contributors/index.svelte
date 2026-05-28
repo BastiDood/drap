@@ -44,6 +44,7 @@
       avatar: 'https://avatars.githubusercontent.com/u/87745547',
       roles: { '2026': 'Infrastructure Team: Head' },
       github: 'Harry2166',
+      linkedin: 'harry-quijano',
     },
     {
       name: 'Michael Real',
