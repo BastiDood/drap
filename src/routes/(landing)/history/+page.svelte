@@ -17,6 +17,7 @@
   <nav id="history-draft-list">
     <ul class="space-y-2">
       {#each drafts as { id: draftId, activePeriodStart, activePeriodEnd, currRound, maxRounds } (draftId)}
+        {@const draftYear = activePeriodStart.getFullYear()}
         {@const start = format(activePeriodStart, 'PPPpp')}
         {#if activePeriodEnd !== null}
           <!-- Finalized Draft -->
@@ -28,7 +29,7 @@
             >
               <CheckCircleIcon class="size-8" />
               <span
-                ><strong>Draft #{draftId}</strong> was held from
+                ><strong>Draft {draftYear}</strong> was held from
                 <time datetime={activePeriodStart.toISOString()}>{start}</time> –
                 <time datetime={activePeriodEnd.toISOString()}>{end}</time> over {maxRounds} rounds.</span
               >
@@ -43,7 +44,7 @@
             >
               <SparklesIcon class="size-8" />
               <span
-                ><strong>Draft #{draftId}</strong> started on
+                ><strong>Draft {draftYear}</strong> started on
                 <time datetime={activePeriodStart.toISOString()}>{start}</time> and is now in the review
                 stage after lottery assignment.</span
               >
@@ -58,7 +59,7 @@
             >
               <SparklesIcon class="size-8" />
               <span
-                ><strong>Draft #{draftId}</strong> started on
+                ><strong>Draft {draftYear}</strong> started on
                 <time datetime={activePeriodStart.toISOString()}>{start}</time> and is now in the
                 lottery stage after {maxRounds} regular rounds.</span
               >
@@ -73,7 +74,7 @@
             >
               <ClockIcon class="size-8" />
               <span
-                ><strong>Draft #{draftId}</strong> started on
+                ><strong>Draft {draftYear}</strong> started on
                 <time datetime={activePeriodStart.toISOString()}>{start}</time> and is currently waiting
                 for students to register.</span
               >
@@ -88,7 +89,7 @@
             >
               <ScaleIcon class="size-8" />
               <span
-                ><strong>Draft #{draftId}</strong> started on
+                ><strong>Draft {draftYear}</strong> started on
                 <time datetime={activePeriodStart.toISOString()}>{start}</time>
                 and is currently in Round {currRound}/{maxRounds} in the regular draft process.</span
               >

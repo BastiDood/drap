@@ -20,7 +20,6 @@
 
   const { data } = $props();
   const {
-    draftId,
     draft: { currRound, maxRounds, activePeriodStart, activePeriodEnd },
     events,
   } = $derived(data);
@@ -105,6 +104,7 @@
   );
 
   const startDateTime = $derived(format(activePeriodStart, 'PPPpp'));
+  const draftYear = $derived(activePeriodStart.getFullYear());
   const startIsoString = $derived(activePeriodStart.toISOString());
   const end = $derived(
     activePeriodEnd === null
@@ -119,7 +119,7 @@
 <div class="mb-4 flex items-center gap-2 text-xl">
   <Link href={resolve('/history/')} class="no-underline">Draft History</Link>
   <ChevronRightIcon class="size-4" />
-  <span class="font-semibold">Draft #{draftId}</span>
+  <span class="font-semibold">Draft {draftYear}</span>
 </div>
 {#if end !== null}
   {@const { endIsoString, endDateTime } = end}
@@ -204,14 +204,14 @@
               <li class="preset-tonal-primary rounded-lg border px-3 py-1.5">
                 <div class="flex items-center gap-3">
                   <CheckIcon class="size-4" />
-                  <span class="flex-auto">Draft #{draftId} was finalized.</span>
+                  <span class="flex-auto">Draft {draftYear} was finalized.</span>
                 </div>
               </li>
             {:else if entry.type === 'draft-created'}
               <li class="preset-tonal-success rounded-lg border px-3 py-1.5">
                 <div class="flex items-center gap-3">
                   <PlayIcon class="size-4" />
-                  <span>Draft #{draftId} was created.</span>
+                  <span>Draft {draftYear} was created.</span>
                 </div>
               </li>
             {:else}

@@ -57,11 +57,12 @@
         {#each membersByDraft as { draftId, memberUsers } (draftId)}
           {@const draft = drafts.find(draft => Number(draft.id) === draftId)}
           {#if typeof draft !== 'undefined'}
+            {@const draftYear = draft.activePeriodStart.getFullYear()}
             {@const start = format(draft.activePeriodStart, 'PPPpp')}
             <Accordion.Item value="draft-{draftId}">
               <Accordion.Trigger>
                 <div class="flex flex-col items-start text-left">
-                  <span class="text-lg font-semibold">Draft {draftId}</span>
+                  <span class="text-lg font-semibold">Draft {draftYear}</span>
                   <small class="text-muted-foreground">
                     {#if draft.activePeriodEnd === null}
                       Ongoing since <time datetime={draft.activePeriodStart.toISOString()}

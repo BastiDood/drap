@@ -1,9 +1,11 @@
-import { and, asc, desc, eq, isNotNull, isNull, lte, or } from 'drizzle-orm';
+import { and, asc, desc, eq, isNotNull, isNull, lte, or, sql } from 'drizzle-orm';
 import { error } from '@sveltejs/kit';
 
 import * as schema from '$lib/server/database/schema';
+import { assertOptional } from '$lib/server/assert';
+import { coerceDate, coerceNullableDate } from '$lib/coerce';
 import { db } from '$lib/server/database';
-import { type DbConnection, getDraftById } from '$lib/server/database/drizzle';
+import type { DbConnection } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 import { validateBigInt } from '$lib/validators';
@@ -24,7 +26,7 @@ export async function load({ params: { draft: id } }) {
 
     logger.debug('fetching draft', { 'draft.id': draftId.toString() });
 
-    const draft = await getDraftById(db, draftId);
+    const draft = await getHistoryDraftById(db, draftId);
     if (typeof draft === 'undefined') {
       logger.fatal('draft not found');
       error(404, 'Draft not found.');
@@ -33,13 +35,28 @@ export async function load({ params: { draft: id } }) {
     logger.debug('draft fetched', {
       'draft.round.current': draft.currRound,
       'draft.round.max': draft.maxRounds,
-      'draft.registration.closes_at': draft.registrationClosedAt.toISOString(),
     });
 
     const events = await getDraftEvents(db, draftId);
     logger.debug('draft events fetched', { 'draft.event_count': events.length });
 
-    return { draftId, draft, events };
+    return { draft, events };
+  });
+}
+
+async function getHistoryDraftById(db: DbConnection, id: bigint) {
+  return await tracer.asyncSpan('get-history-draft-by-id', async span => {
+    span.setAttribute('database.draft.id', id.toString());
+    return await db
+      .select({
+        currRound: schema.draft.currRound,
+        maxRounds: schema.draft.maxRounds,
+        activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
+        activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
+      })
+      .from(schema.draft)
+      .where(eq(schema.draft.id, id))
+      .then(assertOptional);
   });
 }
 
