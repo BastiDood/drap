@@ -193,9 +193,11 @@
     {/each}
   </ul>
   <div class="flex items-center gap-2 pt-3">
-    <Button type="submit" class="grow" {disabled}>
-      {hasExistingSubmission ? 'Update Selection' : 'Submit Selection'}
-    </Button>
+    {#if hasExistingSubmission}
+      <Button type="submit" variant="outline" class="grow" {disabled}>Update Selection</Button>
+    {:else}
+      <Button type="submit" class="grow" {disabled}>Submit Selection</Button>
+    {/if}
     <Popover.Root>
       <Popover.Trigger>
         <CircleHelpIcon class="size-4 text-muted-foreground" />
