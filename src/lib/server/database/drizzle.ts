@@ -209,15 +209,12 @@ export async function getDrafts(db: DbConnection) {
         id: schema.draft.id,
         currRound: schema.draft.currRound,
         maxRounds: schema.draft.maxRounds,
-        registrationClosedAt: schema.draft.registrationClosedAt,
-        isRegistrationClosed,
         activePeriodStart: sql`lower(${schema.draft.activePeriod})`
           .mapWith(coerceDate)
           .as('_start'),
         activePeriodEnd: sql`upper(${schema.draft.activePeriod})`
           .mapWith(coerceNullableDate)
           .as('_end'),
-        startedAt: schema.draft.startedAt,
       })
       .from(schema.draft)
       .orderBy(({ activePeriodStart }) => sql`${desc(activePeriodStart)} NULLS FIRST`);

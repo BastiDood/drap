@@ -8,15 +8,19 @@
 
   import type { Draft } from './types';
 
+  type DraftTableRow = Pick<
+    Draft,
+    'id' | 'currRound' | 'maxRounds' | 'activePeriodStart' | 'activePeriodEnd'
+  >;
   type Status = 'registration' | 'regular' | 'intervention' | 'review' | 'finalized';
 
   interface Props {
-    drafts: Draft[];
+    drafts: DraftTableRow[];
   }
 
   const { drafts }: Props = $props();
 
-  function getStatus(draft: Draft) {
+  function getStatus(draft: DraftTableRow) {
     if (draft.activePeriodEnd !== null) return 'finalized';
     if (draft.currRound === null) return 'review';
     if (draft.currRound === 0) return 'registration';
@@ -60,7 +64,7 @@
 <Table.Root>
   <Table.Header>
     <Table.Row>
-      <Table.Head class="w-20">ID</Table.Head>
+      <Table.Head class="w-20">Draft</Table.Head>
       <Table.Head>Status</Table.Head>
       <Table.Head>Started</Table.Head>
       <Table.Head>Ended</Table.Head>
@@ -71,8 +75,8 @@
   <Table.Body>
     {#each drafts as draft (draft.id)}
       {@const status = getStatus(draft)}
-      <Table.Row>
-        <Table.Cell class="font-mono">#{draft.id.toString()}</Table.Cell>
+      <Table.Row data-draft-id={draft.id}>
+        <Table.Cell class="font-mono">{draft.activePeriodStart.getFullYear()}</Table.Cell>
         <Table.Cell>
           <Badge variant={getStatusVariant(status)}>{getStatusLabel(status)}</Badge>
           {#if status === 'regular' && draft.currRound !== null}

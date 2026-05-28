@@ -3,6 +3,20 @@ import { expect, type Locator, type Page } from '@playwright/test';
 
 import { test } from './fixtures/users';
 
+const draftYearPattern = /Draft \d{4}/u;
+
+function getDraftRow(page: Page, draftId: string) {
+  return page.locator(`tr[data-draft-id="${draftId}"]`);
+}
+
+function getHistoryDraft(page: Page, draftId: string) {
+  return page.locator(`#history-draft-list [data-draft-id="${draftId}"]`);
+}
+
+function getDraftAccordionTrigger(page: Page, draftId: string) {
+  return page.locator(`button[data-draft-id="${draftId}"]`);
+}
+
 async function assertLogout(page: Page) {
   await page.goto('/dashboard/');
   await page.getByRole('button', { name: 'Logout' }).click();
@@ -645,7 +659,7 @@ test.describe('Draft Lifecycle', () => {
       const responseData = await response.json();
       expect(responseData.type).toBe('success');
       await expect(dialog).not.toBeVisible();
-      await expect(adminPage.getByText(/#\d+/u)).toBeVisible();
+      await expect(getDraftRow(adminPage, '1').locator('td').first()).toHaveText(/\d{4}/u);
       await expect(adminPage.getByText('Registration')).toBeVisible();
     });
   });
@@ -793,13 +807,13 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('History During Registration', () => {
-    test('shows Draft #1 in registration phase', async ({ page }) => {
+    test('shows draft year in registration phase', async ({ page }) => {
       await page.goto('/history/');
-      await expect(page.getByText('Draft #1')).toBeVisible();
+      await expect(getHistoryDraft(page, '1')).toContainText(draftYearPattern);
       await expect(page.getByText('currently waiting for students to register')).toBeVisible();
     });
 
-    test.describe('Draft #1 detail page', () => {
+    test.describe('first draft detail page', () => {
       test('shows registration status', async ({ page }) => {
         await page.goto('/history/1/');
         await expect(page.getByText('registration stage')).toBeVisible();
@@ -809,7 +823,7 @@ test.describe('Draft Lifecycle', () => {
         await page.goto('/history/1/');
         const items = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
         await expect(items).toHaveCount(1);
-        await expect(items.first()).toContainText('Draft #1 was created.');
+        await expect(items.first()).toContainText(/Draft \d{4} was created\./u);
       });
     });
   });
@@ -1902,9 +1916,9 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('History During Lottery', () => {
-    test('shows Draft #1 in lottery phase', async ({ page }) => {
+    test('shows draft year in lottery phase', async ({ page }) => {
       await page.goto('/history/');
-      await expect(page.getByText('Draft #1')).toBeVisible();
+      await expect(getHistoryDraft(page, '1')).toContainText(draftYearPattern);
       await expect(page.getByText(/lottery stage/u)).toBeVisible();
     });
 
@@ -2512,14 +2526,14 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('History After Finalization', () => {
-    test('shows Draft #1 as finalized', async ({ page }) => {
+    test('shows draft year as finalized', async ({ page }) => {
       await page.goto('/history/');
-      await expect(page.getByText('Draft #1')).toBeVisible();
+      await expect(getHistoryDraft(page, '1')).toContainText(draftYearPattern);
       await expect(page.getByText(/was held from/u)).toBeVisible();
       await expect(page.getByText(/over 3 rounds/u)).toBeVisible();
     });
 
-    test.describe('Draft #1 detail timeline', () => {
+    test.describe('first draft detail timeline', () => {
       test('shows finalized status banner', async ({ page }) => {
         await page.goto('/history/1/');
         await expect(page.getByText(/was held from/u)).toBeVisible();
@@ -2642,7 +2656,7 @@ test.describe('Draft Lifecycle', () => {
   test.describe('Drafts Table Final State', () => {
     test('shows draft with finalized status', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/');
-      await expect(adminPage.getByText('#1')).toBeVisible();
+      await expect(getDraftRow(adminPage, '1').locator('td').first()).toHaveText(/\d{4}/u);
       await expect(adminPage.getByText('Finalized')).toBeVisible();
     });
   });
@@ -2711,21 +2725,21 @@ test.describe('Draft Lifecycle', () => {
     test('NDSL sees 2 assigned students (Eager, Unlucky)', async ({ ndslHeadPage }) => {
       await ndslHeadPage.goto('/dashboard/lab/');
       // Expand the draft accordion to reveal members
-      await ndslHeadPage.getByRole('button', { name: /Draft 1/u }).click();
+      await getDraftAccordionTrigger(ndslHeadPage, '1').click();
       await expect(ndslHeadPage.getByText(/Eager/u)).toBeVisible();
       await expect(ndslHeadPage.getByText(/Unlucky/u)).toBeVisible();
     });
 
     test('CSL sees 2 assigned students (Patient, PartialToDrafted)', async ({ cslHeadPage }) => {
       await cslHeadPage.goto('/dashboard/lab/');
-      await cslHeadPage.getByRole('button', { name: /Draft 1/u }).click();
+      await getDraftAccordionTrigger(cslHeadPage, '1').click();
       await expect(cslHeadPage.getByText(/Patient/u)).toBeVisible();
       await expect(cslHeadPage.getByText(/Partial/u)).toBeVisible();
     });
   });
 
   test.describe('Second Draft — Archive And Setup', () => {
-    test.describe('ACL archival before Draft #2', () => {
+    test.describe('ACL archival before second draft', () => {
       test('archives ACL', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/labs/');
 
@@ -2748,7 +2762,7 @@ test.describe('Draft Lifecycle', () => {
       });
     });
 
-    test('creates Draft #2 with 2 rounds', async ({ adminPage }) => {
+    test('creates second draft with 2 rounds', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/');
       await adminPage.getByRole('button', { name: 'Create Draft' }).click();
 
@@ -2768,7 +2782,7 @@ test.describe('Draft Lifecycle', () => {
       const responseData = await response.json();
       expect(responseData.type).toBe('success');
 
-      await expect(adminPage.getByText('#2')).toBeVisible();
+      await expect(getDraftRow(adminPage, '2').locator('td').first()).toHaveText(/\d{4}/u);
       await expect(adminPage.getByText('Registration')).toBeVisible();
     });
 
@@ -2941,20 +2955,20 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('Second Draft — History During Registration', () => {
-    test('history shows Draft #2 in registration phase', async ({ page }) => {
+    test('history shows draft year in registration phase', async ({ page }) => {
       await page.goto('/history/');
-      await expect(page.getByText('Draft #2')).toBeVisible();
+      await expect(getHistoryDraft(page, '2')).toContainText(draftYearPattern);
       await expect(page.getByText('currently waiting for students to register')).toBeVisible();
     });
 
-    test('Draft #2 detail shows registration status', async ({ page }) => {
+    test('second draft detail shows registration status', async ({ page }) => {
       await page.goto('/history/2/');
       await expect(page.getByText('registration stage')).toBeVisible();
     });
   });
 
   test.describe('Second Draft — Regular Flow (No Lottery Assignments)', () => {
-    test('updates Draft #2 initial snapshots before start', async ({ adminPage }) => {
+    test('updates second draft initial snapshots before start', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
       await expect(adminPage.getByText('Registered Students', { exact: true })).toBeVisible();
       await expect(adminPage.getByText('Current Draft Participants')).toBeVisible();
@@ -2976,7 +2990,7 @@ test.describe('Draft Lifecycle', () => {
       expect(responseData.type).toBe('success');
     });
 
-    test('starts Draft #2', async ({ adminPage }) => {
+    test('starts second draft', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
       await expect(adminPage.getByText('Registered Students', { exact: true })).toBeVisible();
       await expect(adminPage.getByText('Current Draft Participants')).toBeVisible();
@@ -2992,7 +3006,7 @@ test.describe('Draft Lifecycle', () => {
       await expect(adminPage.getByText(/Round 1/u).first()).toBeVisible();
     });
 
-    test('Draft #2 round-1 auto-acks show correct callouts', async ({
+    test('second draft round-1 auto-acks show correct callouts', async ({
       sclHeadPage,
       cvmilHeadPage,
     }) => {
@@ -3012,7 +3026,7 @@ test.describe('Draft Lifecycle', () => {
       await expect(aclHeadPage.getByText('Lab Excluded from This Draft')).toBeVisible();
     });
 
-    test('archives CSL while Draft #2 is active', async ({ adminPage }) => {
+    test('archives CSL while second draft is active', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/labs/');
 
       const cslRow = adminPage
@@ -3077,12 +3091,12 @@ test.describe('Draft Lifecycle', () => {
       );
     });
 
-    test('Draft #2 reaches Round 2', async ({ adminPage }) => {
+    test('second draft reaches Round 2', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
       await expect(adminPage.getByText(/Round 2/u).first()).toBeVisible();
     });
 
-    test('Draft #2 round-2 auto-acks show correct callouts', async ({
+    test('second draft round-2 auto-acks show correct callouts', async ({
       cvmilHeadPage,
       ndslHeadPage,
       cslHeadPage,
@@ -3145,7 +3159,7 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('Second Draft — Lottery And Finalization', () => {
-    test('sets lottery snapshots to zero for Draft #2', async ({ adminPage }) => {
+    test('sets lottery snapshots to zero for second draft', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
       await expect(adminPage.locator('main')).toBeVisible();
       await adminPage.getByRole('button', { name: 'Edit Lottery Quota' }).click();
@@ -3166,7 +3180,7 @@ test.describe('Draft Lifecycle', () => {
       }
     });
 
-    test('runs lottery for Draft #2', async ({ adminPage }) => {
+    test('runs lottery for second draft', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
 
       adminPage.on('dialog', dialog => dialog.accept());
@@ -3178,7 +3192,7 @@ test.describe('Draft Lifecycle', () => {
       expect(concludeResponseData.type).toBe('success');
     });
 
-    test('enters review phase with finalize action for Draft #2', async ({ adminPage }) => {
+    test('enters review phase with finalize action for second draft', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
       await expect(adminPage.getByText(/Started .* · Review/u)).toBeVisible();
       await expect(adminPage.getByRole('heading', { name: 'Review Phase' })).toHaveCount(0);
@@ -3187,7 +3201,7 @@ test.describe('Draft Lifecycle', () => {
       await expect(adminPage.getByRole('button', { name: 'Finalize Draft' })).toBeVisible();
     });
 
-    test('finalizes Draft #2', async ({ adminPage }) => {
+    test('finalizes second draft', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
       adminPage.on('dialog', dialog => dialog.accept());
 
@@ -3200,7 +3214,7 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('Second Draft — Dashboard And History Verification', () => {
-    test('admin finalized breakdown is correct for Draft #2', async ({ adminPage }) => {
+    test('admin finalized breakdown is correct for second draft', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
 
       await expect(adminPage.locator('#stat-total-students')).toHaveText('3');
@@ -3224,7 +3238,9 @@ test.describe('Draft Lifecycle', () => {
       );
     });
 
-    test('keeps lottery results sheet available in finalized Draft #1', async ({ adminPage }) => {
+    test('keeps lottery results sheet available in finalized first draft', async ({
+      adminPage,
+    }) => {
       await adminPage.goto('/dashboard/drafts/1/');
       await adminPage.getByRole('button', { name: 'Lottery' }).click();
 
@@ -3240,10 +3256,10 @@ test.describe('Draft Lifecycle', () => {
     });
 
     test.describe('drafts table and history', () => {
-      test('drafts table lists Draft #2 and Draft #1', async ({ adminPage }) => {
+      test('drafts table lists draft years', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/drafts/');
-        await expect(adminPage.getByText('#2')).toBeVisible();
-        await expect(adminPage.getByText('#1')).toBeVisible();
+        await expect(getDraftRow(adminPage, '1').locator('td').first()).toHaveText(/\d{4}/u);
+        await expect(getDraftRow(adminPage, '2').locator('td').first()).toHaveText(/\d{4}/u);
       });
 
       test('drafts table shows both drafts as finalized', async ({ adminPage }) => {
@@ -3251,19 +3267,19 @@ test.describe('Draft Lifecycle', () => {
         await expect(adminPage.getByText('Finalized')).toHaveCount(2);
       });
 
-      test('history index reflects Draft #2 2-round finalization', async ({ page }) => {
+      test('history index reflects second draft 2-round finalization', async ({ page }) => {
         await page.goto('/history/');
-        await expect(page.getByText('Draft #2')).toBeVisible();
+        await expect(getHistoryDraft(page, '2')).toContainText(draftYearPattern);
         await expect(page.getByText(/over 2 rounds/u)).toBeVisible();
       });
 
-      test('Draft #2 detail shows finalized status', async ({ page }) => {
+      test('second draft detail shows finalized status', async ({ page }) => {
         await page.goto('/history/2/');
         await expect(page.getByText(/was held from/u)).toBeVisible();
         await expect(page.getByText(/over 2 rounds/u)).toBeVisible();
       });
 
-      test('Draft #2 detail timeline has round ordering without lottery events', async ({
+      test('second draft detail timeline has round ordering without lottery events', async ({
         page,
       }) => {
         await page.goto('/history/2/');
@@ -3292,7 +3308,7 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('Second Draft — Archived Lab Read Models', () => {
-    test('CSL appears in archived labs after Draft #2 finalization', async ({ adminPage }) => {
+    test('CSL appears in archived labs after second draft finalization', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/labs/');
       await adminPage.getByRole('tab', { name: /Archived Labs/u }).click();
       await expect(adminPage.getByText('Computer Security Laboratory')).toBeVisible();
@@ -3337,22 +3353,22 @@ test.describe('Draft Lifecycle', () => {
       ).toBeVisible();
     });
 
-    test.describe('Draft #2 faculty views', () => {
+    test.describe('second draft faculty views', () => {
       test('NDSL head can view assignees', async ({ ndslHeadPage }) => {
         await ndslHeadPage.goto('/dashboard/lab/');
-        await ndslHeadPage.getByRole('button', { name: /Draft 2/u }).click();
+        await getDraftAccordionTrigger(ndslHeadPage, '2').click();
         await expect(ndslHeadPage.getByText(/SecondNdsl/u)).toBeVisible();
       });
 
       test('CSL head can view assignees', async ({ cslHeadPage }) => {
         await cslHeadPage.goto('/dashboard/lab/');
-        await cslHeadPage.getByRole('button', { name: /Draft 2/u }).click();
+        await getDraftAccordionTrigger(cslHeadPage, '2').click();
         await expect(cslHeadPage.getByText(/SecondCsl/u)).toBeVisible();
       });
 
       test('SCL head can view assignees', async ({ sclHeadPage }) => {
         await sclHeadPage.goto('/dashboard/lab/');
-        await sclHeadPage.getByRole('button', { name: /Draft 2/u }).click();
+        await getDraftAccordionTrigger(sclHeadPage, '2').click();
         await expect(sclHeadPage.getByText(/SecondScl/u)).toBeVisible();
       });
     });
@@ -3369,7 +3385,7 @@ test.describe('Draft Lifecycle', () => {
 
     test.describe('Closed Registration', () => {
       test.describe('Allowlist', () => {
-        test('creates Draft #3 with a past registration close', async ({ adminPage }) => {
+        test('creates third draft with a past registration close', async ({ adminPage }) => {
           await adminPage.goto('/dashboard/drafts/');
           await adminPage.getByRole('button', { name: 'Create Draft' }).click();
 
@@ -3502,7 +3518,7 @@ test.describe('Draft Lifecycle', () => {
     });
 
     test.describe('Zero Quota Flow', () => {
-      test('starts Draft #3 and reaches interventions through the regular flow', async ({
+      test('starts third draft and reaches interventions through the regular flow', async ({
         adminPage,
       }) => {
         await adminPage.goto(draftDetailPath());
@@ -3520,7 +3536,7 @@ test.describe('Draft Lifecycle', () => {
         await expect(adminPage.getByRole('heading', { name: 'Interventions' })).toBeVisible();
       });
 
-      test('runs lottery for Draft #3 with zero quota', async ({ adminPage }) => {
+      test('runs lottery for third draft with zero quota', async ({ adminPage }) => {
         await adminPage.goto(draftDetailPath());
         adminPage.on('dialog', dialog => dialog.accept());
 
@@ -3536,7 +3552,7 @@ test.describe('Draft Lifecycle', () => {
         await expect(adminPage.getByRole('button', { name: 'Finalize Draft' })).toBeVisible();
       });
 
-      test('finalizes Draft #3 with zero assignments', async ({ adminPage }) => {
+      test('finalizes third draft with zero assignments', async ({ adminPage }) => {
         await adminPage.goto(draftDetailPath());
         adminPage.on('dialog', dialog => dialog.accept());
 

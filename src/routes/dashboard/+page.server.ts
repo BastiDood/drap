@@ -8,6 +8,7 @@ import { error, fail, redirect } from '@sveltejs/kit';
 
 import * as schema from '$lib/server/database/schema';
 import { assertOptional, assertSingle } from '$lib/server/assert';
+import { coerceNumber } from '$lib/coerce';
 import { db } from '$lib/server/database';
 import {
   type DbConnection,
@@ -309,9 +310,14 @@ export const actions = {
             logger.info('dispatching email event...');
             switch (parsed.event) {
               case 'draft/round.started.email.batch': {
+                const draftYear = await getDraftYear(db, parsed.draftId);
+                if (typeof draftYear === 'undefined') {
+                  logger.fatal('unknown draft id', void 0, { 'draft.id': parsed.draftId });
+                  return fail(404, { message: 'Draft is not found in the database.' });
+                }
+
                 let givenName: string;
                 let familyName: string;
-
                 try {
                   ({ givenName, familyName } = await getUserNameByEmail(db, parsed.recipientEmail));
                 } catch (err) {
@@ -321,9 +327,11 @@ export const actions = {
                   }
                   throw err;
                 }
+
                 await inngest.send(
                   RoundStartedBatchEmailEvent.create({
                     draftId: parsed.draftId,
+                    draftYear,
                     round: parsed.round,
                     recipientEmail: parsed.recipientEmail,
                     recipientName: `${givenName} ${familyName}`,
@@ -332,6 +340,12 @@ export const actions = {
                 break;
               }
               case 'draft/round.submitted.email.batch': {
+                const draftYear = await getDraftYear(db, parsed.draftId);
+                if (typeof draftYear === 'undefined') {
+                  logger.fatal('unknown draft id', void 0, { 'draft.id': parsed.draftId });
+                  return fail(404, { message: 'Draft is not found in the database.' });
+                }
+
                 let labName: string;
                 try {
                   ({ name: labName } = await getLabById(db, parsed.labId));
@@ -342,9 +356,11 @@ export const actions = {
                   }
                   throw err;
                 }
+
                 await inngest.send(
                   RoundSubmittedBatchEmailEvent.create({
                     draftId: parsed.draftId,
+                    draftYear,
                     round: parsed.round,
                     labId: parsed.labId,
                     labName,
@@ -355,6 +371,12 @@ export const actions = {
                 break;
               }
               case 'draft/lottery.intervened.email.batch': {
+                const draftYear = await getDraftYear(db, parsed.draftId);
+                if (typeof draftYear === 'undefined') {
+                  logger.fatal('unknown draft id', void 0, { 'draft.id': parsed.draftId });
+                  return fail(404, { message: 'Draft is not found in the database.' });
+                }
+
                 let labName: string;
                 try {
                   ({ name: labName } = await getLabById(db, parsed.labId));
@@ -403,6 +425,7 @@ export const actions = {
                 await inngest.send(
                   LotteryInterventionBatchEmailEvent.create({
                     draftId: parsed.draftId,
+                    draftYear,
                     labId: parsed.labId,
                     labName,
                     studentName: `${studentGivenName} ${studentFamilyName}`,
@@ -415,9 +438,14 @@ export const actions = {
                 break;
               }
               case 'draft/draft.concluded.email.batch': {
+                const draftYear = await getDraftYear(db, parsed.draftId);
+                if (typeof draftYear === 'undefined') {
+                  logger.fatal('unknown draft id', void 0, { 'draft.id': parsed.draftId });
+                  return fail(404, { message: 'Draft is not found in the database.' });
+                }
+
                 let givenName: string;
                 let familyName: string;
-
                 try {
                   ({ givenName, familyName } = await getUserNameByEmail(db, parsed.recipientEmail));
                 } catch (err) {
@@ -477,6 +505,7 @@ export const actions = {
                 await inngest.send(
                   DraftConcludedBatchEmailEvent.create({
                     draftId: parsed.draftId,
+                    draftYear,
                     recipientEmail: parsed.recipientEmail,
                     recipientName: `${givenName} ${familyName}`,
                     lotteryAssignments,
@@ -485,9 +514,14 @@ export const actions = {
                 break;
               }
               case 'draft/draft.finalization.email.batch': {
+                const draftYear = await getDraftYear(db, parsed.draftId);
+                if (typeof draftYear === 'undefined') {
+                  logger.fatal('unknown draft id', void 0, { 'draft.id': parsed.draftId });
+                  return fail(404, { message: 'Draft is not found in the database.' });
+                }
+
                 let givenName: string;
                 let familyName: string;
-
                 try {
                   ({ givenName, familyName } = await getUserNameByEmail(db, parsed.recipientEmail));
                 } catch (err) {
@@ -497,9 +531,11 @@ export const actions = {
                   }
                   throw err;
                 }
+
                 await inngest.send(
                   DraftFinalizationBatchEmailEvent.create({
                     draftId: parsed.draftId,
+                    draftYear,
                     recipientEmail: parsed.recipientEmail,
                     recipientName: `${givenName} ${familyName}`,
                   }),
@@ -647,6 +683,23 @@ async function getUserNameByEmail(db: DbConnection, email: string) {
       .from(schema.user)
       .where(eq(schema.user.email, email))
       .then(assertSingle);
+  });
+}
+
+async function getDraftYear(db: DbConnection, draftId: number) {
+  return await tracer.asyncSpan('get-draft-year', async span => {
+    span.setAttribute('database.draft.id', draftId);
+    const draft = await db
+      .select({
+        draftYear: sql`extract(year from lower(${schema.draft.activePeriod}))`.mapWith(
+          coerceNumber,
+        ),
+      })
+      .from(schema.draft)
+      .where(eq(schema.draft.id, BigInt(draftId)))
+      .then(assertOptional);
+
+    return draft?.draftYear;
   });
 }
 

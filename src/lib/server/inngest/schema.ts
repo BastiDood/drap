@@ -6,6 +6,7 @@ const EmailAttempt = v.optional(v.pipe(v.number(), v.integer(), v.minValue(0)));
 export const RoundStartedBatchEmailEvent = eventType('draft/round.started.email.batch', {
   schema: v.object({
     draftId: v.number(),
+    draftYear: v.number(),
     round: v.nullable(v.number()),
     recipientEmail: v.string(),
     recipientName: v.string(),
@@ -18,6 +19,7 @@ export const RoundStartedFallbackEmailEvent = eventType('draft/round.started.ema
   schema: v.object({
     id: v.string(),
     draftId: v.number(),
+    draftYear: v.number(),
     round: v.nullable(v.number()),
     recipientEmail: v.string(),
     recipientName: v.string(),
@@ -30,6 +32,7 @@ export type RoundStartedFallbackEmailSchema = v.InferOutput<
 export const RoundSubmittedBatchEmailEvent = eventType('draft/round.submitted.email.batch', {
   schema: v.object({
     draftId: v.number(),
+    draftYear: v.number(),
     round: v.number(),
     labId: v.string(),
     labName: v.string(),
@@ -46,6 +49,7 @@ export const RoundSubmittedFallbackEmailEvent = eventType('draft/round.submitted
   schema: v.object({
     id: v.string(),
     draftId: v.number(),
+    draftYear: v.number(),
     round: v.number(),
     labId: v.string(),
     labName: v.string(),
@@ -62,6 +66,7 @@ export const LotteryInterventionBatchEmailEvent = eventType(
   {
     schema: v.object({
       draftId: v.number(),
+      draftYear: v.number(),
       labId: v.string(),
       labName: v.string(),
       studentName: v.string(),
@@ -83,6 +88,7 @@ export const LotteryInterventionFallbackEmailEvent = eventType(
     schema: v.object({
       id: v.string(),
       draftId: v.number(),
+      draftYear: v.number(),
       labId: v.string(),
       labName: v.string(),
       studentName: v.string(),
@@ -100,6 +106,7 @@ export type LotteryInterventionFallbackEmailSchema = v.InferOutput<
 export const DraftConcludedBatchEmailEvent = eventType('draft/draft.concluded.email.batch', {
   schema: v.object({
     draftId: v.number(),
+    draftYear: v.number(),
     recipientEmail: v.string(),
     recipientName: v.string(),
     lotteryAssignments: v.array(
@@ -122,6 +129,7 @@ export const DraftConcludedFallbackEmailEvent = eventType('draft/draft.concluded
   schema: v.object({
     id: v.string(),
     draftId: v.number(),
+    draftYear: v.number(),
     recipientEmail: v.string(),
     recipientName: v.string(),
     lotteryAssignments: v.array(
@@ -142,6 +150,7 @@ export type DraftConcludedFallbackEmailSchema = v.InferOutput<
 export const DraftFinalizationBatchEmailEvent = eventType('draft/draft.finalization.email.batch', {
   schema: v.object({
     draftId: v.number(),
+    draftYear: v.number(),
     recipientEmail: v.string(),
     recipientName: v.string(),
     attempt: EmailAttempt,
@@ -157,6 +166,7 @@ export const DraftFinalizationFallbackEmailEvent = eventType(
     schema: v.object({
       id: v.string(),
       draftId: v.number(),
+      draftYear: v.number(),
       recipientEmail: v.string(),
       recipientName: v.string(),
     }),

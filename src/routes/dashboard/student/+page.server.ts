@@ -9,7 +9,6 @@ import { MaxBufferError } from 'get-stream';
 
 import * as schema from '$lib/server/database/schema';
 import { assertOptional, assertSingle } from '$lib/server/assert';
-import { coerceDate, coerceNullableDate } from '$lib/coerce';
 import { db } from '$lib/server/database';
 import {
   type DbConnection,
@@ -407,8 +406,6 @@ async function getDraftByIdForShare(db: DrizzleTransaction, id: bigint) {
         maxRounds: schema.draft.maxRounds,
         registrationClosedAt: schema.draft.registrationClosedAt,
         isRegistrationClosed,
-        activePeriodStart: sql`lower(${schema.draft.activePeriod})`.mapWith(coerceDate),
-        activePeriodEnd: sql`upper(${schema.draft.activePeriod})`.mapWith(coerceNullableDate),
       })
       .from(schema.draft)
       .where(eq(schema.draft.id, id))

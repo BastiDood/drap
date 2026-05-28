@@ -6,11 +6,11 @@
   interface Props {
     labName: string;
     round: number;
-    draftId: number;
+    draftYear: number;
     isCreate: boolean;
   }
 
-  const { labName, round, draftId, isCreate }: Props = $props();
+  const { labName, round, draftYear, isCreate }: Props = $props();
 </script>
 
 <EmailLayout
@@ -27,8 +27,8 @@
         The <strong>{labName}</strong>
         {isCreate ? 'has submitted' : 'has updated'}
         their student preferences for
-        <strong>Round #{round}</strong> of Draft
-        <strong>#{draftId}</strong>.
+        <strong>Round #{round}</strong> of
+        <strong>Draft {draftYear}</strong>.
       </Text>
       {#if isCreate}
         <Text class="text-base">

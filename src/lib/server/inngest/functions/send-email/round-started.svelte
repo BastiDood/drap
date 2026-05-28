@@ -6,17 +6,17 @@
   import EmailLayout from './email-layout.svelte';
 
   interface Props {
-    draftId: number;
+    draftYear: number;
     round: number | null;
   }
 
-  const { draftId, round }: Props = $props();
+  const { draftYear, round }: Props = $props();
 </script>
 
 <EmailLayout
   preview={round === null
-    ? `Lottery round started - Draft #${draftId}`
-    : `Round #${round} started - Draft #${draftId}`}
+    ? `Lottery round started - Draft ${draftYear}`
+    : `Round #${round} started - Draft ${draftYear}`}
 >
   <Section>
     <Section class="p-4">
@@ -30,11 +30,11 @@
       <Text class="text-base">Hello,</Text>
       {#if round === null}
         <Text class="text-base">
-          The <strong>lottery round</strong> for Draft <strong>#{draftId}</strong> has begun.
+          The <strong>lottery round</strong> for <strong>Draft {draftYear}</strong> has begun.
         </Text>
       {:else}
         <Text class="text-base">
-          <strong>Round #{round}</strong> for Draft <strong>#{draftId}</strong> has begun.
+          <strong>Round #{round}</strong> for <strong>Draft {draftYear}</strong> has begun.
         </Text>
       {/if}
     </Section>

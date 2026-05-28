@@ -66,6 +66,7 @@
     lotteryAggregate,
   }: Props = $props();
   const draftId = $derived(rawDraftId.toString());
+  const draftYear = $derived(draft.activePeriodStart.getFullYear());
 
   // Determine current phase
   const currentPhase = $derived(getDraftPhase(draft));
@@ -118,7 +119,7 @@
   <div class="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
     <div>
       <h2 class="flex items-center gap-2 text-2xl font-bold">
-        <span>Draft #{draftId.toString()}</span>
+        <span>Draft {draftYear}</span>
         <Badge>{draft.maxRounds} Rounds</Badge>
       </h2>
       <p class="text-muted-foreground">
