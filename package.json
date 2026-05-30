@@ -33,11 +33,11 @@
     "ui": "shadcn-svelte add --yes"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1055.0",
+    "@aws-sdk/client-s3": "^3.1056.0",
     "@better-svelte-email/components": "^2.1.1",
     "@better-svelte-email/server": "^2.1.1",
-    "@internationalized/date": "^3.12.1",
-    "@lucide/svelte": "^1.16.0",
+    "@internationalized/date": "^3.12.2",
+    "@lucide/svelte": "^1.17.0",
     "@opentelemetry/exporter-trace-otlp-http": "^0.218.0",
     "@opentelemetry/instrumentation-aws-sdk": "^0.73.0",
     "@opentelemetry/instrumentation-http": "^0.218.0",
@@ -61,7 +61,7 @@
     "get-stream": "^9.0.1",
     "http-parser-js": "^0.5.10",
     "http-raw-request": "^2.0.2",
-    "inngest": "^4.4.0",
+    "inngest": "^4.5.0",
     "itertools": "^2.7.1",
     "jose": "^6.2.3",
     "layerchart": "2.0.0-next.64",
