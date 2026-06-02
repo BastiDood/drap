@@ -90,7 +90,7 @@
       <br />
       <span><Link href="tel:+89818500">(02) 8981 8500</Link> loc. 3231</span>
       <br />
-      <Link href="mailto:info@dcs.upd.edu.ph">info@dcs.upd.edu.ph</Link>
+      <Link href="mailto:dcs.upd@up.edu.ph">dcs.upd@up.edu.ph</Link>
       <br />
     </address>
     <p>
