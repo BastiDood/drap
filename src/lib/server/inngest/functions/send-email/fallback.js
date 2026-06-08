@@ -96,9 +96,9 @@ export const sendEmailFallback = inngest.createFunction(
                             db,
                             result.threadId,
                             messageId,
+                            BigInt(event.data.draftId),
                             subject,
                             recipient.addr,
-                            BigInt(event.data.draftId),
                           );
                       }
                     }

@@ -168,9 +168,9 @@ export const sendBatchedEmails = inngest.createFunction(
                                 db,
                                 result.value.threadId,
                                 messageId,
+                                BigInt(event.data.draftId),
                                 subject,
                                 recipient.addr,
-                                BigInt(event.data.draftId),
                               );
                           }
                         }

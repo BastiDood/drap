@@ -518,9 +518,9 @@ export async function createEmailThread(
   db: DbConnection,
   emailThreadId: string,
   messageId: string,
+  draftId: bigint,
   emailSubject: string,
   recipientEmail: string,
-  draftId: bigint,
 ) {
   return await tracer.asyncSpan('create-email-thread', async () => {
     return await db
@@ -528,9 +528,9 @@ export async function createEmailThread(
       .values({
         emailThreadId,
         messageIds: messageId,
+        draftId,
         emailSubject,
         recipientEmail,
-        draftId,
       })
       .returning({
         emailThreadId: schema.emailThread.emailThreadId,
