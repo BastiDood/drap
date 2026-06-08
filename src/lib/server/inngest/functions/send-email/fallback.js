@@ -68,39 +68,42 @@ export const sendEmailFallback = inngest.createFunction(
             });
 
             // Create/update the email thread
-            const updateResult = await addEmailToThread(db, result.threadId, result.id);
-            if (updateResult.length === 0) {
-              const subject = message.getSubject();
-              const recipients = message.getRecipients();
-              const sender = message.getSender();
+            try {
+              if ('draftId' in event.data) {
+                const updateResult = await addEmailToThread(db, result.threadId, result.id);
+                if (updateResult.length === 0) {
+                  const subject = message.getSubject();
+                  const recipients = message.getRecipients();
 
-              if (
-                typeof subject !== 'undefined' &&
-                typeof recipients !== 'undefined' &&
-                typeof sender !== 'undefined' &&
-                'draftId' in event.data
-              )
-                if (Array.isArray(recipients))
-                  for (const recipient of recipients)
-                    await createEmailThread(
-                      db,
-                      result.threadId,
-                      result.id,
-                      subject,
-                      recipient.addr,
-                      sender.addr,
-                      BigInt(event.data.draftId),
-                    );
-                else
-                  await createEmailThread(
-                    db,
-                    result.threadId,
-                    result.id,
-                    subject,
-                    recipients.addr,
-                    sender.addr,
-                    BigInt(event.data.draftId),
-                  );
+                  if (
+                    typeof subject !== 'undefined' &&
+                    typeof recipients !== 'undefined'
+                  )
+                    if (Array.isArray(recipients))
+                      for (const recipient of recipients)
+                        await createEmailThread(
+                          db,
+                          result.threadId,
+                          result.id,
+                          subject,
+                          recipient.addr,
+                          sender.email,
+                          BigInt(event.data.draftId),
+                        );
+                    else
+                      await createEmailThread(
+                        db,
+                        result.threadId,
+                        result.id,
+                        subject,
+                        recipients.addr,
+                        sender.email,
+                        BigInt(event.data.draftId),
+                      );
+                }
+              }
+            } catch (cause) {
+              throw new NonRetriableError('failed to update email thread entry', { cause });
             }
 
             return result;
