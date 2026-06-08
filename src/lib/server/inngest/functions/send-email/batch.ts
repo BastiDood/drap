@@ -138,19 +138,21 @@ export const sendBatchedEmails = inngest.createFunction(
               // Create/update the email threads
               try {
                 if ('draftId' in event.data) {
-                  const updateResult = await addEmailToThread(
-                    db,
-                    result.value.threadId,
-                    result.value.id,
-                  );
-                  if (updateResult.length === 0) {
-                    const messageContent = messages.get(contentId);
-                    if (typeof messageContent !== 'undefined') {
-                      const { message } = messageContent;
-                      const messageIdHeader = message.getHeader('Message-ID');
+                  const messageContent = messages.get(contentId);
 
-                      if (typeof messageIdHeader !== 'undefined') {
-                        const messageId = messageIdHeader.toString();
+                  if (typeof messageContent !== 'undefined') {
+                    const { message } = messageContent;
+                    const messageIdHeader = message.getHeader('Message-ID');
+
+                    if (typeof messageIdHeader !== 'undefined') {
+                      const messageId = messageIdHeader.toString();
+                      const updateResult = await addEmailToThread(
+                        db,
+                        result.value.threadId,
+                        messageId,
+                      );
+
+                      if (updateResult.length === 0) {
                         const subject = message.getSubject();
                         const recipients = message.getRecipients();
                         const sender = message.getSender();

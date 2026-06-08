@@ -70,12 +70,13 @@ export const sendEmailFallback = inngest.createFunction(
             // Create/update the email thread
             try {
               if ('draftId' in event.data) {
-                const updateResult = await addEmailToThread(db, result.threadId, result.id);
-                if (updateResult.length === 0) {
-                  const messageIdHeader = message.getHeader('Message-ID');
+                const messageIdHeader = message.getHeader('Message-ID');
 
-                  if (typeof messageIdHeader !== 'undefined') {
-                    const messageId = messageIdHeader.toString();
+                if (typeof messageIdHeader !== 'undefined') {
+                  const messageId = messageIdHeader.toString();
+                  const updateResult = await addEmailToThread(db, result.threadId, messageId);
+
+                  if (updateResult.length === 0) {
                     const subject = message.getSubject();
                     const recipients = message.getRecipients();
 
