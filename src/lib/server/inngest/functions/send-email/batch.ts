@@ -159,7 +159,8 @@ export const sendBatchedEmails = inngest.createFunction(
                           for (const recipient of iterableRecipients) {
                             const updateResult = await addEmailToThread(
                               db,
-                              result.value.threadId,
+                              BigInt(event.data.draftId),
+                              subject,
                               recipient.addr,
                               messageId,
                             );

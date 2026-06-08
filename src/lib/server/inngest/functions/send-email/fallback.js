@@ -87,7 +87,8 @@ export const sendEmailFallback = inngest.createFunction(
                       for (const recipient of iterableRecipients) {
                         const updateResult = await addEmailToThread(
                           db,
-                          result.threadId,
+                          BigInt(event.data.draftId),
+                          subject,
                           recipient.addr,
                           messageId,
                         );

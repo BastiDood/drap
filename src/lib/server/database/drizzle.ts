@@ -491,7 +491,8 @@ export async function getEmailThreadData(
 
 export async function addEmailToThread(
   db: DbConnection,
-  emailThreadId: string,
+  draftId: bigint,
+  emailSubject: string,
   recipientEmail: string,
   messageId: string,
 ) {
@@ -503,7 +504,8 @@ export async function addEmailToThread(
       })
       .where(
         and(
-          eq(schema.emailThread.emailThreadId, emailThreadId),
+          eq(schema.emailThread.draftId, draftId),
+          eq(schema.emailThread.emailSubject, emailSubject),
           eq(schema.emailThread.recipientEmail, recipientEmail),
         ),
       )
