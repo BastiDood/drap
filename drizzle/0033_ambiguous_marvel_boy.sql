@@ -1,0 +1,1 @@
+ALTER TABLE "email"."email_thread" ALTER COLUMN "email_thread_id" SET DATA TYPE text;

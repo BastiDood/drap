@@ -39,7 +39,7 @@ export const emailThread = email.table(
   'email_thread',
   {
     // GMail thread ID
-    emailThreadId: ulid('email_thread_id').notNull(),
+    emailThreadId: text('email_thread_id').notNull(),
     // Store the message IDs of the emails in the chain in a space-delimited string
     // Assume that the system is replying to itself
     messageIds: text('message_ids').notNull(),
