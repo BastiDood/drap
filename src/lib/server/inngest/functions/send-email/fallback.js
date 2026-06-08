@@ -72,34 +72,39 @@ export const sendEmailFallback = inngest.createFunction(
               if ('draftId' in event.data) {
                 const updateResult = await addEmailToThread(db, result.threadId, result.id);
                 if (updateResult.length === 0) {
-                  const subject = message.getSubject();
-                  const recipients = message.getRecipients();
+                  const messageIdHeader = message.getHeader('Message-ID');
 
-                  if (
-                    typeof subject !== 'undefined' &&
-                    typeof recipients !== 'undefined'
-                  )
-                    if (Array.isArray(recipients))
-                      for (const recipient of recipients)
+                  if (typeof messageIdHeader !== 'undefined') {
+                    const messageId = messageIdHeader.toString();
+                    const subject = message.getSubject();
+                    const recipients = message.getRecipients();
+
+                    if (
+                      typeof subject !== 'undefined' &&
+                      typeof recipients !== 'undefined'
+                    )
+                      if (Array.isArray(recipients))
+                        for (const recipient of recipients)
+                          await createEmailThread(
+                            db,
+                            result.threadId,
+                            messageId,
+                            subject,
+                            recipient.addr,
+                            sender.email,
+                            BigInt(event.data.draftId),
+                          );
+                      else
                         await createEmailThread(
                           db,
                           result.threadId,
-                          result.id,
+                          messageId,
                           subject,
-                          recipient.addr,
+                          recipients.addr,
                           sender.email,
                           BigInt(event.data.draftId),
                         );
-                    else
-                      await createEmailThread(
-                        db,
-                        result.threadId,
-                        result.id,
-                        subject,
-                        recipients.addr,
-                        sender.email,
-                        BigInt(event.data.draftId),
-                      );
+                  }
                 }
               }
             } catch (cause) {

@@ -147,37 +147,41 @@ export const sendBatchedEmails = inngest.createFunction(
                     const messageContent = messages.get(contentId);
                     if (typeof messageContent !== 'undefined') {
                       const { message } = messageContent;
+                      const messageIdHeader = message.getHeader('Message-ID');
 
-                      const subject = message.getSubject();
-                      const recipients = message.getRecipients();
-                      const sender = message.getSender();
+                      if (typeof messageIdHeader !== 'undefined') {
+                        const messageId = messageIdHeader.toString();
+                        const subject = message.getSubject();
+                        const recipients = message.getRecipients();
+                        const sender = message.getSender();
 
-                      if (
-                        typeof subject !== 'undefined' &&
-                        typeof recipients !== 'undefined' &&
-                        typeof sender !== 'undefined'
-                      )
-                        if (Array.isArray(recipients))
-                          for (const recipient of recipients)
+                        if (
+                          typeof subject !== 'undefined' &&
+                          typeof recipients !== 'undefined' &&
+                          typeof sender !== 'undefined'
+                        )
+                          if (Array.isArray(recipients))
+                            for (const recipient of recipients)
+                              await createEmailThread(
+                                db,
+                                result.value.threadId,
+                                messageId,
+                                subject,
+                                recipient.addr,
+                                sender.addr,
+                                BigInt(event.data.draftId),
+                              );
+                          else
                             await createEmailThread(
                               db,
                               result.value.threadId,
-                              result.value.id,
+                              messageId,
                               subject,
-                              recipient.addr,
+                              recipients.addr,
                               sender.addr,
                               BigInt(event.data.draftId),
                             );
-                        else
-                          await createEmailThread(
-                            db,
-                            result.value.threadId,
-                            result.value.id,
-                            subject,
-                            recipients.addr,
-                            sender.addr,
-                            BigInt(event.data.draftId),
-                          );
+                      }
                     }
                   }
                 }
