@@ -193,7 +193,7 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
       const { emailThreadId, messageIds } = emailThreadData;
       const latestMessageId = messageIds.split(' ').pop();
 
-      if (typeof latestMessageId !== 'undefined') {
+      if (typeof latestMessageId !== 'undefined' && latestMessageId.length !== 0) {
         mime.setHeaders({
           'In-Reply-To': latestMessageId.trim(),
           References: messageIds,
