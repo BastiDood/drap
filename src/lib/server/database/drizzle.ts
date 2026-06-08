@@ -502,3 +502,30 @@ export async function addEmailToThread(db: DbConnection, emailThreadId: string, 
       });
   });
 }
+
+export async function createEmailThread(
+  db: DbConnection,
+  emailThreadId: string,
+  messageId: string,
+  emailSubject: string,
+  recipientEmail: string,
+  senderEmail: string,
+  draftId: bigint,
+) {
+  return await tracer.asyncSpan('create-email-thread', async () => {
+    return await db
+      .insert(schema.emailThread)
+      .values({
+        emailThreadId,
+        messageIds: messageId,
+        emailSubject,
+        recipientEmail,
+        senderEmail,
+        draftId,
+      })
+      .returning({
+        emailThreadId: schema.emailThread.emailThreadId,
+      })
+      .then(assertSingle);
+  });
+}
