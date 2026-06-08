@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 
 import { NonRetriableError } from 'inngest';
 
-import { addEmailToThread, createEmailThread, getActiveDraft } from '$lib/server/database/drizzle';
+import { addEmailToThread, createEmailThread } from '$lib/server/database/drizzle';
 import { db } from '$lib/server/database';
 import {
   DraftConcludedBatchEmailEvent,

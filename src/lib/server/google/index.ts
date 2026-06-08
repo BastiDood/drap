@@ -78,9 +78,10 @@ export class GoogleOAuthClient {
           Authorization: `Bearer ${this.accessToken}`,
           'Content-Type': 'application/json',
         },
-        body: (emailThreadId.length === 0)
-          ? JSON.stringify({ raw })
-          : JSON.stringify({ threadId: emailThreadId, raw }),
+        body:
+          emailThreadId.length === 0
+            ? JSON.stringify({ raw })
+            : JSON.stringify({ threadId: emailThreadId, raw }),
       });
 
       logger.trace('reading response...');
@@ -126,7 +127,7 @@ export class GoogleOAuthClient {
                 url: '/gmail/v1/users/me/messages/send',
               },
               { 'Content-Type': 'application/json' },
-              (emailThreadId.length === 0)
+              emailThreadId.length === 0
                 ? JSON.stringify({ raw: message.asEncoded() })
                 : JSON.stringify({ threadId: emailThreadId, raw: message.asEncoded() }),
             ),
