@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 
 import { NonRetriableError } from 'inngest';
 
+import { addEmailToThread, createEmailThread, getActiveDraft } from '$lib/server/database/drizzle';
+import { db } from '$lib/server/database';
 import {
   DraftConcludedBatchEmailEvent,
   DraftConcludedFallbackEmailEvent,
@@ -132,6 +134,52 @@ export const sendBatchedEmails = inngest.createFunction(
                 'email.message.internal_date': result.value.internalDate,
                 'email.message.label_ids': result.value.labelIds,
               });
+
+              // Create/update the email threads
+              const updateResult = await addEmailToThread(
+                db,
+                result.value.threadId,
+                result.value.id,
+              );
+              if (updateResult.length === 0) {
+                const messageContent = messages.get(contentId);
+                if (typeof messageContent !== 'undefined') {
+                  const { message } = messageContent;
+
+                  const subject = message.getSubject();
+                  const recipients = message.getRecipients();
+                  const sender = message.getSender();
+                  const activeDraft = await getActiveDraft(db);
+
+                  if (
+                    typeof subject !== 'undefined' &&
+                    typeof recipients !== 'undefined' &&
+                    typeof sender !== 'undefined' &&
+                    typeof activeDraft !== 'undefined'
+                  )
+                    if (Array.isArray(recipients))
+                      for (const recipient of recipients)
+                        await createEmailThread(
+                          db,
+                          result.value.threadId,
+                          result.value.id,
+                          subject,
+                          recipient.addr,
+                          sender.addr,
+                          activeDraft.id,
+                        );
+                    else
+                      await createEmailThread(
+                        db,
+                        result.value.threadId,
+                        result.value.id,
+                        subject,
+                        recipients.addr,
+                        sender.addr,
+                        activeDraft.id,
+                      );
+                }
+              }
               continue;
             }
 
