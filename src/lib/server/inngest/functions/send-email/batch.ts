@@ -149,13 +149,12 @@ export const sendBatchedEmails = inngest.createFunction(
                   const subject = message.getSubject();
                   const recipients = message.getRecipients();
                   const sender = message.getSender();
-                  const activeDraft = await getActiveDraft(db);
 
                   if (
                     typeof subject !== 'undefined' &&
                     typeof recipients !== 'undefined' &&
                     typeof sender !== 'undefined' &&
-                    typeof activeDraft !== 'undefined'
+                    'draftId' in event.data
                   )
                     if (Array.isArray(recipients))
                       for (const recipient of recipients)
@@ -166,7 +165,7 @@ export const sendBatchedEmails = inngest.createFunction(
                           subject,
                           recipient.addr,
                           sender.addr,
-                          activeDraft.id,
+                          BigInt(event.data.draftId),
                         );
                     else
                       await createEmailThread(
@@ -176,7 +175,7 @@ export const sendBatchedEmails = inngest.createFunction(
                         subject,
                         recipients.addr,
                         sender.addr,
-                        activeDraft.id,
+                        BigInt(event.data.draftId),
                       );
                 }
               }
