@@ -2,7 +2,6 @@ import assert from 'node:assert/strict';
 
 import { NonRetriableError } from 'inngest';
 
-import { addEmailToThread, createEmailThread } from '$lib/server/database/drizzle';
 import { db } from '$lib/server/database';
 import {
   DraftConcludedBatchEmailEvent,
@@ -24,6 +23,7 @@ import { GmailError, GmailScopeError } from '$lib/server/google';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import { upsertEmailThread } from '$lib/server/database/drizzle';
 
 import { createEmailMessage, getRefreshedCredentials, isRetryableGmailStatus } from './shared';
 
@@ -157,22 +157,14 @@ export const sendBatchedEmails = inngest.createFunction(
                             : [recipients];
 
                           for (const recipient of iterableRecipients) {
-                            const updateResult = await addEmailToThread(
+                            await upsertEmailThread(
                               db,
+                              result.value.threadId,
+                              messageId,
                               BigInt(event.data.draftId),
                               subject,
                               recipient.addr,
-                              messageId,
                             );
-                            if (typeof updateResult === 'undefined')
-                              await createEmailThread(
-                                db,
-                                result.value.threadId,
-                                messageId,
-                                BigInt(event.data.draftId),
-                                subject,
-                                recipient.addr,
-                              );
                           }
                         }
                       }

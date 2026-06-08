@@ -494,39 +494,7 @@ export async function getEmailThreadData(
   });
 }
 
-export async function addEmailToThread(
-  db: DbConnection,
-  draftId: bigint,
-  emailSubject: string,
-  recipientEmail: string,
-  messageId: string,
-) {
-  return await tracer.asyncSpan('add-email-to-thread', async span => {
-    span.setAttributes({
-      'database.email_thread.draft_id': draftId.toString(),
-      'database.email_thread.email_subject': emailSubject,
-      'database.email_thread.recipient_email': recipientEmail,
-    });
-    return await db
-      .update(schema.emailThread)
-      .set({
-        messageIdsStr: sql<string>`${schema.emailThread.messageIdsStr} || ${` ${messageId}`}`,
-      })
-      .where(
-        and(
-          eq(schema.emailThread.draftId, draftId),
-          eq(schema.emailThread.emailSubject, emailSubject),
-          eq(schema.emailThread.recipientEmail, recipientEmail),
-        ),
-      )
-      .returning({
-        emailThreadId: schema.emailThread.emailThreadId,
-      })
-      .then(assertOptional);
-  });
-}
-
-export async function createEmailThread(
+export async function upsertEmailThread(
   db: DbConnection,
   emailThreadId: string,
   messageId: string,
@@ -534,7 +502,7 @@ export async function createEmailThread(
   emailSubject: string,
   recipientEmail: string,
 ) {
-  return await tracer.asyncSpan('create-email-thread', async span => {
+  return await tracer.asyncSpan('upsert-email-thread', async span => {
     span.setAttributes({
       'database.email_thread.draft_id': draftId.toString(),
       'database.email_thread.email_subject': emailSubject,
@@ -548,6 +516,12 @@ export async function createEmailThread(
         draftId,
         emailSubject,
         recipientEmail,
+      })
+      .onConflictDoUpdate({
+        target: [schema.emailThread.draftId, schema.emailThread.emailSubject, schema.emailThread.recipientEmail],
+        set: {
+          messageIdsStr: sql<string>`${schema.emailThread.messageIdsStr} || ${` ${messageId}`}`,
+        },
       })
       .returning({
         emailThreadId: schema.emailThread.emailThreadId,
