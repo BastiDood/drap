@@ -495,6 +495,7 @@ export async function addEmailToThread(db: DbConnection, emailThreadId: string, 
       .update(schema.emailThread)
       .set({
         messageIds: sql<string>`${schema.emailThread.messageIds} || ${` ${messageId}`}`,
+        updatedAt: sql`now()`,
       })
       .where(eq(schema.emailThread.emailThreadId, emailThreadId))
       .returning({
