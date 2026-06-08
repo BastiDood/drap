@@ -471,7 +471,12 @@ export async function getEmailThreadData(
   emailSubject: string,
   recipientEmail: string,
 ) {
-  return await tracer.asyncSpan('get-email-thread-data', async () => {
+  return await tracer.asyncSpan('get-email-thread-data', async span => {
+    span.setAttributes({
+      'database.email_thread.draft_id': draftId.toString(),
+      'database.email_thread.email_subject': emailSubject,
+      'database.email_thread.recipient_email': recipientEmail,
+    });
     return await db
       .select({
         emailThreadId: schema.emailThread.emailThreadId,
