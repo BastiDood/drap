@@ -5,8 +5,6 @@ import { Component, Multipart } from 'multipart-ts';
 import type { MIMEMessage } from 'mimetext/node';
 import { parse } from 'valibot';
 
-import { addEmailToThread, createEmailThread, getActiveDraft } from '$lib/server/database/drizzle';
-import { db } from '$lib/server/database';
 import { Logger } from '$lib/server/telemetry/logger';
 import { OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET } from '$lib/server/env/google';
 import { Tracer } from '$lib/server/telemetry/tracer';
@@ -96,41 +94,6 @@ export class GoogleOAuthClient {
             'email.message.label_ids': result.labelIds,
             'email.message.internal_date': result.internalDate,
           });
-
-          // Create/update the email thread
-          const updateResult = await addEmailToThread(db, result.threadId, result.id);
-          if (updateResult.length === 0) {
-            const sender = message.getSender();
-            const activeDraft = await getActiveDraft(db);
-
-            if (
-              typeof subject !== 'undefined' &&
-              typeof recipients !== 'undefined' &&
-              typeof sender !== 'undefined' &&
-              typeof activeDraft !== 'undefined'
-            )
-              if (Array.isArray(recipients))
-                for (const recipient of recipients)
-                  await createEmailThread(
-                    db,
-                    result.threadId,
-                    result.id,
-                    subject,
-                    recipient.addr,
-                    sender.addr,
-                    activeDraft.id,
-                  );
-              else
-                await createEmailThread(
-                  db,
-                  result.threadId,
-                  result.id,
-                  subject,
-                  recipients.addr,
-                  sender.addr,
-                  activeDraft.id,
-                );
-          }
 
           return result;
         }

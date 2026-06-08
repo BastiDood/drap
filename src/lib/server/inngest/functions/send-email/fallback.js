@@ -1,5 +1,7 @@
 import { NonRetriableError } from 'inngest';
 
+import { addEmailToThread, createEmailThread, getActiveDraft } from '$lib/server/database/drizzle';
+import { db } from '$lib/server/database';
 import {
   DraftConcludedFallbackEmailEvent,
   DraftFinalizationFallbackEmailEvent,
@@ -64,6 +66,43 @@ export const sendEmailFallback = inngest.createFunction(
               'email.message.internal_date': result.internalDate,
               'email.message.label_ids': result.labelIds,
             });
+
+            // Create/update the email thread
+            const updateResult = await addEmailToThread(db, result.threadId, result.id);
+            if (updateResult.length === 0) {
+              const subject = message.getSubject();
+              const recipients = message.getRecipients();
+              const sender = message.getSender();
+
+              if (
+                typeof subject !== 'undefined' &&
+                typeof recipients !== 'undefined' &&
+                typeof sender !== 'undefined' &&
+                'draftId' in event.data
+              )
+                if (Array.isArray(recipients))
+                  for (const recipient of recipients)
+                    await createEmailThread(
+                      db,
+                      result.threadId,
+                      result.id,
+                      subject,
+                      recipient.addr,
+                      sender.addr,
+                      BigInt(event.data.draftId),
+                    );
+                else
+                  await createEmailThread(
+                    db,
+                    result.threadId,
+                    result.id,
+                    subject,
+                    recipients.addr,
+                    sender.addr,
+                    BigInt(event.data.draftId),
+                  );
+            }
+
             return result;
           } catch (cause) {
             if (cause instanceof GmailScopeError)
