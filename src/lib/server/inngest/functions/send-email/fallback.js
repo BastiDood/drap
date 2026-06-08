@@ -73,16 +73,18 @@ export const sendEmailFallback = inngest.createFunction(
                 const messageIdHeader = message.getHeader('Message-ID');
 
                 if (typeof messageIdHeader !== 'undefined') {
-                  const messageId = messageIdHeader.toString();
-                  const updateResult = await addEmailToThread(db, result.threadId, messageId);
+                  const recipients = message.getRecipients();
 
-                  if (updateResult.length === 0) {
+                  if (typeof recipients !== 'undefined') {
                     const subject = message.getSubject();
-                    const recipients = message.getRecipients();
 
-                    if (typeof subject !== 'undefined' && typeof recipients !== 'undefined')
-                      if (Array.isArray(recipients))
-                        for (const recipient of recipients)
+                    if (typeof subject !== 'undefined') {
+                      const messageId = messageIdHeader.toString();
+                      const iterableRecipients = (Array.isArray(recipients)) ? recipients : [recipients];
+                      
+                      for (const recipient of iterableRecipients) {
+                        const updateResult = await addEmailToThread(db, result.threadId, recipient.addr, messageId);
+                        if (typeof updateResult === 'undefined')
                           await createEmailThread(
                             db,
                             result.threadId,
@@ -92,16 +94,8 @@ export const sendEmailFallback = inngest.createFunction(
                             sender.email,
                             BigInt(event.data.draftId),
                           );
-                      else
-                        await createEmailThread(
-                          db,
-                          result.threadId,
-                          messageId,
-                          subject,
-                          recipients.addr,
-                          sender.email,
-                          BigInt(event.data.draftId),
-                        );
+                      }
+                    }
                   }
                 }
               }

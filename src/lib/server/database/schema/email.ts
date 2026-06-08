@@ -65,6 +65,6 @@ export const emailThread = email.table(
     primaryKey({ columns: [draftId, emailSubject, recipientEmail] }),
 
     // Index for faster lookup
-    index('email_thread_id_idx').on(emailThreadId),
+    index('email_thread_id_recipient_email_idx').on(emailThreadId, recipientEmail),
   ],
 );

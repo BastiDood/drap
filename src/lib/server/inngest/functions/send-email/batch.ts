@@ -145,44 +145,33 @@ export const sendBatchedEmails = inngest.createFunction(
                     const messageIdHeader = message.getHeader('Message-ID');
 
                     if (typeof messageIdHeader !== 'undefined') {
-                      const messageId = messageIdHeader.toString();
-                      const updateResult = await addEmailToThread(
-                        db,
-                        result.value.threadId,
-                        messageId,
-                      );
+                      const sender = message.getSender();
 
-                      if (updateResult.length === 0) {
-                        const subject = message.getSubject();
+                      if (typeof sender !== 'undefined') {
                         const recipients = message.getRecipients();
-                        const sender = message.getSender();
 
-                        if (
-                          typeof subject !== 'undefined' &&
-                          typeof recipients !== 'undefined' &&
-                          typeof sender !== 'undefined'
-                        )
-                          if (Array.isArray(recipients))
-                            for (const recipient of recipients)
-                              await createEmailThread(
-                                db,
-                                result.value.threadId,
-                                messageId,
-                                subject,
-                                recipient.addr,
-                                sender.addr,
-                                BigInt(event.data.draftId),
-                              );
-                          else
-                            await createEmailThread(
-                              db,
-                              result.value.threadId,
-                              messageId,
-                              subject,
-                              recipients.addr,
-                              sender.addr,
-                              BigInt(event.data.draftId),
-                            );
+                        if (typeof recipients !== 'undefined') {
+                          const subject = message.getSubject();
+
+                          if (typeof subject !== 'undefined') {
+                            const messageId = messageIdHeader.toString();
+                            const iterableRecipients = (Array.isArray(recipients)) ? recipients : [recipients];
+
+                            for (const recipient of iterableRecipients) {
+                              const updateResult = await addEmailToThread(db, result.value.threadId, recipient.addr, messageId);
+                              if (typeof updateResult === 'undefined')
+                                await createEmailThread(
+                                  db,
+                                  result.value.threadId,
+                                  messageId,
+                                  subject,
+                                  recipient.addr,
+                                  sender.addr,
+                                  BigInt(event.data.draftId),
+                                );
+                            }
+                          }
+                        }
                       }
                     }
                   }
