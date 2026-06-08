@@ -23,7 +23,11 @@ import type {
   UserAssignedBatchEmailSchema,
   UserAssignedFallbackEmailSchema,
 } from '$lib/server/inngest/schema';
-import type { DrizzleTransaction, schema } from '$lib/server/database/drizzle';
+import {
+  type DrizzleTransaction,
+  getEmailThreadData,
+  type schema,
+} from '$lib/server/database/drizzle';
 import { ENCRYPTION_KEY } from '$lib/server/env/drap/crypto';
 import { GoogleOAuthClient } from '$lib/server/google';
 import { Logger } from '$lib/server/telemetry/logger';
@@ -174,7 +178,33 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
     encoding: 'base64',
     data: Buffer.from(html, 'utf-8').toString('base64'),
   });
-  return mime;
+
+  // Don't need to thread lab assignments as these are only sent once
+  if ('draftId' in event.data) {
+    // The BigInt construction should be safe since number has a limit and bigint doesn't
+    const emailThreadData = await getEmailThreadData(
+      db,
+      BigInt(event.data.draftId),
+      subject,
+      recipient,
+    );
+
+    if (typeof emailThreadData !== 'undefined') {
+      const { emailThreadId, messageIds } = emailThreadData;
+      const latestMessageId = messageIds.split(' ').pop();
+
+      if (typeof latestMessageId !== 'undefined') {
+        mime.setHeaders({
+          'In-Reply-To': latestMessageId.trim(),
+          References: messageIds,
+        });
+
+        return { message: mime, emailThreadId };
+      }
+    }
+  }
+
+  return { message: mime, emailThreadId: '' };
 }
 
 export function isRetryableGmailStatus(status: number) {
