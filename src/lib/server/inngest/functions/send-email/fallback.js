@@ -105,8 +105,8 @@ export const sendEmailFallback = inngest.createFunction(
                   }
                 }
               }
-            } catch (cause) {
-              throw new NonRetriableError('failed to update email thread entry', { cause });
+            } catch (error) {
+              if (error instanceof Error) logger.error('failed to update email thread', error);
             }
 
             return result;
