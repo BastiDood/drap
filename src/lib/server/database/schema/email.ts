@@ -43,15 +43,15 @@ export const emailThread = email.table(
     // Store the message IDs of the emails in the chain in a space-delimited string
     // Assume that the system is replying to itself
     messageIds: text('message_ids').notNull(),
+    // Scope to a draft
+    draftId: bigint('draft_id', { mode: 'bigint' })
+      .notNull()
+      .references(() => draft.id, { onUpdate: 'cascade' }),
     // Store the subject of the original email
     emailSubject: text('email_subject').notNull(),
     recipientEmail: text('recipient_email')
       .notNull()
       .references(() => user.email, { onUpdate: 'cascade', onDelete: 'cascade' }),
-    // Scope to a draft
-    draftId: bigint('draft_id', { mode: 'bigint' })
-      .notNull()
-      .references(() => draft.id, { onUpdate: 'cascade' }),
     createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
   },
   ({ emailThreadId, draftId, emailSubject, recipientEmail }) => [
