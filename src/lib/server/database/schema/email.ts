@@ -42,7 +42,7 @@ export const emailThread = email.table(
     emailThreadId: text('email_thread_id').notNull(),
     // Store the message IDs of the emails in the chain in a space-delimited string
     // Assume that the system is replying to itself
-    messageIds: text('message_ids').notNull(),
+    messageIdsStr: text('message_ids_str').notNull(),
     // Scope to a draft
     draftId: bigint('draft_id', { mode: 'bigint' })
       .notNull()

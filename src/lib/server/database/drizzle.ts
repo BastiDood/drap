@@ -475,7 +475,7 @@ export async function getEmailThreadData(
     return await db
       .select({
         emailThreadId: schema.emailThread.emailThreadId,
-        messageIds: schema.emailThread.messageIds,
+        messageIdsStr: schema.emailThread.messageIdsStr,
       })
       .from(schema.emailThread)
       .where(
@@ -500,7 +500,7 @@ export async function addEmailToThread(
     return await db
       .update(schema.emailThread)
       .set({
-        messageIds: sql<string>`${schema.emailThread.messageIds} || ${` ${messageId}`}`,
+        messageIdsStr: sql<string>`${schema.emailThread.messageIdsStr} || ${` ${messageId}`}`,
       })
       .where(
         and(
@@ -529,7 +529,7 @@ export async function createEmailThread(
       .insert(schema.emailThread)
       .values({
         emailThreadId,
-        messageIds: messageId,
+        messageIdsStr: messageId,
         draftId,
         emailSubject,
         recipientEmail,

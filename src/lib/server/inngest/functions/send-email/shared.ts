@@ -190,13 +190,13 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
     );
 
     if (typeof emailThreadData !== 'undefined') {
-      const { emailThreadId, messageIds } = emailThreadData;
-      const latestMessageId = messageIds.split(' ').pop();
+      const { emailThreadId, messageIdsStr } = emailThreadData;
+      const latestMessageId = messageIdsStr.split(' ').pop();
 
       if (typeof latestMessageId !== 'undefined' && latestMessageId.length !== 0) {
         mime.setHeaders({
           'In-Reply-To': latestMessageId.trim(),
-          References: messageIds,
+          References: messageIdsStr,
         });
 
         return { message: mime, emailThreadId };
