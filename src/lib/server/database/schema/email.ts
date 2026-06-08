@@ -1,4 +1,4 @@
-import { bigint, index, pgSchema, primaryKey, text, timestamp } from 'drizzle-orm/pg-core';
+import { bigint, pgSchema, primaryKey, text, timestamp } from 'drizzle-orm/pg-core';
 
 import { draft, user } from './app';
 
@@ -54,7 +54,7 @@ export const emailThread = email.table(
       .references(() => user.email, { onUpdate: 'cascade', onDelete: 'cascade' }),
     createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
   },
-  ({ emailThreadId, draftId, emailSubject, recipientEmail }) => [
+  ({ draftId, emailSubject, recipientEmail }) => [
     // Make primary key for faster lookup
     primaryKey({ columns: [draftId, emailSubject, recipientEmail] }),
   ],
