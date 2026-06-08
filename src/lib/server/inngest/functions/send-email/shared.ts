@@ -180,7 +180,7 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
   });
 
   // Don't need to thread lab assignments as these are only sent once
-  if ('draftId' in event.data) 
+  if ('draftId' in event.data)
     // The BigInt construction should be safe since number has a limit and bigint doesn't
     try {
       const emailThreadData = await getEmailThreadData(
@@ -206,7 +206,6 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
     } catch (error) {
       if (error instanceof Error) logger.error('failed to get email thread data', error);
     }
-  
 
   return { message: mime, emailThreadId: '' };
 }
