@@ -48,17 +48,11 @@ export const emailThread = email.table(
     recipientEmail: text('recipient_email')
       .notNull()
       .references(() => user.email, { onUpdate: 'cascade', onDelete: 'cascade' }),
-    // Snapshot the candidate sender email for zero db lookup
-    senderEmail: text('sender_email')
-      .notNull()
-      .references(() => user.email, { onUpdate: 'cascade', onDelete: 'cascade' }),
     // Scope to a draft
     draftId: bigint('draft_id', { mode: 'bigint' })
       .notNull()
       .references(() => draft.id, { onUpdate: 'cascade' }),
     createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
-    // Check the timestamp of the last email for cron jobs that clean this table
-    updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true }),
   },
   ({ emailThreadId, draftId, emailSubject, recipientEmail }) => [
     // Make primary key for faster lookup

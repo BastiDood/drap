@@ -98,7 +98,6 @@ export const sendEmailFallback = inngest.createFunction(
                             messageId,
                             subject,
                             recipient.addr,
-                            sender.email,
                             BigInt(event.data.draftId),
                           );
                       }

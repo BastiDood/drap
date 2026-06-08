@@ -500,7 +500,6 @@ export async function addEmailToThread(
       .update(schema.emailThread)
       .set({
         messageIds: sql<string>`${schema.emailThread.messageIds} || ${` ${messageId}`}`,
-        updatedAt: sql`now()`,
       })
       .where(
         and(
@@ -521,7 +520,6 @@ export async function createEmailThread(
   messageId: string,
   emailSubject: string,
   recipientEmail: string,
-  senderEmail: string,
   draftId: bigint,
 ) {
   return await tracer.asyncSpan('create-email-thread', async () => {
@@ -532,7 +530,6 @@ export async function createEmailThread(
         messageIds: messageId,
         emailSubject,
         recipientEmail,
-        senderEmail,
         draftId,
       })
       .returning({
