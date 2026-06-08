@@ -518,7 +518,11 @@ export async function upsertEmailThread(
         recipientEmail,
       })
       .onConflictDoUpdate({
-        target: [schema.emailThread.draftId, schema.emailThread.emailSubject, schema.emailThread.recipientEmail],
+        target: [
+          schema.emailThread.draftId,
+          schema.emailThread.emailSubject,
+          schema.emailThread.recipientEmail,
+        ],
         set: {
           messageIdsStr: sql<string>`${schema.emailThread.messageIdsStr} || ${` ${messageId}`}`,
         },

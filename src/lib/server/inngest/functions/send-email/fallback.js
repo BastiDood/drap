@@ -84,7 +84,7 @@ export const sendEmailFallback = inngest.createFunction(
                         ? recipients
                         : [recipients];
 
-                      for (const recipient of iterableRecipients) {
+                      for (const recipient of iterableRecipients) 
                         await upsertEmailThread(
                           db,
                           result.threadId,
@@ -92,8 +92,8 @@ export const sendEmailFallback = inngest.createFunction(
                           BigInt(event.data.draftId),
                           subject,
                           recipient.addr,
-                        ); 
-                      }
+                        );
+                      
                     }
                   }
                 }
