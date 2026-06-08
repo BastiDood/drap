@@ -464,3 +464,27 @@ export async function getUserByEmail(db: DbConnection, email: string) {
       .then(assertOptional);
   });
 }
+
+export async function getEmailThreadData(
+  db: DbConnection,
+  draftId: bigint,
+  emailSubject: string,
+  recipientEmail: string,
+) {
+  return await tracer.asyncSpan('get-email-thread-data', async () => {
+    return await db
+      .select({
+        emailThreadId: schema.emailThread.emailThreadId,
+        messageIds: schema.emailThread.messageIds,
+      })
+      .from(schema.emailThread)
+      .where(
+        and(
+          eq(schema.emailThread.draftId, draftId),
+          eq(schema.emailThread.emailSubject, emailSubject),
+          eq(schema.emailThread.recipientEmail, recipientEmail),
+        ),
+      )
+      .then(assertOptional);
+  });
+}
