@@ -501,7 +501,12 @@ export async function addEmailToThread(
   recipientEmail: string,
   messageId: string,
 ) {
-  return await tracer.asyncSpan('add-email-to-thread', async () => {
+  return await tracer.asyncSpan('add-email-to-thread', async span => {
+    span.setAttributes({
+      'database.email_thread.draft_id': draftId.toString(),
+      'database.email_thread.email_subject': emailSubject,
+      'database.email_thread.recipient_email': recipientEmail,
+    });
     return await db
       .update(schema.emailThread)
       .set({
