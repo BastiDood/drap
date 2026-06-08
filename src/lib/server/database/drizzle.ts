@@ -488,3 +488,17 @@ export async function getEmailThreadData(
       .then(assertOptional);
   });
 }
+
+export async function addEmailToThread(db: DbConnection, emailThreadId: string, messageId: string) {
+  return await tracer.asyncSpan('add-email-to-thread', async () => {
+    return await db
+      .update(schema.emailThread)
+      .set({
+        messageIds: sql<string>`${schema.emailThread.messageIds} || ${` ${messageId}`}`,
+      })
+      .where(eq(schema.emailThread.emailThreadId, emailThreadId))
+      .returning({
+        emailThreadId: schema.emailThread.emailThreadId,
+      });
+  });
+}
