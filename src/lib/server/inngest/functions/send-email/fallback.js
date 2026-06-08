@@ -80,10 +80,17 @@ export const sendEmailFallback = inngest.createFunction(
 
                     if (typeof subject !== 'undefined') {
                       const messageId = messageIdHeader.toString();
-                      const iterableRecipients = (Array.isArray(recipients)) ? recipients : [recipients];
-                      
+                      const iterableRecipients = Array.isArray(recipients)
+                        ? recipients
+                        : [recipients];
+
                       for (const recipient of iterableRecipients) {
-                        const updateResult = await addEmailToThread(db, result.threadId, recipient.addr, messageId);
+                        const updateResult = await addEmailToThread(
+                          db,
+                          result.threadId,
+                          recipient.addr,
+                          messageId,
+                        );
                         if (typeof updateResult === 'undefined')
                           await createEmailThread(
                             db,

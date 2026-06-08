@@ -493,7 +493,7 @@ export async function addEmailToThread(
   db: DbConnection,
   emailThreadId: string,
   recipientEmail: string,
-  messageId: string
+  messageId: string,
 ) {
   return await tracer.asyncSpan('add-email-to-thread', async () => {
     return await db
@@ -502,7 +502,12 @@ export async function addEmailToThread(
         messageIds: sql<string>`${schema.emailThread.messageIds} || ${` ${messageId}`}`,
         updatedAt: sql`now()`,
       })
-      .where(and(eq(schema.emailThread.emailThreadId, emailThreadId), eq(schema.emailThread.recipientEmail, recipientEmail)))
+      .where(
+        and(
+          eq(schema.emailThread.emailThreadId, emailThreadId),
+          eq(schema.emailThread.recipientEmail, recipientEmail),
+        ),
+      )
       .returning({
         emailThreadId: schema.emailThread.emailThreadId,
       })
