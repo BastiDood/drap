@@ -180,29 +180,33 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
   });
 
   // Don't need to thread lab assignments as these are only sent once
-  if ('draftId' in event.data) {
+  if ('draftId' in event.data) 
     // The BigInt construction should be safe since number has a limit and bigint doesn't
-    const emailThreadData = await getEmailThreadData(
-      db,
-      BigInt(event.data.draftId),
-      subject,
-      recipient,
-    );
+    try {
+      const emailThreadData = await getEmailThreadData(
+        db,
+        BigInt(event.data.draftId),
+        subject,
+        recipient,
+      );
 
-    if (typeof emailThreadData !== 'undefined') {
-      const { emailThreadId, messageIdsStr } = emailThreadData;
-      const latestMessageId = messageIdsStr.split(' ').pop();
+      if (typeof emailThreadData !== 'undefined') {
+        const { emailThreadId, messageIdsStr } = emailThreadData;
+        const latestMessageId = messageIdsStr.split(' ').pop();
 
-      if (typeof latestMessageId !== 'undefined' && latestMessageId.length !== 0) {
-        mime.setHeaders({
-          'In-Reply-To': latestMessageId.trim(),
-          References: messageIdsStr,
-        });
+        if (typeof latestMessageId !== 'undefined' && latestMessageId.length !== 0) {
+          mime.setHeaders({
+            'In-Reply-To': latestMessageId.trim(),
+            References: messageIdsStr,
+          });
 
-        return { message: mime, emailThreadId };
+          return { message: mime, emailThreadId };
+        }
       }
+    } catch (error) {
+      if (error instanceof Error) logger.error('failed to get email thread data', error);
     }
-  }
+  
 
   return { message: mime, emailThreadId: '' };
 }
