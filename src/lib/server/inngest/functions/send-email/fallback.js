@@ -79,10 +79,7 @@ export const sendEmailFallback = inngest.createFunction(
                     const subject = message.getSubject();
                     const recipients = message.getRecipients();
 
-                    if (
-                      typeof subject !== 'undefined' &&
-                      typeof recipients !== 'undefined'
-                    )
+                    if (typeof subject !== 'undefined' && typeof recipients !== 'undefined')
                       if (Array.isArray(recipients))
                         for (const recipient of recipients)
                           await createEmailThread(
