@@ -26,7 +26,7 @@ services:
       start_interval: 1s
 
   inngest:
-    image: inngest/inngest:v1.24.0
+    image: inngest/inngest:v1.27.0
     extra_hosts:
       - host.docker.internal:host-gateway
     networks:
@@ -41,7 +41,6 @@ services:
       test:
         - 'CMD'
         - 'inngest'
-        - 'alpha'
         - 'doctor'
         - 'healthcheck'
       interval: 30s
