@@ -41,6 +41,7 @@ services:
       test:
         - 'CMD'
         - 'inngest'
+        - 'alpha'
         - 'doctor'
         - 'healthcheck'
       interval: 30s
