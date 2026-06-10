@@ -51,6 +51,8 @@
       avatar: 'https://avatars.githubusercontent.com/u/60802461',
       roles: { '2026': 'Infrastructure Team: Engineer' },
       github: 'mcjefdreal',
+      linkedin: 'michael-jeffrey-real',
+      website: 'https://mcjefd.dev/',
     },
     {
       name: 'Ysaac Villamil',
