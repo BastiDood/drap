@@ -49,7 +49,7 @@ flowchart TD
         end
 
         subgraph telemetry [telemetry]
-            OtelGui[otel-gui:4318]
+            O2[OpenObserve:5080]
         end
 
         subgraph storage [storage]
@@ -62,7 +62,7 @@ flowchart TD
     Google <-->|OAuth| HAProxy
     SvelteKit <--> Postgres
     SvelteKit <--> Inngest
-    SvelteKit -.->|OpenTelemetry| OtelGui
+    SvelteKit -.->|OpenTelemetry| O2
     Inngest <--> Redis
     Inngest <--> SQLite
     SvelteKit <--> RustFS
@@ -76,22 +76,23 @@ Development and production do not use the same environment-variable surface. The
 <details>
 <summary><strong>Development</strong></summary>
 
-For host-run app processes, `pnpm docker:dev` already starts PostgreSQL, Inngest, `otel-gui`, and RustFS with local-friendly defaults. You still need to export the app-facing variables below yourself.
+For host-run app processes, `pnpm docker:dev` already starts PostgreSQL, Inngest, OpenObserve, and RustFS with local-friendly defaults. You still need to export the app-facing variables below yourself.
 
-| **Variable**                  | **Used by**                                 | **Required** | **Recommended**                                                                                            |
-| ----------------------------- | ------------------------------------------- | ------------ | ---------------------------------------------------------------------------------------------------------- |
-| `PUBLIC_ORIGIN`               | Public absolute URLs, metadata, and emails. | Yes          | `http://localhost:5173` for `pnpm dev`; `http://localhost:4173` for Playwright.                            |
-| `ORIGIN`                      | Google OAuth callback base URL.             | Yes          | Same value as `PUBLIC_ORIGIN`.                                                                             |
-| `POSTGRES_URL`                | App database connection.                    | Yes          | `postgresql://postgres:password@localhost:5432/postgres`; use `/test` in CI.                               |
-| `GOOGLE_OAUTH_CLIENT_ID`      | Google OAuth login.                         | Yes          | Value from the [Google Cloud Console].                                                                     |
-| `GOOGLE_OAUTH_CLIENT_SECRET`  | Google OAuth login.                         | Yes          | Value from the [Google Cloud Console].                                                                     |
-| `DRAP_ENCRYPTION_KEY`         | Encrypts sensitive OAuth tokens.            | Yes          | Generate with `pnpm random:bytes -- 32`.                                                                   |
-| `DRAP_ASSERT_DOMAIN`          | Allowed email-domain restriction.           | No           | `up.edu.ph` for production-like behavior.                                                                  |
-| `DRAP_ENABLE_EMAILS`          | Real email delivery.                        | No           | Leave unset unless you intentionally want live email delivery.                                             |
-| `S3_ENDPOINT`                 | App-facing S3 API endpoint.                 | Yes          | `http://localhost:9000` for host-run local development; do not use the Docker network hostname here.       |
-| `S3_REGION`                   | S3 signing region.                          | Yes          | `us-east-1` for local development.                                                                         |
-| `INNGEST_DEV`                 | Host-run app access to local Inngest.       | Yes          | `http://localhost:8288`; the server itself is provided by `pnpm docker:dev`.                               |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | Local OpenTelemetry export endpoint.        | No           | `http://localhost:4318`; `otel-gui` is provided by `pnpm docker:dev` and accepts standard OTLP/HTTP paths. |
+| **Variable**                  | **Used by**                                 | **Required** | **Recommended**                                                                                           |
+| ----------------------------- | ------------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------- |
+| `PUBLIC_ORIGIN`               | Public absolute URLs, metadata, and emails. | Yes          | `http://localhost:5173` for `pnpm dev`; `http://localhost:4173` for Playwright.                           |
+| `ORIGIN`                      | Google OAuth callback base URL.             | Yes          | Same value as `PUBLIC_ORIGIN`.                                                                            |
+| `POSTGRES_URL`                | App database connection.                    | Yes          | `postgresql://postgres:password@localhost:5432/postgres`; use `/test` in CI.                              |
+| `GOOGLE_OAUTH_CLIENT_ID`      | Google OAuth login.                         | Yes          | Value from the [Google Cloud Console].                                                                    |
+| `GOOGLE_OAUTH_CLIENT_SECRET`  | Google OAuth login.                         | Yes          | Value from the [Google Cloud Console].                                                                    |
+| `DRAP_ENCRYPTION_KEY`         | Encrypts sensitive OAuth tokens.            | Yes          | Generate with `pnpm random:bytes -- 32`.                                                                  |
+| `DRAP_ASSERT_DOMAIN`          | Allowed email-domain restriction.           | No           | `up.edu.ph` for production-like behavior.                                                                 |
+| `DRAP_ENABLE_EMAILS`          | Real email delivery.                        | No           | Leave unset unless you intentionally want live email delivery.                                            |
+| `S3_ENDPOINT`                 | App-facing S3 API endpoint.                 | Yes          | `http://localhost:9000` for host-run local development; do not use the Docker network hostname here.      |
+| `S3_REGION`                   | S3 signing region.                          | Yes          | `us-east-1` for local development.                                                                        |
+| `INNGEST_DEV`                 | Host-run app access to local Inngest.       | Yes          | `http://localhost:8288`; the server itself is provided by `pnpm docker:dev`.                              |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | Local OpenTelemetry export endpoint.        | No           | `http://localhost:5080/api/default`; OpenObserve is provided by `pnpm docker:dev`.                        |
+| `OTEL_EXPORTER_OTLP_HEADERS`  | Local OpenTelemetry auth headers.           | No           | `Authorization=Basic%20YWRtaW5AZXhhbXBsZS5jb206cGFzc3dvcmQ%3D`; credentials come from `compose.dev.yaml`. |
 
 </details>
 
@@ -110,9 +111,12 @@ For `pnpm docker:prod:app`, Compose derives `PUBLIC_ORIGIN` from `SCHEME` and `H
 | `GOOGLE_OAUTH_CLIENT_SECRET` | Google OAuth login.                         | Yes          | Value from the [Google Cloud Console].                       |
 | `INNGEST_EVENT_KEY`          | Inngest event signing.                      | Yes          | Production event key from Inngest.                           |
 | `INNGEST_SIGNING_KEY`        | Inngest webhook signing.                    | Yes          | Production signing key from Inngest.                         |
+| `OTEL_EXPORTER_OTLP_HEADERS` | OpenTelemetry auth headers.                 | Yes          | Percent-encoded Basic auth for your OpenObserve credentials. |
 | `S3_REGION`                  | S3 signing region.                          | Yes          | Use the same region configured for the backing object store. |
 | `S3_ACCESS_KEY`              | RustFS root access key.                     | Yes          | Generate with `pnpm random:bytes -- 24`.                     |
 | `S3_SECRET_KEY`              | RustFS root secret key.                     | Yes          | Generate with `pnpm random:bytes -- 48`.                     |
+| `ZO_ROOT_USER_EMAIL`         | OpenObserve bootstrap admin user.           | Yes          | Dedicated admin email address.                               |
+| `ZO_ROOT_USER_PASSWORD`      | OpenObserve bootstrap admin password.       | Yes          | Use a strong random secret.                                  |
 | `DRIZZLE_MASTERPASS`         | Drizzle Gateway admin password.             | Yes          | Use a strong random secret.                                  |
 
 `pnpm docker:prod:app` already injects `POSTGRES_URL`, `DRAP_ASSERT_DOMAIN`, `DRAP_ENABLE_EMAILS`, `INNGEST_BASE_URL`, `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_EXPORTER_OTLP_PROTOCOL`, `ADDRESS_HEADER`, `XFF_DEPTH`, `PORT`, HAProxy's `APP_PORT`, and the internal `S3_ENDPOINT` internally. It also configures Inngest to call the app through the internal Compose network at `http://app:3000/api/inngest` and passes the canonical origin into the app image build, so changing `SCHEME` or `HOST` requires rebuilding the `app` image.
@@ -213,15 +217,15 @@ flowchart TD
     base --> prod --> app --> tls
 ```
 
-| Command                         | Files                                                                                        | Services                                                                          |
-| ------------------------------- | -------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `pnpm docker:dev`               | `compose.yaml` + `compose.dev.yaml`                                                          | base services plus dev overrides, including `otel-gui` and `rustfs`               |
-| `pnpm docker:dev:ci`            | `compose.yaml` + `compose.dev.yaml` + `compose.dev.ci.yaml`                                  | dev-style backing services with CI Inngest SDK URL override, excluding `otel-gui` |
-| `pnpm docker:dev:setup:bucket`  | `compose.yaml` + `compose.dev.yaml` + `setup` profile                                        | one-shot `setup-bucket` bootstrap for the dev stack                               |
-| `pnpm docker:prod`              | `compose.yaml` + `compose.prod.yaml`                                                         | production backing services: `postgres`, `otel-gui`, `rustfs`, `drizzle-gateway`  |
-| `pnpm docker:prod:setup:bucket` | `compose.yaml` + `compose.prod.yaml` + `compose.prod.app.yaml` + `setup` profile             | one-shot `setup-bucket` bootstrap for the production app stack                    |
-| `pnpm docker:prod:app`          | `compose.yaml` + `compose.prod.yaml` + `compose.prod.app.yaml`                               | prod services + `redis`, `inngest`, `haproxy` ingress, and `app`                  |
-| `pnpm docker:prod:app:tls`      | `compose.yaml` + `compose.prod.yaml` + `compose.prod.app.yaml` + `compose.prod.app.tls.yaml` | app stack + TLS ingress override on port `443`                                    |
+| Command                         | Files                                                                                        | Services                                                                              |
+| ------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `pnpm docker:dev`               | `compose.yaml` + `compose.dev.yaml`                                                          | base services plus dev overrides, including `o2` and `rustfs`                         |
+| `pnpm docker:dev:ci`            | `compose.yaml` + `compose.dev.yaml` + `compose.dev.ci.yaml`                                  | dev-style backing services with CI Inngest SDK URL override, excluding `o2` via reset |
+| `pnpm docker:dev:setup:bucket`  | `compose.yaml` + `compose.dev.yaml` + `setup` profile                                        | one-shot `setup-bucket` bootstrap for the dev stack                                   |
+| `pnpm docker:prod`              | `compose.yaml` + `compose.prod.yaml`                                                         | production backing services: `postgres`, `o2`, `rustfs`, `drizzle-gateway`            |
+| `pnpm docker:prod:setup:bucket` | `compose.yaml` + `compose.prod.yaml` + `compose.prod.app.yaml` + `setup` profile             | one-shot `setup-bucket` bootstrap for the production app stack                        |
+| `pnpm docker:prod:app`          | `compose.yaml` + `compose.prod.yaml` + `compose.prod.app.yaml`                               | prod services + `redis`, `inngest`, `haproxy` ingress, and `app`                      |
+| `pnpm docker:prod:app:tls`      | `compose.yaml` + `compose.prod.yaml` + `compose.prod.app.yaml` + `compose.prod.app.tls.yaml` | app stack + TLS ingress override on port `443`                                        |
 
 > [!NOTE]
 > Docker BuildKit is required to build the local services used during development. In most platforms, Docker Desktop bundles the core Docker Engine with Docker BuildKit. For others (e.g., Arch Linux), a separate `docker-buildx`-like package must be installed.
@@ -232,7 +236,7 @@ flowchart TD
 
 ```bash
 # Run dev services (compose.yaml + compose.dev.yaml):
-# postgres, inngest (dev mode), otel-gui, rustfs
+# postgres, inngest (dev mode), o2, rustfs
 pnpm docker:dev
 
 # Bootstrap the RustFS bucket after the stack is healthy.
@@ -258,7 +262,7 @@ node --env-file=.env build/index.js
 
 ```bash
 # Or, spin up production internal services (compose.yaml + compose.prod.yaml):
-# postgres (prod), otel-gui, rustfs, drizzle-gateway
+# postgres (prod), o2, rustfs, drizzle-gateway
 pnpm docker:prod
 
 # Bootstrap the RustFS bucket after the stack is healthy.
@@ -282,20 +286,21 @@ pnpm docker:prod:app:tls
 
 The production HAProxy ingress uses a coarse path allowlist for the public site surface (`/`, `/_app/`, `/history`, `/privacy`, `/dashboard`, and root static files). Any other unmatched path is returned as an empty `404` while rate-limited requests are returned as an empty `429`. Empty responses are preferred to conserve egress bandwidth. When the TLS override is enabled with `SCHEME=https`, HAProxy terminates TLS on port `443`, redirects valid host traffic from port `80` to `HTTPS`, and emits `Strict-Transport-Security` on `HTTPS` responses.
 
-### Local Telemetry with `otel-gui`
+### Local Telemetry with OpenObserve
 
 To enable full observability in local development:
 
-1. Start the local services (including `otel-gui`):
+1. Start the local services (including OpenObserve):
    ```bash
    pnpm docker:dev
    ```
 2. Export the OTLP endpoint before running the dev server. Trace export uses OTLP over HTTP automatically:
    ```bash
-   export OTEL_EXPORTER_OTLP_ENDPOINT='http://localhost:4318'
+   export OTEL_EXPORTER_OTLP_ENDPOINT='http://localhost:5080/api/default'
+   export OTEL_EXPORTER_OTLP_HEADERS='Authorization=Basic%20YWRtaW5AZXhhbXBsZS5jb206cGFzc3dvcmQ%3D'
    pnpm dev
    ```
-3. View traces and logs at `http://localhost:4318`.
+3. View traces and logs at `http://localhost:5080`.
 
 ### Running the End-to-End Tests with Playwright
 
