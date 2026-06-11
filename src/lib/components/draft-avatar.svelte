@@ -4,7 +4,7 @@
   import * as Avatar from '$lib/components/ui/avatar';
   import { resolve } from '$app/paths';
 
-  interface Props {
+  export interface DraftAvatarProps {
     avatar?: {
       objectKey: string;
       alt: string;
@@ -12,7 +12,7 @@
     class?: string;
   }
 
-  const { avatar, class: className }: Props = $props();
+  const { avatar, class: className }: DraftAvatarProps = $props();
 </script>
 
 <Avatar.Root class={className}>
