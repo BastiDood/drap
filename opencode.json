@@ -25,7 +25,6 @@
       "curl -s *": "allow",
       "jq -c *": "allow",
       "date +%s *": "allow",
-      "bash .agents/skills/debug-local-postgres/scripts/*": "allow",
       "docker compose exec postgres psql *": "ask",
       "git diff *": "allow",
       "git show *": "allow",
@@ -72,7 +71,7 @@
     },
     "skill": {
       "*": "ask",
-      "debug-local-otel": "allow",
+      "debug-local-o2": "allow",
       "debug-local-postgres": "allow",
       "submit-pull-request": "allow"
     }
