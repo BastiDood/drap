@@ -364,3 +364,13 @@ async function updateCandidateSender(
     logger.debug('updated candidate sender', { rowCount });
   });
 }
+
+export function getEmailThreadRound(event: RenderableEmailEvent) {
+  switch (event.name) {
+    case 'draft/round.submitted.email.batch':
+    case 'draft/round.submitted.email.fallback':
+      return event.data.round;
+    default:
+      return null;
+  }
+}
