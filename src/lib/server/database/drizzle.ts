@@ -483,7 +483,7 @@ export async function getEmailThreadData(
       .select({
         gmailThreadId: schema.emailThread.gmailThreadId,
         gmailMessageIdsText: schema.emailThread.gmailMessageIdsText,
-        latestGmailMessageId: sql<string>`${schema.emailThread.gmailMessageIds}[cardinality(${schema.emailThread.gmailMessageIds})]`
+        latestGmailMessageId: sql<string>`${schema.emailThread.gmailMessageIds}[cardinality(${schema.emailThread.gmailMessageIds})]`,
       })
       .from(schema.emailThread)
       .innerJoin(schema.user, eq(schema.user.id, schema.emailThread.recipientUserId))

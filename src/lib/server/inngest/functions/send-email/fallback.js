@@ -1,20 +1,13 @@
 import { NonRetriableError } from 'inngest';
 
 import { db } from '$lib/server/database';
-import {
-  DraftConcludedFallbackEmailEvent,
-  DraftFinalizationFallbackEmailEvent,
-  LotteryInterventionFallbackEmailEvent,
-  RoundStartedFallbackEmailEvent,
-  RoundSubmittedFallbackEmailEvent,
-  UserAssignedFallbackEmailEvent,
-} from '$lib/server/inngest/schema';
+import { DraftConcludedFallbackEmailEvent, DraftFinalizationFallbackEmailEvent, LotteryInterventionFallbackEmailEvent, RoundStartedFallbackEmailEvent, RoundSubmittedFallbackEmailEvent, UserAssignedFallbackEmailEvent } from '$lib/server/inngest/schema';
 import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
+import { getUserByEmail, upsertEmailThread } from '$lib/server/database/drizzle';
 import { GmailError, GmailScopeError } from '$lib/server/google';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
-import { getUserByEmail, upsertEmailThread } from '$lib/server/database/drizzle';
 
 import { createEmailMessage, getEmailThreadRound, getRefreshedCredentials, isRetryableGmailStatus } from './shared';
 
@@ -77,12 +70,10 @@ export const sendEmailFallback = inngest.createFunction(
 
                 if (typeof recipients !== 'undefined' && typeof subject !== 'undefined') {
                   const messageId = messageIdHeader.toString();
-                  const iterableRecipients = Array.isArray(recipients)
-                    ? recipients
-                    : [recipients];
+                  const iterableRecipients = Array.isArray(recipients) ? recipients : [recipients];
 
                   for (const recipient of iterableRecipients) {
-                    const recipientUserObj = await getUserByEmail(db, recipient.addr)
+                    const recipientUserObj = await getUserByEmail(db, recipient.addr);
                     if (typeof recipientUserObj === 'undefined') continue;
 
                     const round = getEmailThreadRound(event);

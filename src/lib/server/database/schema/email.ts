@@ -1,4 +1,12 @@
-import { bigint, pgEnum, pgSchema, smallint, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+import {
+  bigint,
+  pgEnum,
+  pgSchema,
+  smallint,
+  text,
+  timestamp,
+  uniqueIndex,
+} from 'drizzle-orm/pg-core';
 import { SQL, sql } from 'drizzle-orm';
 
 import { draft, user } from './app';
@@ -50,7 +58,7 @@ export const inngestEventNameEnum = pgEnum('inngest_event_type_enum', [
   'draft/user.assigned.email.batch',
   'draft/user.assigned.email.fallback',
 ]);
-export type InngestEventName = typeof inngestEventNameEnum.enumValues[number];
+export type InngestEventName = (typeof inngestEventNameEnum.enumValues)[number];
 
 export const emailThread = email.table(
   'email_thread',
@@ -61,8 +69,7 @@ export const emailThread = email.table(
       .references(() => draft.id, { onUpdate: 'cascade' })
       .notNull(),
     eventType: inngestEventNameEnum('event_type').notNull(),
-    round: smallint('round')
-      .unique('unique_round', { nulls: 'not distinct' }),
+    round: smallint('round').unique('unique_round', { nulls: 'not distinct' }),
     recipientUserId: ulid('recipient_user_id')
       .references(() => user.id, { onUpdate: 'cascade', onDelete: 'cascade' })
       .notNull(),
@@ -74,7 +81,12 @@ export const emailThread = email.table(
   },
   ({ draftId, eventType, round, recipientUserId, gmailThreadId }) => [
     // Add unique index on draftId, event type, round, and recipient user ID
-    uniqueIndex('thread_draft_event_round_lab_recipient_idx').on(draftId, eventType, round, recipientUserId),
+    uniqueIndex('thread_draft_event_round_lab_recipient_idx').on(
+      draftId,
+      eventType,
+      round,
+      recipientUserId,
+    ),
 
     // Add unique index on thread ID and recipient user ID
     uniqueIndex('thread_recipient_idx').on(gmailThreadId, recipientUserId),

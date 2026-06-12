@@ -3,27 +3,14 @@ import assert from 'node:assert/strict';
 import { NonRetriableError } from 'inngest';
 
 import { db } from '$lib/server/database';
-import {
-  DraftConcludedBatchEmailEvent,
-  DraftConcludedFallbackEmailEvent,
-  DraftFinalizationBatchEmailEvent,
-  DraftFinalizationFallbackEmailEvent,
-  LotteryInterventionBatchEmailEvent,
-  LotteryInterventionFallbackEmailEvent,
-  RoundStartedBatchEmailEvent,
-  RoundStartedFallbackEmailEvent,
-  RoundSubmittedBatchEmailEvent,
-  RoundSubmittedFallbackEmailEvent,
-  UserAssignedBatchEmailEvent,
-  UserAssignedFallbackEmailEvent,
-} from '$lib/server/inngest/schema';
+import { DraftConcludedBatchEmailEvent, DraftConcludedFallbackEmailEvent, DraftFinalizationBatchEmailEvent, DraftFinalizationFallbackEmailEvent, LotteryInterventionBatchEmailEvent, LotteryInterventionFallbackEmailEvent, RoundStartedBatchEmailEvent, RoundStartedFallbackEmailEvent, RoundSubmittedBatchEmailEvent, RoundSubmittedFallbackEmailEvent, UserAssignedBatchEmailEvent, UserAssignedFallbackEmailEvent } from '$lib/server/inngest/schema';
 import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
+import { getUserByEmail, upsertEmailThread } from '$lib/server/database/drizzle';
 import type { GmailBatchSendResult } from '$lib/server/google/http';
 import { GmailError, GmailScopeError } from '$lib/server/google';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
-import { getUserByEmail, upsertEmailThread } from '$lib/server/database/drizzle';
 
 import { createEmailMessage, getEmailThreadRound, getRefreshedCredentials, isRetryableGmailStatus } from './shared';
 
@@ -158,7 +145,7 @@ export const sendBatchedEmails = inngest.createFunction(
                         if (typeof recipientUserObj === 'undefined') continue;
 
                         const round = getEmailThreadRound(event);
-                        
+
                         await upsertEmailThread(
                           db,
                           BigInt(event.data.draftId),
