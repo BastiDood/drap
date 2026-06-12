@@ -9,13 +9,14 @@ import { Logger } from '$lib/server/telemetry/logger';
 import { OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET } from '$lib/server/env/google';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
-import { GmailMessageSendResult, TokenResponse } from './schema';
+import { GmailMessageIdResult, GmailMessageSendResult, TokenResponse } from './schema';
 import { parseBatchSendResponse } from './http';
 
 const SERVICE_NAME = 'lib.server.google';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
+const GMAIL_METADATA_SCOPE = 'https://www.googleapis.com/auth/gmail.metadata';
 const GMAIL_SEND_SCOPE = 'https://www.googleapis.com/auth/gmail.send';
 
 export class GoogleOAuthClient {
@@ -155,6 +156,55 @@ export class GoogleOAuthClient {
         throw GmailError.throwNew(response.status, await response.text());
 
       return await parseBatchSendResponse(response);
+    });
+  }
+
+  async getEmailMessageId(resultId: string) {
+    return await tracer.asyncSpan('google-oauth-client-get-email-message-id', async span => {
+      if (!this.scopes.includes(GMAIL_METADATA_SCOPE)) GmailScopeError.throwNew(this.scopes);
+      span.setAttribute('email.metadata.id', resultId);
+
+      const baseUrl = new URL(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${resultId}`);
+      const queryParams = new URLSearchParams({
+        format: 'metadata',
+        metadataHeaders: 'Message-ID',
+      });
+
+      logger.trace('sending email Message-ID metadata request to gmail api...');
+      const response = await fetch(`${baseUrl}?${queryParams.toString()}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          Accept: 'application/json',
+        },
+      });
+
+      logger.trace('reading response...');
+      switch (response.status) {
+        case 200: {
+          const json = await response.json();
+          const result = parse(GmailMessageIdResult, json);
+
+          const [gmailMessageIdObj] = result.payload.headers;
+          if (typeof gmailMessageIdObj === 'undefined') return GmailError.throwNew(500, 'missing Message-ID header');
+          
+          const { value: gmailMessageId } = gmailMessageIdObj; 
+
+          logger.info('received successful response from gmail api', {
+            'email.message.id': result.id,
+            'email.message.message_id': gmailMessageId,
+          });
+
+          return gmailMessageId;
+        }
+        case 429:
+        // TODO: Handle rate limits.
+        // falls through
+        default: {
+          const body = await response.text();
+          return GmailError.throwNew(response.status, body);
+        }
+      }
     });
   }
 }
