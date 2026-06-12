@@ -362,7 +362,7 @@ async function updateCandidateSender(
 }
 
 export function getEmailThreadEventType(event: RenderableEmailEvent) {
-  switch(event.name) {
+  switch (event.name) {
     case 'draft/round.started.email.batch':
     case 'draft/round.started.email.fallback':
       return 'round-started';
