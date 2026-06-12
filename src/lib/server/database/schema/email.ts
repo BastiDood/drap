@@ -6,7 +6,6 @@ import {
   text,
   timestamp,
   unique,
-  uniqueIndex,
 } from 'drizzle-orm/pg-core';
 import { SQL, sql } from 'drizzle-orm';
 
@@ -90,7 +89,7 @@ export const emailThread = email.table(
     ).nullsNotDistinct(),
 
     // Add unique index on thread ID and recipient user ID
-    uniqueIndex('thread_recipient_idx').on(gmailThreadId, recipientUserId),
+    unique('thread_recipient_idx').on(gmailThreadId, recipientUserId),
   ],
 );
 export type EmailThread = typeof emailThread.$inferSelect;
