@@ -27,7 +27,7 @@ ENV ORIGIN=${PUBLIC_ORIGIN}
 
 # Build the app and prune dev dependencies. The final image only copies
 # build/ and node_modules/ from this stage.
-COPY svelte.config.js vite.config.js tsconfig.json ./
+COPY vite.config.js tsconfig.json ./
 COPY static/ static/
 COPY src/ src/
 RUN pnpm build && pnpm prune --prod --ignore-scripts --config.confirm-modules-purge=false

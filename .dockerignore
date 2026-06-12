@@ -7,7 +7,6 @@
 !pnpm-workspace.yaml
 
 # Vite + SvelteKit
-!svelte.config.js
 !vite.config.js
 !tsconfig.json
 
