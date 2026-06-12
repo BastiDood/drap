@@ -22,3 +22,17 @@ export const GmailMessageSendResult = v.object({
   internalDate: v.optional(v.string()),
 });
 export type GmailMessageSendResult = v.InferOutput<typeof GmailMessageSendResult>;
+
+export const GmailMessageIdResult = v.object({
+  ...GmailMessageSendResult.entries,
+  payload: v.object({
+    headers: v.pipe(
+      v.array(v.object({
+        name: v.literal('Message-ID'),
+        value: v.string(),
+      })),
+      v.length(1),
+    ),
+  }),
+});
+export type GmailMessageIdResult = v.InferOutput<typeof GmailMessageIdResult>;
