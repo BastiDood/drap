@@ -9,8 +9,6 @@ import svelteParser from 'svelte-eslint-parser';
 import ts from 'typescript-eslint';
 import { defineConfig } from 'eslint/config';
 
-import svelteConfig from './svelte.config.js';
-
 export default defineConfig(
   {
     ignores: [
@@ -213,7 +211,6 @@ export default defineConfig(
         projectService: true,
         extraFileExtensions: ['.svelte'],
         parser: ts.parser,
-        svelteConfig,
       },
     },
     rules: {
