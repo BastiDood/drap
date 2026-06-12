@@ -501,39 +501,43 @@ export async function getEmailThreadData(
 
 export async function upsertEmailThread(
   db: DbConnection,
-  emailThreadId: string,
-  messageId: string,
   draftId: bigint,
-  emailSubject: string,
-  recipientEmail: string,
+  eventType: schema.InngestEventName,
+  round: number | null,
+  recipientUserId: string,
+  gmailThreadId: string,
+  gmailMessageId: string,
 ) {
   return await tracer.asyncSpan('upsert-email-thread', async span => {
     span.setAttributes({
       'database.email_thread.draft_id': draftId.toString(),
-      'database.email_thread.email_subject': emailSubject,
-      'database.email_thread.recipient_email': recipientEmail,
+      'database.email_thread.event_type': eventType,
+      ...(round !== null && { 'database.email_thread.round': round }),
+      'database.email_thread.recipient_user_id': recipientUserId,
     });
     return await db
       .insert(schema.emailThread)
       .values({
-        emailThreadId,
-        messageIdsStr: messageId,
         draftId,
-        emailSubject,
-        recipientEmail,
+        eventType,
+        round,
+        recipientUserId,
+        gmailThreadId,
+        gmailMessageIds: [gmailMessageId],
       })
       .onConflictDoUpdate({
         target: [
           schema.emailThread.draftId,
-          schema.emailThread.emailSubject,
-          schema.emailThread.recipientEmail,
+          schema.emailThread.eventType,
+          schema.emailThread.round,
+          schema.emailThread.recipientUserId,
         ],
         set: {
-          messageIdsStr: sql<string>`${schema.emailThread.messageIdsStr} || ${` ${messageId}`}`,
+          gmailMessageIds: sql<string>`array_append(${schema.emailThread.gmailMessageIds}, ${gmailMessageId})`,
         },
       })
       .returning({
-        emailThreadId: schema.emailThread.emailThreadId,
+        gmailThreadId: schema.emailThread.gmailThreadId,
       })
       .then(assertSingle);
   });

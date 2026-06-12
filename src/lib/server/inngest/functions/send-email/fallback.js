@@ -14,9 +14,9 @@ import { GmailError, GmailScopeError } from '$lib/server/google';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
-import { upsertEmailThread } from '$lib/server/database/drizzle';
+import { getUserByEmail, upsertEmailThread } from '$lib/server/database/drizzle';
 
-import { createEmailMessage, getRefreshedCredentials, isRetryableGmailStatus } from './shared';
+import { createEmailMessage, getEmailThreadRound, getRefreshedCredentials, isRetryableGmailStatus } from './shared';
 
 const SERVICE_NAME = 'inngest.functions.send-email.fallback';
 const logger = Logger.byName(SERVICE_NAME);
@@ -69,31 +69,33 @@ export const sendEmailFallback = inngest.createFunction(
 
             // Create/update the email thread
             try {
-              if ('draftId' in event.data) {
-                const messageIdHeader = message.getHeader('Message-ID');
+              const messageIdHeader = message.getHeader('Message-ID');
 
-                if (typeof messageIdHeader !== 'undefined') {
-                  const recipients = message.getRecipients();
+              if (typeof messageIdHeader !== 'undefined') {
+                const recipients = message.getRecipients();
+                const subject = message.getSubject();
 
-                  if (typeof recipients !== 'undefined') {
-                    const subject = message.getSubject();
+                if (typeof recipients !== 'undefined' && typeof subject !== 'undefined') {
+                  const messageId = messageIdHeader.toString();
+                  const iterableRecipients = Array.isArray(recipients)
+                    ? recipients
+                    : [recipients];
 
-                    if (typeof subject !== 'undefined') {
-                      const messageId = messageIdHeader.toString();
-                      const iterableRecipients = Array.isArray(recipients)
-                        ? recipients
-                        : [recipients];
+                  for (const recipient of iterableRecipients) {
+                    const recipientUserObj = await getUserByEmail(db, recipient.addr)
+                    if (typeof recipientUserObj === 'undefined') continue;
 
-                      for (const recipient of iterableRecipients)
-                        await upsertEmailThread(
-                          db,
-                          result.threadId,
-                          messageId,
-                          BigInt(event.data.draftId),
-                          subject,
-                          recipient.addr,
-                        );
-                    }
+                    const round = getEmailThreadRound(event);
+
+                    await upsertEmailThread(
+                      db,
+                      BigInt(event.data.draftId),
+                      event.name,
+                      round,
+                      recipientUserObj.id,
+                      result.threadId,
+                      messageId,
+                    );
                   }
                 }
               }
