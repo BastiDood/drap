@@ -143,39 +143,35 @@ export const sendBatchedEmails = inngest.createFunction(
 
               // Create/update the email threads
               try {
+                const gmailMessageId = await client.getEmailMessageId(result.value.id);
                 const messageContent = messages.get(contentId);
 
                 if (typeof messageContent !== 'undefined') {
                   const { message } = messageContent;
-                  const messageIdHeader = message.getHeader('Message-ID');
+                  const recipients = message.getRecipients();
+                  const subject = message.getSubject();
 
-                  if (typeof messageIdHeader !== 'undefined') {
-                    const recipients = message.getRecipients();
-                    const subject = message.getSubject();
+                  if (typeof recipients !== 'undefined' && typeof subject !== 'undefined') {
+                    const iterableRecipients = Array.isArray(recipients)
+                      ? recipients
+                      : [recipients];
 
-                    if (typeof recipients !== 'undefined' && typeof subject !== 'undefined') {
-                      const messageId = messageIdHeader.toString();
-                      const iterableRecipients = Array.isArray(recipients)
-                        ? recipients
-                        : [recipients];
+                    for (const recipient of iterableRecipients) {
+                      const recipientUserObj = await getUserByEmail(db, recipient.addr);
+                      if (typeof recipientUserObj === 'undefined') continue;
 
-                      for (const recipient of iterableRecipients) {
-                        const recipientUserObj = await getUserByEmail(db, recipient.addr);
-                        if (typeof recipientUserObj === 'undefined') continue;
+                      const inngestEventName = getEmailThreadEventType(event);
+                      const round = getEmailThreadRound(event);
 
-                        const inngestEventName = getEmailThreadEventType(event);
-                        const round = getEmailThreadRound(event);
-
-                        await upsertEmailThread(
-                          db,
-                          BigInt(event.data.draftId),
-                          inngestEventName,
-                          round,
-                          recipientUserObj.id,
-                          result.value.threadId,
-                          messageId,
-                        );
-                      }
+                      await upsertEmailThread(
+                        db,
+                        BigInt(event.data.draftId),
+                        inngestEventName,
+                        round,
+                        recipientUserObj.id,
+                        result.value.threadId,
+                        gmailMessageId,
+                      );
                     }
                   }
                 }
