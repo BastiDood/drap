@@ -225,6 +225,13 @@
       "when": 1776472044776,
       "tag": "0031_draft-student-avatar-object-key",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1781294468255,
+      "tag": "0032_add-email-thread-table",
+      "breakpoints": true
     }
   ]
 }
