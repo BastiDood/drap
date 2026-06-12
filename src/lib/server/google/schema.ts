@@ -29,7 +29,7 @@ export const GmailMessageIdResult = v.object({
     headers: v.pipe(
       v.array(
         v.object({
-          name: v.literal('Message-ID'),
+          name: v.pipe(v.string(), v.toLowerCase(), v.literal('Message-ID'.toLowerCase())),
           value: v.string(),
         }),
       ),
