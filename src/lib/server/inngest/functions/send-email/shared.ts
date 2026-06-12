@@ -176,12 +176,13 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
 
   // The BigInt construction should be safe since number has a limit and bigint doesn't
   try {
+    const inngestEventName = getEmailThreadEventType(event);
     const round = getEmailThreadRound(event);
 
     const emailThreadData = await getEmailThreadData(
       db,
       BigInt(event.data.draftId),
-      event.name,
+      inngestEventName,
       round,
       recipient,
     );
@@ -358,6 +359,31 @@ async function updateCandidateSender(
       .where(eq(dbSchema.candidateSender.userId, userId));
     logger.debug('updated candidate sender', { rowCount });
   });
+}
+
+export function getEmailThreadEventType(event: RenderableEmailEvent) {
+  switch(event.name) {
+    case 'draft/round.started.email.batch':
+    case 'draft/round.started.email.fallback':
+      return 'round-started';
+    case 'draft/round.submitted.email.batch':
+    case 'draft/round.submitted.email.fallback':
+      return 'round-submitted';
+    case 'draft/lottery.intervened.email.batch':
+    case 'draft/lottery.intervened.email.fallback':
+      return 'lottery-intervened';
+    case 'draft/draft.concluded.email.batch':
+    case 'draft/draft.concluded.email.fallback':
+      return 'draft-concluded';
+    case 'draft/draft.finalization.email.batch':
+    case 'draft/draft.finalization.email.fallback':
+      return 'draft-finalization';
+    case 'draft/user.assigned.email.batch':
+    case 'draft/user.assigned.email.fallback':
+      return 'user-assigned';
+    default:
+      throw new Error('unreachable email event type');
+  }
 }
 
 export function getEmailThreadRound(event: RenderableEmailEvent) {

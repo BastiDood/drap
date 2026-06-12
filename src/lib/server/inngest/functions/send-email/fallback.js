@@ -18,6 +18,7 @@ import { Tracer } from '$lib/server/telemetry/tracer';
 
 import {
   createEmailMessage,
+  getEmailThreadEventType,
   getEmailThreadRound,
   getRefreshedCredentials,
   isRetryableGmailStatus,
@@ -88,12 +89,13 @@ export const sendEmailFallback = inngest.createFunction(
                     const recipientUserObj = await getUserByEmail(db, recipient.addr);
                     if (typeof recipientUserObj === 'undefined') continue;
 
+                    const inngestEventName = getEmailThreadEventType(event);
                     const round = getEmailThreadRound(event);
 
                     await upsertEmailThread(
                       db,
                       BigInt(event.data.draftId),
-                      event.name,
+                      inngestEventName,
                       round,
                       recipientUserObj.id,
                       result.threadId,

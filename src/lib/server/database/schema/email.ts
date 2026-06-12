@@ -36,18 +36,12 @@ export type DesignatedSender = typeof designatedSender.$inferSelect;
 export type NewDesignatedSender = typeof designatedSender.$inferInsert;
 
 export const inngestEventNameEnum = pgEnum('inngest_event_type_enum', [
-  'draft/round.started.email.batch',
-  'draft/round.started.email.fallback',
-  'draft/round.submitted.email.batch',
-  'draft/round.submitted.email.fallback',
-  'draft/lottery.intervened.email.batch',
-  'draft/lottery.intervened.email.fallback',
-  'draft/draft.concluded.email.batch',
-  'draft/draft.concluded.email.fallback',
-  'draft/draft.finalization.email.batch',
-  'draft/draft.finalization.email.fallback',
-  'draft/user.assigned.email.batch',
-  'draft/user.assigned.email.fallback',
+  'round-started',
+  'round-submitted',
+  'lottery-intervened',
+  'draft-concluded',
+  'draft-finalization',
+  'user-assigned',
 ]);
 export type InngestEventName = (typeof inngestEventNameEnum.enumValues)[number];
 
