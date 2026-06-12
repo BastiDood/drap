@@ -20,6 +20,7 @@ import { encryptSecret } from '$lib/crypto';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
+const GMAIL_METADATA_SCOPE = 'https://www.googleapis.com/auth/gmail.metadata';
 const GMAIL_SEND_SCOPE = 'https://www.googleapis.com/auth/gmail.send';
 
 const SERVICE_NAME = 'routes.dashboard.oauth.callback';
@@ -138,7 +139,8 @@ export async function GET({ fetch, cookies, setHeaders, url: { searchParams } })
       // it would be possible for them to be upgraded to a candidate sender. This
       // shouldn't be a huge issue in practice because admins should be careful about
       // who they grant the "designated sender" privileges to.
-      const hasExtendedScope = scope.includes(GMAIL_SEND_SCOPE);
+      const hasExtendedScope =
+        scope.includes(GMAIL_METADATA_SCOPE) && scope.includes(GMAIL_SEND_SCOPE);
 
       return await db.transaction(
         async db => {

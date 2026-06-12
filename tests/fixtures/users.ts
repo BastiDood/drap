@@ -838,7 +838,10 @@ const testCandidateSender = testAdmin.extend<{ seededCandidateSender: string }>(
   async seededCandidateSender({ adminUserId, database }, use) {
     await database.insert(schema.candidateSender).values({
       userId: adminUserId,
-      scopes: ['https://www.googleapis.com/auth/gmail.send'],
+      scopes: [
+        'https://www.googleapis.com/auth/gmail.metadata',
+        'https://www.googleapis.com/auth/gmail.send',
+      ],
       expiredAt: sql`now() + interval '1 hour'`,
       accessTokenIv: sql`''::bytea`,
       accessTokenCipher: sql`''::bytea`,
