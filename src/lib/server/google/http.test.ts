@@ -8,6 +8,7 @@ import {
   MissingBatchPartContentIdError,
   MissingBatchPartContentTypeError,
   NonHttpBatchPartError,
+  parseBatchMetadataResponse,
   parseBatchSendResponse,
 } from './http';
 
@@ -64,6 +65,30 @@ function createSuccessfulResponseLines(body: string, etag: string) {
 
 function createNotModifiedResponseLines(etag: string) {
   return ['HTTP/1.1 304 Not Modified', 'Content-Length: 0', `ETag: "${etag}"`, '', ''];
+}
+
+function createGmailMetadataBody({
+  id,
+  threadId,
+  labelIds,
+  internalDate,
+  headerMessageId,
+}: {
+  id: string;
+  threadId: string;
+  labelIds: string[];
+  internalDate?: string;
+  headerMessageId: string;
+}) {
+  return JSON.stringify({
+    id,
+    threadId,
+    labelIds,
+    internalDate,
+    payload: {
+      headers: [{ name: 'Message-ID', value: headerMessageId }],
+    },
+  });
 }
 
 function createServerErrorResponseLines(body: string) {
@@ -353,5 +378,133 @@ describe('parseBatchSendResponse', () => {
     ]);
 
     await expect(parseBatchSendResponse(response)).rejects.toThrow();
+  });
+});
+
+describe('parseBatchMetadataResponse', () => {
+  it('parses a multipart response into a result map with message ids', async () => {
+    const ponyBody = createGmailMetadataBody({
+      id: 'pony-message-id',
+      threadId: 'pony-thread-id',
+      labelIds: ['SENT'],
+      internalDate: '1735689600000',
+      headerMessageId: '<pony@mail.example.com>',
+    });
+    const sheepBody = createGmailMetadataBody({
+      id: 'sheep-message-id',
+      threadId: 'sheep-thread-id',
+      labelIds: ['SENT', 'UNREAD'],
+      headerMessageId: '<sheep@mail.example.com>',
+    });
+    const response = createMultipartResponse([
+      createApplicationHttpPart(ITEM1, createSuccessfulResponseLines(ponyBody, 'etag/pony')),
+      createApplicationHttpPart(ITEM2, createSuccessfulResponseLines(sheepBody, 'etag/sheep')),
+      createApplicationHttpPart(ITEM3, createNotModifiedResponseLines('etag/animals')),
+    ]);
+
+    const results = await parseBatchMetadataResponse(response);
+
+    expect(results).toEqual(
+      new Map([
+        [
+          ITEM1,
+          {
+            ok: true,
+            value: {
+              id: 'pony-message-id',
+              threadId: 'pony-thread-id',
+              labelIds: ['SENT'],
+              internalDate: '1735689600000',
+              payload: { headers: [{ name: 'message-id', value: '<pony@mail.example.com>' }] },
+            },
+          },
+        ],
+        [
+          ITEM2,
+          {
+            ok: true,
+            value: {
+              id: 'sheep-message-id',
+              threadId: 'sheep-thread-id',
+              labelIds: ['SENT', 'UNREAD'],
+              payload: { headers: [{ name: 'message-id', value: '<sheep@mail.example.com>' }] },
+            },
+          },
+        ],
+        [
+          ITEM3,
+          {
+            ok: false,
+            status: 304,
+            body: '',
+          },
+        ],
+      ]),
+    );
+  });
+
+  it('normalizes bracketed response content ids', async () => {
+    const body = createGmailMetadataBody({
+      id: 'pony-message-id',
+      threadId: 'pony-thread-id',
+      labelIds: ['SENT'],
+      headerMessageId: '<pony@mail.example.com>',
+    });
+    const response = createMultipartResponse([
+      createApplicationHttpPart(ITEM1, createSuccessfulResponseLines(body, 'etag/pony')),
+    ]);
+
+    const results = await parseBatchMetadataResponse(response);
+
+    expect(Array.from(results.keys())).toEqual([ITEM1]);
+  });
+
+  it('throws on duplicate normalized response content ids', async () => {
+    const body = createGmailMetadataBody({
+      id: 'pony-message-id',
+      threadId: 'pony-thread-id',
+      labelIds: ['SENT'],
+      headerMessageId: '<pony@mail.example.com>',
+    });
+    const response = createMultipartResponse([
+      createApplicationHttpPart(ITEM1, createSuccessfulResponseLines(body, 'etag/pony')),
+      createApplicationHttpPart(ITEM1, createNotModifiedResponseLines('etag/animals')),
+    ]);
+
+    await expect(parseBatchMetadataResponse(response)).rejects.toBeInstanceOf(
+      DuplicateBatchContentIdError,
+    );
+  });
+
+  it('returns failure items with status and body passthrough for non-2xx parts', async () => {
+    const errorBody = JSON.stringify({ error: { code: 500, message: 'backend failure' } });
+    const response = createMultipartResponse([
+      createApplicationHttpPart(ITEM1, createServerErrorResponseLines(errorBody)),
+    ]);
+
+    await expect(parseBatchMetadataResponse(response)).resolves.toEqual(
+      new Map([[ITEM1, { ok: false, status: 500, body: errorBody }]]),
+    );
+  });
+
+  it('throws when a successful part contains invalid json', async () => {
+    const response = createMultipartResponse([
+      createApplicationHttpPart(ITEM1, createSuccessfulResponseLines('{', 'etag/pony')),
+    ]);
+
+    await expect(parseBatchMetadataResponse(response)).rejects.toBeInstanceOf(SyntaxError);
+  });
+
+  it('throws when a successful part is missing payload headers', async () => {
+    const body = JSON.stringify({
+      id: 'pony-message-id',
+      threadId: 'pony-thread-id',
+      labelIds: ['SENT'],
+    });
+    const response = createMultipartResponse([
+      createApplicationHttpPart(ITEM1, createSuccessfulResponseLines(body, 'etag/pony')),
+    ]);
+
+    await expect(parseBatchMetadataResponse(response)).rejects.toThrow();
   });
 });
