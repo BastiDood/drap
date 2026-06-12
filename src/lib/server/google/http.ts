@@ -6,7 +6,7 @@ import { Logger } from '$lib/server/telemetry/logger';
 import { stripPrefix } from '$lib/strings';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
-import { GmailMessageSendResult } from './schema';
+import { GmailMessageIdResult, GmailMessageSendResult } from './schema';
 
 const SERVICE_NAME = 'lib.server.google.http';
 const logger = Logger.byName(SERVICE_NAME);
@@ -26,6 +26,29 @@ export function parseBatchSendResponse(response: Response) {
     const results = new Map<string, GmailBatchSendResult>();
     for (const part of multipart.parts) {
       const [contentId, result] = parseBatchSendPart(part);
+      const existing = results.get(contentId);
+      if (typeof existing === 'undefined') results.set(contentId, result);
+      else DuplicateBatchContentIdError.throwNew(contentId);
+    }
+
+    return results;
+  });
+}
+
+export function parseBatchMetadataResponse(response: Response) {
+  return tracer.asyncSpan('parse-batch-metadata-response', async () => {
+    const contentType = response.headers.get('Content-Type');
+    if (contentType === null) MissingBatchContentTypeError.throwNew();
+    if (!contentType.toLowerCase().startsWith('multipart/'))
+      InvalidBatchContentTypeError.throwNew(contentType);
+    if (!/;\s*boundary=/iu.test(contentType)) MissingBatchBoundaryError.throwNew(contentType);
+
+    const body = new Uint8Array(await response.arrayBuffer());
+    const multipart = await Multipart.blob(new Blob([body], { type: contentType }));
+
+    const results = new Map<string, GmailBatchMetadataResult>();
+    for (const part of multipart.parts) {
+      const [contentId, result] = parseBatchMetadataPart(part);
       const existing = results.get(contentId);
       if (typeof existing === 'undefined') results.set(contentId, result);
       else DuplicateBatchContentIdError.throwNew(contentId);
@@ -130,6 +153,44 @@ export interface GmailBatchSendFailure {
 }
 
 export type GmailBatchSendResult = GmailBatchSendSuccess | GmailBatchSendFailure;
+
+function parseBatchMetadataPart(part: Multipart['parts'][number]): [string, GmailBatchMetadataResult] {
+  return tracer.span('parse-batch-metadata-part', span => {
+    span.setAttribute('http.part.size', part.body.byteLength);
+    const contentType = part.headers.get('Content-Type');
+    if (contentType === null) MissingBatchPartContentTypeError.throwNew();
+    if (!contentType.toLowerCase().startsWith('application/http'))
+      NonHttpBatchPartError.throwNew(contentType);
+
+    const partContentId = part.headers.get('Content-ID');
+    if (partContentId === null) MissingBatchPartContentIdError.throwNew();
+
+    const contentId = normalizeBatchContentId(partContentId);
+    const { status, body } = parseApplicationHttpResponse(Buffer.from(part.body));
+
+    if (status >= 200 && status < 300) {
+      logger.debug('successfully parsed gmail batch part', { 'http.part.content_id': contentId });
+      const value = parse(GmailMessageIdResult, JSON.parse(body));
+      return [contentId, { ok: true, value }];
+    }
+
+    logger.warn('failed to parse gmail batch part', { 'http.part.status': status });
+    return [contentId, { ok: false, status, body }];
+  });
+}
+
+export interface GmailBatchMetadataSuccess {
+  ok: true;
+  value: GmailMessageIdResult;
+}
+
+export interface GmailBatchMetadataFailure {
+  ok: false;
+  status: number;
+  body: string;
+}
+
+export type GmailBatchMetadataResult = GmailBatchMetadataSuccess | GmailBatchMetadataFailure;
 
 export class NonHttpBatchPartError extends Error {
   constructor(public readonly contentType: string) {
