@@ -1,4 +1,5 @@
-import { bigint, pgEnum, pgSchema, primaryKey, text, timestamp } from 'drizzle-orm/pg-core';
+import { bigint, pgEnum, pgSchema, smallint, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+import { SQL, sql } from 'drizzle-orm';
 
 import { draft, user } from './app';
 
@@ -54,24 +55,28 @@ export type InngestEventName = typeof inngestEventNameEnum.enumValues[number];
 export const emailThread = email.table(
   'email_thread',
   {
-    // GMail thread ID
-    emailThreadId: text('email_thread_id').notNull(),
-    // Store the message IDs of the emails in the chain in a space-delimited string
-    // Assume that the system is replying to itself
-    messageIdsStr: text('message_ids_str').notNull(),
-    // Scope to a draft
-    draftId: bigint('draft_id', { mode: 'bigint' })
-      .notNull()
-      .references(() => draft.id, { onUpdate: 'cascade' }),
-    // Store the subject of the original email
-    emailSubject: text('email_subject').notNull(),
-    recipientEmail: text('recipient_email')
-      .notNull()
-      .references(() => user.email, { onUpdate: 'cascade', onDelete: 'cascade' }),
     createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+    id: bigint('id', { mode: 'bigint' }).notNull().generatedAlwaysAsIdentity().primaryKey(),
+    draftId: bigint('draft_id', { mode: 'bigint' })
+      .references(() => draft.id, { onUpdate: 'cascade' })
+      .notNull(),
+    eventType: inngestEventNameEnum('event_type').notNull(),
+    round: smallint('round')
+      .unique('unique_round', { nulls: 'not distinct' }),
+    recipientUserId: ulid('recipient_user_id')
+      .references(() => user.id, { onUpdate: 'cascade', onDelete: 'cascade' })
+      .notNull(),
+    gmailThreadId: text('gmail_thread_id').notNull(),
+    gmailMessageIds: text('gmail_message_ids').array().notNull(),
+    gmailMessageIdsText: text('gmail_message_ids_text')
+      .generatedAlwaysAs((): SQL => sql`array_to_string(${emailThread.gmailMessageIds}, ' ')`)
+      .notNull(),
   },
-  ({ draftId, emailSubject, recipientEmail }) => [
-    // Make primary key for faster lookup
-    primaryKey({ columns: [draftId, emailSubject, recipientEmail] }),
+  ({ draftId, eventType, round, recipientUserId, gmailThreadId }) => [
+    // Add unique index on draftId, event type, round, and recipient user ID
+    uniqueIndex('thread_draft_event_round_lab_recipient_idx').on(draftId, eventType, round, recipientUserId),
+
+    // Add unique index on thread ID and recipient user ID
+    uniqueIndex('thread_recipient_idx').on(gmailThreadId, recipientUserId),
   ],
 );
