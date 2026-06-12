@@ -312,13 +312,13 @@ export class BatchError extends Error {
 
 export class GmailScopeError extends Error {
   constructor(public readonly scopes: string[]) {
-    super(`missing gmail.send scope; available: ${scopes.join(', ')}`);
+    super(`missing gmail.* scope; available: ${scopes.join(', ')}`);
     this.name = 'GmailScopeError';
   }
 
   static throwNew(scopes: string[]): never {
     const error = new GmailScopeError(scopes);
-    logger.error('missing gmail.send scope', error, { 'error.scopes': scopes });
+    logger.error('missing gmail.* scope', error, { 'error.scopes': scopes });
     throw error;
   }
 }
