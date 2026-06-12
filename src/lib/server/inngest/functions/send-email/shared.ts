@@ -78,10 +78,7 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
     case 'draft/round.started.email.batch':
     case 'draft/round.started.email.fallback': {
       recipient = event.data.recipientEmail;
-      subject =
-        event.data.round === null
-          ? `[DRAP] Lottery Round for Draft ${event.data.draftYear} has begun!`
-          : `[DRAP] Round #${event.data.round} for Draft ${event.data.draftYear} has begun!`;
+      subject = `[DRAP] Round for Draft ${event.data.draftYear} has begun!`;
       html = await emailRenderer.render(RoundStarted, {
         props: {
           draftYear: event.data.draftYear,
@@ -93,9 +90,7 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
     case 'draft/round.submitted.email.batch':
     case 'draft/round.submitted.email.fallback': {
       recipient = event.data.recipientEmail;
-      subject = event.data.isCreate
-        ? `[DRAP] Acknowledgement from ${event.data.labId.toUpperCase()} for Round #${event.data.round} of Draft ${event.data.draftYear}`
-        : `[DRAP] Preference Update from ${event.data.labId.toUpperCase()} for Round #${event.data.round} of Draft ${event.data.draftYear}`;
+      subject = `[DRAP] Update for Round #${event.data.round} of Draft ${event.data.draftYear}`
       html = await emailRenderer.render(RoundSubmitted, {
         props: {
           labName: event.data.labName,
