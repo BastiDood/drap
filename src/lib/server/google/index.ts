@@ -10,7 +10,7 @@ import { OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET } from '$lib/server/env/google';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 import { GmailMessageIdResult, GmailMessageSendResult, TokenResponse } from './schema';
-import { parseBatchSendResponse } from './http';
+import { parseBatchMetadataResponse, parseBatchSendResponse } from './http';
 
 const SERVICE_NAME = 'lib.server.google';
 const logger = Logger.byName(SERVICE_NAME);
@@ -208,6 +208,57 @@ export class GoogleOAuthClient {
           return GmailError.throwNew(response.status, body);
         }
       }
+    });
+  }
+  
+  /** Bulk version of {@linkcode getEmailMessageId}. */
+  async getEmailMessageIds(messages: Map<string, { resultId: string }>) {
+    return await tracer.asyncSpan('google-oauth-client-eet-email-message-ids', async span => {
+      if (!this.scopes.includes(GMAIL_METADATA_SCOPE)) GmailScopeError.throwNew(this.scopes);
+      if (messages.size > 100) BatchError.throwNew(messages.size);
+      span.setAttribute('messages.count', messages.size);
+
+      const queryParams = new URLSearchParams({
+        format: 'metadata',
+        metadataHeaders: 'Message-ID',
+      });
+
+      const multipart = new Multipart(
+        Array.from(messages.entries(), ([contentId, { resultId }]) => {
+          const encoder = new TextEncoder();
+          const body = encoder.encode(
+            HttpRawRequest.toString(
+              {
+                httpVersion: '1.1',
+                method: 'GET',
+                url: `https://gmail.googleapis.com/gmail/v1/users/me/messages/${resultId}?${queryParams}`,
+              },
+              { Accept: 'application/json' },
+            ),
+          );
+          return new Component(
+            { 'Content-ID': `<${contentId}>`, 'Content-Type': 'application/http' },
+            body,
+          );
+        }),
+      );
+
+      const contentType = multipart.headers.get('Content-Type');
+      assert(contentType !== null, 'missing content type when sending multipart request');
+
+      const response = await fetch('https://www.googleapis.com/batch/gmail/v1', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          'Content-Type': contentType,
+        },
+        body: multipart.bytes(),
+      });
+
+      if (response.status !== 200)
+        throw GmailError.throwNew(response.status, await response.text());
+
+      return await parseBatchMetadataResponse(response);
     });
   }
 }
