@@ -63,7 +63,7 @@ export const emailThread = email.table(
   },
   ({ draftId, eventType, round, recipientUserId, gmailThreadId }) => [
     // Add unique index on draftId, event type, round, and recipient user ID
-    unique('thread_draft_event_round_lab_recipient_idx')
+    unique('thread_draft_event_round_recipient_idx')
       .on(draftId, eventType, round, recipientUserId)
       .nullsNotDistinct(),
 
