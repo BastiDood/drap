@@ -80,3 +80,5 @@ export const emailThread = email.table(
     uniqueIndex('thread_recipient_idx').on(gmailThreadId, recipientUserId),
   ],
 );
+export type EmailThread = typeof emailThread.$inferSelect;
+export type NewEmailThread = typeof emailThread.$inferInsert;
