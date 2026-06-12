@@ -178,6 +178,7 @@ export type DraftFinalizationFallbackEmailSchema = v.InferOutput<
 
 export const UserAssignedBatchEmailEvent = eventType('draft/user.assigned.email.batch', {
   schema: v.object({
+    draftId: v.number(),
     labId: v.string(),
     labName: v.string(),
     userEmail: v.string(),
@@ -190,6 +191,7 @@ export type UserAssignedBatchEmailSchema = v.InferOutput<typeof UserAssignedBatc
 export const UserAssignedFallbackEmailEvent = eventType('draft/user.assigned.email.fallback', {
   schema: v.object({
     id: v.string(),
+    draftId: v.number(),
     labId: v.string(),
     labName: v.string(),
     userEmail: v.string(),

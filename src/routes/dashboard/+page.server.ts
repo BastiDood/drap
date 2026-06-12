@@ -114,6 +114,7 @@ const SendEmailFormData = v.variant('event', [
   }),
   v.object({
     event: v.literal('draft/user.assigned.email.batch'),
+    draftId: v.number(),
     labId: v.string(),
     userEmail: v.string(),
   }),
@@ -570,6 +571,7 @@ export const actions = {
 
                 await inngest.send(
                   UserAssignedBatchEmailEvent.create({
+                    draftId: parsed.draftId,
                     labId: parsed.labId,
                     labName,
                     userEmail: parsed.userEmail,

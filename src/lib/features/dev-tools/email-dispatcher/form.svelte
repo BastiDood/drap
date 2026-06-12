@@ -204,6 +204,10 @@
       </div>
     {:else if selectedEvent === 'draft/user.assigned.email.batch'}
       <div class="space-y-2">
+        <Label for="draftId">Draft ID</Label>
+        <Input type="number" name="draftId" id="draftId" min="1" required placeholder="1" />
+      </div>
+      <div class="space-y-2">
         <Label for="labId">Lab ID</Label>
         <Input type="text" name="labId" id="labId" required placeholder="ndsl" />
       </div>

@@ -820,6 +820,7 @@ export const actions = {
         ]);
         await inngest.send(
           UserAssignedBatchEmailEvent.create({
+            draftId: Number(draftId),
             labId,
             labName,
             userEmail: assignedUser.email,
