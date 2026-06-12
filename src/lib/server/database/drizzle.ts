@@ -188,6 +188,7 @@ export async function getDraftNotificationRecipients(db: DbConnection, draftId: 
         givenName: schema.user.givenName,
         familyName: schema.user.familyName,
         avatarUrl: schema.user.avatarUrl,
+        labId: schema.user.labId,
         labName: schema.lab.name,
       })
       .from(schema.user)
@@ -470,14 +471,14 @@ export async function getEmailThreadData(
   draftId: bigint,
   eventType: schema.InngestEventName,
   round: number | null,
-  recipientEmail: string,
+  recipientUserId: string,
 ) {
   return await tracer.asyncSpan('get-email-thread-data', async span => {
     span.setAttributes({
       'database.email_thread.draft_id': draftId.toString(),
       'database.email_thread.event_type': eventType,
       ...(round !== null && { 'database.email_thread.round': round }),
-      'database.email_thread.recipient_email': recipientEmail,
+      'database.email_thread.recipient_user_id': recipientUserId,
     });
     return await db
       .select({
@@ -485,60 +486,38 @@ export async function getEmailThreadData(
         gmailMessageIds: schema.emailThread.gmailMessageIds,
       })
       .from(schema.emailThread)
-      .innerJoin(schema.user, eq(schema.user.id, schema.emailThread.recipientUserId))
       .where(
         and(
           eq(schema.emailThread.draftId, draftId),
           eq(schema.emailThread.eventType, eventType),
           sql`${schema.emailThread.round} IS NOT DISTINCT FROM ${round}`,
-          eq(schema.user.email, recipientEmail),
+          eq(schema.emailThread.recipientUserId, recipientUserId),
         ),
       )
       .then(assertOptional);
   });
 }
 
-export async function upsertEmailThread(
-  db: DbConnection,
-  draftId: bigint,
-  eventType: schema.InngestEventName,
-  round: number | null,
-  recipientUserId: string,
-  gmailThreadId: string,
-  gmailMessageId: string,
-) {
-  return await tracer.asyncSpan('upsert-email-thread', async span => {
-    span.setAttributes({
-      'database.email_thread.draft_id': draftId.toString(),
-      'database.email_thread.event_type': eventType,
-      'database.email_thread.recipient_user_id': recipientUserId,
-    });
-    if (round !== null) span.setAttribute('database.email_thread.round', round.toString());
-    return await db
-      .insert(schema.emailThread)
-      .values({
-        draftId,
-        eventType,
-        round,
-        recipientUserId,
-        gmailThreadId,
-        gmailMessageIds: [gmailMessageId],
-      })
-      .onConflictDoUpdate({
-        target: [
-          schema.emailThread.draftId,
-          schema.emailThread.eventType,
-          schema.emailThread.round,
-          schema.emailThread.recipientUserId,
-        ],
-        set: {
-          gmailThreadId: sql`excluded.${sql.raw(schema.emailThread.gmailThreadId.name)}`,
-          gmailMessageIds: sql`array_cat(${schema.emailThread.gmailMessageIds}, excluded.${sql.raw(schema.emailThread.gmailMessageIds.name)})`,
-        },
-      })
-      .returning({
-        gmailThreadId: schema.emailThread.gmailThreadId,
-      })
-      .then(assertSingle);
+export async function upsertEmailThreads(db: DbConnection, rows: schema.NewEmailThread[]) {
+  return await tracer.asyncSpan('upsert-email-threads', async span => {
+    span.setAttribute('database.email_thread.count', rows.length);
+    return rows.length === 0
+      ? []
+      : await db
+          .insert(schema.emailThread)
+          .values(rows)
+          .onConflictDoUpdate({
+            target: [
+              schema.emailThread.draftId,
+              schema.emailThread.eventType,
+              schema.emailThread.round,
+              schema.emailThread.recipientUserId,
+            ],
+            set: {
+              gmailThreadId: sql`excluded.${sql.raw(schema.emailThread.gmailThreadId.name)}`,
+              gmailMessageIds: sql`array_cat(${schema.emailThread.gmailMessageIds}, excluded.${sql.raw(schema.emailThread.gmailMessageIds.name)})`,
+            },
+          })
+          .returning({ gmailThreadId: schema.emailThread.gmailThreadId });
   });
 }

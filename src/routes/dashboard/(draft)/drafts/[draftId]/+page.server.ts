@@ -358,11 +358,12 @@ export const actions = {
       const facultyAndStaff = await getDraftNotificationRecipients(db, draftId);
       await inngest.send(
         roundsToNotify.flatMap(round =>
-          facultyAndStaff.map(({ email, givenName, familyName }) =>
+          facultyAndStaff.map(({ id, email, givenName, familyName }) =>
             RoundStartedBatchEmailEvent.create({
               draftId: Number(draftId),
               draftYear,
               round,
+              recipientUserId: id,
               recipientEmail: email,
               recipientName: `${givenName} ${familyName}`,
             }),
@@ -575,7 +576,7 @@ export const actions = {
           getUserById(db, studentUserId),
         ]);
         await inngest.send(
-          facultyAndStaff.map(({ email, givenName, familyName }) =>
+          facultyAndStaff.map(({ id, email, givenName, familyName }) =>
             LotteryInterventionBatchEmailEvent.create({
               draftId: Number(draftId),
               draftYear,
@@ -584,6 +585,7 @@ export const actions = {
               studentName: `${student.givenName} ${student.familyName}`,
               studentEmail: student.email,
               avatarUrl: student.avatarUrl,
+              recipientUserId: id,
               recipientEmail: email,
               recipientName: `${givenName} ${familyName}`,
             }),
@@ -722,10 +724,11 @@ export const actions = {
         }));
 
       await inngest.send(
-        draftAdmins.map(({ email, givenName, familyName }) =>
+        draftAdmins.map(({ id, email, givenName, familyName }) =>
           DraftConcludedBatchEmailEvent.create({
             draftId: Number(draftId),
             draftYear,
+            recipientUserId: id,
             recipientEmail: email,
             recipientName: `${givenName} ${familyName}`,
             lotteryAssignments,
@@ -803,10 +806,11 @@ export const actions = {
 
       const facultyAndStaff = await getDraftNotificationRecipients(db, draftId);
       await inngest.send(
-        facultyAndStaff.map(({ email, givenName, familyName }) =>
+        facultyAndStaff.map(({ id, email, givenName, familyName }) =>
           DraftFinalizationBatchEmailEvent.create({
             draftId: Number(draftId),
             draftYear,
+            recipientUserId: id,
             recipientEmail: email,
             recipientName: `${givenName} ${familyName}`,
           }),
@@ -823,6 +827,7 @@ export const actions = {
             draftId: Number(draftId),
             labId,
             labName,
+            recipientUserId: assignedUser.id,
             userEmail: assignedUser.email,
             userName: `${assignedUser.givenName} ${assignedUser.familyName}`,
           }),
@@ -997,7 +1002,7 @@ async function getUserById(db: DbConnection, userId: string) {
     span.setAttribute('database.user.id', userId);
     return await db.query.user
       .findFirst({
-        columns: { email: true, avatarUrl: true, givenName: true, familyName: true },
+        columns: { id: true, email: true, avatarUrl: true, givenName: true, familyName: true },
         where: ({ id }, { eq }) => eq(id, userId),
       })
       .then(assertDefined);

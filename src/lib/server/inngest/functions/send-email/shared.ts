@@ -182,7 +182,7 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
     BigInt(event.data.draftId),
     getEmailThreadEventType(event.name),
     getEmailThreadRound(event),
-    recipient,
+    event.data.recipientUserId,
   );
 
   if (typeof emailThreadData !== 'undefined') {
@@ -191,7 +191,7 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
     const latestGmailMessageId = messageIds.at(-1);
     if (typeof latestGmailMessageId === 'undefined') {
       mime.setHeaders({ 'Message-ID': `<${gmailMessageId}@${MESSAGE_ID_DOMAIN}>` });
-      return { message: mime, gmailMessageId, recipientEmail: recipient };
+      return { message: mime, gmailMessageId, recipientUserId: event.data.recipientUserId };
     }
 
     mime.setHeaders({
@@ -200,11 +200,16 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
       References: messageIds.join(' '),
     });
 
-    return { message: mime, gmailThreadId, gmailMessageId, recipientEmail: recipient };
+    return {
+      message: mime,
+      gmailThreadId,
+      gmailMessageId,
+      recipientUserId: event.data.recipientUserId,
+    };
   }
 
   mime.setHeaders({ 'Message-ID': `<${gmailMessageId}@${MESSAGE_ID_DOMAIN}>` });
-  return { message: mime, gmailMessageId, recipientEmail: recipient };
+  return { message: mime, gmailMessageId, recipientUserId: event.data.recipientUserId };
 }
 
 export function isRetryableGmailStatus(status: number) {

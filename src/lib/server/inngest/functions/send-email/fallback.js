@@ -10,11 +10,11 @@ import {
   UserAssignedFallbackEmailEvent,
 } from '$lib/server/inngest/schema';
 import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
-import { getUserByEmail, upsertEmailThread } from '$lib/server/database/drizzle';
 import { GmailError, GmailScopeError } from '$lib/server/google';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import { upsertEmailThreads } from '$lib/server/database/drizzle';
 
 import {
   createEmailMessage,
@@ -62,7 +62,7 @@ export const sendEmailFallback = inngest.createFunction(
           span.setAttribute('email.original_event.id', event.data.id);
 
           const { client, sender } = await getRefreshedCredentials();
-          const { message, gmailThreadId, gmailMessageId, recipientEmail } =
+          const { message, gmailThreadId, gmailMessageId, recipientUserId } =
             await createEmailMessage(event, sender);
 
           try {
@@ -74,17 +74,16 @@ export const sendEmailFallback = inngest.createFunction(
               'email.message.label_ids': result.labelIds,
             });
 
-            const recipient = await getUserByEmail(db, recipientEmail);
-            if (typeof recipient !== 'undefined')
-              await upsertEmailThread(
-                db,
-                BigInt(event.data.draftId),
-                getEmailThreadEventType(event.name),
-                getEmailThreadRound(event),
-                recipient.id,
-                result.threadId,
-                gmailMessageId,
-              );
+            await upsertEmailThreads(db, [
+              {
+                draftId: BigInt(event.data.draftId),
+                eventType: getEmailThreadEventType(event.name),
+                round: getEmailThreadRound(event),
+                recipientUserId,
+                gmailThreadId: result.threadId,
+                gmailMessageIds: [gmailMessageId],
+              },
+            ]);
 
             return result;
           } catch (cause) {

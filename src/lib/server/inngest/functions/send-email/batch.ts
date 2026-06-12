@@ -1,4 +1,4 @@
-import assert from 'node:assert/strict';
+import assert, { strictEqual } from 'node:assert/strict';
 
 import { NonRetriableError } from 'inngest';
 
@@ -18,11 +18,11 @@ import {
   UserAssignedFallbackEmailEvent,
 } from '$lib/server/inngest/schema';
 import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
-import { getUserByEmail, upsertEmailThread } from '$lib/server/database/drizzle';
 import type { GmailBatchSendResult } from '$lib/server/google/http';
 import { GmailError, GmailScopeError } from '$lib/server/google';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
+import { type schema, upsertEmailThreads } from '$lib/server/database/drizzle';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 import {
@@ -123,7 +123,9 @@ export const sendBatchedEmails = inngest.createFunction(
           let failureCount = 0;
           let retryCount = 0;
           let fallbackCount = 0;
+
           const followupEvents: FollowupEvent[] = [];
+          const emailThreadsByKey = new Map<string, schema.NewEmailThread>();
 
           for (const [contentId, result] of results) {
             const event = eventsById.get(contentId);
@@ -144,17 +146,32 @@ export const sendBatchedEmails = inngest.createFunction(
               const message = messages.get(contentId);
               assert(typeof message !== 'undefined', 'missing message for gmail batch result');
 
-              const recipientUserObj = await getUserByEmail(db, message.recipientEmail);
-              if (typeof recipientUserObj !== 'undefined')
-                await upsertEmailThread(
-                  db,
-                  BigInt(event.data.draftId),
-                  getEmailThreadEventType(event.name),
-                  getEmailThreadRound(event),
-                  recipientUserObj.id,
+              const draftId = BigInt(event.data.draftId);
+              const eventType = getEmailThreadEventType(event.name);
+              const round = getEmailThreadRound(event);
+              const key = `${draftId}:${eventType}:${round ?? ''}:${message.recipientUserId}`;
+              const row = emailThreadsByKey.get(key);
+              if (typeof row === 'undefined') {
+                emailThreadsByKey.set(key, {
+                  draftId,
+                  eventType,
+                  round,
+                  recipientUserId: message.recipientUserId,
+                  gmailThreadId: result.value.threadId,
+                  gmailMessageIds: [message.gmailMessageId],
+                });
+              } else {
+                // Multiple emails can intentionally share one logical thread key, such as lottery
+                // intervention notifications sent to the same recipient. Gmail must still resolve
+                // those messages to the same Gmail thread. Otherwise, our local thread key no longer
+                // matches Gmail's actual threading decision.
+                strictEqual(
+                  row.gmailThreadId,
                   result.value.threadId,
-                  message.gmailMessageId,
+                  'gmail returned multiple thread IDs for one email thread key',
                 );
+                row.gmailMessageIds.push(message.gmailMessageId);
+              }
 
               continue;
             }
@@ -294,6 +311,8 @@ export const sendBatchedEmails = inngest.createFunction(
             'messages.retryable_failure_count': retryCount,
             'messages.fallback_count': fallbackCount,
           });
+
+          await upsertEmailThreads(db, Array.from(emailThreadsByKey.values()));
 
           return followupEvents;
         }),

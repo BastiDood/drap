@@ -337,35 +337,36 @@ export const actions = {
         );
 
         // Dispatch notifications after successful transaction
-        const [{ name: labName }, staffEmails, facultyAndStaff] = await Promise.all([
+        const [{ name: labName }, facultyAndStaff] = await Promise.all([
           getLabById(db, lab),
-          getDraftAdminEmails(db, draftId),
           getDraftNotificationRecipients(db, draftId),
         ]);
 
         // CREATE: notify staff + all faculty
         // UPDATE: notify staff only
-        const initialRecipients = new Set(staffEmails);
-        if (isCreate) for (const person of facultyAndStaff) initialRecipients.add(person.email);
-
-        const roundSubmittedEvents = Array.from(initialRecipients, email =>
+        const initialRecipients = isCreate
+          ? facultyAndStaff
+          : facultyAndStaff.filter(({ labId }) => labId === null);
+        const roundSubmittedEvents = initialRecipients.map(recipient =>
           RoundSubmittedBatchEmailEvent.create({
             draftId: Number(draftId),
             draftYear,
             round: submittedRound,
             labId: lab,
             labName,
-            recipientEmail: email,
+            recipientUserId: recipient.id,
+            recipientEmail: recipient.email,
             isCreate,
           }),
         );
 
         const roundStartedEvents = roundsToNotify.flatMap(round =>
-          facultyAndStaff.map(({ email, givenName, familyName }) =>
+          facultyAndStaff.map(({ id, email, givenName, familyName }) =>
             RoundStartedBatchEmailEvent.create({
               draftId: Number(draftId),
               draftYear,
               round,
+              recipientUserId: id,
               recipientEmail: email,
               recipientName: `${givenName} ${familyName}`,
             }),
@@ -397,23 +398,6 @@ class RoundMismatchError extends Error {
     super(`expected round ${expectedRound} but got round ${currentRound}`);
     this.name = 'RoundMismatchError';
   }
-}
-
-async function getDraftAdminEmails(db: DbConnection, draftId: bigint) {
-  return await tracer.asyncSpan('get-draft-admin-emails', async span => {
-    span.setAttribute('database.draft.id', draftId.toString());
-    const results = await db
-      .select({ email: schema.user.email })
-      .from(schema.user)
-      .where(
-        and(
-          eq(schema.user.isAdmin, true),
-          isNull(schema.user.labId),
-          isNotNull(schema.user.googleUserId),
-        ),
-      );
-    return results.map(({ email }) => email);
-  });
 }
 
 async function getLabAndRemainingStudentsInDraftWithLabPreference(
