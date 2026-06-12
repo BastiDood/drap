@@ -154,7 +154,9 @@ export interface GmailBatchSendFailure {
 
 export type GmailBatchSendResult = GmailBatchSendSuccess | GmailBatchSendFailure;
 
-function parseBatchMetadataPart(part: Multipart['parts'][number]): [string, GmailBatchMetadataResult] {
+function parseBatchMetadataPart(
+  part: Multipart['parts'][number],
+): [string, GmailBatchMetadataResult] {
   return tracer.span('parse-batch-metadata-part', span => {
     span.setAttribute('http.part.size', part.body.byteLength);
     const contentType = part.headers.get('Content-Type');

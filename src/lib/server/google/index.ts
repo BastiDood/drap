@@ -210,7 +210,7 @@ export class GoogleOAuthClient {
       }
     });
   }
-  
+
   /** Bulk version of {@linkcode getEmailMessageId}. */
   async getEmailMessageIds(messages: Map<string, { resultId: string }>) {
     return await tracer.asyncSpan('google-oauth-client-eet-email-message-ids', async span => {

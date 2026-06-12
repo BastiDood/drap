@@ -124,7 +124,7 @@ export const sendBatchedEmails = inngest.createFunction(
           let retryCount = 0;
           let fallbackCount = 0;
           const followupEvents: FollowupEvent[] = [];
-          const successEmailIds: Map<string, { resultId: string }> = new Map();
+          const successEmailIds = new Map<string, { resultId: string }>();
 
           for (const [contentId, result] of results) {
             const event = eventsById.get(contentId);
@@ -307,17 +307,19 @@ export const sendBatchedEmails = inngest.createFunction(
                       const { message } = messageObj;
                       const recipients = message.getRecipients();
                       const subject = message.getSubject();
-        
+
                       if (typeof recipients !== 'undefined' && typeof subject !== 'undefined') {
-                        const iterableRecipients = Array.isArray(recipients) ? recipients : [recipients];
-        
+                        const iterableRecipients = Array.isArray(recipients)
+                          ? recipients
+                          : [recipients];
+
                         for (const recipient of iterableRecipients) {
                           const recipientUserObj = await getUserByEmail(db, recipient.addr);
                           if (typeof recipientUserObj === 'undefined') continue;
-        
+
                           const inngestEventName = getEmailThreadEventType(event);
                           const round = getEmailThreadRound(event);
-        
+
                           await upsertEmailThread(
                             db,
                             BigInt(event.data.draftId),
@@ -331,12 +333,13 @@ export const sendBatchedEmails = inngest.createFunction(
                       }
                     }
                   } catch (error) {
-                    if (error instanceof Error) logger.error('failed to update email thread', error);
+                    if (error instanceof Error)
+                      logger.error('failed to update email thread', error);
                   }
 
                   continue;
                 }
-                  
+
                 logger.error('failed to get email message id', void 0, {
                   'email.batch.content_id': contentId,
                   'error.gmail.response.status': result.status,
