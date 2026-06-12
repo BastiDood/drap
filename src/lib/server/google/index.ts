@@ -231,7 +231,7 @@ export class GoogleOAuthClient {
               {
                 httpVersion: '1.1',
                 method: 'GET',
-                url: `https://gmail.googleapis.com/gmail/v1/users/me/messages/${resultId}?${queryParams}`,
+                url: `/gmail/v1/users/me/messages/${resultId}?${queryParams}`,
               },
               { Accept: 'application/json' },
             ),
