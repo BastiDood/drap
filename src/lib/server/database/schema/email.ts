@@ -62,12 +62,9 @@ export const emailThread = email.table(
     gmailMessageIds: text('gmail_message_ids').array().notNull(),
   },
   ({ draftId, eventType, round, recipientUserId, gmailThreadId }) => [
-    // Add unique index on draftId, event type, round, and recipient user ID
     unique('thread_draft_event_round_recipient_idx')
       .on(draftId, eventType, round, recipientUserId)
       .nullsNotDistinct(),
-
-    // Add unique index on thread ID and recipient user ID
     unique('thread_recipient_idx').on(gmailThreadId, recipientUserId),
   ],
 );

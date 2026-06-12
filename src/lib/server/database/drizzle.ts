@@ -512,9 +512,9 @@ export async function upsertEmailThread(
     span.setAttributes({
       'database.email_thread.draft_id': draftId.toString(),
       'database.email_thread.event_type': eventType,
-      ...(round !== null && { 'database.email_thread.round': round }),
       'database.email_thread.recipient_user_id': recipientUserId,
     });
+    if (round !== null) span.setAttribute('database.email_thread.round', round.toString());
     return await db
       .insert(schema.emailThread)
       .values({
@@ -533,8 +533,8 @@ export async function upsertEmailThread(
           schema.emailThread.recipientUserId,
         ],
         set: {
-          gmailThreadId,
-          gmailMessageIds: sql<string>`array_append(${schema.emailThread.gmailMessageIds}, ${gmailMessageId})`,
+          gmailThreadId: sql`excluded.${sql.raw(schema.emailThread.gmailThreadId.name)}`,
+          gmailMessageIds: sql`array_append(excluded.${sql.raw(schema.emailThread.gmailMessageIds.name)}, ${gmailMessageId})`,
         },
       })
       .returning({
