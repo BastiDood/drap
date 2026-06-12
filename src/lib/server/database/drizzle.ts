@@ -533,6 +533,7 @@ export async function upsertEmailThread(
           schema.emailThread.recipientUserId,
         ],
         set: {
+          gmailThreadId,
           gmailMessageIds: sql<string>`array_append(${schema.emailThread.gmailMessageIds}, ${gmailMessageId})`,
         },
       })
