@@ -104,7 +104,7 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
     case 'draft/lottery.intervened.email.batch':
     case 'draft/lottery.intervened.email.fallback': {
       recipient = event.data.recipientEmail;
-      subject = `[DRAP] Lottery Intervention for ${event.data.labId.toUpperCase()} in Draft ${event.data.draftYear}`;
+      subject = `[DRAP] Lottery Intervention in Draft ${event.data.draftYear}`;
       html = await emailRenderer.render(LotteryIntervened, {
         props: {
           studentName: event.data.studentName,
