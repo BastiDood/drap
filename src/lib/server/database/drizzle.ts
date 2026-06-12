@@ -482,7 +482,7 @@ export async function getEmailThreadData(
     return await db
       .select({
         gmailThreadId: schema.emailThread.gmailThreadId,
-        gmailMessageIdsText: schema.emailThread.gmailMessageIdsText,
+        gmailMessageIdsText: sql<string>`array_to_string(${schema.emailThread.gmailMessageIds}, ' ')`,
         latestGmailMessageId: sql<string>`${schema.emailThread.gmailMessageIds}[cardinality(${schema.emailThread.gmailMessageIds})]`,
       })
       .from(schema.emailThread)

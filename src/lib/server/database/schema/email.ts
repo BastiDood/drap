@@ -1,13 +1,4 @@
-import {
-  bigint,
-  pgEnum,
-  pgSchema,
-  smallint,
-  text,
-  timestamp,
-  unique,
-} from 'drizzle-orm/pg-core';
-import { SQL, sql } from 'drizzle-orm';
+import { bigint, pgEnum, pgSchema, smallint, text, timestamp, unique } from 'drizzle-orm/pg-core';
 
 import { draft, user } from './app';
 
@@ -75,18 +66,12 @@ export const emailThread = email.table(
       .notNull(),
     gmailThreadId: text('gmail_thread_id').notNull(),
     gmailMessageIds: text('gmail_message_ids').array().notNull(),
-    gmailMessageIdsText: text('gmail_message_ids_text')
-      .generatedAlwaysAs((): SQL => sql`array_to_string(${emailThread.gmailMessageIds}, ' ')`)
-      .notNull(),
   },
   ({ draftId, eventType, round, recipientUserId, gmailThreadId }) => [
     // Add unique index on draftId, event type, round, and recipient user ID
-    unique('thread_draft_event_round_lab_recipient_idx').on(
-      draftId,
-      eventType,
-      round,
-      recipientUserId,
-    ).nullsNotDistinct(),
+    unique('thread_draft_event_round_lab_recipient_idx')
+      .on(draftId, eventType, round, recipientUserId)
+      .nullsNotDistinct(),
 
     // Add unique index on thread ID and recipient user ID
     unique('thread_recipient_idx').on(gmailThreadId, recipientUserId),
