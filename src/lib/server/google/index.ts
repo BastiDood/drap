@@ -9,14 +9,13 @@ import { Logger } from '$lib/server/telemetry/logger';
 import { OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET } from '$lib/server/env/google';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
-import { GmailMessageIdResult, GmailMessageSendResult, TokenResponse } from './schema';
-import { parseBatchMetadataResponse, parseBatchSendResponse } from './http';
+import { GmailMessageSendResult, TokenResponse } from './schema';
+import { parseBatchSendResponse } from './http';
 
 const SERVICE_NAME = 'lib.server.google';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
-const GMAIL_METADATA_SCOPE = 'https://www.googleapis.com/auth/gmail.metadata';
 const GMAIL_SEND_SCOPE = 'https://www.googleapis.com/auth/gmail.send';
 
 export class GoogleOAuthClient {
@@ -52,7 +51,7 @@ export class GoogleOAuthClient {
     });
   }
 
-  async sendEmail(message: MIMEMessage, gmailThreadId: string) {
+  async sendEmail(message: MIMEMessage, gmailThreadId?: string) {
     return await tracer.asyncSpan('google-oauth-client-send-email', async span => {
       if (!this.scopes.includes(GMAIL_SEND_SCOPE)) GmailScopeError.throwNew(this.scopes);
 
@@ -80,9 +79,9 @@ export class GoogleOAuthClient {
           'Content-Type': 'application/json',
         },
         body:
-          gmailThreadId.length === 0
+          typeof gmailThreadId === 'undefined'
             ? JSON.stringify({ raw })
-            : JSON.stringify({ threadId: gmailThreadId, raw }),
+            : JSON.stringify({ raw, threadId: gmailThreadId }),
       });
 
       logger.trace('reading response...');
@@ -111,7 +110,9 @@ export class GoogleOAuthClient {
   }
 
   /** Bulk version of {@linkcode sendEmail}. */
-  async sendEmails(messages: Map<string, { message: MIMEMessage; gmailThreadId: string }>) {
+  async sendEmails(
+    messages: ReadonlyMap<string, { message: MIMEMessage; gmailThreadId?: string }>,
+  ) {
     return await tracer.asyncSpan('google-oauth-client-send-emails', async span => {
       if (!this.scopes.includes(GMAIL_SEND_SCOPE)) GmailScopeError.throwNew(this.scopes);
       if (messages.size > 100) BatchError.throwNew(messages.size);
@@ -128,9 +129,10 @@ export class GoogleOAuthClient {
                 url: '/gmail/v1/users/me/messages/send',
               },
               { 'Content-Type': 'application/json' },
-              gmailThreadId.length === 0
-                ? JSON.stringify({ raw: message.asEncoded() })
-                : JSON.stringify({ threadId: gmailThreadId, raw: message.asEncoded() }),
+              JSON.stringify({
+                ...(typeof gmailThreadId !== 'undefined' && { threadId: gmailThreadId }),
+                raw: message.asEncoded(),
+              }),
             ),
           );
           return new Component(
@@ -156,109 +158,6 @@ export class GoogleOAuthClient {
         throw GmailError.throwNew(response.status, await response.text());
 
       return await parseBatchSendResponse(response);
-    });
-  }
-
-  async getEmailMessageId(resultId: string) {
-    return await tracer.asyncSpan('google-oauth-client-get-email-message-id', async span => {
-      if (!this.scopes.includes(GMAIL_METADATA_SCOPE)) GmailScopeError.throwNew(this.scopes);
-      span.setAttribute('email.metadata.id', resultId);
-
-      const baseUrl = new URL(
-        `https://gmail.googleapis.com/gmail/v1/users/me/messages/${resultId}`,
-      );
-      const queryParams = new URLSearchParams({
-        format: 'metadata',
-        metadataHeaders: 'Message-ID',
-      });
-
-      logger.trace('sending email Message-ID metadata request to gmail api...');
-      const response = await fetch(`${baseUrl}?${queryParams.toString()}`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${this.accessToken}`,
-          Accept: 'application/json',
-        },
-      });
-
-      logger.trace('reading response...');
-      switch (response.status) {
-        case 200: {
-          const json = await response.json();
-          const result = parse(GmailMessageIdResult, json);
-
-          const [gmailMessageIdObj] = result.payload.headers;
-          if (typeof gmailMessageIdObj === 'undefined')
-            return GmailError.throwNew(500, 'missing Message-ID header');
-
-          const { value: gmailMessageId } = gmailMessageIdObj;
-
-          logger.info('received successful response from gmail api', {
-            'email.message.id': result.id,
-            'email.message.message_id': gmailMessageId,
-          });
-
-          return gmailMessageId;
-        }
-        case 429:
-        // TODO: Handle rate limits.
-        // falls through
-        default: {
-          const body = await response.text();
-          return GmailError.throwNew(response.status, body);
-        }
-      }
-    });
-  }
-
-  /** Bulk version of {@linkcode getEmailMessageId}. */
-  async getEmailMessageIds(messages: Map<string, { resultId: string }>) {
-    return await tracer.asyncSpan('google-oauth-client-get-email-message-ids', async span => {
-      if (!this.scopes.includes(GMAIL_METADATA_SCOPE)) GmailScopeError.throwNew(this.scopes);
-      if (messages.size > 100) BatchError.throwNew(messages.size);
-      span.setAttribute('messages.count', messages.size);
-
-      const queryParams = new URLSearchParams({
-        format: 'metadata',
-        metadataHeaders: 'Message-ID',
-      });
-
-      const multipart = new Multipart(
-        Array.from(messages.entries(), ([contentId, { resultId }]) => {
-          const encoder = new TextEncoder();
-          const body = encoder.encode(
-            HttpRawRequest.toString(
-              {
-                httpVersion: '1.1',
-                method: 'GET',
-                url: `/gmail/v1/users/me/messages/${resultId}?${queryParams}`,
-              },
-              { Accept: 'application/json' },
-            ),
-          );
-          return new Component(
-            { 'Content-ID': `<${contentId}>`, 'Content-Type': 'application/http' },
-            body,
-          );
-        }),
-      );
-
-      const contentType = multipart.headers.get('Content-Type');
-      assert(contentType !== null, 'missing content type when sending multipart request');
-
-      const response = await fetch('https://www.googleapis.com/batch/gmail/v1', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${this.accessToken}`,
-          'Content-Type': contentType,
-        },
-        body: multipart.bytes(),
-      });
-
-      if (response.status !== 200)
-        throw GmailError.throwNew(response.status, await response.text());
-
-      return await parseBatchMetadataResponse(response);
     });
   }
 }
@@ -312,13 +211,13 @@ export class BatchError extends Error {
 
 export class GmailScopeError extends Error {
   constructor(public readonly scopes: string[]) {
-    super(`missing gmail.* scope; available: ${scopes.join(', ')}`);
+    super(`missing gmail.send scope; available: ${scopes.join(', ')}`);
     this.name = 'GmailScopeError';
   }
 
   static throwNew(scopes: string[]): never {
     const error = new GmailScopeError(scopes);
-    logger.error('missing gmail.* scope', error, { 'error.scopes': scopes });
+    logger.error('missing gmail.send scope', error, { 'error.scopes': scopes });
     throw error;
   }
 }

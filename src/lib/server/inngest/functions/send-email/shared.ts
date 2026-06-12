@@ -45,6 +45,8 @@ const SERVICE_NAME = 'inngest.functions.send-email';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
+const MESSAGE_ID_DOMAIN = 'drap.upd.edu.ph';
+
 type SenderIdentity = Pick<schema.User, 'email' | 'givenName' | 'familyName'>;
 type RenderableEmailEvent =
   | { name: 'draft/round.started.email.batch'; data: RoundStartedBatchEmailSchema }
@@ -174,34 +176,35 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
     data: Buffer.from(html, 'utf-8').toString('base64'),
   });
 
-  // The BigInt construction should be safe since number has a limit and bigint doesn't
-  try {
-    const inngestEventName = getEmailThreadEventType(event);
-    const round = getEmailThreadRound(event);
+  const gmailMessageId = crypto.randomUUID();
+  const emailThreadData = await getEmailThreadData(
+    db,
+    BigInt(event.data.draftId),
+    getEmailThreadEventType(event.name),
+    getEmailThreadRound(event),
+    recipient,
+  );
 
-    const emailThreadData = await getEmailThreadData(
-      db,
-      BigInt(event.data.draftId),
-      inngestEventName,
-      round,
-      recipient,
-    );
-
-    if (typeof emailThreadData !== 'undefined') {
-      const { gmailThreadId, gmailMessageIdsText, latestGmailMessageId } = emailThreadData;
-
-      mime.setHeaders({
-        'In-Reply-To': latestGmailMessageId,
-        References: gmailMessageIdsText,
-      });
-
-      return { message: mime, gmailThreadId };
+  if (typeof emailThreadData !== 'undefined') {
+    const { gmailThreadId, gmailMessageIds } = emailThreadData;
+    const messageIds = gmailMessageIds.map(id => `<${id}@${MESSAGE_ID_DOMAIN}>`);
+    const latestGmailMessageId = messageIds.at(-1);
+    if (typeof latestGmailMessageId === 'undefined') {
+      mime.setHeaders({ 'Message-ID': `<${gmailMessageId}@${MESSAGE_ID_DOMAIN}>` });
+      return { message: mime, gmailMessageId, recipientEmail: recipient };
     }
-  } catch (error) {
-    if (error instanceof Error) logger.error('failed to get email thread data', error);
+
+    mime.setHeaders({
+      'Message-ID': `<${gmailMessageId}@${MESSAGE_ID_DOMAIN}>`,
+      'In-Reply-To': latestGmailMessageId,
+      References: messageIds.join(' '),
+    });
+
+    return { message: mime, gmailThreadId, gmailMessageId, recipientEmail: recipient };
   }
 
-  return { message: mime, gmailThreadId: '' };
+  mime.setHeaders({ 'Message-ID': `<${gmailMessageId}@${MESSAGE_ID_DOMAIN}>` });
+  return { message: mime, gmailMessageId, recipientEmail: recipient };
 }
 
 export function isRetryableGmailStatus(status: number) {
@@ -361,8 +364,8 @@ async function updateCandidateSender(
   });
 }
 
-export function getEmailThreadEventType(event: RenderableEmailEvent) {
-  switch (event.name) {
+export function getEmailThreadEventType(name: RenderableEmailEvent['name']) {
+  switch (name) {
     case 'draft/round.started.email.batch':
     case 'draft/round.started.email.fallback':
       return 'round-started';

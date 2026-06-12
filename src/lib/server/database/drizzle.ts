@@ -482,8 +482,7 @@ export async function getEmailThreadData(
     return await db
       .select({
         gmailThreadId: schema.emailThread.gmailThreadId,
-        gmailMessageIdsText: sql<string>`array_to_string(${schema.emailThread.gmailMessageIds}, ' ')`,
-        latestGmailMessageId: sql<string>`${schema.emailThread.gmailMessageIds}[cardinality(${schema.emailThread.gmailMessageIds})]`,
+        gmailMessageIds: schema.emailThread.gmailMessageIds,
       })
       .from(schema.emailThread)
       .innerJoin(schema.user, eq(schema.user.id, schema.emailThread.recipientUserId))
@@ -534,7 +533,7 @@ export async function upsertEmailThread(
         ],
         set: {
           gmailThreadId: sql`excluded.${sql.raw(schema.emailThread.gmailThreadId.name)}`,
-          gmailMessageIds: sql`array_append(excluded.${sql.raw(schema.emailThread.gmailMessageIds.name)}, ${gmailMessageId})`,
+          gmailMessageIds: sql`array_cat(${schema.emailThread.gmailMessageIds}, excluded.${sql.raw(schema.emailThread.gmailMessageIds.name)})`,
         },
       })
       .returning({

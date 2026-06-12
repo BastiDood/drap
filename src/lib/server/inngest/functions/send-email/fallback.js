@@ -62,7 +62,8 @@ export const sendEmailFallback = inngest.createFunction(
           span.setAttribute('email.original_event.id', event.data.id);
 
           const { client, sender } = await getRefreshedCredentials();
-          const { message, gmailThreadId } = await createEmailMessage(event, sender);
+          const { message, gmailThreadId, gmailMessageId, recipientEmail } =
+            await createEmailMessage(event, sender);
 
           try {
             const result = await client.sendEmail(message, gmailThreadId);
@@ -73,37 +74,17 @@ export const sendEmailFallback = inngest.createFunction(
               'email.message.label_ids': result.labelIds,
             });
 
-            // Create/update the email thread
-            try {
-              const gmailMessageId = await client.getEmailMessageId(result.id);
-
-              const recipients = message.getRecipients();
-              const subject = message.getSubject();
-
-              if (typeof recipients !== 'undefined' && typeof subject !== 'undefined') {
-                const iterableRecipients = Array.isArray(recipients) ? recipients : [recipients];
-
-                for (const recipient of iterableRecipients) {
-                  const recipientUserObj = await getUserByEmail(db, recipient.addr);
-                  if (typeof recipientUserObj === 'undefined') continue;
-
-                  const inngestEventName = getEmailThreadEventType(event);
-                  const round = getEmailThreadRound(event);
-
-                  await upsertEmailThread(
-                    db,
-                    BigInt(event.data.draftId),
-                    inngestEventName,
-                    round,
-                    recipientUserObj.id,
-                    result.threadId,
-                    gmailMessageId,
-                  );
-                }
-              }
-            } catch (error) {
-              if (error instanceof Error) logger.error('failed to update email thread', error);
-            }
+            const recipient = await getUserByEmail(db, recipientEmail);
+            if (typeof recipient !== 'undefined')
+              await upsertEmailThread(
+                db,
+                BigInt(event.data.draftId),
+                getEmailThreadEventType(event.name),
+                getEmailThreadRound(event),
+                recipient.id,
+                result.threadId,
+                gmailMessageId,
+              );
 
             return result;
           } catch (cause) {
