@@ -5,6 +5,7 @@ import {
   smallint,
   text,
   timestamp,
+  unique,
   uniqueIndex,
 } from 'drizzle-orm/pg-core';
 import { SQL, sql } from 'drizzle-orm';
@@ -69,7 +70,7 @@ export const emailThread = email.table(
       .references(() => draft.id, { onUpdate: 'cascade' })
       .notNull(),
     eventType: inngestEventNameEnum('event_type').notNull(),
-    round: smallint('round').unique('unique_round', { nulls: 'not distinct' }),
+    round: smallint('round'),
     recipientUserId: ulid('recipient_user_id')
       .references(() => user.id, { onUpdate: 'cascade', onDelete: 'cascade' })
       .notNull(),
@@ -81,12 +82,12 @@ export const emailThread = email.table(
   },
   ({ draftId, eventType, round, recipientUserId, gmailThreadId }) => [
     // Add unique index on draftId, event type, round, and recipient user ID
-    uniqueIndex('thread_draft_event_round_lab_recipient_idx').on(
+    unique('thread_draft_event_round_lab_recipient_idx').on(
       draftId,
       eventType,
       round,
       recipientUserId,
-    ),
+    ).nullsNotDistinct(),
 
     // Add unique index on thread ID and recipient user ID
     uniqueIndex('thread_recipient_idx').on(gmailThreadId, recipientUserId),
