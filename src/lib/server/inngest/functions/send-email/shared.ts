@@ -179,35 +179,33 @@ export async function createEmailMessage(event: RenderableEmailEvent, sender: Se
     data: Buffer.from(html, 'utf-8').toString('base64'),
   });
 
-  // Don't need to thread lab assignments as these are only sent once
-  if ('draftId' in event.data)
-    // The BigInt construction should be safe since number has a limit and bigint doesn't
-    try {
-      const emailThreadData = await getEmailThreadData(
-        db,
-        BigInt(event.data.draftId),
-        subject,
-        recipient,
-      );
+  // The BigInt construction should be safe since number has a limit and bigint doesn't
+  try {
+    const round = getEmailThreadRound(event);
 
-      if (typeof emailThreadData !== 'undefined') {
-        const { emailThreadId, messageIdsStr } = emailThreadData;
-        const latestMessageId = messageIdsStr.split(' ').pop();
+    const emailThreadData = await getEmailThreadData(
+      db,
+      BigInt(event.data.draftId),
+      event.name,
+      round,
+      recipient,
+    );
 
-        if (typeof latestMessageId !== 'undefined' && latestMessageId.length !== 0) {
-          mime.setHeaders({
-            'In-Reply-To': latestMessageId.trim(),
-            References: messageIdsStr,
-          });
+    if (typeof emailThreadData !== 'undefined') {
+      const { gmailThreadId, gmailMessageIdsText, latestGmailMessageId } = emailThreadData;
 
-          return { message: mime, emailThreadId };
-        }
-      }
-    } catch (error) {
-      if (error instanceof Error) logger.error('failed to get email thread data', error);
+      mime.setHeaders({
+        'In-Reply-To': latestGmailMessageId,
+        References: gmailMessageIdsText,
+      });
+
+      return { message: mime, gmailThreadId };
     }
+  } catch (error) {
+    if (error instanceof Error) logger.error('failed to get email thread data', error);
+  }
 
-  return { message: mime, emailThreadId: '' };
+  return { message: mime, gmailThreadId: '' };
 }
 
 export function isRetryableGmailStatus(status: number) {

@@ -468,26 +468,31 @@ export async function getUserByEmail(db: DbConnection, email: string) {
 export async function getEmailThreadData(
   db: DbConnection,
   draftId: bigint,
-  emailSubject: string,
+  eventType: schema.InngestEventName,
+  round: number | null,
   recipientEmail: string,
 ) {
   return await tracer.asyncSpan('get-email-thread-data', async span => {
     span.setAttributes({
       'database.email_thread.draft_id': draftId.toString(),
-      'database.email_thread.email_subject': emailSubject,
+      'database.email_thread.event_type': eventType,
+      ...(round !== null && { 'database.email_thread.round': round }),
       'database.email_thread.recipient_email': recipientEmail,
     });
     return await db
       .select({
-        emailThreadId: schema.emailThread.emailThreadId,
-        messageIdsStr: schema.emailThread.messageIdsStr,
+        gmailThreadId: schema.emailThread.gmailThreadId,
+        gmailMessageIdsText: schema.emailThread.gmailMessageIdsText,
+        latestGmailMessageId: sql<string>`${schema.emailThread.gmailMessageIds}[cardinality(${schema.emailThread.gmailMessageIds})]`
       })
       .from(schema.emailThread)
+      .innerJoin(schema.user, eq(schema.user.id, schema.emailThread.recipientUserId))
       .where(
         and(
           eq(schema.emailThread.draftId, draftId),
-          eq(schema.emailThread.emailSubject, emailSubject),
-          eq(schema.emailThread.recipientEmail, recipientEmail),
+          eq(schema.emailThread.eventType, eventType),
+          sql`${schema.emailThread.round} IS NOT DISTINCT FROM ${round}`,
+          eq(schema.user.email, recipientEmail),
         ),
       )
       .then(assertOptional);

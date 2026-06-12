@@ -56,10 +56,10 @@ export const sendEmailFallback = inngest.createFunction(
           span.setAttribute('email.original_event.id', event.data.id);
 
           const { client, sender } = await getRefreshedCredentials();
-          const { message, emailThreadId } = await createEmailMessage(event, sender);
+          const { message, gmailThreadId } = await createEmailMessage(event, sender);
 
           try {
-            const result = await client.sendEmail(message, emailThreadId);
+            const result = await client.sendEmail(message, gmailThreadId);
             logger.info('gmail single-send email sent successfully', {
               'email.message.id': result.id,
               'email.message.thread_id': result.threadId,

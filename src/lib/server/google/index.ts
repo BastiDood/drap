@@ -51,7 +51,7 @@ export class GoogleOAuthClient {
     });
   }
 
-  async sendEmail(message: MIMEMessage, emailThreadId: string) {
+  async sendEmail(message: MIMEMessage, gmailThreadId: string) {
     return await tracer.asyncSpan('google-oauth-client-send-email', async span => {
       if (!this.scopes.includes(GMAIL_SEND_SCOPE)) GmailScopeError.throwNew(this.scopes);
 
@@ -79,9 +79,9 @@ export class GoogleOAuthClient {
           'Content-Type': 'application/json',
         },
         body:
-          emailThreadId.length === 0
+          gmailThreadId.length === 0
             ? JSON.stringify({ raw })
-            : JSON.stringify({ threadId: emailThreadId, raw }),
+            : JSON.stringify({ threadId: gmailThreadId, raw }),
       });
 
       logger.trace('reading response...');
@@ -110,14 +110,14 @@ export class GoogleOAuthClient {
   }
 
   /** Bulk version of {@linkcode sendEmail}. */
-  async sendEmails(messages: Map<string, { message: MIMEMessage; emailThreadId: string }>) {
+  async sendEmails(messages: Map<string, { message: MIMEMessage; gmailThreadId: string }>) {
     return await tracer.asyncSpan('google-oauth-client-send-emails', async span => {
       if (!this.scopes.includes(GMAIL_SEND_SCOPE)) GmailScopeError.throwNew(this.scopes);
       if (messages.size > 100) BatchError.throwNew(messages.size);
       span.setAttribute('messages.count', messages.size);
 
       const multipart = new Multipart(
-        Array.from(messages.entries(), ([contentId, { message, emailThreadId }]) => {
+        Array.from(messages.entries(), ([contentId, { message, gmailThreadId }]) => {
           const encoder = new TextEncoder();
           const body = encoder.encode(
             HttpRawRequest.toString(
@@ -127,9 +127,9 @@ export class GoogleOAuthClient {
                 url: '/gmail/v1/users/me/messages/send',
               },
               { 'Content-Type': 'application/json' },
-              emailThreadId.length === 0
+              gmailThreadId.length === 0
                 ? JSON.stringify({ raw: message.asEncoded() })
-                : JSON.stringify({ threadId: emailThreadId, raw: message.asEncoded() }),
+                : JSON.stringify({ threadId: gmailThreadId, raw: message.asEncoded() }),
             ),
           );
           return new Component(
