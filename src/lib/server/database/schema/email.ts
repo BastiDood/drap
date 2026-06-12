@@ -4,6 +4,7 @@ import { draft, user } from './app';
 
 import { bytea } from './custom/bytea';
 import { ulid } from './custom/ulid';
+import { uuid } from './custom/uuid';
 
 export const email = pgSchema('email');
 
@@ -59,7 +60,7 @@ export const emailThread = email.table(
       .references(() => user.id, { onUpdate: 'cascade', onDelete: 'cascade' })
       .notNull(),
     gmailThreadId: text('gmail_thread_id').notNull(),
-    gmailMessageIds: text('gmail_message_ids').array().notNull(),
+    gmailMessageIds: uuid('gmail_message_ids').array().notNull(),
   },
   ({ draftId, eventType, round, recipientUserId, gmailThreadId }) => [
     unique('thread_draft_event_round_recipient_idx')
