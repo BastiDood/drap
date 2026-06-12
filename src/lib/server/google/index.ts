@@ -213,7 +213,7 @@ export class GoogleOAuthClient {
 
   /** Bulk version of {@linkcode getEmailMessageId}. */
   async getEmailMessageIds(messages: Map<string, { resultId: string }>) {
-    return await tracer.asyncSpan('google-oauth-client-eet-email-message-ids', async span => {
+    return await tracer.asyncSpan('google-oauth-client-get-email-message-ids', async span => {
       if (!this.scopes.includes(GMAIL_METADATA_SCOPE)) GmailScopeError.throwNew(this.scopes);
       if (messages.size > 100) BatchError.throwNew(messages.size);
       span.setAttribute('messages.count', messages.size);
