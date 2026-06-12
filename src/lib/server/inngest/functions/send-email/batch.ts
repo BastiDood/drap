@@ -3,7 +3,20 @@ import assert from 'node:assert/strict';
 import { NonRetriableError } from 'inngest';
 
 import { db } from '$lib/server/database';
-import { DraftConcludedBatchEmailEvent, DraftConcludedFallbackEmailEvent, DraftFinalizationBatchEmailEvent, DraftFinalizationFallbackEmailEvent, LotteryInterventionBatchEmailEvent, LotteryInterventionFallbackEmailEvent, RoundStartedBatchEmailEvent, RoundStartedFallbackEmailEvent, RoundSubmittedBatchEmailEvent, RoundSubmittedFallbackEmailEvent, UserAssignedBatchEmailEvent, UserAssignedFallbackEmailEvent } from '$lib/server/inngest/schema';
+import {
+  DraftConcludedBatchEmailEvent,
+  DraftConcludedFallbackEmailEvent,
+  DraftFinalizationBatchEmailEvent,
+  DraftFinalizationFallbackEmailEvent,
+  LotteryInterventionBatchEmailEvent,
+  LotteryInterventionFallbackEmailEvent,
+  RoundStartedBatchEmailEvent,
+  RoundStartedFallbackEmailEvent,
+  RoundSubmittedBatchEmailEvent,
+  RoundSubmittedFallbackEmailEvent,
+  UserAssignedBatchEmailEvent,
+  UserAssignedFallbackEmailEvent,
+} from '$lib/server/inngest/schema';
 import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
 import { getUserByEmail, upsertEmailThread } from '$lib/server/database/drizzle';
 import type { GmailBatchSendResult } from '$lib/server/google/http';
@@ -12,7 +25,12 @@ import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
-import { createEmailMessage, getEmailThreadRound, getRefreshedCredentials, isRetryableGmailStatus } from './shared';
+import {
+  createEmailMessage,
+  getEmailThreadRound,
+  getRefreshedCredentials,
+  isRetryableGmailStatus,
+} from './shared';
 
 const SERVICE_NAME = 'inngest.functions.send-email.batch';
 const logger = Logger.byName(SERVICE_NAME);

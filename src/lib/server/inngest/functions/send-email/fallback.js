@@ -1,7 +1,14 @@
 import { NonRetriableError } from 'inngest';
 
 import { db } from '$lib/server/database';
-import { DraftConcludedFallbackEmailEvent, DraftFinalizationFallbackEmailEvent, LotteryInterventionFallbackEmailEvent, RoundStartedFallbackEmailEvent, RoundSubmittedFallbackEmailEvent, UserAssignedFallbackEmailEvent } from '$lib/server/inngest/schema';
+import {
+  DraftConcludedFallbackEmailEvent,
+  DraftFinalizationFallbackEmailEvent,
+  LotteryInterventionFallbackEmailEvent,
+  RoundStartedFallbackEmailEvent,
+  RoundSubmittedFallbackEmailEvent,
+  UserAssignedFallbackEmailEvent,
+} from '$lib/server/inngest/schema';
 import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
 import { getUserByEmail, upsertEmailThread } from '$lib/server/database/drizzle';
 import { GmailError, GmailScopeError } from '$lib/server/google';
@@ -9,7 +16,12 @@ import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
-import { createEmailMessage, getEmailThreadRound, getRefreshedCredentials, isRetryableGmailStatus } from './shared';
+import {
+  createEmailMessage,
+  getEmailThreadRound,
+  getRefreshedCredentials,
+  isRetryableGmailStatus,
+} from './shared';
 
 const SERVICE_NAME = 'inngest.functions.send-email.fallback';
 const logger = Logger.byName(SERVICE_NAME);
