@@ -27,10 +27,12 @@ export const GmailMessageIdResult = v.object({
   ...GmailMessageSendResult.entries,
   payload: v.object({
     headers: v.pipe(
-      v.array(v.object({
-        name: v.literal('Message-ID'),
-        value: v.string(),
-      })),
+      v.array(
+        v.object({
+          name: v.literal('Message-ID'),
+          value: v.string(),
+        }),
+      ),
       v.length(1),
     ),
   }),

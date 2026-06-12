@@ -164,7 +164,9 @@ export class GoogleOAuthClient {
       if (!this.scopes.includes(GMAIL_METADATA_SCOPE)) GmailScopeError.throwNew(this.scopes);
       span.setAttribute('email.metadata.id', resultId);
 
-      const baseUrl = new URL(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${resultId}`);
+      const baseUrl = new URL(
+        `https://gmail.googleapis.com/gmail/v1/users/me/messages/${resultId}`,
+      );
       const queryParams = new URLSearchParams({
         format: 'metadata',
         metadataHeaders: 'Message-ID',
@@ -186,9 +188,10 @@ export class GoogleOAuthClient {
           const result = parse(GmailMessageIdResult, json);
 
           const [gmailMessageIdObj] = result.payload.headers;
-          if (typeof gmailMessageIdObj === 'undefined') return GmailError.throwNew(500, 'missing Message-ID header');
-          
-          const { value: gmailMessageId } = gmailMessageIdObj; 
+          if (typeof gmailMessageIdObj === 'undefined')
+            return GmailError.throwNew(500, 'missing Message-ID header');
+
+          const { value: gmailMessageId } = gmailMessageIdObj;
 
           logger.info('received successful response from gmail api', {
             'email.message.id': result.id,

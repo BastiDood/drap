@@ -76,14 +76,12 @@ export const sendEmailFallback = inngest.createFunction(
             // Create/update the email thread
             try {
               const gmailMessageId = await client.getEmailMessageId(result.id);
-              
+
               const recipients = message.getRecipients();
               const subject = message.getSubject();
 
               if (typeof recipients !== 'undefined' && typeof subject !== 'undefined') {
-                const iterableRecipients = Array.isArray(recipients)
-                  ? recipients
-                  : [recipients];
+                const iterableRecipients = Array.isArray(recipients) ? recipients : [recipients];
 
                 for (const recipient of iterableRecipients) {
                   const recipientUserObj = await getUserByEmail(db, recipient.addr);
