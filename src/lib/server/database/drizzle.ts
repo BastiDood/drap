@@ -466,58 +466,113 @@ export async function getUserByEmail(db: DbConnection, email: string) {
   });
 }
 
-export async function getEmailThreadData(
-  db: DbConnection,
-  draftId: bigint,
-  eventType: schema.InngestEventName,
-  round: number | null,
-  recipientUserId: string,
-) {
-  return await tracer.asyncSpan('get-email-thread-data', async span => {
-    span.setAttributes({
-      'database.email_thread.draft_id': draftId.toString(),
-      'database.email_thread.event_type': eventType,
-      ...(round !== null && { 'database.email_thread.round': round }),
-      'database.email_thread.recipient_user_id': recipientUserId,
-    });
+export interface EmailThreadKey {
+  draftId: bigint;
+  eventType: schema.InngestEventName;
+  round: number | null;
+  recipientUserId: string;
+}
+
+export async function lockOrCreateEmailThreads(db: DrizzleTransaction, keys: EmailThreadKey[]) {
+  return await tracer.asyncSpan('lock-or-create-email-threads', async span => {
+    span.setAttribute('database.email_thread.count', keys.length);
+    if (keys.length === 0) return [];
+    await db
+      .insert(schema.emailThread)
+      .values(
+        keys.map(key => ({
+          ...key,
+          gmailThreadId: null,
+          gmailMessageIds: [],
+        })),
+      )
+      .onConflictDoNothing({
+        target: [
+          schema.emailThread.draftId,
+          schema.emailThread.eventType,
+          schema.emailThread.round,
+          schema.emailThread.recipientUserId,
+        ],
+      });
+    return await lockEmailThreads(db, keys);
+  });
+}
+
+export async function lockEmailThreads(db: DrizzleTransaction, keys: EmailThreadKey[]) {
+  return await tracer.asyncSpan('lock-email-threads', async span => {
+    span.setAttribute('database.email_thread.count', keys.length);
+    if (keys.length === 0) return [];
     return await db
       .select({
+        draftId: schema.emailThread.draftId,
+        eventType: schema.emailThread.eventType,
+        round: schema.emailThread.round,
+        recipientUserId: schema.emailThread.recipientUserId,
         gmailThreadId: schema.emailThread.gmailThreadId,
         gmailMessageIds: schema.emailThread.gmailMessageIds,
       })
       .from(schema.emailThread)
-      .where(
-        and(
-          eq(schema.emailThread.draftId, draftId),
-          eq(schema.emailThread.eventType, eventType),
-          sql`${schema.emailThread.round} IS NOT DISTINCT FROM ${round}`,
-          eq(schema.emailThread.recipientUserId, recipientUserId),
-        ),
-      )
-      .then(assertOptional);
+      .where(getEmailThreadPredicate(keys))
+      .for('update');
   });
 }
 
-export async function upsertEmailThreads(db: DbConnection, rows: schema.NewEmailThread[]) {
-  return await tracer.asyncSpan('upsert-email-threads', async span => {
-    span.setAttribute('database.email_thread.count', rows.length);
-    return rows.length === 0
-      ? []
-      : await db
-          .insert(schema.emailThread)
-          .values(rows)
-          .onConflictDoUpdate({
-            target: [
-              schema.emailThread.draftId,
-              schema.emailThread.eventType,
-              schema.emailThread.round,
-              schema.emailThread.recipientUserId,
-            ],
-            set: {
-              gmailThreadId: sql`excluded.${sql.raw(schema.emailThread.gmailThreadId.name)}`,
-              gmailMessageIds: sql`array_cat(${schema.emailThread.gmailMessageIds}, excluded.${sql.raw(schema.emailThread.gmailMessageIds.name)})`,
-            },
-          })
-          .returning({ gmailThreadId: schema.emailThread.gmailThreadId });
+export async function seedEmailThread(
+  db: DrizzleTransaction,
+  key: EmailThreadKey,
+  gmailThreadId: string,
+  gmailMessageIds: string[],
+) {
+  return await tracer.asyncSpan('seed-email-thread', async span => {
+    span.setAttributes({
+      'database.email_thread.draft_id': key.draftId.toString(),
+      'database.email_thread.event_type': key.eventType,
+      'database.email_thread.recipient_user_id': key.recipientUserId,
+      'database.email_thread.gmail_message_id.count': gmailMessageIds.length,
+    });
+    if (key.round !== null) span.setAttribute('database.email_thread.round', key.round);
+    return await db
+      .update(schema.emailThread)
+      .set({
+        gmailThreadId,
+        gmailMessageIds: sql`array_cat(${schema.emailThread.gmailMessageIds}, ${gmailMessageIds}::uuid[])`,
+      })
+      .where(getEmailThreadPredicate([key]));
   });
+}
+
+export async function appendEmailThreadMessageIds(
+  db: DrizzleTransaction,
+  key: EmailThreadKey,
+  gmailMessageIds: string[],
+) {
+  return await tracer.asyncSpan('append-email-thread-message-ids', async span => {
+    span.setAttributes({
+      'database.email_thread.draft_id': key.draftId.toString(),
+      'database.email_thread.event_type': key.eventType,
+      'database.email_thread.recipient_user_id': key.recipientUserId,
+      'database.email_thread.gmail_message_id.count': gmailMessageIds.length,
+    });
+    if (key.round !== null) span.setAttribute('database.email_thread.round', key.round);
+    if (gmailMessageIds.length === 0) return;
+    return await db
+      .update(schema.emailThread)
+      .set({
+        gmailMessageIds: sql`array_cat(${schema.emailThread.gmailMessageIds}, ${gmailMessageIds}::uuid[])`,
+      })
+      .where(getEmailThreadPredicate([key]));
+  });
+}
+
+function getEmailThreadPredicate(keys: EmailThreadKey[]) {
+  return or(
+    ...keys.map(key =>
+      and(
+        eq(schema.emailThread.draftId, key.draftId),
+        eq(schema.emailThread.eventType, key.eventType),
+        sql`${schema.emailThread.round} is not distinct from ${key.round}`,
+        eq(schema.emailThread.recipientUserId, key.recipientUserId),
+      ),
+    ),
+  );
 }

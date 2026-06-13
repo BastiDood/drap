@@ -33,8 +33,8 @@ import { db } from '$lib/server/database';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import {
-  RoundStartedBatchEmailEvent,
-  RoundSubmittedBatchEmailEvent,
+  RoundStartedSeedEmailEvent,
+  RoundSubmittedSeedEmailEvent,
 } from '$lib/server/inngest/schema';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
@@ -348,7 +348,7 @@ export const actions = {
           ? facultyAndStaff
           : facultyAndStaff.filter(({ labId }) => labId === null);
         const roundSubmittedEvents = initialRecipients.map(recipient =>
-          RoundSubmittedBatchEmailEvent.create({
+          RoundSubmittedSeedEmailEvent.create({
             draftId: Number(draftId),
             draftYear,
             round: submittedRound,
@@ -362,7 +362,7 @@ export const actions = {
 
         const roundStartedEvents = roundsToNotify.flatMap(round =>
           facultyAndStaff.map(({ id, email, givenName, familyName }) =>
-            RoundStartedBatchEmailEvent.create({
+            RoundStartedSeedEmailEvent.create({
               draftId: Number(draftId),
               draftYear,
               round,

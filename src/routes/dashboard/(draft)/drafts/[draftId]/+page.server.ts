@@ -27,11 +27,11 @@ import {
 import { coerceDate, coerceNullableNumber, coerceNumber } from '$lib/coerce';
 import { db } from '$lib/server/database';
 import {
-  DraftConcludedBatchEmailEvent,
-  DraftFinalizationBatchEmailEvent,
-  LotteryInterventionBatchEmailEvent,
-  RoundStartedBatchEmailEvent,
-  UserAssignedBatchEmailEvent,
+  DraftConcludedSeedEmailEvent,
+  DraftFinalizationSeedEmailEvent,
+  LotteryInterventionSeedEmailEvent,
+  RoundStartedSeedEmailEvent,
+  UserAssignedSeedEmailEvent,
 } from '$lib/server/inngest/schema';
 import {
   getDraftPhase,
@@ -359,7 +359,7 @@ export const actions = {
       await inngest.send(
         roundsToNotify.flatMap(round =>
           facultyAndStaff.map(({ id, email, givenName, familyName }) =>
-            RoundStartedBatchEmailEvent.create({
+            RoundStartedSeedEmailEvent.create({
               draftId: Number(draftId),
               draftYear,
               round,
@@ -577,7 +577,7 @@ export const actions = {
         ]);
         await inngest.send(
           facultyAndStaff.map(({ id, email, givenName, familyName }) =>
-            LotteryInterventionBatchEmailEvent.create({
+            LotteryInterventionSeedEmailEvent.create({
               draftId: Number(draftId),
               draftYear,
               labId,
@@ -725,7 +725,7 @@ export const actions = {
 
       await inngest.send(
         draftAdmins.map(({ id, email, givenName, familyName }) =>
-          DraftConcludedBatchEmailEvent.create({
+          DraftConcludedSeedEmailEvent.create({
             draftId: Number(draftId),
             draftYear,
             recipientUserId: id,
@@ -807,7 +807,7 @@ export const actions = {
       const facultyAndStaff = await getDraftNotificationRecipients(db, draftId);
       await inngest.send(
         facultyAndStaff.map(({ id, email, givenName, familyName }) =>
-          DraftFinalizationBatchEmailEvent.create({
+          DraftFinalizationSeedEmailEvent.create({
             draftId: Number(draftId),
             draftYear,
             recipientUserId: id,
@@ -823,7 +823,7 @@ export const actions = {
           getUserById(db, userId),
         ]);
         await inngest.send(
-          UserAssignedBatchEmailEvent.create({
+          UserAssignedSeedEmailEvent.create({
             draftId: Number(draftId),
             labId,
             labName,

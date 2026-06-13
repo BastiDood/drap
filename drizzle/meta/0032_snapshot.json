@@ -1,5 +1,5 @@
 {
-  "id": "546eb528-22c4-44c3-ba3e-db6e975dcb71",
+  "id": "3e08690d-6697-43df-8ef5-0115de158889",
   "prevId": "c409567e-930f-42ce-aa22-5a4a1fb23476",
   "version": "7",
   "dialect": "postgresql",
@@ -1100,7 +1100,7 @@
           "name": "gmail_thread_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "gmail_message_ids": {
           "name": "gmail_message_ids",

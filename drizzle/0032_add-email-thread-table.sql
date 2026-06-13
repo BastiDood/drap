@@ -6,7 +6,7 @@ CREATE TABLE "email"."email_thread" (
 	"event_type" "inngest_event_type_enum" NOT NULL,
 	"round" smallint,
 	"recipient_user_id" "ulid" NOT NULL,
-	"gmail_thread_id" text NOT NULL,
+	"gmail_thread_id" text,
 	"gmail_message_ids" uuid[] NOT NULL,
 	CONSTRAINT "thread_draft_event_round_recipient_idx" UNIQUE NULLS NOT DISTINCT("draft_id","event_type","round","recipient_user_id"),
 	CONSTRAINT "thread_recipient_idx" UNIQUE("gmail_thread_id","recipient_user_id")

@@ -59,7 +59,7 @@ export const emailThread = email.table(
     recipientUserId: ulid('recipient_user_id')
       .references(() => user.id, { onUpdate: 'cascade', onDelete: 'cascade' })
       .notNull(),
-    gmailThreadId: text('gmail_thread_id').notNull(),
+    gmailThreadId: text('gmail_thread_id'),
     gmailMessageIds: uuid('gmail_message_ids').array().notNull(),
   },
   ({ draftId, eventType, round, recipientUserId, gmailThreadId }) => [
