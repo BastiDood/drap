@@ -200,9 +200,7 @@ export async function createEmailMessage(
     }
     case 'draft/round.submitted.email.batch': {
       recipient = envelope.data.recipientEmail;
-      subject = envelope.data.isCreate
-        ? `[DRAP] Acknowledgement from ${envelope.data.labId.toUpperCase()} for Round #${envelope.data.round} of Draft ${envelope.data.draftYear}`
-        : `[DRAP] Preference Update from ${envelope.data.labId.toUpperCase()} for Round #${envelope.data.round} of Draft ${envelope.data.draftYear}`;
+      subject = `[DRAP] Round #${envelope.data.round} Acknowledgements for Draft ${envelope.data.draftYear}`;
       html = await emailRenderer.render(RoundSubmitted, {
         props: {
           labName: envelope.data.labName,
@@ -215,7 +213,7 @@ export async function createEmailMessage(
     }
     case 'draft/lottery.intervened.email.batch': {
       recipient = envelope.data.recipientEmail;
-      subject = `[DRAP] Lottery Intervention for ${envelope.data.labId.toUpperCase()} in Draft ${envelope.data.draftYear}`;
+      subject = `[DRAP] Lottery Interventions in Draft ${envelope.data.draftYear}`;
       html = await emailRenderer.render(LotteryIntervened, {
         props: {
           studentName: envelope.data.studentName,
@@ -252,7 +250,7 @@ export async function createEmailMessage(
     }
     case 'draft/user.assigned.email.batch':
       recipient = envelope.data.userEmail;
-      subject = `[DRAP] Assigned to ${envelope.data.labId.toUpperCase()}`;
+      subject = '[DRAP] Your Draft Assignment Results';
       html = await emailRenderer.render(UserAssigned, {
         props: {
           userName: envelope.data.userName,

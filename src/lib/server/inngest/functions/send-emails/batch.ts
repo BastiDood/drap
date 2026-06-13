@@ -82,6 +82,7 @@ export const sendBatchedEmails = inngest.createFunction(
               const rowsByKey = getEmailThreadRowsByKey(rows);
               const keyByMessageId = new Map<string, string>();
               const messages = new Map<string, { message: MIMEMessage; gmailThreadId?: string }>();
+              const sentMessageIds = new Set<string>();
 
               for (const group of groups.values()) {
                 const row = rowsByKey.get(getEmailThreadKeyString(group.key));
@@ -89,6 +90,7 @@ export const sendBatchedEmails = inngest.createFunction(
                 assert(row.gmailThreadId !== null, 'batch email thread must already be seeded');
 
                 for (const envelope of group.envelopes) {
+                  if (row.gmailMessageIds.includes(envelope.data.gmailMessageId)) continue;
                   keyByMessageId.set(
                     envelope.data.gmailMessageId,
                     getEmailThreadKeyString(group.key),
@@ -101,8 +103,11 @@ export const sendBatchedEmails = inngest.createFunction(
                     message: rendered.message,
                     gmailThreadId: rendered.gmailThreadId,
                   });
+                  sentMessageIds.add(envelope.data.gmailMessageId);
                 }
               }
+
+              if (messages.size === 0) return [];
 
               logger.debug('sending threaded email batch', { 'messages.count': messages.size });
               let results: Awaited<ReturnType<typeof client.sendEmails>>;
@@ -130,6 +135,7 @@ export const sendBatchedEmails = inngest.createFunction(
               const successfulMessageIdsByKey = new Map<string, string[]>();
 
               for (const envelope of envelopes) {
+                if (!sentMessageIds.has(envelope.data.gmailMessageId)) continue;
                 const result = results.get(envelope.data.gmailMessageId);
                 assert(typeof result !== 'undefined', 'missing gmail batch result');
                 const attempt = envelope.data.attempt ?? 0;

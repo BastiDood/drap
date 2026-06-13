@@ -101,8 +101,10 @@ export const sendSeedEmails = inngest.createFunction(
                 assert(typeof row !== 'undefined', 'seed email thread row must exist');
 
                 if (row.gmailThreadId !== null) {
-                  for (const envelope of group.envelopes)
+                  for (const envelope of group.envelopes) {
+                    if (row.gmailMessageIds.includes(envelope.data.gmailMessageId)) continue;
                     followupEvents.push(createBatchEvent(envelope));
+                  }
                   continue;
                 }
 

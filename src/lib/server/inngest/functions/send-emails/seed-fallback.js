@@ -29,6 +29,7 @@ export const sendSeedEmailFallback = inngest.createFunction(
   },
   async ({ event, step }) => {
     if (!ENABLE_EMAILS) throw new NonRetriableError('emails disabled during dry run');
+
     const followupEvents = await step.run(
       { id: 'send-seed-email-fallback', name: 'Send Seed Email Fallback' },
       async () =>
@@ -41,8 +42,12 @@ export const sendSeedEmailFallback = inngest.createFunction(
             async tx => {
               const row = assertSingle(await lockOrCreateEmailThreads(tx, [key]));
 
-              if (row.gmailThreadId !== null)
-                return [seed, ...followers].map(envelope => createBatchEvent(envelope));
+              if (row.gmailThreadId !== null) {
+                const envelopes = row.gmailMessageIds.includes(seed.data.gmailMessageId)
+                  ? followers
+                  : [seed, ...followers];
+                return envelopes.map(envelope => createBatchEvent(envelope));
+              }
 
               const { message } = await createEmailMessage(seed, sender);
               try {

@@ -30,6 +30,7 @@ export const sendBatchEmailFallback = inngest.createFunction(
   },
   async ({ event, step }) => {
     if (!ENABLE_EMAILS) throw new NonRetriableError('emails disabled during dry run');
+
     await step.run(
       { id: 'send-batch-email-fallback', name: 'Send Batch Email Fallback' },
       async () =>
@@ -42,6 +43,7 @@ export const sendBatchEmailFallback = inngest.createFunction(
             async tx => {
               const row = assertSingle(await lockEmailThreads(tx, [key]));
               assert(row.gmailThreadId !== null, 'batch fallback email thread must be seeded');
+              if (row.gmailMessageIds.includes(email.data.gmailMessageId)) return;
 
               const { message, gmailThreadId } = await createEmailMessage(email, sender, {
                 gmailThreadId: row.gmailThreadId,
