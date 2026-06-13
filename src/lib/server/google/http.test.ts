@@ -170,6 +170,26 @@ describe('parseBatchSendResponse', () => {
     expect(Array.from(results.keys())).toEqual([ITEM1]);
   });
 
+  it('normalizes response-prefixed bracketed request content ids', async () => {
+    const ponyBody = createGmailSuccessBody({
+      id: 'pony-message-id',
+      threadId: 'pony-thread-id',
+      labelIds: ['SENT'],
+    });
+    const response = createMultipartResponse([
+      [
+        'Content-Type: application/http',
+        `Content-ID: response-<${ITEM1}>`,
+        '',
+        ...createSuccessfulResponseLines(ponyBody, 'etag/pony'),
+      ].join('\r\n'),
+    ]);
+
+    const results = await parseBatchSendResponse(response);
+
+    expect(Array.from(results.keys())).toEqual([ITEM1]);
+  });
+
   it('keeps content ids without the response- prefix unchanged', async () => {
     const ponyBody = createGmailSuccessBody({
       id: 'pony-message-id',

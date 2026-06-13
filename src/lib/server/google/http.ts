@@ -235,6 +235,11 @@ function normalizeBatchContentId(contentId: string) {
       logger.trace('stripped response prefix', { content_id: normalized });
     }
 
+    if (normalized.startsWith('<') && normalized.endsWith('>')) {
+      normalized = normalized.slice(1, -1);
+      logger.trace('trimmed angle brackets', { content_id: normalized });
+    }
+
     return normalized;
   });
 }
