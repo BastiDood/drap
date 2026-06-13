@@ -13,13 +13,13 @@
   const { draftId, draftYear }: Props = $props();
 </script>
 
-<EmailLayout preview="Draft {draftYear} finalized">
+<EmailLayout preview="Draft {draftYear} has been finalized.">
   <Section>
     <Section class="p-4">
       <Heading class="text-2xl font-bold text-foreground" as="h1">Draft Finalized</Heading>
       <Text class="text-base">
-        <strong class="text-foreground">Draft {draftYear}</strong> has been finalized. Assignments have
-        been synced.
+        <strong class="text-foreground">Draft {draftYear}</strong> has been finalized. Draftees have been
+        notified via email of their respective assignments.
       </Text>
     </Section>
     <Section class="px-4 pb-4">

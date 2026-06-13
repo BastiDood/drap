@@ -15,8 +15,8 @@
 
 <EmailLayout
   preview={round === null
-    ? `Lottery round started - Draft ${draftYear}`
-    : `Round #${round} started - Draft ${draftYear}`}
+    ? `The lottery round for Draft ${draftYear} has begun.`
+    : `Round #${round} for Draft ${draftYear} has begun.`}
 >
   <Section>
     <Section class="p-4">

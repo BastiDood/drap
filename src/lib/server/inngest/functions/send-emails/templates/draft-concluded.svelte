@@ -34,6 +34,7 @@
   }
 
   const { draftId, draftYear, lotteryAssignments }: Props = $props();
+  const assignmentCount = $derived(lotteryAssignments.length);
   const groupedLotteryAssignments = $derived.by(() => {
     // eslint-disable-next-line svelte/prefer-svelte-reactivity -- local grouping container in derived computation
     const grouped = new Map<string, GroupedLotteryAssignment>();
@@ -55,7 +56,11 @@
   });
 </script>
 
-<EmailLayout preview="Draft {draftYear} concluded - Finalize the draft">
+<EmailLayout
+  preview={assignmentCount === 1
+    ? `Draft ${draftYear} has concluded with 1 lottery assignment ready for review.`
+    : `Draft ${draftYear} has concluded with ${assignmentCount} lottery assignments ready for review.`}
+>
   <Section>
     <Section class="p-4">
       <Heading class="text-2xl font-bold text-foreground" as="h1">Draft Concluded</Heading>

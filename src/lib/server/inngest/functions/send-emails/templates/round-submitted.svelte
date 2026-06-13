@@ -15,8 +15,8 @@
 
 <EmailLayout
   preview={isCreate
-    ? `${labName} submitted preferences for Round #${round}`
-    : `${labName} updated preferences for Round #${round}`}
+    ? `The ${labName} submitted student preferences for Round #${round} of Draft ${draftYear}.`
+    : `The ${labName} updated student preferences for Round #${round} of Draft ${draftYear}.`}
 >
   <Section>
     <Section class="p-4">
