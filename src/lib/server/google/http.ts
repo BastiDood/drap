@@ -13,9 +13,11 @@ const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
 export function parseBatchSendResponse(response: Response) {
-  return tracer.asyncSpan('parse-batch-send-response', async () => {
+  return tracer.asyncSpan('parse-batch-send-response', async span => {
     const contentType = response.headers.get('Content-Type');
     if (contentType === null) MissingBatchContentTypeError.throwNew();
+    span.setAttribute('response.content_type', contentType);
+
     if (!contentType.toLowerCase().startsWith('multipart/'))
       InvalidBatchContentTypeError.throwNew(contentType);
     if (!/;\s*boundary=/iu.test(contentType)) MissingBatchBoundaryError.throwNew(contentType);
@@ -95,14 +97,17 @@ export class MissingBatchBoundaryError extends Error {
 
 function parseBatchSendPart(part: Multipart['parts'][number]): [string, GmailBatchSendResult] {
   return tracer.span('parse-batch-send-part', span => {
-    span.setAttribute('http.part.size', part.body.byteLength);
+    span.setAttribute('multipart.size', part.body.byteLength);
     const contentType = part.headers.get('Content-Type');
     if (contentType === null) MissingBatchPartContentTypeError.throwNew();
+    span.setAttribute('multipart.content_type', contentType);
+
     if (!contentType.toLowerCase().startsWith('application/http'))
       NonHttpBatchPartError.throwNew(contentType);
 
     const partContentId = part.headers.get('Content-ID');
     if (partContentId === null) MissingBatchPartContentIdError.throwNew();
+    span.setAttribute('multipart.content_id', partContentId);
 
     const contentId = normalizeBatchContentId(partContentId);
     const { status, body } = parseApplicationHttpResponse(Buffer.from(part.body));
@@ -221,7 +226,7 @@ function parseApplicationHttpResponse(data: Buffer) {
 
 function normalizeBatchContentId(contentId: string) {
   return tracer.span('normalize-batch-content-id', span => {
-    span.setAttribute('content_id', contentId);
+    span.setAttribute('input.content_id', contentId);
 
     let normalized = contentId.trim();
     if (normalized.startsWith('<') && normalized.endsWith('>')) {
@@ -240,6 +245,7 @@ function normalizeBatchContentId(contentId: string) {
       logger.trace('trimmed angle brackets', { content_id: normalized });
     }
 
+    span.setAttribute('output.content_id', normalized);
     return normalized;
   });
 }
