@@ -1,9 +1,10 @@
-import { pgSchema, text, timestamp } from 'drizzle-orm/pg-core';
+import { bigint, pgEnum, pgSchema, smallint, text, timestamp, unique } from 'drizzle-orm/pg-core';
 
-import { user } from './app';
+import { draft, user } from './app';
 
 import { bytea } from './custom/bytea';
 import { ulid } from './custom/ulid';
+import { uuid } from './custom/uuid';
 
 export const email = pgSchema('email');
 
@@ -34,3 +35,39 @@ export const designatedSender = email.table('designated_sender', {
 });
 export type DesignatedSender = typeof designatedSender.$inferSelect;
 export type NewDesignatedSender = typeof designatedSender.$inferInsert;
+
+export const inngestEventNameEnum = pgEnum('inngest_event_type_enum', [
+  'round-started',
+  'round-submitted',
+  'lottery-intervened',
+  'draft-concluded',
+  'draft-finalization',
+  'user-assigned',
+]);
+export type InngestEventName = (typeof inngestEventNameEnum.enumValues)[number];
+
+export const emailThread = email.table(
+  'email_thread',
+  {
+    createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+    id: bigint('id', { mode: 'bigint' }).notNull().generatedAlwaysAsIdentity().primaryKey(),
+    draftId: bigint('draft_id', { mode: 'bigint' })
+      .references(() => draft.id, { onUpdate: 'cascade' })
+      .notNull(),
+    eventType: inngestEventNameEnum('event_type').notNull(),
+    round: smallint('round'),
+    recipientUserId: ulid('recipient_user_id')
+      .references(() => user.id, { onUpdate: 'cascade', onDelete: 'cascade' })
+      .notNull(),
+    gmailThreadId: text('gmail_thread_id'),
+    gmailMessageIds: uuid('gmail_message_ids').array().notNull(),
+  },
+  ({ draftId, eventType, round, recipientUserId, gmailThreadId }) => [
+    unique('thread_draft_event_round_recipient_idx')
+      .on(draftId, eventType, round, recipientUserId)
+      .nullsNotDistinct(),
+    unique('thread_recipient_idx').on(gmailThreadId, recipientUserId),
+  ],
+);
+export type EmailThread = typeof emailThread.$inferSelect;
+export type NewEmailThread = typeof emailThread.$inferInsert;

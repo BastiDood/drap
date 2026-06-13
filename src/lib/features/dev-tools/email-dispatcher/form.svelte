@@ -19,7 +19,7 @@
 
   const { onSuccess }: Props = $props();
 
-  let selectedEvent = $state('draft/round.started.email.batch');
+  let selectedEvent = $state('draft/round.started.email.seed');
 </script>
 
 <form
@@ -67,27 +67,27 @@
     <div class="space-y-2">
       <Label for="event">Event Type</Label>
       <NativeSelect.Root name="event" id="event" bind:value={selectedEvent} class="w-full">
-        <NativeSelect.Option value="draft/round.started.email.batch"
+        <NativeSelect.Option value="draft/round.started.email.seed"
           >Round Started</NativeSelect.Option
         >
-        <NativeSelect.Option value="draft/round.submitted.email.batch"
+        <NativeSelect.Option value="draft/round.submitted.email.seed"
           >Round Submitted</NativeSelect.Option
         >
-        <NativeSelect.Option value="draft/lottery.intervened.email.batch"
+        <NativeSelect.Option value="draft/lottery.intervened.email.seed"
           >Lottery Intervened</NativeSelect.Option
         >
-        <NativeSelect.Option value="draft/draft.concluded.email.batch"
+        <NativeSelect.Option value="draft/draft.concluded.email.seed"
           >Draft Concluded</NativeSelect.Option
         >
-        <NativeSelect.Option value="draft/draft.finalization.email.batch"
+        <NativeSelect.Option value="draft/draft.finalization.email.seed"
           >Draft Finalized</NativeSelect.Option
         >
-        <NativeSelect.Option value="draft/user.assigned.email.batch"
+        <NativeSelect.Option value="draft/user.assigned.email.seed"
           >User Assigned</NativeSelect.Option
         >
       </NativeSelect.Root>
     </div>
-    {#if selectedEvent === 'draft/round.started.email.batch'}
+    {#if selectedEvent === 'draft/round.started.email.seed'}
       <div class="space-y-2">
         <Label for="draftId">Draft ID</Label>
         <Input type="number" name="draftId" id="draftId" min="1" required placeholder="1" />
@@ -112,7 +112,7 @@
           placeholder="example@up.edu.ph"
         />
       </div>
-    {:else if selectedEvent === 'draft/round.submitted.email.batch'}
+    {:else if selectedEvent === 'draft/round.submitted.email.seed'}
       <div class="space-y-2">
         <Label for="selectionMode">Selection Mode</Label>
         <NativeSelect.Root name="selectionMode" id="selectionMode" class="w-full">
@@ -142,7 +142,7 @@
           placeholder="example@up.edu.ph"
         />
       </div>
-    {:else if selectedEvent === 'draft/lottery.intervened.email.batch'}
+    {:else if selectedEvent === 'draft/lottery.intervened.email.seed'}
       <div class="space-y-2">
         <Label for="draftId">Draft ID</Label>
         <Input type="number" name="draftId" id="draftId" min="1" required placeholder="1" />
@@ -171,7 +171,7 @@
           placeholder="example@up.edu.ph"
         />
       </div>
-    {:else if selectedEvent === 'draft/draft.concluded.email.batch'}
+    {:else if selectedEvent === 'draft/draft.concluded.email.seed'}
       <div class="space-y-2">
         <Label for="draftId">Draft ID</Label>
         <Input type="number" name="draftId" id="draftId" min="1" required placeholder="1" />
@@ -187,7 +187,7 @@
         />
       </div>
       <LotteryAssignmentsInput />
-    {:else if selectedEvent === 'draft/draft.finalization.email.batch'}
+    {:else if selectedEvent === 'draft/draft.finalization.email.seed'}
       <div class="space-y-2">
         <Label for="draftId">Draft ID</Label>
         <Input type="number" name="draftId" id="draftId" min="1" required placeholder="1" />
@@ -202,7 +202,11 @@
           placeholder="example@up.edu.ph"
         />
       </div>
-    {:else if selectedEvent === 'draft/user.assigned.email.batch'}
+    {:else if selectedEvent === 'draft/user.assigned.email.seed'}
+      <div class="space-y-2">
+        <Label for="draftId">Draft ID</Label>
+        <Input type="number" name="draftId" id="draftId" min="1" required placeholder="1" />
+      </div>
       <div class="space-y-2">
         <Label for="labId">Lab ID</Label>
         <Input type="text" name="labId" id="labId" required placeholder="ndsl" />

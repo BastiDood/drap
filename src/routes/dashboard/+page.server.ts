@@ -7,7 +7,7 @@ import { decode } from 'decode-formdata';
 import { error, fail, redirect } from '@sveltejs/kit';
 
 import * as schema from '$lib/server/database/schema';
-import { assertOptional, assertSingle } from '$lib/server/assert';
+import { assertOptional } from '$lib/server/assert';
 import { coerceNumber } from '$lib/coerce';
 import { db } from '$lib/server/database';
 import {
@@ -19,13 +19,13 @@ import {
 } from '$lib/server/database/drizzle';
 import { dev } from '$app/environment';
 import {
-  DraftConcludedBatchEmailEvent,
-  type DraftConcludedBatchEmailSchema,
-  DraftFinalizationBatchEmailEvent,
-  LotteryInterventionBatchEmailEvent,
-  RoundStartedBatchEmailEvent,
-  RoundSubmittedBatchEmailEvent,
-  UserAssignedBatchEmailEvent,
+  DraftConcludedSeedEmailEvent,
+  type DraftConcludedSeedEmailSchema,
+  DraftFinalizationSeedEmailEvent,
+  LotteryInterventionSeedEmailEvent,
+  RoundStartedSeedEmailEvent,
+  RoundSubmittedSeedEmailEvent,
+  UserAssignedSeedEmailEvent,
 } from '$lib/server/inngest/schema';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
@@ -81,13 +81,13 @@ const LotteryAssignmentFormData = v.object({
 
 const SendEmailFormData = v.variant('event', [
   v.object({
-    event: v.literal('draft/round.started.email.batch'),
+    event: v.literal('draft/round.started.email.seed'),
     draftId: v.number(),
     round: v.optional(v.nullable(v.number()), null),
     recipientEmail: v.string(),
   }),
   v.object({
-    event: v.literal('draft/round.submitted.email.batch'),
+    event: v.literal('draft/round.submitted.email.seed'),
     draftId: v.number(),
     round: v.number(),
     labId: v.string(),
@@ -95,25 +95,26 @@ const SendEmailFormData = v.variant('event', [
     selectionMode: v.picklist(['create', 'update']),
   }),
   v.object({
-    event: v.literal('draft/lottery.intervened.email.batch'),
+    event: v.literal('draft/lottery.intervened.email.seed'),
     draftId: v.number(),
     labId: v.string(),
     studentEmail: v.string(),
     recipientEmail: v.string(),
   }),
   v.object({
-    event: v.literal('draft/draft.concluded.email.batch'),
+    event: v.literal('draft/draft.concluded.email.seed'),
     draftId: v.number(),
     recipientEmail: v.string(),
     lotteryAssignments: v.optional(v.array(LotteryAssignmentFormData), []),
   }),
   v.object({
-    event: v.literal('draft/draft.finalization.email.batch'),
+    event: v.literal('draft/draft.finalization.email.seed'),
     draftId: v.number(),
     recipientEmail: v.string(),
   }),
   v.object({
-    event: v.literal('draft/user.assigned.email.batch'),
+    event: v.literal('draft/user.assigned.email.seed'),
+    draftId: v.number(),
     labId: v.string(),
     userEmail: v.string(),
   }),
@@ -309,37 +310,32 @@ export const actions = {
 
             logger.info('dispatching email event...');
             switch (parsed.event) {
-              case 'draft/round.started.email.batch': {
+              case 'draft/round.started.email.seed': {
                 const draftYear = await getDraftYear(db, parsed.draftId);
                 if (typeof draftYear === 'undefined') {
                   logger.fatal('unknown draft id', void 0, { 'draft.id': parsed.draftId });
                   return fail(404, { message: 'Draft is not found in the database.' });
                 }
 
-                let givenName: string;
-                let familyName: string;
-                try {
-                  ({ givenName, familyName } = await getUserNameByEmail(db, parsed.recipientEmail));
-                } catch (err) {
-                  if (err instanceof AssertionError) {
-                    logger.fatal('unknown recipient email', err);
-                    return fail(404, { message: 'Recipient email is not a user in the database.' });
-                  }
-                  throw err;
+                const recipient = await getUserIdentityByEmail(db, parsed.recipientEmail);
+                if (typeof recipient === 'undefined') {
+                  logger.fatal('unknown recipient email');
+                  return fail(404, { message: 'Recipient email is not a user in the database.' });
                 }
 
                 await inngest.send(
-                  RoundStartedBatchEmailEvent.create({
+                  RoundStartedSeedEmailEvent.create({
                     draftId: parsed.draftId,
                     draftYear,
                     round: parsed.round,
+                    recipientUserId: recipient.id,
                     recipientEmail: parsed.recipientEmail,
-                    recipientName: `${givenName} ${familyName}`,
+                    recipientName: `${recipient.givenName} ${recipient.familyName}`,
                   }),
                 );
                 break;
               }
-              case 'draft/round.submitted.email.batch': {
+              case 'draft/round.submitted.email.seed': {
                 const draftYear = await getDraftYear(db, parsed.draftId);
                 if (typeof draftYear === 'undefined') {
                   logger.fatal('unknown draft id', void 0, { 'draft.id': parsed.draftId });
@@ -357,20 +353,27 @@ export const actions = {
                   throw err;
                 }
 
+                const recipient = await getUserIdentityByEmail(db, parsed.recipientEmail);
+                if (typeof recipient === 'undefined') {
+                  logger.fatal('unknown recipient email');
+                  return fail(404, { message: 'Recipient email is not a user in the database.' });
+                }
+
                 await inngest.send(
-                  RoundSubmittedBatchEmailEvent.create({
+                  RoundSubmittedSeedEmailEvent.create({
                     draftId: parsed.draftId,
                     draftYear,
                     round: parsed.round,
                     labId: parsed.labId,
                     labName,
+                    recipientUserId: recipient.id,
                     recipientEmail: parsed.recipientEmail,
                     isCreate: parsed.selectionMode === 'create',
                   }),
                 );
                 break;
               }
-              case 'draft/lottery.intervened.email.batch': {
+              case 'draft/lottery.intervened.email.seed': {
                 const draftYear = await getDraftYear(db, parsed.draftId);
                 if (typeof draftYear === 'undefined') {
                   logger.fatal('unknown draft id', void 0, { 'draft.id': parsed.draftId });
@@ -408,22 +411,14 @@ export const actions = {
                   throw err;
                 }
 
-                let recipientGivenName: string;
-                let recipientFamilyName: string;
-
-                try {
-                  ({ givenName: recipientGivenName, familyName: recipientFamilyName } =
-                    await getUserNameByEmail(db, parsed.recipientEmail));
-                } catch (err) {
-                  if (err instanceof AssertionError) {
-                    logger.fatal('unknown recipient email', err);
-                    return fail(404, { message: 'Recipient email is not a user in the database.' });
-                  }
-                  throw err;
+                const recipient = await getUserIdentityByEmail(db, parsed.recipientEmail);
+                if (typeof recipient === 'undefined') {
+                  logger.fatal('unknown recipient email');
+                  return fail(404, { message: 'Recipient email is not a user in the database.' });
                 }
 
                 await inngest.send(
-                  LotteryInterventionBatchEmailEvent.create({
+                  LotteryInterventionSeedEmailEvent.create({
                     draftId: parsed.draftId,
                     draftYear,
                     labId: parsed.labId,
@@ -431,32 +426,27 @@ export const actions = {
                     studentName: `${studentGivenName} ${studentFamilyName}`,
                     studentEmail: parsed.studentEmail,
                     avatarUrl: studentAvatarUrl,
+                    recipientUserId: recipient.id,
                     recipientEmail: parsed.recipientEmail,
-                    recipientName: `${recipientGivenName} ${recipientFamilyName}`,
+                    recipientName: `${recipient.givenName} ${recipient.familyName}`,
                   }),
                 );
                 break;
               }
-              case 'draft/draft.concluded.email.batch': {
+              case 'draft/draft.concluded.email.seed': {
                 const draftYear = await getDraftYear(db, parsed.draftId);
                 if (typeof draftYear === 'undefined') {
                   logger.fatal('unknown draft id', void 0, { 'draft.id': parsed.draftId });
                   return fail(404, { message: 'Draft is not found in the database.' });
                 }
 
-                let givenName: string;
-                let familyName: string;
-                try {
-                  ({ givenName, familyName } = await getUserNameByEmail(db, parsed.recipientEmail));
-                } catch (err) {
-                  if (err instanceof AssertionError) {
-                    logger.fatal('unknown recipient email', err);
-                    return fail(404, { message: 'Recipient email is not a user in the database.' });
-                  }
-                  throw err;
+                const recipient = await getUserIdentityByEmail(db, parsed.recipientEmail);
+                if (typeof recipient === 'undefined') {
+                  logger.fatal('unknown recipient email');
+                  return fail(404, { message: 'Recipient email is not a user in the database.' });
                 }
 
-                const lotteryAssignments: DraftConcludedBatchEmailSchema['lotteryAssignments'] = [];
+                const lotteryAssignments: DraftConcludedSeedEmailSchema['lotteryAssignments'] = [];
                 for (const { labId, studentEmail } of parsed.lotteryAssignments) {
                   let labName: string;
                   try {
@@ -503,46 +493,42 @@ export const actions = {
                 }
 
                 await inngest.send(
-                  DraftConcludedBatchEmailEvent.create({
+                  DraftConcludedSeedEmailEvent.create({
                     draftId: parsed.draftId,
                     draftYear,
+                    recipientUserId: recipient.id,
                     recipientEmail: parsed.recipientEmail,
-                    recipientName: `${givenName} ${familyName}`,
+                    recipientName: `${recipient.givenName} ${recipient.familyName}`,
                     lotteryAssignments,
                   }),
                 );
                 break;
               }
-              case 'draft/draft.finalization.email.batch': {
+              case 'draft/draft.finalization.email.seed': {
                 const draftYear = await getDraftYear(db, parsed.draftId);
                 if (typeof draftYear === 'undefined') {
                   logger.fatal('unknown draft id', void 0, { 'draft.id': parsed.draftId });
                   return fail(404, { message: 'Draft is not found in the database.' });
                 }
 
-                let givenName: string;
-                let familyName: string;
-                try {
-                  ({ givenName, familyName } = await getUserNameByEmail(db, parsed.recipientEmail));
-                } catch (err) {
-                  if (err instanceof AssertionError) {
-                    logger.fatal('unknown recipient email', err);
-                    return fail(404, { message: 'Recipient email is not a user in the database.' });
-                  }
-                  throw err;
+                const recipient = await getUserIdentityByEmail(db, parsed.recipientEmail);
+                if (typeof recipient === 'undefined') {
+                  logger.fatal('unknown recipient email');
+                  return fail(404, { message: 'Recipient email is not a user in the database.' });
                 }
 
                 await inngest.send(
-                  DraftFinalizationBatchEmailEvent.create({
+                  DraftFinalizationSeedEmailEvent.create({
                     draftId: parsed.draftId,
                     draftYear,
+                    recipientUserId: recipient.id,
                     recipientEmail: parsed.recipientEmail,
-                    recipientName: `${givenName} ${familyName}`,
+                    recipientName: `${recipient.givenName} ${recipient.familyName}`,
                   }),
                 );
                 break;
               }
-              case 'draft/user.assigned.email.batch': {
+              case 'draft/user.assigned.email.seed': {
                 let labName: string;
                 try {
                   ({ name: labName } = await getLabById(db, parsed.labId));
@@ -554,26 +540,20 @@ export const actions = {
                   throw err;
                 }
 
-                let userGivenName: string;
-                let userFamilyName: string;
-
-                try {
-                  ({ givenName: userGivenName, familyName: userFamilyName } =
-                    await getUserNameByEmail(db, parsed.userEmail));
-                } catch (err) {
-                  if (err instanceof AssertionError) {
-                    logger.fatal('unknown user email', err);
-                    return fail(404, { message: 'User email is not a user in the database.' });
-                  }
-                  throw err;
+                const recipient = await getUserIdentityByEmail(db, parsed.userEmail);
+                if (typeof recipient === 'undefined') {
+                  logger.fatal('unknown user email');
+                  return fail(404, { message: 'User email is not a user in the database.' });
                 }
 
                 await inngest.send(
-                  UserAssignedBatchEmailEvent.create({
+                  UserAssignedSeedEmailEvent.create({
+                    draftId: parsed.draftId,
                     labId: parsed.labId,
                     labName,
+                    recipientUserId: recipient.id,
                     userEmail: parsed.userEmail,
-                    userName: `${userGivenName} ${userFamilyName}`,
+                    userName: `${recipient.givenName} ${recipient.familyName}`,
                   }),
                 );
                 break;
@@ -675,14 +655,18 @@ async function updateProfileByUserId(
   });
 }
 
-async function getUserNameByEmail(db: DbConnection, email: string) {
-  return await tracer.asyncSpan('get-user-name-by-email', async span => {
+async function getUserIdentityByEmail(db: DbConnection, email: string) {
+  return await tracer.asyncSpan('get-user-identity-by-email', async span => {
     span.setAttribute('database.user.email', email);
     return await db
-      .select({ givenName: schema.user.givenName, familyName: schema.user.familyName })
+      .select({
+        id: schema.user.id,
+        givenName: schema.user.givenName,
+        familyName: schema.user.familyName,
+      })
       .from(schema.user)
       .where(eq(schema.user.email, email))
-      .then(assertSingle);
+      .then(assertOptional);
   });
 }
 

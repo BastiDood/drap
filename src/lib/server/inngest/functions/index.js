@@ -1,4 +1,15 @@
 import { cleanupSessions } from '$lib/server/inngest/functions/cleanup-sessions';
-import { sendBatchedEmails, sendEmailFallback } from '$lib/server/inngest/functions/send-email';
+import {
+  sendBatchedEmails,
+  sendBatchEmailFallback,
+  sendSeedEmailFallback,
+  sendSeedEmails,
+} from '$lib/server/inngest/functions/send-emails';
 
-export const functions = [sendBatchedEmails, sendEmailFallback, cleanupSessions];
+export const functions = [
+  sendSeedEmails,
+  sendBatchedEmails,
+  sendSeedEmailFallback,
+  sendBatchEmailFallback,
+  cleanupSessions,
+];

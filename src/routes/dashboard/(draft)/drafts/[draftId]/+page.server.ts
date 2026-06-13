@@ -27,11 +27,11 @@ import {
 import { coerceDate, coerceNullableNumber, coerceNumber } from '$lib/coerce';
 import { db } from '$lib/server/database';
 import {
-  DraftConcludedBatchEmailEvent,
-  DraftFinalizationBatchEmailEvent,
-  LotteryInterventionBatchEmailEvent,
-  RoundStartedBatchEmailEvent,
-  UserAssignedBatchEmailEvent,
+  DraftConcludedSeedEmailEvent,
+  DraftFinalizationSeedEmailEvent,
+  LotteryInterventionSeedEmailEvent,
+  RoundStartedSeedEmailEvent,
+  UserAssignedSeedEmailEvent,
 } from '$lib/server/inngest/schema';
 import {
   getDraftPhase,
@@ -358,11 +358,12 @@ export const actions = {
       const facultyAndStaff = await getDraftNotificationRecipients(db, draftId);
       await inngest.send(
         roundsToNotify.flatMap(round =>
-          facultyAndStaff.map(({ email, givenName, familyName }) =>
-            RoundStartedBatchEmailEvent.create({
+          facultyAndStaff.map(({ id, email, givenName, familyName }) =>
+            RoundStartedSeedEmailEvent.create({
               draftId: Number(draftId),
               draftYear,
               round,
+              recipientUserId: id,
               recipientEmail: email,
               recipientName: `${givenName} ${familyName}`,
             }),
@@ -575,8 +576,8 @@ export const actions = {
           getUserById(db, studentUserId),
         ]);
         await inngest.send(
-          facultyAndStaff.map(({ email, givenName, familyName }) =>
-            LotteryInterventionBatchEmailEvent.create({
+          facultyAndStaff.map(({ id, email, givenName, familyName }) =>
+            LotteryInterventionSeedEmailEvent.create({
               draftId: Number(draftId),
               draftYear,
               labId,
@@ -584,6 +585,7 @@ export const actions = {
               studentName: `${student.givenName} ${student.familyName}`,
               studentEmail: student.email,
               avatarUrl: student.avatarUrl,
+              recipientUserId: id,
               recipientEmail: email,
               recipientName: `${givenName} ${familyName}`,
             }),
@@ -722,10 +724,11 @@ export const actions = {
         }));
 
       await inngest.send(
-        draftAdmins.map(({ email, givenName, familyName }) =>
-          DraftConcludedBatchEmailEvent.create({
+        draftAdmins.map(({ id, email, givenName, familyName }) =>
+          DraftConcludedSeedEmailEvent.create({
             draftId: Number(draftId),
             draftYear,
+            recipientUserId: id,
             recipientEmail: email,
             recipientName: `${givenName} ${familyName}`,
             lotteryAssignments,
@@ -803,10 +806,11 @@ export const actions = {
 
       const facultyAndStaff = await getDraftNotificationRecipients(db, draftId);
       await inngest.send(
-        facultyAndStaff.map(({ email, givenName, familyName }) =>
-          DraftFinalizationBatchEmailEvent.create({
+        facultyAndStaff.map(({ id, email, givenName, familyName }) =>
+          DraftFinalizationSeedEmailEvent.create({
             draftId: Number(draftId),
             draftYear,
+            recipientUserId: id,
             recipientEmail: email,
             recipientName: `${givenName} ${familyName}`,
           }),
@@ -819,9 +823,11 @@ export const actions = {
           getUserById(db, userId),
         ]);
         await inngest.send(
-          UserAssignedBatchEmailEvent.create({
+          UserAssignedSeedEmailEvent.create({
+            draftId: Number(draftId),
             labId,
             labName,
+            recipientUserId: assignedUser.id,
             userEmail: assignedUser.email,
             userName: `${assignedUser.givenName} ${assignedUser.familyName}`,
           }),
@@ -996,7 +1002,7 @@ async function getUserById(db: DbConnection, userId: string) {
     span.setAttribute('database.user.id', userId);
     return await db.query.user
       .findFirst({
-        columns: { email: true, avatarUrl: true, givenName: true, familyName: true },
+        columns: { id: true, email: true, avatarUrl: true, givenName: true, familyName: true },
         where: ({ id }, { eq }) => eq(id, userId),
       })
       .then(assertDefined);

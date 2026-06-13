@@ -51,7 +51,7 @@ export class GoogleOAuthClient {
     });
   }
 
-  async sendEmail(message: MIMEMessage) {
+  async sendEmail(message: MIMEMessage, gmailThreadId?: string) {
     return await tracer.asyncSpan('google-oauth-client-send-email', async span => {
       if (!this.scopes.includes(GMAIL_SEND_SCOPE)) GmailScopeError.throwNew(this.scopes);
 
@@ -78,7 +78,10 @@ export class GoogleOAuthClient {
           Authorization: `Bearer ${this.accessToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ raw }),
+        body:
+          typeof gmailThreadId === 'undefined'
+            ? JSON.stringify({ raw })
+            : JSON.stringify({ raw, threadId: gmailThreadId }),
       });
 
       logger.trace('reading response...');
@@ -92,6 +95,7 @@ export class GoogleOAuthClient {
             'email.message.label_ids': result.labelIds,
             'email.message.internal_date': result.internalDate,
           });
+
           return result;
         }
         case 429:
@@ -106,14 +110,16 @@ export class GoogleOAuthClient {
   }
 
   /** Bulk version of {@linkcode sendEmail}. */
-  async sendEmails(messages: Map<string, MIMEMessage>) {
+  async sendEmails(
+    messages: ReadonlyMap<string, { message: MIMEMessage; gmailThreadId?: string }>,
+  ) {
     return await tracer.asyncSpan('google-oauth-client-send-emails', async span => {
       if (!this.scopes.includes(GMAIL_SEND_SCOPE)) GmailScopeError.throwNew(this.scopes);
       if (messages.size > 100) BatchError.throwNew(messages.size);
       span.setAttribute('messages.count', messages.size);
 
       const multipart = new Multipart(
-        Array.from(messages.entries(), ([contentId, message]) => {
+        Array.from(messages.entries(), ([contentId, { message, gmailThreadId }]) => {
           const encoder = new TextEncoder();
           const body = encoder.encode(
             HttpRawRequest.toString(
@@ -123,7 +129,10 @@ export class GoogleOAuthClient {
                 url: '/gmail/v1/users/me/messages/send',
               },
               { 'Content-Type': 'application/json' },
-              JSON.stringify({ raw: message.asEncoded() }),
+              JSON.stringify({
+                ...(typeof gmailThreadId !== 'undefined' && { threadId: gmailThreadId }),
+                raw: message.asEncoded(),
+              }),
             ),
           );
           return new Component(
