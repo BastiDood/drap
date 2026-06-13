@@ -1,5 +1,6 @@
 import { HTTPParser } from 'http-parser-js';
 import { Multipart } from 'multipart-ts';
+import { parse as parseContentType } from 'content-type';
 import { parse } from 'valibot';
 
 import { Logger } from '$lib/server/telemetry/logger';
@@ -22,8 +23,12 @@ export function parseBatchSendResponse(response: Response) {
       InvalidBatchContentTypeError.throwNew(contentType);
     if (!/;\s*boundary=/iu.test(contentType)) MissingBatchBoundaryError.throwNew(contentType);
 
-    const body = new Uint8Array(await response.arrayBuffer());
-    const multipart = await Multipart.blob(new Blob([body], { type: contentType }));
+    const parsedContentType = parseContentType(contentType);
+    const { boundary } = parsedContentType.parameters;
+    const boundaryBytes = new TextEncoder().encode(boundary);
+
+    const bodyBytes = new Uint8Array(await response.arrayBuffer());
+    const multipart = Multipart.parseBody(bodyBytes, boundaryBytes, parsedContentType.type);
 
     const results = new Map<string, GmailBatchSendResult>();
     for (const part of multipart.parts) {

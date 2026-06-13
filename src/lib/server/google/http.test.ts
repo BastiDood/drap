@@ -77,6 +77,49 @@ function createServerErrorResponseLines(body: string) {
 }
 
 describe('parseBatchSendResponse', () => {
+  it('preserves mixed-case multipart boundaries from the response content type', async () => {
+    const boundary = 'batch_uQfKge9K8OZypIorQ6DxnQ5-Fz7zVrtR';
+    const body = createGmailSuccessBody({
+      id: 'gmail-message-id',
+      threadId: 'gmail-thread-id',
+      labelIds: ['UNREAD', 'SENT', 'INBOX'],
+    });
+    const lines = [
+      '',
+      `--${boundary}`,
+      createApplicationHttpPart(ITEM1, [
+        'HTTP/1.1 200 OK',
+        'Content-Type: application/json; charset=UTF-8',
+        'Vary: Origin',
+        'Vary: X-Origin',
+        'Vary: Referer',
+        '',
+        body,
+      ]),
+      `--${boundary}--`,
+      '',
+    ];
+    const response = new Response(lines.join('\r\n'), {
+      headers: { 'Content-Type': `multipart/mixed; boundary=${boundary}` },
+    });
+
+    await expect(parseBatchSendResponse(response)).resolves.toEqual(
+      new Map([
+        [
+          ITEM1,
+          {
+            ok: true,
+            value: {
+              id: 'gmail-message-id',
+              threadId: 'gmail-thread-id',
+              labelIds: ['UNREAD', 'SENT', 'INBOX'],
+            },
+          },
+        ],
+      ]),
+    );
+  });
+
   it('parses a Google-docs-shaped multipart response into a result map', async () => {
     // Boundary and Content-ID values are taken from Google's batch API example.
     const ponyBody = createGmailSuccessBody({
