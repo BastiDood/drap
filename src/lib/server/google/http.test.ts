@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import {
   DuplicateBatchContentIdError,
   InvalidBatchContentTypeError,
-  MissingBatchBoundaryError,
   MissingBatchContentTypeError,
   MissingBatchPartContentIdError,
   MissingBatchPartContentTypeError,
@@ -292,16 +291,6 @@ describe('parseBatchSendResponse', () => {
 
     await expect(parseBatchSendResponse(response)).rejects.toBeInstanceOf(
       InvalidBatchContentTypeError,
-    );
-  });
-
-  it('throws when the outer multipart response is missing a boundary', async () => {
-    const response = new Response('', {
-      headers: { 'Content-Type': 'multipart/mixed' },
-    });
-
-    await expect(parseBatchSendResponse(response)).rejects.toBeInstanceOf(
-      MissingBatchBoundaryError,
     );
   });
 

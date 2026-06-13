@@ -1,6 +1,5 @@
+import { Component, Multipart } from 'multipart-ts';
 import { HTTPParser } from 'http-parser-js';
-import { Multipart } from 'multipart-ts';
-import { parse as parseContentType } from 'content-type';
 import { parse } from 'valibot';
 
 import { Logger } from '$lib/server/telemetry/logger';
@@ -21,14 +20,9 @@ export function parseBatchSendResponse(response: Response) {
 
     if (!contentType.toLowerCase().startsWith('multipart/'))
       InvalidBatchContentTypeError.throwNew(contentType);
-    if (!/;\s*boundary=/iu.test(contentType)) MissingBatchBoundaryError.throwNew(contentType);
 
-    const parsedContentType = parseContentType(contentType);
-    const { boundary } = parsedContentType.parameters;
-    const boundaryBytes = new TextEncoder().encode(boundary);
-
-    const bodyBytes = new Uint8Array(await response.arrayBuffer());
-    const multipart = Multipart.parseBody(bodyBytes, boundaryBytes, parsedContentType.type);
+    const body = await response.arrayBuffer();
+    const multipart = Multipart.part(new Component({ 'Content-Type': contentType }, body));
 
     const results = new Map<string, GmailBatchSendResult>();
     for (const part of multipart.parts) {
@@ -79,21 +73,6 @@ export class InvalidBatchContentTypeError extends Error {
   static throwNew(contentType: string): never {
     const error = new InvalidBatchContentTypeError(contentType);
     logger.error('unexpected content type when reading multipart response', error, {
-      'error.content_type': contentType,
-    });
-    throw error;
-  }
-}
-
-export class MissingBatchBoundaryError extends Error {
-  constructor(public readonly contentType: string) {
-    super(`missing multipart boundary when reading batch response: ${contentType}`);
-    this.name = 'MissingBatchBoundaryError';
-  }
-
-  static throwNew(contentType: string): never {
-    const error = new MissingBatchBoundaryError(contentType);
-    logger.error('missing multipart boundary when reading batch response', error, {
       'error.content_type': contentType,
     });
     throw error;
