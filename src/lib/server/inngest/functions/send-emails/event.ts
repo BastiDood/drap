@@ -200,7 +200,7 @@ export async function createEmailMessage(
     }
     case 'draft/round.submitted.email.batch': {
       recipient = envelope.data.recipientEmail;
-      subject = `[DRAP] Round #${envelope.data.round} Acknowledgements for Draft ${envelope.data.draftYear}`;
+      subject = `[DRAP] Draft ${envelope.data.draftYear} Round #${envelope.data.round} Preference Acknowledgements`;
       html = await emailRenderer.render(RoundSubmitted, {
         props: {
           labName: envelope.data.labName,
@@ -213,7 +213,7 @@ export async function createEmailMessage(
     }
     case 'draft/lottery.intervened.email.batch': {
       recipient = envelope.data.recipientEmail;
-      subject = `[DRAP] Lottery Interventions in Draft ${envelope.data.draftYear}`;
+      subject = `[DRAP] Draft ${envelope.data.draftYear} Lottery Intervention Updates`;
       html = await emailRenderer.render(LotteryIntervened, {
         props: {
           studentName: envelope.data.studentName,
