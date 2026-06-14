@@ -82,34 +82,32 @@
         {/if}
         {@render userAvatar()}
       </div>
-      <span class="flex min-w-0 items-start gap-3">
-        <div class="flex min-w-0 flex-1 flex-col">
-          {#if familyName !== null && givenName !== null}
+      <div class="flex min-w-0 flex-1 flex-col">
+        {#if familyName !== null && givenName !== null}
+          <span class="inline-flex gap-2">
             <strong class="block min-w-0 truncate text-start">
               <span class="uppercase">{familyName},</span>
               {givenName}
             </strong>
-            <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-            <a
-              href={`mailto:${email}`}
-              class="min-w-0 truncate text-sm text-muted-foreground hover:underline"
-            >
-              {email}
-            </a>
-          {:else}
-            <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-            <a href={`mailto:${email}`} class="min-w-0 truncate font-semibold hover:underline">
-              {email}
-            </a>
-          {/if}
-          {#if studentNumber !== null}
-            <span class="text-sm text-muted-foreground">{studentNumber}</span>
-          {/if}
-        </div>
-        <span class="shrink-0">
-          {@render badges?.()}
-        </span>
-      </span>
+            {@render badges?.()}
+          </span>
+          <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+          <a
+            href={`mailto:${email}`}
+            class="min-w-0 truncate text-sm text-muted-foreground hover:underline"
+          >
+            {email}
+          </a>
+        {:else}
+          <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+          <a href={`mailto:${email}`} class="min-w-0 truncate font-semibold hover:underline">
+            {email}
+          </a>
+        {/if}
+        {#if studentNumber !== null}
+          <span class="text-sm text-muted-foreground">{studentNumber}</span>
+        {/if}
+      </div>
       {#if hasActionButtons}
         <div class="col-start-3 row-start-1 flex min-w-0 flex-wrap justify-end gap-2">
           {@render actionButtons?.()}
