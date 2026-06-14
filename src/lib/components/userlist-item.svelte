@@ -73,9 +73,7 @@
     <div
       class={cn(
         'grid min-w-0 items-center gap-3',
-        hasActionButtons
-          ? 'grid-cols-[auto_minmax(0,1fr)_minmax(0,12rem)]'
-          : 'grid-cols-[auto_minmax(0,1fr)]',
+        hasActionButtons ? 'grid-cols-[auto_minmax(0,1fr)_auto]' : 'grid-cols-[auto_minmax(0,1fr)]',
       )}
     >
       <div class="flex shrink-0 items-center gap-3">
@@ -84,10 +82,10 @@
         {/if}
         {@render userAvatar()}
       </div>
-      <span class="flex items-start gap-3">
-        <div class="flex flex-col">
+      <span class="flex min-w-0 items-start gap-3">
+        <div class="flex min-w-0 flex-1 flex-col">
           {#if familyName !== null && givenName !== null}
-            <strong class="min-w-0 truncate text-start">
+            <strong class="block min-w-0 truncate text-start">
               <span class="uppercase">{familyName},</span>
               {givenName}
             </strong>
