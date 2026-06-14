@@ -45,6 +45,6 @@
   givenName={user.givenName}
   avatar={{ variant: 'profile', url: user.avatarUrl }}
   class={className}
-  badges={hasBadges ? badges : undefined}
-  actionButtons={hasActions ? actionButtons : undefined}
+  badges={hasBadges ? badges : null}
+  actionButtons={hasActions ? actionButtons : null}
 />

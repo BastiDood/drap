@@ -27,11 +27,11 @@
     avatar?: UserAvatar;
     icon?: LucideIcon;
     iconClass?: string;
-    studentNumber?: string | null;
+    studentNumber?: bigint | null;
     remarks?: string | null;
     remarksIcon?: LucideIcon;
-    badges?: Snippet;
-    actionButtons?: Snippet;
+    badges?: Snippet | null;
+    actionButtons?: Snippet | null;
     class?: string;
   }
 
@@ -106,7 +106,7 @@
           </a>
         {/if}
         {#if studentNumber !== null}
-          <span class="text-sm text-muted-foreground">{studentNumber}</span>
+          <span class="text-sm text-muted-foreground">{studentNumber.toString()}</span>
         {/if}
       </div>
       {#if hasActionButtons}
