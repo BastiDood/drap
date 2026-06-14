@@ -68,12 +68,13 @@
   {/if}
 {/snippet}
 
-<div class={cn('bg-card px-6 py-4 rounded-lg', className)}>
+<div class={cn('@container bg-card p-4 rounded-lg', className)}>
   <div class="flex flex-col gap-4">
     <div
       class={cn(
         'grid min-w-0 items-center gap-3',
-        hasActionButtons ? 'grid-cols-[auto_minmax(0,1fr)_auto]' : 'grid-cols-[auto_minmax(0,1fr)]',
+        'grid-cols-[auto_minmax(0,1fr)]',
+        hasActionButtons && '@sm:grid-cols-[auto_minmax(0,1fr)_auto]',
       )}
     >
       <div class="flex shrink-0 items-center gap-3">
@@ -94,13 +95,13 @@
           <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
           <a
             href={`mailto:${email}`}
-            class="min-w-0 truncate text-sm text-muted-foreground hover:underline"
+            class="min-w-0 max-w-min truncate text-sm text-muted-foreground hover:underline"
           >
             {email}
           </a>
         {:else}
           <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-          <a href={`mailto:${email}`} class="min-w-0 truncate font-semibold hover:underline">
+          <a href={`mailto:${email}`} class="min-w-0 max-w-min truncate font-semibold hover:underline">
             {email}
           </a>
         {/if}
@@ -109,7 +110,9 @@
         {/if}
       </div>
       {#if hasActionButtons}
-        <div class="col-start-3 row-start-1 flex min-w-0 flex-wrap justify-end gap-2">
+        <div
+          class="col-span-2 flex min-w-0 flex-wrap justify-end gap-2 justify-self-end @sm:col-span-1 @sm:col-start-3 @sm:row-start-1"
+        >
           {@render actionButtons?.()}
         </div>
       {/if}
