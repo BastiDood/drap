@@ -21,13 +21,13 @@
   type UserAvatar = ProfileAvatarSource | DraftAvatarSource;
 
   interface Props {
-    familyName: string;
-    givenName: string;
+    email: string;
+    familyName?: string | null;
+    givenName?: string | null;
     avatar?: UserAvatar;
     icon?: LucideIcon;
     iconClass?: string;
     studentNumber?: string | null;
-    email?: string | null;
     remarks?: string | null;
     remarksIcon?: LucideIcon;
     badges?: Snippet;
@@ -36,13 +36,13 @@
   }
 
   let {
-    familyName,
-    givenName,
+    email,
+    familyName = null,
+    givenName = null,
     avatar,
     icon: Icon,
     iconClass,
     studentNumber = null,
-    email = null,
     remarks = null,
     remarksIcon: RemarksIcon,
     badges,
@@ -57,7 +57,7 @@
   {#if avatar?.variant === 'profile'}
     <Avatar.Root class="size-12">
       {#if avatar.url}
-        <Avatar.Image src={avatar.url} alt="{givenName} {familyName}" />
+        <Avatar.Image src={avatar.url} alt={email} />
       {/if}
       <Avatar.Fallback>
         <UserIcon class="size-1/2 text-muted-foreground" />
@@ -84,22 +84,34 @@
         {/if}
         {@render userAvatar()}
       </div>
-      <div class="flex min-w-0 flex-col">
-        <span class="flex min-w-0 items-end gap-3">
-          <strong class="min-w-0 truncate text-start"
-            ><span class="uppercase">{familyName}</span>, {givenName}</strong
-          >
-          <span class="shrink-0">
-            {@render badges?.()}
-          </span>
+      <span class="flex items-start gap-3">
+        <div class="flex flex-col">
+          {#if familyName !== null && givenName !== null}
+            <strong class="min-w-0 truncate text-start">
+              <span class="uppercase">{familyName},</span>
+              {givenName}
+            </strong>
+            <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+            <a
+              href={`mailto:${email}`}
+              class="min-w-0 truncate text-sm text-muted-foreground hover:underline"
+            >
+              {email}
+            </a>
+          {:else}
+            <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+            <a href={`mailto:${email}`} class="min-w-0 truncate font-semibold hover:underline">
+              {email}
+            </a>
+          {/if}
+          {#if studentNumber !== null}
+            <span class="text-sm text-muted-foreground">{studentNumber}</span>
+          {/if}
+        </div>
+        <span class="shrink-0">
+          {@render badges?.()}
         </span>
-        {#if email !== null}
-          <span class="text-sm text-muted-foreground">{email}</span>
-        {/if}
-        {#if studentNumber !== null}
-          <span class="text-xs text-muted-foreground">{studentNumber}</span>
-        {/if}
-      </div>
+      </span>
       {#if hasActionButtons}
         <div class="col-start-3 row-start-1 flex min-w-0 flex-wrap justify-end gap-2">
           {@render actionButtons?.()}
