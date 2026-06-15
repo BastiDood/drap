@@ -22,23 +22,16 @@ export const GmailMessageSendResult = v.object({
 });
 export type GmailMessageSendResult = v.InferOutput<typeof GmailMessageSendResult>;
 
-export const GmailMessageHeadersResult = v.pipe(
-  v.object({
-    id: v.string(),
-    threadId: v.string(),
-    payload: v.object({
-      headers: v.array(
-        v.object({
-          name: v.string(),
-          value: v.string(),
-        }),
-      ),
-    }),
+export const GmailMessageMetadataResult = v.object({
+  id: v.string(),
+  threadId: v.string(),
+  payload: v.object({
+    headers: v.array(
+      v.object({
+        name: v.string(),
+        value: v.string(),
+      }),
+    ),
   }),
-  v.transform(({ id, threadId, payload }) => ({
-    id,
-    threadId,
-    headers: payload.headers,
-  })),
-);
-export type GmailMessageHeadersResult = v.InferOutput<typeof GmailMessageHeadersResult>;
+});
+export type GmailMessageMetadataResult = v.InferOutput<typeof GmailMessageMetadataResult>;

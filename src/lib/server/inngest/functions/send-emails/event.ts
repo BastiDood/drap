@@ -37,8 +37,6 @@ import RoundSubmitted from './templates/round-submitted.svelte';
 import UserAssigned from './templates/user-assigned.svelte';
 import { emailRenderer } from './templates/renderer';
 
-const MESSAGE_ID_DOMAIN = 'drap.upd.edu.ph';
-
 type SeedEmailEvent =
   | { name: 'draft/round.started.email.seed'; data: RoundStartedSeedEmailSchema }
   | { name: 'draft/round.submitted.email.seed'; data: RoundSubmittedSeedEmailSchema }
@@ -280,20 +278,15 @@ export async function createEmailMessage(
     data: Buffer.from(html, 'utf-8').toString('base64'),
   });
 
-  const messageId = `<${envelope.data.gmailMessageId}@${MESSAGE_ID_DOMAIN}>`;
-  if (typeof thread === 'undefined') {
-    mime.setHeaders({ 'Message-ID': messageId });
+  if (typeof thread === 'undefined')
     return { message: mime, gmailMessageId: envelope.data.gmailMessageId };
-  }
 
-  const references = thread.gmailMessageIds.map(id => `<${id}@${MESSAGE_ID_DOMAIN}>`);
-  const latestMessageId = references.at(-1);
+  const latestMessageId = thread.gmailMessageIds.at(-1);
   assert(typeof latestMessageId !== 'undefined', 'threaded email requires a prior message id');
 
   mime.setHeaders({
-    'Message-ID': messageId,
     'In-Reply-To': latestMessageId,
-    References: references.join(' '),
+    References: thread.gmailMessageIds.join(' '),
   });
   return {
     message: mime,

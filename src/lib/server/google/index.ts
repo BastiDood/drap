@@ -10,7 +10,7 @@ import { Logger } from '$lib/server/telemetry/logger';
 import { OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET } from '$lib/server/env/google';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
-import { GmailMessageHeadersResult, GmailMessageSendResult, TokenResponse } from './schema';
+import { GmailMessageMetadataResult, GmailMessageSendResult, TokenResponse } from './schema';
 import { parseBatchSendResponse } from './http';
 
 const SERVICE_NAME = 'lib.server.google';
@@ -182,8 +182,8 @@ export class GoogleOAuthClient {
       switch (response.status) {
         case 200: {
           const json = await response.json();
-          const result = parse(GmailMessageHeadersResult, json);
-          const header = result.headers.find(
+          const result = parse(GmailMessageMetadataResult, json);
+          const header = result.payload.headers.find(
             header =>
               header.name.localeCompare('Message-ID', void 0, { sensitivity: 'base' }) === 0,
           );
