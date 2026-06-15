@@ -152,6 +152,8 @@ export async function GET({ fetch, cookies, setHeaders, url: { searchParams } })
           case GMAIL_METADATA_SCOPE:
             hasMetadataScope = true;
             break;
+          default:
+            break;
         }
 
       const hasExtendedScope = hasSendScope && hasMetadataScope;
