@@ -5,18 +5,17 @@ import { Component, Multipart } from 'multipart-ts';
 import type { MIMEMessage } from 'mimetext/node';
 import { parse } from 'valibot';
 
+import { GMAIL_METADATA_SCOPE, GMAIL_SEND_SCOPE } from '$lib/server/models/oauth';
 import { Logger } from '$lib/server/telemetry/logger';
 import { OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET } from '$lib/server/env/google';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
-import { GmailMessageSendResult, TokenResponse } from './schema';
+import { GmailMessageHeadersResult, GmailMessageSendResult, TokenResponse } from './schema';
 import { parseBatchSendResponse } from './http';
 
 const SERVICE_NAME = 'lib.server.google';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
-
-const GMAIL_SEND_SCOPE = 'https://www.googleapis.com/auth/gmail.send';
 
 export class GoogleOAuthClient {
   constructor(
@@ -160,6 +159,52 @@ export class GoogleOAuthClient {
       return await parseBatchSendResponse(response);
     });
   }
+
+  async getMessageIdHeader(messageId: string) {
+    return await tracer.asyncSpan('google-oauth-client-get-message-id-header', async span => {
+      if (!this.scopes.includes(GMAIL_METADATA_SCOPE)) GmailScopeError.throwNew(this.scopes);
+      span.setAttribute('email.message.id', messageId);
+
+      const url = new URL(
+        `https://gmail.googleapis.com/gmail/v1/users/me/messages/${encodeURIComponent(messageId)}`,
+      );
+      url.searchParams.set('format', 'metadata');
+      url.searchParams.append('metadataHeaders', 'Message-ID');
+
+      logger.trace('fetching gmail message metadata...');
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+        },
+      });
+
+      switch (response.status) {
+        case 200: {
+          const json = await response.json();
+          const result = parse(GmailMessageHeadersResult, json);
+          const header = result.headers.find(
+            header =>
+              header.name.localeCompare('Message-ID', void 0, { sensitivity: 'base' }) === 0,
+          );
+          if (typeof header === 'undefined') MissingGmailMessageIdHeaderError.throwNew(messageId);
+          logger.info('received gmail message metadata', {
+            'email.message.id': result.id,
+            'email.message.thread_id': result.threadId,
+            'email.message_id_header.length': header.value.length,
+          });
+          return header.value;
+        }
+        case 429:
+        // TODO: Handle rate limits.
+        // falls through
+        default: {
+          const body = await response.text();
+          return GmailError.throwNew(response.status, body);
+        }
+      }
+    });
+  }
 }
 
 export class GoogleOAuthToken {
@@ -211,13 +256,28 @@ export class BatchError extends Error {
 
 export class GmailScopeError extends Error {
   constructor(public readonly scopes: string[]) {
-    super(`missing gmail.send scope; available: ${scopes.join(', ')}`);
+    super(`missing required gmail scope; available: ${scopes.join(', ')}`);
     this.name = 'GmailScopeError';
   }
 
   static throwNew(scopes: string[]): never {
     const error = new GmailScopeError(scopes);
-    logger.error('missing gmail.send scope', error, { 'error.scopes': scopes });
+    logger.error('missing required gmail scope', error, { 'error.scopes': scopes });
+    throw error;
+  }
+}
+
+export class MissingGmailMessageIdHeaderError extends Error {
+  constructor(public readonly messageId: string) {
+    super(`gmail message metadata is missing Message-ID header: ${messageId}`);
+    this.name = 'MissingGmailMessageIdHeaderError';
+  }
+
+  static throwNew(messageId: string): never {
+    const error = new MissingGmailMessageIdHeaderError(messageId);
+    logger.error('gmail message metadata is missing Message-ID header', error, {
+      'email.message.id': messageId,
+    });
     throw error;
   }
 }

@@ -12,15 +12,19 @@ import * as GOOGLE from '$lib/server/env/google';
 import * as schema from '$lib/server/database/schema';
 import { ASSERT_DOMAIN } from '$lib/server/env/drap/oauth';
 import { assertSingle } from '$lib/server/assert';
-import { AuthorizationCode, IdToken, TokenResponse } from '$lib/server/models/oauth';
+import {
+  AuthorizationCode,
+  GMAIL_METADATA_SCOPE,
+  GMAIL_SEND_SCOPE,
+  IdToken,
+  TokenResponse,
+} from '$lib/server/models/oauth';
 import { db } from '$lib/server/database';
 import { type DbConnection, upsertOpenIdUser } from '$lib/server/database/drizzle';
 import { ENCRYPTION_KEY } from '$lib/server/env/drap/crypto';
 import { encryptSecret } from '$lib/crypto';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
-
-const GMAIL_SEND_SCOPE = 'https://www.googleapis.com/auth/gmail.send';
 
 const SERVICE_NAME = 'routes.dashboard.oauth.callback';
 const logger = Logger.byName(SERVICE_NAME);
@@ -79,7 +83,7 @@ export async function GET({ fetch, cookies, setHeaders, url: { searchParams } })
       }
 
       const json = await res.json();
-      const { id_token, access_token, refresh_token, scope } = parse(TokenResponse, json);
+      const { id_token, access_token, refresh_token, scope: scopes } = parse(TokenResponse, json);
       const { payload } = await jwtVerify(id_token, fetchJwks, {
         issuer: 'https://accounts.google.com',
         audience: GOOGLE.OAUTH_CLIENT_ID,
@@ -138,8 +142,19 @@ export async function GET({ fetch, cookies, setHeaders, url: { searchParams } })
       // it would be possible for them to be upgraded to a candidate sender. This
       // shouldn't be a huge issue in practice because admins should be careful about
       // who they grant the "designated sender" privileges to.
-      const hasExtendedScope = scope.includes(GMAIL_SEND_SCOPE);
+      let hasSendScope = false;
+      let hasMetadataScope = false;
+      for (const scope of scopes)
+        switch (scope) {
+          case GMAIL_SEND_SCOPE:
+            hasSendScope = true;
+            break;
+          case GMAIL_METADATA_SCOPE:
+            hasMetadataScope = true;
+            break;
+        }
 
+      const hasExtendedScope = hasSendScope && hasMetadataScope;
       return await db.transaction(
         async db => {
           // TODO: Merge this as a single upsert query.
@@ -181,10 +196,10 @@ export async function GET({ fetch, cookies, setHeaders, url: { searchParams } })
               ENCRYPTION_KEY,
               access_token,
               refresh_token,
-              scope,
+              scopes,
             );
             logger.debug('amending credential scope for candidate sender', {
-              'oauth.scopes': scope,
+              'oauth.scopes': scopes,
             });
           }
 
