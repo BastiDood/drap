@@ -2,11 +2,11 @@ import assert from 'node:assert/strict';
 
 import { NonRetriableError } from 'inngest';
 
-import { appendEmailThreadMessageIds, lockEmailThreads } from '$lib/server/database/drizzle';
+import { appendGmailThreadMessageIds, lockGmailThreads } from '$lib/server/database/drizzle';
 import { assertSingle } from '$lib/server/assert';
 import {
   createEmailMessage,
-  getEmailThreadKey,
+  getGmailThreadKey,
   isRetryableGmailStatus,
 } from '$lib/server/inngest/functions/send-emails/event';
 import { db } from '$lib/server/database';
@@ -36,12 +36,12 @@ export const sendBatchEmailFallback = inngest.createFunction(
       async () =>
         await tracer.asyncSpan('send-batch-email-fallback', async () => {
           const { email } = event.data;
-          const key = getEmailThreadKey(email);
+          const key = getGmailThreadKey(email);
           const { client, sender } = await getRefreshedCredentials();
 
           return await db.transaction(
             async tx => {
-              const row = assertSingle(await lockEmailThreads(tx, [key]));
+              const row = assertSingle(await lockGmailThreads(tx, [key]));
               assert(row.gmailThreadId !== null, 'batch fallback email thread must be seeded');
               if (row.gmailMessageIds.includes(email.data.gmailMessageId)) return;
 
@@ -58,7 +58,7 @@ export const sendBatchEmailFallback = inngest.createFunction(
                   'email.message.internal_date': result.internalDate,
                   'email.message.label_ids': result.labelIds,
                 });
-                await appendEmailThreadMessageIds(tx, key, [email.data.gmailMessageId]);
+                await appendGmailThreadMessageIds(tx, key, [email.data.gmailMessageId]);
                 return result;
               } catch (cause) {
                 if (cause instanceof GmailScopeError)

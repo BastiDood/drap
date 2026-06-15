@@ -4,7 +4,7 @@ import { assertSingle } from '$lib/server/assert';
 import {
   createBatchEvent,
   createEmailMessage,
-  getEmailThreadKey,
+  getGmailThreadKey,
   isRetryableGmailStatus,
 } from '$lib/server/inngest/functions/send-emails/event';
 import { db } from '$lib/server/database';
@@ -13,7 +13,7 @@ import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
 import { getRefreshedCredentials } from '$lib/server/inngest/functions/send-emails/auth';
 import { GmailError, GmailScopeError } from '$lib/server/google';
 import { inngest } from '$lib/server/inngest/client';
-import { lockOrCreateEmailThreads, seedEmailThread } from '$lib/server/database/drizzle';
+import { lockOrCreateGmailThreads, seedGmailThread } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
@@ -35,12 +35,12 @@ export const sendSeedEmailFallback = inngest.createFunction(
       async () =>
         await tracer.asyncSpan('send-seed-email-fallback', async () => {
           const { seed, followers } = event.data;
-          const key = getEmailThreadKey(seed);
+          const key = getGmailThreadKey(seed);
           const { client, sender } = await getRefreshedCredentials();
 
           return await db.transaction(
             async tx => {
-              const row = assertSingle(await lockOrCreateEmailThreads(tx, [key]));
+              const row = assertSingle(await lockOrCreateGmailThreads(tx, [key]));
 
               if (row.gmailThreadId !== null) {
                 const envelopes = row.gmailMessageIds.includes(seed.data.gmailMessageId)
@@ -59,7 +59,7 @@ export const sendSeedEmailFallback = inngest.createFunction(
                   'email.message.internal_date': result.internalDate,
                   'email.message.label_ids': result.labelIds,
                 });
-                await seedEmailThread(tx, key, result.threadId, [seed.data.gmailMessageId]);
+                await seedGmailThread(tx, key, result.threadId, [seed.data.gmailMessageId]);
                 return followers.map(envelope => createBatchEvent(envelope));
               } catch (cause) {
                 if (cause instanceof GmailScopeError)

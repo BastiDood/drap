@@ -6,8 +6,8 @@ import { NonRetriableError } from 'inngest';
 import {
   createBatchEvent,
   createEmailMessage,
-  getEmailThreadKeyString,
-  getEmailThreadRowsByKey,
+  getGmailThreadKeyString,
+  getGmailThreadRowsByKey,
   groupEnvelopesByThreadKey,
   isRetryableGmailStatus,
   toBatchEnvelope,
@@ -23,14 +23,14 @@ import {
   RoundSubmittedSeedEmailEvent,
   UserAssignedSeedEmailEvent,
 } from '$lib/server/inngest/schema';
-import {
-  type EmailThreadKey,
-  lockOrCreateEmailThreads,
-  seedEmailThread,
-} from '$lib/server/database/drizzle';
 import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
 import { getRefreshedCredentials } from '$lib/server/inngest/functions/send-emails/auth';
 import { GmailError, GmailScopeError } from '$lib/server/google';
+import {
+  type GmailThreadKey,
+  lockOrCreateGmailThreads,
+  seedGmailThread,
+} from '$lib/server/database/drizzle';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
@@ -80,24 +80,24 @@ export const sendSeedEmails = inngest.createFunction(
 
           return await db.transaction(
             async tx => {
-              const rows = await lockOrCreateEmailThreads(
+              const rows = await lockOrCreateGmailThreads(
                 tx,
                 Array.from(groups.values(), ({ key }) => key),
               );
-              const rowsByKey = getEmailThreadRowsByKey(rows);
+              const rowsByKey = getGmailThreadRowsByKey(rows);
 
               const followupEvents: (
                 | ReturnType<typeof createBatchEvent>
                 | ReturnType<typeof EmailSeedFallbackEvent.create>
               )[] = [];
               const seedGroups: {
-                key: EmailThreadKey;
+                key: GmailThreadKey;
                 seed: EmailBatchEnvelopeSchema;
                 followers: EmailBatchEnvelopeSchema[];
               }[] = [];
 
               for (const group of groups.values()) {
-                const row = rowsByKey.get(getEmailThreadKeyString(group.key));
+                const row = rowsByKey.get(getGmailThreadKeyString(group.key));
                 assert(typeof row !== 'undefined', 'seed email thread row must exist');
 
                 if (row.gmailThreadId !== null) {
@@ -157,7 +157,7 @@ export const sendSeedEmails = inngest.createFunction(
                     'email.message.label_ids': result.value.labelIds,
                   });
 
-                  await seedEmailThread(tx, key, result.value.threadId, [seed.data.gmailMessageId]);
+                  await seedGmailThread(tx, key, result.value.threadId, [seed.data.gmailMessageId]);
                   for (const follower of followers) followupEvents.push(createBatchEvent(follower));
                   continue;
                 }

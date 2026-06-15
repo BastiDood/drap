@@ -25,7 +25,7 @@ import {
   type UserAssignedBatchEmailSchema,
   type UserAssignedSeedEmailSchema,
 } from '$lib/server/inngest/schema';
-import type { EmailThreadKey, schema } from '$lib/server/database/drizzle';
+import type { GmailThreadKey, schema } from '$lib/server/database/drizzle';
 
 import type { SenderIdentity } from './auth';
 
@@ -136,10 +136,10 @@ export function createBatchEvent(envelope: EmailBatchEnvelopeSchema, attempt?: n
 }
 
 export function groupEnvelopesByThreadKey(envelopes: EmailBatchEnvelopeSchema[]) {
-  const groups = new Map<string, { key: EmailThreadKey; envelopes: EmailBatchEnvelopeSchema[] }>();
+  const groups = new Map<string, { key: GmailThreadKey; envelopes: EmailBatchEnvelopeSchema[] }>();
   for (const envelope of envelopes) {
-    const key = getEmailThreadKey(envelope);
-    const keyString = getEmailThreadKeyString(key);
+    const key = getGmailThreadKey(envelope);
+    const keyString = getGmailThreadKeyString(key);
     const group = groups.get(keyString);
     if (typeof group === 'undefined') groups.set(keyString, { key, envelopes: [envelope] });
     else group.envelopes.push(envelope);
@@ -147,21 +147,21 @@ export function groupEnvelopesByThreadKey(envelopes: EmailBatchEnvelopeSchema[])
   return groups;
 }
 
-export function getEmailThreadKey(envelope: EmailBatchEnvelopeSchema): EmailThreadKey {
+export function getGmailThreadKey(envelope: EmailBatchEnvelopeSchema): GmailThreadKey {
   const { data } = envelope;
   return {
     draftId: BigInt(data.draftId),
-    eventType: getEmailThreadEventType(envelope.name),
-    round: getEmailThreadRound(envelope),
+    eventType: getGmailThreadEventType(envelope.name),
+    round: getGmailThreadRound(envelope),
     recipientUserId: data.recipientUserId,
   };
 }
 
-export function getEmailThreadKeyString(key: EmailThreadKey) {
+export function getGmailThreadKeyString(key: GmailThreadKey) {
   return `${key.draftId}:${key.eventType}:${key.round ?? ''}:${key.recipientUserId}`;
 }
 
-export function getEmailThreadRowsByKey(
+export function getGmailThreadRowsByKey(
   rows: {
     draftId: bigint;
     eventType: schema.InngestEventName;
@@ -171,7 +171,7 @@ export function getEmailThreadRowsByKey(
     gmailMessageIds: string[];
   }[],
 ) {
-  return new Map(rows.map(row => [getEmailThreadKeyString(row), row]));
+  return new Map(rows.map(row => [getGmailThreadKeyString(row), row]));
 }
 
 export async function createEmailMessage(
@@ -315,7 +315,7 @@ export function isRetryableGmailStatus(status: number) {
   }
 }
 
-function getEmailThreadEventType(name: EmailBatchEnvelopeSchema['name']): schema.InngestEventName {
+function getGmailThreadEventType(name: EmailBatchEnvelopeSchema['name']): schema.InngestEventName {
   switch (name) {
     case 'draft/round.started.email.batch':
       return 'round-started';
@@ -334,7 +334,7 @@ function getEmailThreadEventType(name: EmailBatchEnvelopeSchema['name']): schema
   }
 }
 
-function getEmailThreadRound(envelope: EmailBatchEnvelopeSchema) {
+function getGmailThreadRound(envelope: EmailBatchEnvelopeSchema) {
   switch (envelope.name) {
     case 'draft/round.started.email.batch':
     case 'draft/round.submitted.email.batch':

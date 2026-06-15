@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import type { MIMEMessage } from 'mimetext/node';
 import { NonRetriableError } from 'inngest';
 
-import { appendEmailThreadMessageIds, lockEmailThreads } from '$lib/server/database/drizzle';
+import { appendGmailThreadMessageIds, lockGmailThreads } from '$lib/server/database/drizzle';
 import {
   createBatchEvent,
   createEmailMessage,
-  getEmailThreadKeyString,
-  getEmailThreadRowsByKey,
+  getGmailThreadKeyString,
+  getGmailThreadRowsByKey,
   groupEnvelopesByThreadKey,
   isRetryableGmailStatus,
   toBatchEnvelope,
@@ -75,17 +75,17 @@ export const sendBatchedEmails = inngest.createFunction(
 
           return await db.transaction(
             async tx => {
-              const rows = await lockEmailThreads(
+              const rows = await lockGmailThreads(
                 tx,
                 Array.from(groups.values(), ({ key }) => key),
               );
-              const rowsByKey = getEmailThreadRowsByKey(rows);
+              const rowsByKey = getGmailThreadRowsByKey(rows);
               const keyByMessageId = new Map<string, string>();
               const messages = new Map<string, { message: MIMEMessage; gmailThreadId?: string }>();
               const sentMessageIds = new Set<string>();
 
               for (const group of groups.values()) {
-                const row = rowsByKey.get(getEmailThreadKeyString(group.key));
+                const row = rowsByKey.get(getGmailThreadKeyString(group.key));
                 assert(typeof row !== 'undefined', 'batch email thread row must exist');
                 assert(row.gmailThreadId !== null, 'batch email thread must already be seeded');
 
@@ -93,7 +93,7 @@ export const sendBatchedEmails = inngest.createFunction(
                   if (row.gmailMessageIds.includes(envelope.data.gmailMessageId)) continue;
                   keyByMessageId.set(
                     envelope.data.gmailMessageId,
-                    getEmailThreadKeyString(group.key),
+                    getGmailThreadKeyString(group.key),
                   );
                   const rendered = await createEmailMessage(envelope, sender, {
                     gmailThreadId: row.gmailThreadId,
@@ -179,9 +179,9 @@ export const sendBatchedEmails = inngest.createFunction(
               }
 
               for (const group of groups.values()) {
-                const ids = successfulMessageIdsByKey.get(getEmailThreadKeyString(group.key));
+                const ids = successfulMessageIdsByKey.get(getGmailThreadKeyString(group.key));
                 if (typeof ids !== 'undefined')
-                  await appendEmailThreadMessageIds(tx, group.key, ids);
+                  await appendGmailThreadMessageIds(tx, group.key, ids);
               }
 
               logger.info('gmail threaded batch completed', {
