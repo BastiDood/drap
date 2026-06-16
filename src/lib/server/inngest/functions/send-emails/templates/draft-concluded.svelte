@@ -48,10 +48,9 @@
       else existing.students.push({ studentName, studentEmail, avatarUrl });
       return grouped;
     }, new Map<string, GroupedLotteryAssignment>());
-    return grouped
-      .values()
-      .toArray()
-      .sort((left, right) => left.labId.localeCompare(right.labId));
+    return Array.from(grouped.values()).sort((left, right) =>
+      left.labId.localeCompare(right.labId),
+    );
   });
 </script>
 

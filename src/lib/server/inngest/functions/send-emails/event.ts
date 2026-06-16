@@ -1,11 +1,9 @@
-import type * as v from 'valibot';
 import type { ComponentProps } from 'svelte';
 import { createMimeMessage } from 'mimetext/node';
 import { toPlainText } from '@better-svelte-email/server';
 
 import { assertDefined } from '$lib/server/assert';
-import { EmailSeedEvent } from '$lib/server/inngest/schema';
-import type { GmailThreadKey, schema } from '$lib/server/database/drizzle';
+import type { EmailEvent } from '$lib/server/inngest/schema';
 
 import type { SenderIdentity } from './auth';
 
@@ -17,56 +15,13 @@ import RoundSubmitted from './templates/round-submitted.svelte';
 import UserAssigned from './templates/user-assigned.svelte';
 import { emailRenderer } from './templates/renderer';
 
-type EmailEnvelope = v.InferOutput<typeof EmailSeedEvent.schema>['seed'];
-
 interface ThreadRenderData {
   gmailThreadId: string;
   gmailMessageIds: string[];
 }
 
-export function groupEmailsByThreadKey<const TEmail extends EmailEnvelope>(
-  emails: IteratorObject<TEmail>,
-) {
-  return emails.reduce((groups, email) => {
-    const key = getGmailThreadKey(email);
-    const keyString = getGmailThreadKeyString(key);
-    const group = groups.get(keyString);
-    if (typeof group === 'undefined') groups.set(keyString, { key, emails: [email] });
-    else group.emails.push(email);
-    return groups;
-  }, new Map<string, { key: GmailThreadKey; emails: TEmail[] }>());
-}
-
-export function getGmailThreadKey(email: EmailEnvelope): GmailThreadKey {
-  const { data } = email;
-  return {
-    draftId: BigInt(data.draftId),
-    eventType: getGmailThreadEventType(email.name),
-    round: getGmailThreadRound(email),
-    recipientUserId: data.recipientUserId,
-  };
-}
-
-export function getGmailThreadKeyString(key: GmailThreadKey) {
-  return `${key.draftId}:${key.eventType}:${key.round ?? ''}:${key.recipientUserId}`;
-}
-
-export function getGmailThreadRowsByKey(
-  rows: IteratorObject<{
-    id: bigint;
-    draftId: bigint;
-    eventType: schema.InngestEventName;
-    round: number | null;
-    recipientUserId: string;
-    gmailThreadId: string | null;
-    gmailMessageIds: string[];
-  }>,
-) {
-  return new Map(rows.map(row => [getGmailThreadKeyString(row), row]));
-}
-
 export async function createEmailMessage(
-  email: EmailEnvelope,
+  email: EmailEvent,
   sender: SenderIdentity,
   thread?: ThreadRenderData,
 ) {
@@ -195,34 +150,5 @@ export function isRetryableGmailStatus(status: number) {
       return true;
     default:
       return false;
-  }
-}
-
-function getGmailThreadEventType(name: EmailEnvelope['name']): schema.InngestEventName {
-  switch (name) {
-    case 'draft/round.started.email.seed':
-      return 'round-started';
-    case 'draft/round.submitted.email.seed':
-      return 'round-submitted';
-    case 'draft/lottery.intervened.email.seed':
-      return 'lottery-intervened';
-    case 'draft/draft.concluded.email.seed':
-      return 'draft-concluded';
-    case 'draft/draft.finalization.email.seed':
-      return 'draft-finalization';
-    case 'draft/user.assigned.email.seed':
-      return 'user-assigned';
-    default:
-      throw new Error('unreachable email event type');
-  }
-}
-
-function getGmailThreadRound(email: EmailEnvelope) {
-  switch (email.name) {
-    case 'draft/round.started.email.seed':
-    case 'draft/round.submitted.email.seed':
-      return email.data.round;
-    default:
-      return null;
   }
 }

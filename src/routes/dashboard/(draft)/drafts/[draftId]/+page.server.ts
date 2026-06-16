@@ -26,13 +26,7 @@ import {
 } from '$lib/server/database/drizzle';
 import { coerceDate, coerceNullableNumber, coerceNumber } from '$lib/coerce';
 import { db } from '$lib/server/database';
-import {
-  DraftConcludedSeedEmailEvent,
-  DraftFinalizationSeedEmailEvent,
-  LotteryInterventionSeedEmailEvent,
-  RoundStartedSeedEmailEvent,
-  UserAssignedSeedEmailEvent,
-} from '$lib/server/inngest/schema';
+import { EmailEvent } from '$lib/server/inngest/schema';
 import {
   getDraftPhase,
   isInterventionsRendered,
@@ -359,13 +353,16 @@ export const actions = {
       await inngest.send(
         roundsToNotify.flatMap(round =>
           facultyAndStaff.map(({ id, email, givenName, familyName }) =>
-            RoundStartedSeedEmailEvent.create({
-              draftId: Number(draftId),
-              draftYear,
-              round,
-              recipientUserId: id,
-              recipientEmail: email,
-              recipientName: `${givenName} ${familyName}`,
+            EmailEvent.create({
+              name: 'draft/round.started.email.seed',
+              data: {
+                draftId: Number(draftId),
+                draftYear,
+                round,
+                recipientUserId: id,
+                recipientEmail: email,
+                recipientName: `${givenName} ${familyName}`,
+              },
             }),
           ),
         ),
@@ -577,17 +574,20 @@ export const actions = {
         ]);
         await inngest.send(
           facultyAndStaff.map(({ id, email, givenName, familyName }) =>
-            LotteryInterventionSeedEmailEvent.create({
-              draftId: Number(draftId),
-              draftYear,
-              labId,
-              labName,
-              studentName: `${student.givenName} ${student.familyName}`,
-              studentEmail: student.email,
-              avatarUrl: student.avatarUrl,
-              recipientUserId: id,
-              recipientEmail: email,
-              recipientName: `${givenName} ${familyName}`,
+            EmailEvent.create({
+              name: 'draft/lottery.intervened.email.seed',
+              data: {
+                draftId: Number(draftId),
+                draftYear,
+                labId,
+                labName,
+                studentName: `${student.givenName} ${student.familyName}`,
+                studentEmail: student.email,
+                avatarUrl: student.avatarUrl,
+                recipientUserId: id,
+                recipientEmail: email,
+                recipientName: `${givenName} ${familyName}`,
+              },
             }),
           ),
         );
@@ -725,13 +725,16 @@ export const actions = {
 
       await inngest.send(
         draftAdmins.map(({ id, email, givenName, familyName }) =>
-          DraftConcludedSeedEmailEvent.create({
-            draftId: Number(draftId),
-            draftYear,
-            recipientUserId: id,
-            recipientEmail: email,
-            recipientName: `${givenName} ${familyName}`,
-            lotteryAssignments,
+          EmailEvent.create({
+            name: 'draft/draft.concluded.email.seed',
+            data: {
+              draftId: Number(draftId),
+              draftYear,
+              recipientUserId: id,
+              recipientEmail: email,
+              recipientName: `${givenName} ${familyName}`,
+              lotteryAssignments,
+            },
           }),
         ),
       );
@@ -807,12 +810,15 @@ export const actions = {
       const facultyAndStaff = await getDraftNotificationRecipients(db, draftId);
       await inngest.send(
         facultyAndStaff.map(({ id, email, givenName, familyName }) =>
-          DraftFinalizationSeedEmailEvent.create({
-            draftId: Number(draftId),
-            draftYear,
-            recipientUserId: id,
-            recipientEmail: email,
-            recipientName: `${givenName} ${familyName}`,
+          EmailEvent.create({
+            name: 'draft/draft.finalization.email.seed',
+            data: {
+              draftId: Number(draftId),
+              draftYear,
+              recipientUserId: id,
+              recipientEmail: email,
+              recipientName: `${givenName} ${familyName}`,
+            },
           }),
         ),
       );
@@ -823,13 +829,16 @@ export const actions = {
           getUserById(db, userId),
         ]);
         await inngest.send(
-          UserAssignedSeedEmailEvent.create({
-            draftId: Number(draftId),
-            labId,
-            labName,
-            recipientUserId: assignedUser.id,
-            userEmail: assignedUser.email,
-            userName: `${assignedUser.givenName} ${assignedUser.familyName}`,
+          EmailEvent.create({
+            name: 'draft/user.assigned.email.seed',
+            data: {
+              draftId: Number(draftId),
+              labId,
+              labName,
+              recipientUserId: assignedUser.id,
+              userEmail: assignedUser.email,
+              userName: `${assignedUser.givenName} ${assignedUser.familyName}`,
+            },
           }),
         );
       }

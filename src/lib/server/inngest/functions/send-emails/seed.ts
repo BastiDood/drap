@@ -1,4 +1,3 @@
-import type * as v from 'valibot';
 import type { MIMEMessage } from 'mimetext/node';
 import { NonRetriableError } from 'inngest';
 
@@ -26,7 +25,6 @@ const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
 const MAX_SEED_ATTEMPTS = 3;
-type EmailSeedSchema = v.InferOutput<typeof EmailSeedEvent.schema>;
 
 export const sendSeedEmails = inngest.createFunction(
   {
@@ -64,20 +62,17 @@ export const sendSeedEmails = inngest.createFunction(
                         },
                   );
                   return requestsByRowId;
-                }, new Map<number, EmailSeedSchema>());
+                }, new Map<number, EmailSeedEvent>());
 
                 const rows = await lockGmailThreadsById(
                   tx,
-                  requestsByRowId
-                    .keys()
-                    .map(id => BigInt(id))
-                    .toArray(),
+                  Array.from(requestsByRowId.keys(), id => BigInt(id)),
                 );
-                const rowsById = new Map(rows.values().map(row => [Number(row.id), row]));
 
+                const rowsById = new Map(Array.from(rows, row => [Number(row.id), row]));
                 return requestsByRowId.values().reduce<{
-                  pendingSeeds: EmailSeedSchema[];
-                  readyBatches: v.InferOutput<typeof EmailBatchEvent.schema>[];
+                  pendingSeeds: EmailSeedEvent[];
+                  readyBatches: EmailBatchEvent[];
                 }>(
                   (route, request) => {
                     const row = assertDefined(rowsById.get(request.gmailThreadRowId));
@@ -109,11 +104,9 @@ export const sendSeedEmails = inngest.createFunction(
             gmailMessageId: string;
             gmailThreadId: string;
           }[] = [];
-          const batchFollowups: v.InferOutput<typeof EmailBatchEvent.schema>[] = [
-            ...route.readyBatches,
-          ];
-          const seedRetries: EmailSeedSchema[] = [];
-          const seedFallbacks: EmailSeedSchema[] = [];
+          const batchFollowups: EmailBatchEvent[] = [...route.readyBatches];
+          const seedRetries: EmailSeedEvent[] = [];
+          const seedFallbacks: EmailSeedEvent[] = [];
 
           if (route.pendingSeeds.length === 0)
             return { successes, batchFollowups, seedRetries, seedFallbacks };
@@ -250,7 +243,7 @@ export const sendSeedEmails = inngest.createFunction(
                     item.gmailMessageIdHeader,
                   ]);
 
-                const seededRowIds = new Set(metadata.values().map(item => item.gmailThreadRowId));
+                const seededRowIds = new Set(Array.from(metadata, item => item.gmailThreadRowId));
                 return route.pendingSeeds.flatMap(request => {
                   if (!seededRowIds.has(request.gmailThreadRowId)) return [];
                   return request.followers.map(email => ({

@@ -1,47 +1,28 @@
-import type * as v from 'valibot';
 import { NonRetriableError } from 'inngest';
 
 import { assertDefined } from '$lib/server/assert';
 import { db } from '$lib/server/database';
-import {
-  DraftConcludedSeedEmailEvent,
-  DraftFinalizationSeedEmailEvent,
-  EmailBatchEvent,
-  EmailSeedEvent,
-  LotteryInterventionSeedEmailEvent,
-  RoundStartedSeedEmailEvent,
-  RoundSubmittedSeedEmailEvent,
-  UserAssignedSeedEmailEvent,
-} from '$lib/server/inngest/schema';
+import { EmailBatchEvent, EmailEvent, EmailSeedEvent } from '$lib/server/inngest/schema';
 import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
 import {
-  getGmailThreadKeyString,
-  getGmailThreadRowsByKey,
-  groupEmailsByThreadKey,
-} from '$lib/server/inngest/functions/send-emails/event';
+  type GmailThreadKey,
+  lockOrCreateGmailThreads,
+  type schema,
+} from '$lib/server/database/drizzle';
 import { inngest } from '$lib/server/inngest/client';
-import { lockOrCreateGmailThreads } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 const SERVICE_NAME = 'inngest.functions.send-emails.route';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
-type EmailEnvelope = v.InferOutput<typeof EmailSeedEvent.schema>['seed'];
 
 export const routeEmails = inngest.createFunction(
   {
     id: 'route-emails',
     name: 'Route Emails',
     batchEvents: { maxSize: 50, timeout: '5s' },
-    triggers: [
-      RoundStartedSeedEmailEvent,
-      RoundSubmittedSeedEmailEvent,
-      LotteryInterventionSeedEmailEvent,
-      DraftConcludedSeedEmailEvent,
-      DraftFinalizationSeedEmailEvent,
-      UserAssignedSeedEmailEvent,
-    ],
+    triggers: EmailEvent,
   },
   async ({ events, step }) => {
     if (!ENABLE_EMAILS) throw new NonRetriableError('emails disabled during dry run');
@@ -54,38 +35,18 @@ export const routeEmails = inngest.createFunction(
           async () =>
             await db.transaction(
               async tx => {
-                const emails = events.reduce<EmailEnvelope[]>((emails, event) => {
-                  switch (event.name) {
-                    case 'draft/round.started.email.seed':
-                    case 'draft/round.submitted.email.seed':
-                    case 'draft/lottery.intervened.email.seed':
-                    case 'draft/draft.concluded.email.seed':
-                    case 'draft/draft.finalization.email.seed':
-                    case 'draft/user.assigned.email.seed':
-                      emails.push(event);
-                      break;
-                    default:
-                      throw new NonRetriableError(`unexpected email event type: ${event.name}`);
-                  }
-                  return emails;
-                }, []);
-
-                const groups = groupEmailsByThreadKey(emails.values());
+                const groups = groupEmailsByThreadKey(events.values());
                 const rows = await lockOrCreateGmailThreads(
                   tx,
-                  groups
-                    .values()
-                    .map(({ key }) => key)
-                    .toArray(),
+                  Array.from(groups.values(), ({ key }) => key),
                 );
                 const rowsByKey = getGmailThreadRowsByKey(rows.values());
-
                 const routedEvents = groups
                   .values()
                   .reduce<
                     (
-                      | { type: 'seed'; data: v.InferOutput<typeof EmailSeedEvent.schema> }
-                      | { type: 'batch'; data: v.InferOutput<typeof EmailBatchEvent.schema> }
+                      | { type: 'seed'; data: EmailSeedEvent }
+                      | { type: 'batch'; data: EmailBatchEvent }
                     )[]
                   >((routedEvents, group) => {
                     const row = assertDefined(rowsByKey.get(getGmailThreadKeyString(group.key)));
@@ -138,3 +99,72 @@ export const routeEmails = inngest.createFunction(
     return routedEvents.length;
   },
 );
+
+function groupEmailsByThreadKey(events: IteratorObject<{ data: EmailEvent }>) {
+  return events.reduce((groups, event) => {
+    const email = event.data;
+    const key = getGmailThreadKey(email);
+    const keyString = getGmailThreadKeyString(key);
+    const group = groups.get(keyString);
+    if (typeof group === 'undefined') groups.set(keyString, { key, emails: [email] });
+    else group.emails.push(email);
+    return groups;
+  }, new Map<string, { key: GmailThreadKey; emails: EmailEvent[] }>());
+}
+
+function getGmailThreadKey(email: EmailEvent): GmailThreadKey {
+  const { data } = email;
+  return {
+    draftId: BigInt(data.draftId),
+    eventType: getGmailThreadEventType(email.name),
+    round: getGmailThreadRound(email),
+    recipientUserId: data.recipientUserId,
+  };
+}
+
+function getGmailThreadKeyString(key: GmailThreadKey) {
+  return `${key.draftId}:${key.eventType}:${key.round ?? ''}:${key.recipientUserId}`;
+}
+
+function getGmailThreadRowsByKey(
+  rows: IteratorObject<{
+    id: bigint;
+    draftId: bigint;
+    eventType: schema.InngestEventName;
+    round: number | null;
+    recipientUserId: string;
+    gmailThreadId: string | null;
+    gmailMessageIds: string[];
+  }>,
+) {
+  return new Map(rows.map(row => [getGmailThreadKeyString(row), row]));
+}
+
+function getGmailThreadEventType(name: EmailEvent['name']): schema.InngestEventName {
+  switch (name) {
+    case 'draft/round.started.email.seed':
+      return 'round-started';
+    case 'draft/round.submitted.email.seed':
+      return 'round-submitted';
+    case 'draft/lottery.intervened.email.seed':
+      return 'lottery-intervened';
+    case 'draft/draft.concluded.email.seed':
+      return 'draft-concluded';
+    case 'draft/draft.finalization.email.seed':
+      return 'draft-finalization';
+    case 'draft/user.assigned.email.seed':
+      return 'user-assigned';
+    default:
+      throw new Error('unreachable email event type');
+  }
+}
+
+function getGmailThreadRound(email: EmailEvent) {
+  switch (email.name) {
+    case 'draft/round.started.email.seed':
+    case 'draft/round.submitted.email.seed':
+      return email.data.round;
+    default:
+      return null;
+  }
+}

@@ -18,14 +18,7 @@ import {
   upsertOpenIdUser,
 } from '$lib/server/database/drizzle';
 import { dev } from '$app/environment';
-import {
-  DraftConcludedSeedEmailEvent,
-  DraftFinalizationSeedEmailEvent,
-  LotteryInterventionSeedEmailEvent,
-  RoundStartedSeedEmailEvent,
-  RoundSubmittedSeedEmailEvent,
-  UserAssignedSeedEmailEvent,
-} from '$lib/server/inngest/schema';
+import { EmailEvent } from '$lib/server/inngest/schema';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
@@ -127,7 +120,10 @@ type DevRoleFormOutput = v.InferOutput<typeof DevRoleFormData>;
 type DevDummyFormOutput = v.InferOutput<typeof DevDummyFormData>;
 type SendEmailFormOutput = v.InferOutput<typeof SendEmailFormData>;
 type DevUserFormOutput = v.InferOutput<typeof DevUserFormData>;
-type DraftConcludedEmail = v.InferOutput<typeof DraftConcludedSeedEmailEvent.schema>;
+type DraftConcludedEmail = Extract<
+  EmailEvent,
+  { name: 'draft/draft.concluded.email.seed' }
+>['data'];
 
 export const actions = {
   async profile({ locals: { session }, request }) {
@@ -324,13 +320,16 @@ export const actions = {
                 }
 
                 await inngest.send(
-                  RoundStartedSeedEmailEvent.create({
-                    draftId: parsed.draftId,
-                    draftYear,
-                    round: parsed.round,
-                    recipientUserId: recipient.id,
-                    recipientEmail: parsed.recipientEmail,
-                    recipientName: `${recipient.givenName} ${recipient.familyName}`,
+                  EmailEvent.create({
+                    name: 'draft/round.started.email.seed',
+                    data: {
+                      draftId: parsed.draftId,
+                      draftYear,
+                      round: parsed.round,
+                      recipientUserId: recipient.id,
+                      recipientEmail: parsed.recipientEmail,
+                      recipientName: `${recipient.givenName} ${recipient.familyName}`,
+                    },
                   }),
                 );
                 break;
@@ -360,15 +359,18 @@ export const actions = {
                 }
 
                 await inngest.send(
-                  RoundSubmittedSeedEmailEvent.create({
-                    draftId: parsed.draftId,
-                    draftYear,
-                    round: parsed.round,
-                    labId: parsed.labId,
-                    labName,
-                    recipientUserId: recipient.id,
-                    recipientEmail: parsed.recipientEmail,
-                    isCreate: parsed.selectionMode === 'create',
+                  EmailEvent.create({
+                    name: 'draft/round.submitted.email.seed',
+                    data: {
+                      draftId: parsed.draftId,
+                      draftYear,
+                      round: parsed.round,
+                      labId: parsed.labId,
+                      labName,
+                      recipientUserId: recipient.id,
+                      recipientEmail: parsed.recipientEmail,
+                      isCreate: parsed.selectionMode === 'create',
+                    },
                   }),
                 );
                 break;
@@ -418,17 +420,20 @@ export const actions = {
                 }
 
                 await inngest.send(
-                  LotteryInterventionSeedEmailEvent.create({
-                    draftId: parsed.draftId,
-                    draftYear,
-                    labId: parsed.labId,
-                    labName,
-                    studentName: `${studentGivenName} ${studentFamilyName}`,
-                    studentEmail: parsed.studentEmail,
-                    avatarUrl: studentAvatarUrl,
-                    recipientUserId: recipient.id,
-                    recipientEmail: parsed.recipientEmail,
-                    recipientName: `${recipient.givenName} ${recipient.familyName}`,
+                  EmailEvent.create({
+                    name: 'draft/lottery.intervened.email.seed',
+                    data: {
+                      draftId: parsed.draftId,
+                      draftYear,
+                      labId: parsed.labId,
+                      labName,
+                      studentName: `${studentGivenName} ${studentFamilyName}`,
+                      studentEmail: parsed.studentEmail,
+                      avatarUrl: studentAvatarUrl,
+                      recipientUserId: recipient.id,
+                      recipientEmail: parsed.recipientEmail,
+                      recipientName: `${recipient.givenName} ${recipient.familyName}`,
+                    },
                   }),
                 );
                 break;
@@ -493,13 +498,16 @@ export const actions = {
                 }
 
                 await inngest.send(
-                  DraftConcludedSeedEmailEvent.create({
-                    draftId: parsed.draftId,
-                    draftYear,
-                    recipientUserId: recipient.id,
-                    recipientEmail: parsed.recipientEmail,
-                    recipientName: `${recipient.givenName} ${recipient.familyName}`,
-                    lotteryAssignments,
+                  EmailEvent.create({
+                    name: 'draft/draft.concluded.email.seed',
+                    data: {
+                      draftId: parsed.draftId,
+                      draftYear,
+                      recipientUserId: recipient.id,
+                      recipientEmail: parsed.recipientEmail,
+                      recipientName: `${recipient.givenName} ${recipient.familyName}`,
+                      lotteryAssignments,
+                    },
                   }),
                 );
                 break;
@@ -518,12 +526,15 @@ export const actions = {
                 }
 
                 await inngest.send(
-                  DraftFinalizationSeedEmailEvent.create({
-                    draftId: parsed.draftId,
-                    draftYear,
-                    recipientUserId: recipient.id,
-                    recipientEmail: parsed.recipientEmail,
-                    recipientName: `${recipient.givenName} ${recipient.familyName}`,
+                  EmailEvent.create({
+                    name: 'draft/draft.finalization.email.seed',
+                    data: {
+                      draftId: parsed.draftId,
+                      draftYear,
+                      recipientUserId: recipient.id,
+                      recipientEmail: parsed.recipientEmail,
+                      recipientName: `${recipient.givenName} ${recipient.familyName}`,
+                    },
                   }),
                 );
                 break;
@@ -547,13 +558,16 @@ export const actions = {
                 }
 
                 await inngest.send(
-                  UserAssignedSeedEmailEvent.create({
-                    draftId: parsed.draftId,
-                    labId: parsed.labId,
-                    labName,
-                    recipientUserId: recipient.id,
-                    userEmail: parsed.userEmail,
-                    userName: `${recipient.givenName} ${recipient.familyName}`,
+                  EmailEvent.create({
+                    name: 'draft/user.assigned.email.seed',
+                    data: {
+                      draftId: parsed.draftId,
+                      labId: parsed.labId,
+                      labName,
+                      recipientUserId: recipient.id,
+                      userEmail: parsed.userEmail,
+                      userName: `${recipient.givenName} ${recipient.familyName}`,
+                    },
                   }),
                 );
                 break;

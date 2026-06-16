@@ -1,4 +1,3 @@
-import type * as v from 'valibot';
 import type { MIMEMessage } from 'mimetext/node';
 import { NonRetriableError } from 'inngest';
 
@@ -26,7 +25,6 @@ const tracer = Tracer.byName(SERVICE_NAME);
 
 const MAX_BATCH_ATTEMPTS = 3;
 const MAX_BLOCKED_ATTEMPTS = 8;
-type EmailBatchSchema = v.InferOutput<typeof EmailBatchEvent.schema>;
 
 export const sendBatchedEmails = inngest.createFunction(
   {
@@ -48,19 +46,19 @@ export const sendBatchedEmails = inngest.createFunction(
               async tx => {
                 const rows = await lockGmailThreadsById(
                   tx,
-                  new Set(events.map(event => event.data.gmailThreadRowId))
-                    .values()
-                    .map(id => BigInt(id))
-                    .toArray(),
+                  Array.from(
+                    new Set(Array.from(events, event => event.data.gmailThreadRowId)),
+                    id => BigInt(id),
+                  ),
                 );
-                const rowsById = new Map(rows.values().map(row => [Number(row.id), row]));
+                const rowsById = new Map(Array.from(rows, row => [Number(row.id), row]));
 
                 return events.entries().reduce<{
-                  blockedRequests: EmailBatchSchema[];
+                  blockedRequests: EmailBatchEvent[];
                   sendRequests: {
                     contentId: string;
                     gmailThreadRowId: number;
-                    email: EmailBatchSchema['email'];
+                    email: EmailBatchEvent['email'];
                     attempt: number;
                     gmailThreadId: string;
                     gmailMessageIds: string[];
@@ -102,8 +100,8 @@ export const sendBatchedEmails = inngest.createFunction(
       async () =>
         await tracer.asyncSpan('send-threaded-emails', async () => {
           const successes: { gmailThreadRowId: number; gmailMessageId: string }[] = [];
-          const batchFollowups: EmailBatchSchema[] = [...route.blockedRequests];
-          const fallbackFollowups: EmailBatchSchema[] = [];
+          const batchFollowups: EmailBatchEvent[] = [...route.blockedRequests];
+          const fallbackFollowups: EmailBatchEvent[] = [];
 
           if (route.sendRequests.length === 0)
             return { successes, batchFollowups, fallbackFollowups };
