@@ -58,6 +58,9 @@ export const gmailThread = email.table(
     recipientUserId: ulid('recipient_user_id')
       .references(() => user.id, { onUpdate: 'cascade', onDelete: 'cascade' })
       .notNull(),
+    // Historical root-send claim time.
+    // While `gmail_thread_id` is null, this is also the active claim.
+    claimedAt: timestamp('claimed_at', { mode: 'date', withTimezone: true }),
     gmailThreadId: text('gmail_thread_id'),
     gmailMessageIds: text('gmail_message_ids').array().notNull(),
   },

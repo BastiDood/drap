@@ -18,7 +18,7 @@ import {
 import { drizzle } from 'drizzle-orm/node-postgres';
 
 import { assertOptional, assertSingle } from '$lib/server/assert';
-import { coerceDate, coerceNullableDate } from '$lib/coerce';
+import { coerceBoolean, coerceDate, coerceNullableDate } from '$lib/coerce';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 import * as schema from './schema';
@@ -41,6 +41,7 @@ export type DbConnection = DrizzleDatabase | DrizzleTransaction;
 const isRegistrationClosed = lt(schema.draft.registrationClosedAt, sql`now()`)
   .mapWith(Boolean)
   .as('is_registration_closed');
+const isGmailThreadClaimed = isNotNull(schema.gmailThread.claimedAt).mapWith(coerceBoolean);
 
 export async function insertDummySession(db: DbConnection, userId: string) {
   return await tracer.asyncSpan('insert-dummy-session', async span => {
@@ -509,6 +510,7 @@ export async function lockGmailThreads(db: DrizzleTransaction, keys: GmailThread
         eventType: schema.gmailThread.eventType,
         round: schema.gmailThread.round,
         recipientUserId: schema.gmailThread.recipientUserId,
+        isClaimed: isGmailThreadClaimed,
         gmailThreadId: schema.gmailThread.gmailThreadId,
         gmailMessageIds: schema.gmailThread.gmailMessageIds,
       })
@@ -529,6 +531,7 @@ export async function lockGmailThreadsById(db: DrizzleTransaction, ids: bigint[]
         eventType: schema.gmailThread.eventType,
         round: schema.gmailThread.round,
         recipientUserId: schema.gmailThread.recipientUserId,
+        isClaimed: isGmailThreadClaimed,
         gmailThreadId: schema.gmailThread.gmailThreadId,
         gmailMessageIds: schema.gmailThread.gmailMessageIds,
       })
@@ -558,6 +561,34 @@ export async function seedGmailThreadById(
         gmailMessageIds: sql`array_cat(${schema.gmailThread.gmailMessageIds}, ${messageIds}::text[])`,
       })
       .where(eq(schema.gmailThread.id, id));
+  });
+}
+
+export async function claimGmailThreadById(db: DrizzleTransaction, id: bigint) {
+  return await tracer.asyncSpan('claim-gmail-thread-by-id', async span => {
+    span.setAttribute('database.gmail_thread.id', id.toString());
+    return await db
+      .update(schema.gmailThread)
+      .set({ claimedAt: sql`now()` })
+      .where(
+        and(
+          eq(schema.gmailThread.id, id),
+          isNull(schema.gmailThread.gmailThreadId),
+          isNull(schema.gmailThread.claimedAt),
+        ),
+      )
+      .returning({ id: schema.gmailThread.id });
+  });
+}
+
+export async function clearGmailThreadClaimsById(db: DrizzleTransaction, ids: bigint[]) {
+  return await tracer.asyncSpan('clear-gmail-thread-claims-by-id', async span => {
+    span.setAttribute('database.gmail_thread.count', ids.length);
+    if (ids.length === 0) return;
+    return await db
+      .update(schema.gmailThread)
+      .set({ claimedAt: null })
+      .where(and(inArray(schema.gmailThread.id, ids), isNull(schema.gmailThread.gmailThreadId)));
   });
 }
 
