@@ -354,7 +354,7 @@ export const actions = {
         roundsToNotify.flatMap(round =>
           facultyAndStaff.map(({ id, email, givenName, familyName }) =>
             EmailEvent.create({
-              name: 'draft/round.started.email.seed',
+              name: 'round-started',
               data: {
                 draftId: Number(draftId),
                 draftYear,
@@ -575,7 +575,7 @@ export const actions = {
         await inngest.send(
           facultyAndStaff.map(({ id, email, givenName, familyName }) =>
             EmailEvent.create({
-              name: 'draft/lottery.intervened.email.seed',
+              name: 'lottery-intervened',
               data: {
                 draftId: Number(draftId),
                 draftYear,
@@ -726,7 +726,7 @@ export const actions = {
       await inngest.send(
         draftAdmins.map(({ id, email, givenName, familyName }) =>
           EmailEvent.create({
-            name: 'draft/draft.concluded.email.seed',
+            name: 'draft-concluded',
             data: {
               draftId: Number(draftId),
               draftYear,
@@ -811,7 +811,7 @@ export const actions = {
       await inngest.send(
         facultyAndStaff.map(({ id, email, givenName, familyName }) =>
           EmailEvent.create({
-            name: 'draft/draft.finalization.email.seed',
+            name: 'draft-finalization',
             data: {
               draftId: Number(draftId),
               draftYear,
@@ -830,7 +830,7 @@ export const actions = {
         ]);
         await inngest.send(
           EmailEvent.create({
-            name: 'draft/user.assigned.email.seed',
+            name: 'user-assigned',
             data: {
               draftId: Number(draftId),
               labId,

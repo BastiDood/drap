@@ -4,7 +4,7 @@ import { eventType } from 'inngest';
 export const EmailEvent = eventType('draft/email', {
   schema: v.variant('name', [
     v.object({
-      name: v.literal('draft/round.started.email.seed'),
+      name: v.literal('round-started'),
       data: v.object({
         draftId: v.number(),
         draftYear: v.number(),
@@ -15,7 +15,7 @@ export const EmailEvent = eventType('draft/email', {
       }),
     }),
     v.object({
-      name: v.literal('draft/round.submitted.email.seed'),
+      name: v.literal('round-submitted'),
       data: v.object({
         draftId: v.number(),
         draftYear: v.number(),
@@ -28,7 +28,7 @@ export const EmailEvent = eventType('draft/email', {
       }),
     }),
     v.object({
-      name: v.literal('draft/lottery.intervened.email.seed'),
+      name: v.literal('lottery-intervened'),
       data: v.object({
         draftId: v.number(),
         draftYear: v.number(),
@@ -43,7 +43,7 @@ export const EmailEvent = eventType('draft/email', {
       }),
     }),
     v.object({
-      name: v.literal('draft/draft.concluded.email.seed'),
+      name: v.literal('draft-concluded'),
       data: v.object({
         draftId: v.number(),
         draftYear: v.number(),
@@ -62,7 +62,7 @@ export const EmailEvent = eventType('draft/email', {
       }),
     }),
     v.object({
-      name: v.literal('draft/draft.finalization.email.seed'),
+      name: v.literal('draft-finalization'),
       data: v.object({
         draftId: v.number(),
         draftYear: v.number(),
@@ -72,7 +72,7 @@ export const EmailEvent = eventType('draft/email', {
       }),
     }),
     v.object({
-      name: v.literal('draft/user.assigned.email.seed'),
+      name: v.literal('user-assigned'),
       data: v.object({
         draftId: v.number(),
         labId: v.string(),

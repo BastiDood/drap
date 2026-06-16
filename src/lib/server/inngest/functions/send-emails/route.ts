@@ -116,7 +116,7 @@ function getGmailThreadKey(email: EmailEvent): GmailThreadKey {
   const { data } = email;
   return {
     draftId: BigInt(data.draftId),
-    eventType: getGmailThreadEventType(email.name),
+    eventType: email.name,
     round: getGmailThreadRound(email),
     recipientUserId: data.recipientUserId,
   };
@@ -140,29 +140,10 @@ function getGmailThreadRowsByKey(
   return new Map(rows.map(row => [getGmailThreadKeyString(row), row]));
 }
 
-function getGmailThreadEventType(name: EmailEvent['name']): schema.InngestEventName {
-  switch (name) {
-    case 'draft/round.started.email.seed':
-      return 'round-started';
-    case 'draft/round.submitted.email.seed':
-      return 'round-submitted';
-    case 'draft/lottery.intervened.email.seed':
-      return 'lottery-intervened';
-    case 'draft/draft.concluded.email.seed':
-      return 'draft-concluded';
-    case 'draft/draft.finalization.email.seed':
-      return 'draft-finalization';
-    case 'draft/user.assigned.email.seed':
-      return 'user-assigned';
-    default:
-      throw new Error('unreachable email event type');
-  }
-}
-
 function getGmailThreadRound(email: EmailEvent) {
   switch (email.name) {
-    case 'draft/round.started.email.seed':
-    case 'draft/round.submitted.email.seed':
+    case 'round-started':
+    case 'round-submitted':
       return email.data.round;
     default:
       return null;

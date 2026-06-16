@@ -346,7 +346,7 @@ export const actions = {
           : facultyAndStaff.filter(({ labId }) => labId === null);
         const roundSubmittedEvents = initialRecipients.map(recipient =>
           EmailEvent.create({
-            name: 'draft/round.submitted.email.seed',
+            name: 'round-submitted',
             data: {
               draftId: Number(draftId),
               draftYear,
@@ -363,7 +363,7 @@ export const actions = {
         const roundStartedEvents = roundsToNotify.flatMap(round =>
           facultyAndStaff.map(({ id, email, givenName, familyName }) =>
             EmailEvent.create({
-              name: 'draft/round.started.email.seed',
+              name: 'round-started',
               data: {
                 draftId: Number(draftId),
                 draftYear,

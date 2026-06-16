@@ -73,13 +73,13 @@ const LotteryAssignmentFormData = v.object({
 
 const SendEmailFormData = v.variant('event', [
   v.object({
-    event: v.literal('draft/round.started.email.seed'),
+    event: v.literal('round-started'),
     draftId: v.number(),
     round: v.optional(v.nullable(v.number()), null),
     recipientEmail: v.string(),
   }),
   v.object({
-    event: v.literal('draft/round.submitted.email.seed'),
+    event: v.literal('round-submitted'),
     draftId: v.number(),
     round: v.number(),
     labId: v.string(),
@@ -87,25 +87,25 @@ const SendEmailFormData = v.variant('event', [
     selectionMode: v.picklist(['create', 'update']),
   }),
   v.object({
-    event: v.literal('draft/lottery.intervened.email.seed'),
+    event: v.literal('lottery-intervened'),
     draftId: v.number(),
     labId: v.string(),
     studentEmail: v.string(),
     recipientEmail: v.string(),
   }),
   v.object({
-    event: v.literal('draft/draft.concluded.email.seed'),
+    event: v.literal('draft-concluded'),
     draftId: v.number(),
     recipientEmail: v.string(),
     lotteryAssignments: v.optional(v.array(LotteryAssignmentFormData), []),
   }),
   v.object({
-    event: v.literal('draft/draft.finalization.email.seed'),
+    event: v.literal('draft-finalization'),
     draftId: v.number(),
     recipientEmail: v.string(),
   }),
   v.object({
-    event: v.literal('draft/user.assigned.email.seed'),
+    event: v.literal('user-assigned'),
     draftId: v.number(),
     labId: v.string(),
     userEmail: v.string(),
@@ -120,10 +120,7 @@ type DevRoleFormOutput = v.InferOutput<typeof DevRoleFormData>;
 type DevDummyFormOutput = v.InferOutput<typeof DevDummyFormData>;
 type SendEmailFormOutput = v.InferOutput<typeof SendEmailFormData>;
 type DevUserFormOutput = v.InferOutput<typeof DevUserFormData>;
-type DraftConcludedEmail = Extract<
-  EmailEvent,
-  { name: 'draft/draft.concluded.email.seed' }
->['data'];
+type DraftConcludedEmail = Extract<EmailEvent, { name: 'draft-concluded' }>['data'];
 
 export const actions = {
   async profile({ locals: { session }, request }) {
@@ -306,7 +303,7 @@ export const actions = {
 
             logger.info('dispatching email event...');
             switch (parsed.event) {
-              case 'draft/round.started.email.seed': {
+              case 'round-started': {
                 const draftYear = await getDraftYear(db, parsed.draftId);
                 if (typeof draftYear === 'undefined') {
                   logger.fatal('unknown draft id', void 0, { 'draft.id': parsed.draftId });
@@ -321,7 +318,7 @@ export const actions = {
 
                 await inngest.send(
                   EmailEvent.create({
-                    name: 'draft/round.started.email.seed',
+                    name: 'round-started',
                     data: {
                       draftId: parsed.draftId,
                       draftYear,
@@ -334,7 +331,7 @@ export const actions = {
                 );
                 break;
               }
-              case 'draft/round.submitted.email.seed': {
+              case 'round-submitted': {
                 const draftYear = await getDraftYear(db, parsed.draftId);
                 if (typeof draftYear === 'undefined') {
                   logger.fatal('unknown draft id', void 0, { 'draft.id': parsed.draftId });
@@ -360,7 +357,7 @@ export const actions = {
 
                 await inngest.send(
                   EmailEvent.create({
-                    name: 'draft/round.submitted.email.seed',
+                    name: 'round-submitted',
                     data: {
                       draftId: parsed.draftId,
                       draftYear,
@@ -375,7 +372,7 @@ export const actions = {
                 );
                 break;
               }
-              case 'draft/lottery.intervened.email.seed': {
+              case 'lottery-intervened': {
                 const draftYear = await getDraftYear(db, parsed.draftId);
                 if (typeof draftYear === 'undefined') {
                   logger.fatal('unknown draft id', void 0, { 'draft.id': parsed.draftId });
@@ -421,7 +418,7 @@ export const actions = {
 
                 await inngest.send(
                   EmailEvent.create({
-                    name: 'draft/lottery.intervened.email.seed',
+                    name: 'lottery-intervened',
                     data: {
                       draftId: parsed.draftId,
                       draftYear,
@@ -438,7 +435,7 @@ export const actions = {
                 );
                 break;
               }
-              case 'draft/draft.concluded.email.seed': {
+              case 'draft-concluded': {
                 const draftYear = await getDraftYear(db, parsed.draftId);
                 if (typeof draftYear === 'undefined') {
                   logger.fatal('unknown draft id', void 0, { 'draft.id': parsed.draftId });
@@ -499,7 +496,7 @@ export const actions = {
 
                 await inngest.send(
                   EmailEvent.create({
-                    name: 'draft/draft.concluded.email.seed',
+                    name: 'draft-concluded',
                     data: {
                       draftId: parsed.draftId,
                       draftYear,
@@ -512,7 +509,7 @@ export const actions = {
                 );
                 break;
               }
-              case 'draft/draft.finalization.email.seed': {
+              case 'draft-finalization': {
                 const draftYear = await getDraftYear(db, parsed.draftId);
                 if (typeof draftYear === 'undefined') {
                   logger.fatal('unknown draft id', void 0, { 'draft.id': parsed.draftId });
@@ -527,7 +524,7 @@ export const actions = {
 
                 await inngest.send(
                   EmailEvent.create({
-                    name: 'draft/draft.finalization.email.seed',
+                    name: 'draft-finalization',
                     data: {
                       draftId: parsed.draftId,
                       draftYear,
@@ -539,7 +536,7 @@ export const actions = {
                 );
                 break;
               }
-              case 'draft/user.assigned.email.seed': {
+              case 'user-assigned': {
                 let labName: string;
                 try {
                   ({ name: labName } = await getLabById(db, parsed.labId));
@@ -559,7 +556,7 @@ export const actions = {
 
                 await inngest.send(
                   EmailEvent.create({
-                    name: 'draft/user.assigned.email.seed',
+                    name: 'user-assigned',
                     data: {
                       draftId: parsed.draftId,
                       labId: parsed.labId,

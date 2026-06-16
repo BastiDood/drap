@@ -30,7 +30,7 @@ export async function createEmailMessage(
   let html: string;
 
   switch (email.name) {
-    case 'draft/round.started.email.seed': {
+    case 'round-started': {
       recipient = email.data.recipientEmail;
       subject =
         email.data.round === null
@@ -44,7 +44,7 @@ export async function createEmailMessage(
       });
       break;
     }
-    case 'draft/round.submitted.email.seed': {
+    case 'round-submitted': {
       recipient = email.data.recipientEmail;
       subject = `[DRAP] Draft ${email.data.draftYear} Round #${email.data.round} Preference Acknowledgements`;
       html = await emailRenderer.render(RoundSubmitted, {
@@ -57,7 +57,7 @@ export async function createEmailMessage(
       });
       break;
     }
-    case 'draft/lottery.intervened.email.seed': {
+    case 'lottery-intervened': {
       recipient = email.data.recipientEmail;
       subject = `[DRAP] Draft ${email.data.draftYear} Lottery Intervention Updates`;
       html = await emailRenderer.render(LotteryIntervened, {
@@ -71,7 +71,7 @@ export async function createEmailMessage(
       });
       break;
     }
-    case 'draft/draft.concluded.email.seed': {
+    case 'draft-concluded': {
       recipient = email.data.recipientEmail;
       subject = `[DRAP] Draft ${email.data.draftYear} Concluded`;
       html = await emailRenderer.render(DraftConcluded, {
@@ -83,7 +83,7 @@ export async function createEmailMessage(
       });
       break;
     }
-    case 'draft/draft.finalization.email.seed': {
+    case 'draft-finalization': {
       recipient = email.data.recipientEmail;
       subject = `[DRAP] Draft ${email.data.draftYear} Finalized`;
       html = await emailRenderer.render(DraftFinalization, {
@@ -94,7 +94,7 @@ export async function createEmailMessage(
       });
       break;
     }
-    case 'draft/user.assigned.email.seed':
+    case 'user-assigned':
       recipient = email.data.userEmail;
       subject = '[DRAP] Your Draft Assignment Results';
       html = await emailRenderer.render(UserAssigned, {
