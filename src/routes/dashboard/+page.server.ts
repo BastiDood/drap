@@ -20,7 +20,6 @@ import {
 import { dev } from '$app/environment';
 import {
   DraftConcludedSeedEmailEvent,
-  type DraftConcludedSeedEmailSchema,
   DraftFinalizationSeedEmailEvent,
   LotteryInterventionSeedEmailEvent,
   RoundStartedSeedEmailEvent,
@@ -128,6 +127,7 @@ type DevRoleFormOutput = v.InferOutput<typeof DevRoleFormData>;
 type DevDummyFormOutput = v.InferOutput<typeof DevDummyFormData>;
 type SendEmailFormOutput = v.InferOutput<typeof SendEmailFormData>;
 type DevUserFormOutput = v.InferOutput<typeof DevUserFormData>;
+type DraftConcludedEmail = v.InferOutput<typeof DraftConcludedSeedEmailEvent.schema>;
 
 export const actions = {
   async profile({ locals: { session }, request }) {
@@ -446,7 +446,7 @@ export const actions = {
                   return fail(404, { message: 'Recipient email is not a user in the database.' });
                 }
 
-                const lotteryAssignments: DraftConcludedSeedEmailSchema['lotteryAssignments'] = [];
+                const lotteryAssignments: DraftConcludedEmail['lotteryAssignments'] = [];
                 for (const { labId, studentEmail } of parsed.lotteryAssignments) {
                   let labName: string;
                   try {

@@ -1,19 +1,30 @@
+import * as v from 'valibot';
 import { Component, Multipart } from 'multipart-ts';
 import { HTTPParser } from 'http-parser-js';
-import { parse } from 'valibot';
 
 import { Logger } from '$lib/server/telemetry/logger';
 import { stripPrefix } from '$lib/strings';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
-import { GmailMessageSendResult } from './schema';
+import { GmailMessageMetadataResult, GmailMessageSendResult } from './schema';
 
 const SERVICE_NAME = 'lib.server.google.http';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
-export function parseBatchSendResponse(response: Response) {
-  return tracer.asyncSpan('parse-batch-send-response', async span => {
+export async function parseBatchSendResponse(response: Response) {
+  return await parseBatchResponse(GmailMessageSendResult, response);
+}
+
+export async function parseBatchMetadataResponse(response: Response) {
+  return await parseBatchResponse(GmailMessageMetadataResult, response);
+}
+
+function parseBatchResponse<const TSchema extends v.GenericSchema>(
+  schema: TSchema,
+  response: Response,
+) {
+  return tracer.asyncSpan('parse-batch-response', async span => {
     const contentType = response.headers.get('Content-Type');
     if (contentType === null) MissingBatchContentTypeError.throwNew();
     span.setAttribute('response.content_type', contentType);
@@ -24,9 +35,9 @@ export function parseBatchSendResponse(response: Response) {
     const body = await response.arrayBuffer();
     const multipart = Multipart.part(new Component({ 'Content-Type': contentType }, body));
 
-    const results = new Map<string, GmailBatchSendResult>();
+    const results = new Map<string, GmailBatchResult<v.InferOutput<TSchema>>>();
     for (const part of multipart.parts) {
-      const [contentId, result] = parseBatchSendPart(part);
+      const [contentId, result] = parseBatchPart(part, schema);
       const existing = results.get(contentId);
       if (typeof existing === 'undefined') results.set(contentId, result);
       else DuplicateBatchContentIdError.throwNew(contentId);
@@ -36,51 +47,11 @@ export function parseBatchSendResponse(response: Response) {
   });
 }
 
-export class DuplicateBatchContentIdError extends Error {
-  constructor(public readonly contentId: string) {
-    super(`duplicate gmail batch response content id: ${contentId}`);
-    this.name = 'DuplicateBatchContentIdError';
-  }
-
-  static throwNew(contentId: string): never {
-    const error = new DuplicateBatchContentIdError(contentId);
-    logger.error('duplicate gmail batch response content id', error, {
-      'error.content_id': contentId,
-    });
-    throw error;
-  }
-}
-
-export class MissingBatchContentTypeError extends Error {
-  constructor() {
-    super('missing content type when reading multipart response');
-    this.name = 'MissingBatchContentTypeError';
-  }
-
-  static throwNew(): never {
-    const error = new MissingBatchContentTypeError();
-    logger.error('missing content type when reading multipart response', error);
-    throw error;
-  }
-}
-
-export class InvalidBatchContentTypeError extends Error {
-  constructor(public readonly contentType: string) {
-    super(`unexpected content type when reading multipart response: ${contentType}`);
-    this.name = 'InvalidBatchContentTypeError';
-  }
-
-  static throwNew(contentType: string): never {
-    const error = new InvalidBatchContentTypeError(contentType);
-    logger.error('unexpected content type when reading multipart response', error, {
-      'error.content_type': contentType,
-    });
-    throw error;
-  }
-}
-
-function parseBatchSendPart(part: Multipart['parts'][number]): [string, GmailBatchSendResult] {
-  return tracer.span('parse-batch-send-part', span => {
+function parseBatchPart<const TSchema extends v.GenericSchema>(
+  part: Multipart['parts'][number],
+  schema: TSchema,
+): [string, GmailBatchResult<v.InferOutput<TSchema>>] {
+  return tracer.span('parse-batch-part', span => {
     span.setAttribute('multipart.size', part.body.byteLength);
     const contentType = part.headers.get('Content-Type');
     if (contentType === null) MissingBatchPartContentTypeError.throwNew();
@@ -98,80 +69,13 @@ function parseBatchSendPart(part: Multipart['parts'][number]): [string, GmailBat
 
     if (status >= 200 && status < 300) {
       logger.debug('successfully parsed gmail batch part', { 'http.part.content_id': contentId });
-      const value = parse(GmailMessageSendResult, JSON.parse(body));
+      const value = v.parse(schema, JSON.parse(body));
       return [contentId, { ok: true, value }];
     }
 
     logger.warn('failed to parse gmail batch part', { 'http.part.status': status });
     return [contentId, { ok: false, status, body }];
   });
-}
-
-export interface GmailBatchSendSuccess {
-  ok: true;
-  value: GmailMessageSendResult;
-}
-
-export interface GmailBatchSendFailure {
-  ok: false;
-  status: number;
-  body: string;
-}
-
-export type GmailBatchSendResult = GmailBatchSendSuccess | GmailBatchSendFailure;
-
-export class NonHttpBatchPartError extends Error {
-  constructor(public readonly contentType: string) {
-    super(`unexpected gmail batch part content type: ${contentType}`);
-    this.name = 'NonHttpBatchPartError';
-  }
-
-  static throwNew(contentType: string): never {
-    const error = new NonHttpBatchPartError(contentType);
-    logger.error('unexpected gmail batch part content type', error, {
-      'error.content_type': contentType,
-    });
-    throw error;
-  }
-}
-
-export class MissingBatchPartContentTypeError extends Error {
-  constructor() {
-    super('gmail batch part is missing its content type');
-    this.name = 'MissingBatchPartContentTypeError';
-  }
-
-  static throwNew(): never {
-    const error = new MissingBatchPartContentTypeError();
-    logger.error('gmail batch part is missing its content type', error);
-    throw error;
-  }
-}
-
-export class MissingBatchPartContentIdError extends Error {
-  constructor() {
-    super('gmail batch part is missing its content id');
-    this.name = 'MissingBatchPartContentIdError';
-  }
-
-  static throwNew(): never {
-    const error = new MissingBatchPartContentIdError();
-    logger.error('gmail batch part is missing its content id', error);
-    throw error;
-  }
-}
-
-export class MissingBatchPartStatusError extends Error {
-  constructor() {
-    super('missing status code when parsing gmail batch part');
-    this.name = 'MissingBatchPartStatusError';
-  }
-
-  static throwNew(): never {
-    const error = new MissingBatchPartStatusError();
-    logger.error('missing status code when parsing gmail batch part', error);
-    throw error;
-  }
 }
 
 function parseApplicationHttpResponse(data: Buffer) {
@@ -232,4 +136,116 @@ function normalizeBatchContentId(contentId: string) {
     span.setAttribute('output.content_id', normalized);
     return normalized;
   });
+}
+
+export class DuplicateBatchContentIdError extends Error {
+  constructor(public readonly contentId: string) {
+    super(`duplicate gmail batch response content id: ${contentId}`);
+    this.name = 'DuplicateBatchContentIdError';
+  }
+
+  static throwNew(contentId: string): never {
+    const error = new DuplicateBatchContentIdError(contentId);
+    logger.error('duplicate gmail batch response content id', error, {
+      'error.content_id': contentId,
+    });
+    throw error;
+  }
+}
+
+export class MissingBatchContentTypeError extends Error {
+  constructor() {
+    super('missing content type when reading multipart response');
+    this.name = 'MissingBatchContentTypeError';
+  }
+
+  static throwNew(): never {
+    const error = new MissingBatchContentTypeError();
+    logger.error('missing content type when reading multipart response', error);
+    throw error;
+  }
+}
+
+export class InvalidBatchContentTypeError extends Error {
+  constructor(public readonly contentType: string) {
+    super(`unexpected content type when reading multipart response: ${contentType}`);
+    this.name = 'InvalidBatchContentTypeError';
+  }
+
+  static throwNew(contentType: string): never {
+    const error = new InvalidBatchContentTypeError(contentType);
+    logger.error('unexpected content type when reading multipart response', error, {
+      'error.content_type': contentType,
+    });
+    throw error;
+  }
+}
+
+export interface GmailBatchSuccess<TValue> {
+  ok: true;
+  value: TValue;
+}
+
+export interface GmailBatchFailure {
+  ok: false;
+  status: number;
+  body: string;
+}
+
+export type GmailBatchResult<TValue> = GmailBatchSuccess<TValue> | GmailBatchFailure;
+export type GmailBatchSendResult = GmailBatchResult<GmailMessageSendResult>;
+export type GmailBatchMetadataResult = GmailBatchResult<GmailMessageMetadataResult>;
+
+export class NonHttpBatchPartError extends Error {
+  constructor(public readonly contentType: string) {
+    super(`unexpected gmail batch part content type: ${contentType}`);
+    this.name = 'NonHttpBatchPartError';
+  }
+
+  static throwNew(contentType: string): never {
+    const error = new NonHttpBatchPartError(contentType);
+    logger.error('unexpected gmail batch part content type', error, {
+      'error.content_type': contentType,
+    });
+    throw error;
+  }
+}
+
+export class MissingBatchPartContentTypeError extends Error {
+  constructor() {
+    super('gmail batch part is missing its content type');
+    this.name = 'MissingBatchPartContentTypeError';
+  }
+
+  static throwNew(): never {
+    const error = new MissingBatchPartContentTypeError();
+    logger.error('gmail batch part is missing its content type', error);
+    throw error;
+  }
+}
+
+export class MissingBatchPartContentIdError extends Error {
+  constructor() {
+    super('gmail batch part is missing its content id');
+    this.name = 'MissingBatchPartContentIdError';
+  }
+
+  static throwNew(): never {
+    const error = new MissingBatchPartContentIdError();
+    logger.error('gmail batch part is missing its content id', error);
+    throw error;
+  }
+}
+
+export class MissingBatchPartStatusError extends Error {
+  constructor() {
+    super('missing status code when parsing gmail batch part');
+    this.name = 'MissingBatchPartStatusError';
+  }
+
+  static throwNew(): never {
+    const error = new MissingBatchPartStatusError();
+    logger.error('missing status code when parsing gmail batch part', error);
+    throw error;
+  }
 }

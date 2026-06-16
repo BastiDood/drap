@@ -36,23 +36,22 @@
   const { draftId, draftYear, lotteryAssignments }: Props = $props();
   const assignmentCount = $derived(lotteryAssignments.length);
   const groupedLotteryAssignments = $derived.by(() => {
-    // eslint-disable-next-line svelte/prefer-svelte-reactivity -- local grouping container in derived computation
-    const grouped = new Map<string, GroupedLotteryAssignment>();
-    for (const { labId, labName, studentName, studentEmail, avatarUrl } of lotteryAssignments) {
+    const grouped = lotteryAssignments.reduce((grouped, assignment) => {
+      const { labId, labName, studentName, studentEmail, avatarUrl } = assignment;
       const existing = grouped.get(labId);
-      if (typeof existing === 'undefined') {
+      if (typeof existing === 'undefined')
         grouped.set(labId, {
           labId,
           labName,
           students: [{ studentName, studentEmail, avatarUrl }],
         });
-        continue;
-      }
-      existing.students.push({ studentName, studentEmail, avatarUrl });
-    }
-    return Array.from(grouped.values()).sort((left, right) =>
-      left.labId.localeCompare(right.labId),
-    );
+      else existing.students.push({ studentName, studentEmail, avatarUrl });
+      return grouped;
+    }, new Map<string, GroupedLotteryAssignment>());
+    return grouped
+      .values()
+      .toArray()
+      .sort((left, right) => left.labId.localeCompare(right.labId));
   });
 </script>
 
