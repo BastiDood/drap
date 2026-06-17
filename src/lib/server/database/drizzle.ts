@@ -557,7 +557,7 @@ export async function seedGmailThreadsById(
     const values = sql.join(
       threads.map(
         thread =>
-          sql`(${thread.id}, ${thread.gmailThreadId}, ${sql.param(thread.gmailMessageIds, schema.gmailThread.gmailMessageIds)})`,
+          sql`(${thread.id}::bigint, ${thread.gmailThreadId}, ${sql.param(thread.gmailMessageIds, schema.gmailThread.gmailMessageIds)}::text[])`,
       ),
       ',',
     );
