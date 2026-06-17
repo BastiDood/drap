@@ -18,7 +18,7 @@ import {
 import { drizzle } from 'drizzle-orm/node-postgres';
 
 import { assertOptional, assertSingle } from '$lib/server/assert';
-import { coerceBoolean, coerceDate, coerceNullableDate } from '$lib/coerce';
+import { coerceDate, coerceNullableDate } from '$lib/coerce';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 import * as schema from './schema';
@@ -41,7 +41,6 @@ export type DbConnection = DrizzleDatabase | DrizzleTransaction;
 const isRegistrationClosed = lt(schema.draft.registrationClosedAt, sql`now()`)
   .mapWith(Boolean)
   .as('is_registration_closed');
-const isGmailThreadClaimed = isNotNull(schema.gmailThread.claimedAt).mapWith(coerceBoolean);
 
 export async function insertDummySession(db: DbConnection, userId: string) {
   return await tracer.asyncSpan('insert-dummy-session', async span => {
@@ -510,7 +509,6 @@ export async function lockGmailThreads(db: DrizzleTransaction, keys: GmailThread
         eventType: schema.gmailThread.eventType,
         round: schema.gmailThread.round,
         recipientUserId: schema.gmailThread.recipientUserId,
-        isClaimed: isGmailThreadClaimed,
         gmailThreadId: schema.gmailThread.gmailThreadId,
         gmailMessageIds: schema.gmailThread.gmailMessageIds,
       })
@@ -531,7 +529,6 @@ export async function lockGmailThreadsById(db: DrizzleTransaction, ids: bigint[]
         eventType: schema.gmailThread.eventType,
         round: schema.gmailThread.round,
         recipientUserId: schema.gmailThread.recipientUserId,
-        isClaimed: isGmailThreadClaimed,
         gmailThreadId: schema.gmailThread.gmailThreadId,
         gmailMessageIds: schema.gmailThread.gmailMessageIds,
       })
@@ -547,48 +544,32 @@ export async function seedGmailThreadById(
   gmailThreadId: string,
   gmailMessageIds: string[],
 ) {
-  return await tracer.asyncSpan('seed-gmail-thread-by-id', async span => {
-    span.setAttributes({
-      'database.gmail_thread.id': id.toString(),
-      'database.gmail_thread.gmail_thread_id': gmailThreadId,
-      'database.gmail_thread.gmail_message_ids.count': gmailMessageIds.length,
-    });
-    const messageIds = sql.param(gmailMessageIds, schema.gmailThread.gmailMessageIds);
+  return await seedGmailThreadsById(db, [{ id, gmailThreadId, gmailMessageIds }]);
+}
+
+export async function seedGmailThreadsById(
+  db: DrizzleTransaction,
+  threads: { id: bigint; gmailThreadId: string; gmailMessageIds: string[] }[],
+) {
+  return await tracer.asyncSpan('seed-gmail-threads-by-id', async span => {
+    span.setAttribute('database.gmail_thread.count', threads.length);
+    if (threads.length === 0) return;
+    const values = sql.join(
+      threads.map(
+        thread =>
+          sql`(${thread.id}, ${thread.gmailThreadId}, ${sql.param(thread.gmailMessageIds, schema.gmailThread.gmailMessageIds)})`,
+      ),
+      ',',
+    );
+    const thread = alias(schema.gmailThread, 'thread');
     return await db
-      .update(schema.gmailThread)
+      .update(thread)
       .set({
-        gmailThreadId,
-        gmailMessageIds: sql`array_cat(${schema.gmailThread.gmailMessageIds}, ${messageIds}::text[])`,
+        gmailThreadId: sql`updates.gmail_thread_id`,
+        gmailMessageIds: sql`array_cat(${thread.gmailMessageIds}, updates.gmail_message_ids)`,
       })
-      .where(eq(schema.gmailThread.id, id));
-  });
-}
-
-export async function claimGmailThreadById(db: DrizzleTransaction, id: bigint) {
-  return await tracer.asyncSpan('claim-gmail-thread-by-id', async span => {
-    span.setAttribute('database.gmail_thread.id', id.toString());
-    return await db
-      .update(schema.gmailThread)
-      .set({ claimedAt: sql`now()` })
-      .where(
-        and(
-          eq(schema.gmailThread.id, id),
-          isNull(schema.gmailThread.gmailThreadId),
-          isNull(schema.gmailThread.claimedAt),
-        ),
-      )
-      .returning({ id: schema.gmailThread.id });
-  });
-}
-
-export async function clearGmailThreadClaimsById(db: DrizzleTransaction, ids: bigint[]) {
-  return await tracer.asyncSpan('clear-gmail-thread-claims-by-id', async span => {
-    span.setAttribute('database.gmail_thread.count', ids.length);
-    if (ids.length === 0) return;
-    return await db
-      .update(schema.gmailThread)
-      .set({ claimedAt: null })
-      .where(and(inArray(schema.gmailThread.id, ids), isNull(schema.gmailThread.gmailThreadId)));
+      .from(sql`(values ${values}) updates(id, gmail_thread_id, gmail_message_ids)`)
+      .where(sql`${thread.id} = updates.id`);
   });
 }
 
@@ -597,19 +578,32 @@ export async function appendGmailThreadMessageIdsById(
   id: bigint,
   gmailMessageIds: string[],
 ) {
-  return await tracer.asyncSpan('append-gmail-thread-message-ids-by-id', async span => {
-    span.setAttributes({
-      'database.gmail_thread.id': id.toString(),
-      'database.gmail_thread.gmail_message_ids.count': gmailMessageIds.length,
-    });
-    if (gmailMessageIds.length === 0) return;
-    const messageIds = sql.param(gmailMessageIds, schema.gmailThread.gmailMessageIds);
+  return await appendGmailThreadsMessageIdsById(db, [{ id, gmailMessageIds }]);
+}
+
+export async function appendGmailThreadsMessageIdsById(
+  db: DrizzleTransaction,
+  threads: { id: bigint; gmailMessageIds: string[] }[],
+) {
+  return await tracer.asyncSpan('append-gmail-threads-message-ids-by-id', async span => {
+    const updates = threads.filter(thread => thread.gmailMessageIds.length > 0);
+    span.setAttribute('database.gmail_thread.count', updates.length);
+    if (updates.length === 0) return;
+    const values = sql.join(
+      updates.map(
+        thread =>
+          sql`(${thread.id}::bigint, ${sql.param(thread.gmailMessageIds, schema.gmailThread.gmailMessageIds)}::text[])`,
+      ),
+      ',',
+    );
+    const thread = alias(schema.gmailThread, 'thread');
     return await db
-      .update(schema.gmailThread)
+      .update(thread)
       .set({
-        gmailMessageIds: sql`array_cat(${schema.gmailThread.gmailMessageIds}, ${messageIds}::text[])`,
+        gmailMessageIds: sql`array_cat(${thread.gmailMessageIds}, updates.gmail_message_ids)`,
       })
-      .where(eq(schema.gmailThread.id, id));
+      .from(sql`(values ${values}) updates(id, gmail_message_ids)`)
+      .where(sql`${thread.id} = updates.id`);
   });
 }
 

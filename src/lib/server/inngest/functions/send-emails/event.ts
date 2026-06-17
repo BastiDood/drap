@@ -4,8 +4,10 @@ import { toPlainText } from '@better-svelte-email/server';
 
 import { assertDefined } from '$lib/server/assert';
 import type { EmailEvent } from '$lib/server/inngest/schema';
+import type { GmailThreadKey } from '$lib/server/database/drizzle';
 
 import type { SenderIdentity } from './auth';
+import { UnreachableEmailEventTypeError } from './errors';
 
 import DraftConcluded from './templates/draft-concluded.svelte';
 import DraftFinalization from './templates/draft-finalization.svelte';
@@ -105,7 +107,7 @@ export async function createEmailMessage(
       });
       break;
     default:
-      throw new Error('unreachable email event type');
+      throw new UnreachableEmailEventTypeError();
   }
 
   const mime = createMimeMessage();
@@ -150,5 +152,29 @@ export function isRetryableGmailStatus(status: number) {
       return true;
     default:
       return false;
+  }
+}
+
+export function getGmailThreadKey(email: EmailEvent): GmailThreadKey {
+  const { data } = email;
+  return {
+    draftId: BigInt(data.draftId),
+    eventType: email.name,
+    round: getGmailThreadRound(email),
+    recipientUserId: data.recipientUserId,
+  };
+}
+
+export function getGmailThreadKeyString(key: GmailThreadKey) {
+  return `${key.draftId}:${key.eventType}:${key.round ?? ''}:${key.recipientUserId}`;
+}
+
+function getGmailThreadRound(email: EmailEvent) {
+  switch (email.name) {
+    case 'round-started':
+    case 'round-submitted':
+      return email.data.round;
+    default:
+      return null;
   }
 }

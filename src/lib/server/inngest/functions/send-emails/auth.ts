@@ -65,6 +65,8 @@ class RefreshedCredentials {
   }
 }
 
+export type { RefreshedCredentials };
+
 async function getDesignatedSenderCredentialsForUpdate(
   db: DrizzleTransaction,
   encryptionKey: CryptoKey,

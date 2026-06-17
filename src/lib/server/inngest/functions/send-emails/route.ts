@@ -5,10 +5,10 @@ import { db } from '$lib/server/database';
 import { EmailBatchEvent, EmailEvent, EmailSeedEvent } from '$lib/server/inngest/schema';
 import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
 import {
-  type GmailThreadKey,
-  lockOrCreateGmailThreads,
-  type schema,
-} from '$lib/server/database/drizzle';
+  getGmailThreadKey,
+  getGmailThreadKeyString,
+} from '$lib/server/inngest/functions/send-emails/event';
+import { type GmailThreadKey, lockOrCreateGmailThreads } from '$lib/server/database/drizzle';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
@@ -29,62 +29,7 @@ export const routeEmails = inngest.createFunction(
 
     const routedEvents = await step.run(
       { id: 'route-emails', name: 'Route Emails' },
-      async () =>
-        await tracer.asyncSpan(
-          'route-emails',
-          async () =>
-            await db.transaction(
-              async tx => {
-                const groups = groupEmailsByThreadKey(events.values());
-                const rows = await lockOrCreateGmailThreads(
-                  tx,
-                  Array.from(groups.values(), ({ key }) => key),
-                );
-                const rowsByKey = getGmailThreadRowsByKey(rows.values());
-                const routedEvents = groups
-                  .values()
-                  .reduce<
-                    (
-                      | { type: 'seed'; data: EmailSeedEvent }
-                      | { type: 'batch'; data: EmailBatchEvent }
-                    )[]
-                  >((routedEvents, group) => {
-                    const row = assertDefined(rowsByKey.get(getGmailThreadKeyString(group.key)));
-                    if (row.gmailThreadId === null) {
-                      const [seed, ...followers] = group.emails;
-                      routedEvents.push({
-                        type: 'seed',
-                        data: {
-                          gmailThreadRowId: Number(row.id),
-                          seed: assertDefined(seed),
-                          followers,
-                          attempt: 0,
-                        },
-                      });
-                    } else {
-                      routedEvents.push(
-                        ...group.emails.map(email => ({
-                          type: 'batch' as const,
-                          data: {
-                            gmailThreadRowId: Number(row.id),
-                            email,
-                            attempt: 0,
-                          },
-                        })),
-                      );
-                    }
-                    return routedEvents;
-                  }, []);
-
-                logger.info('email routing completed', {
-                  'email.count': events.length,
-                  'email.routed_count': routedEvents.length,
-                });
-                return routedEvents;
-              },
-              { isolationLevel: 'read committed' },
-            ),
-        ),
+      async () => await routeEmailEvents(events),
     );
 
     if (routedEvents.length > 0)
@@ -96,6 +41,7 @@ export const routeEmails = inngest.createFunction(
             : EmailBatchEvent.create(event.data),
         ),
       );
+
     return routedEvents.length;
   },
 );
@@ -112,25 +58,64 @@ function groupEmailsByThreadKey(events: IteratorObject<{ data: EmailEvent }>) {
   }, new Map<string, { key: GmailThreadKey; emails: EmailEvent[] }>());
 }
 
-function getGmailThreadKey(email: EmailEvent): GmailThreadKey {
-  const { data } = email;
-  return {
-    draftId: BigInt(data.draftId),
-    eventType: email.name,
-    round: getGmailThreadRound(email),
-    recipientUserId: data.recipientUserId,
-  };
-}
+async function routeEmailEvents(events: { data: EmailEvent }[]) {
+  return await tracer.asyncSpan(
+    'route-emails',
+    async () =>
+      await db.transaction(
+        async tx => {
+          const groups = groupEmailsByThreadKey(events.values());
+          const rows = await lockOrCreateGmailThreads(
+            tx,
+            Array.from(groups.values(), ({ key }) => key),
+          );
+          const rowsByKey = getGmailThreadRowsByKey(rows.values());
+          const routedEvents = groups
+            .values()
+            .reduce<
+              ({ type: 'seed'; data: EmailSeedEvent } | { type: 'batch'; data: EmailBatchEvent })[]
+            >((routedEvents, group) => {
+              const row = assertDefined(rowsByKey.get(getGmailThreadKeyString(group.key)));
+              if (row.gmailThreadId === null) {
+                const [seed, ...followers] = group.emails;
+                routedEvents.push({
+                  type: 'seed',
+                  data: {
+                    seed: assertDefined(seed),
+                    followers,
+                    seedAttempt: 0,
+                  },
+                });
+              } else {
+                routedEvents.push(
+                  ...group.emails.map(email => ({
+                    type: 'batch' as const,
+                    data: {
+                      email,
+                      batchAttempt: 0,
+                    },
+                  })),
+                );
+              }
+              return routedEvents;
+            }, []);
 
-function getGmailThreadKeyString(key: GmailThreadKey) {
-  return `${key.draftId}:${key.eventType}:${key.round ?? ''}:${key.recipientUserId}`;
+          logger.info('email routing completed', {
+            'email.count': events.length,
+            'email.routed_count': routedEvents.length,
+          });
+          return routedEvents;
+        },
+        { isolationLevel: 'read committed' },
+      ),
+  );
 }
 
 function getGmailThreadRowsByKey(
   rows: IteratorObject<{
     id: bigint;
     draftId: bigint;
-    eventType: schema.InngestEventName;
+    eventType: GmailThreadKey['eventType'];
     round: number | null;
     recipientUserId: string;
     gmailThreadId: string | null;
@@ -138,14 +123,4 @@ function getGmailThreadRowsByKey(
   }>,
 ) {
   return new Map(rows.map(row => [getGmailThreadKeyString(row), row]));
-}
-
-function getGmailThreadRound(email: EmailEvent) {
-  switch (email.name) {
-    case 'round-started':
-    case 'round-submitted':
-      return email.data.round;
-    default:
-      return null;
-  }
 }
