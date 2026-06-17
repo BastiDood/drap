@@ -7,6 +7,7 @@ import { assertSingle } from '$lib/server/assert';
 import {
   createEmailMessage,
   getGmailThreadKey,
+  getGmailThreadKeyString,
   isRetryableGmailStatus,
 } from '$lib/server/inngest/functions/send-emails/event';
 import { db } from '$lib/server/database';
@@ -49,71 +50,73 @@ async function sendBatchFallbackEmail(
   credentials: RefreshedCredentials,
   attempt: number,
 ) {
-  return await tracer.asyncSpan(
-    'send-batch-fallback-email',
-    async () =>
-      await db.transaction(
-        async tx => {
-          const key = getGmailThreadKey(event.email);
-          const thread = assertSingle(
-            await tx
-              .select({
-                id: dbSchema.gmailThread.id,
-                gmailThreadId: sql`${dbSchema.gmailThread.gmailThreadId}`.mapWith(value => {
-                  if (typeof value !== 'string')
-                    throw new NonRetriableError(
-                      'gmail thread must be seeded before batch fallback send',
-                    );
-                  return value;
-                }),
-                gmailMessageIds: dbSchema.gmailThread.gmailMessageIds,
-              })
-              .from(dbSchema.gmailThread)
-              .where(
-                and(
-                  eq(dbSchema.gmailThread.draftId, key.draftId),
-                  eq(dbSchema.gmailThread.eventType, key.eventType),
-                  sql`${dbSchema.gmailThread.round} is not distinct from ${key.round}`,
-                  eq(dbSchema.gmailThread.recipientUserId, key.recipientUserId),
-                ),
-              )
-              .for('update'),
-          );
+  return await tracer.asyncSpan('send-batch-fallback-email', async span => {
+    const key = getGmailThreadKey(event.email);
+    span.setAttributes({
+      'email.batch.fallback.attempt': attempt,
+      'email.gmail_thread.logical_key': getGmailThreadKeyString(key),
+    });
+    return await db.transaction(
+      async tx => {
+        const thread = assertSingle(
+          await tx
+            .select({
+              id: dbSchema.gmailThread.id,
+              gmailThreadId: sql`${dbSchema.gmailThread.gmailThreadId}`.mapWith(value => {
+                if (typeof value !== 'string')
+                  throw new NonRetriableError(
+                    'gmail thread must be seeded before batch fallback send',
+                  );
+                return value;
+              }),
+              gmailMessageIds: dbSchema.gmailThread.gmailMessageIds,
+            })
+            .from(dbSchema.gmailThread)
+            .where(
+              and(
+                eq(dbSchema.gmailThread.draftId, key.draftId),
+                eq(dbSchema.gmailThread.eventType, key.eventType),
+                sql`${dbSchema.gmailThread.round} is not distinct from ${key.round}`,
+                eq(dbSchema.gmailThread.recipientUserId, key.recipientUserId),
+              ),
+            )
+            .for('update'),
+        );
 
-          if (thread.gmailMessageIds.length === 0)
-            throw new NonRetriableError('gmail thread has no persisted message ids');
+        if (thread.gmailMessageIds.length === 0)
+          throw new NonRetriableError('gmail thread has no persisted message ids');
 
-          const { message, gmailThreadId } = await createEmailMessage(
-            event.email,
-            credentials.sender,
-            {
-              gmailThreadId: thread.gmailThreadId,
-              gmailMessageIds: thread.gmailMessageIds,
-            },
-          );
+        const { message, gmailThreadId } = await createEmailMessage(
+          event.email,
+          credentials.sender,
+          {
+            gmailThreadId: thread.gmailThreadId,
+            gmailMessageIds: thread.gmailMessageIds,
+          },
+        );
 
-          try {
-            const result = await credentials.client.sendEmail(message, gmailThreadId);
-            logger.info('gmail batch fallback email sent successfully', {
-              'email.attempt': attempt,
-              'email.message.id': result.id,
-              'email.message.thread_id': result.threadId,
-              'email.message.internal_date': result.internalDate,
-              'email.message.label_ids': result.labelIds,
+        try {
+          const result = await credentials.client.sendEmail(message, gmailThreadId);
+          logger.info('gmail batch fallback email sent successfully', {
+            'email.attempt': attempt,
+            'email.message.id': result.id,
+            'email.message.thread_id': result.threadId,
+            'email.message.internal_date': result.internalDate,
+            'email.message.label_ids': result.labelIds,
+          });
+          const gmailMessageId = await credentials.client.getMessageIdHeader(result.id);
+          await appendGmailThreadMessageIdsById(tx, thread.id, [gmailMessageId]);
+        } catch (cause) {
+          if (cause instanceof GmailScopeError)
+            throw new NonRetriableError('missing gmail scopes', { cause });
+          if (cause instanceof GmailError && !isRetryableGmailStatus(cause.status))
+            throw new NonRetriableError('gmail batch fallback failed with non-retryable status', {
+              cause,
             });
-            const gmailMessageId = await credentials.client.getMessageIdHeader(result.id);
-            await appendGmailThreadMessageIdsById(tx, thread.id, [gmailMessageId]);
-          } catch (cause) {
-            if (cause instanceof GmailScopeError)
-              throw new NonRetriableError('missing gmail scopes', { cause });
-            if (cause instanceof GmailError && !isRetryableGmailStatus(cause.status))
-              throw new NonRetriableError('gmail batch fallback failed with non-retryable status', {
-                cause,
-              });
-            throw cause;
-          }
-        },
-        { isolationLevel: 'read committed' },
-      ),
-  );
+          throw cause;
+        }
+      },
+      { isolationLevel: 'read committed' },
+    );
+  });
 }

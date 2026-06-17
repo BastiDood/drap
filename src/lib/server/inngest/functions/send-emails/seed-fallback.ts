@@ -4,6 +4,7 @@ import { assertSingle } from '$lib/server/assert';
 import {
   createEmailMessage,
   getGmailThreadKey,
+  getGmailThreadKeyString,
   isRetryableGmailStatus,
 } from '$lib/server/inngest/functions/send-emails/event';
 import { db } from '$lib/server/database';
@@ -54,43 +55,48 @@ async function seedFallbackEmailThread(
   credentials: RefreshedCredentials,
   attempt: number,
 ) {
-  return await tracer.asyncSpan(
-    'seed-fallback-email-thread',
-    async () =>
-      await db.transaction(
-        async tx => {
-          const row = assertSingle(await lockGmailThreads(tx, [getGmailThreadKey(event.seed)]));
-          if (row.gmailThreadId !== null)
-            return [event.seed, ...event.followers].map(email => ({
-              email,
-              batchAttempt: 0,
-            }));
+  return await tracer.asyncSpan('seed-fallback-email-thread', async span => {
+    const key = getGmailThreadKey(event.seed);
+    span.setAttributes({
+      'email.seed.fallback.attempt': attempt,
+      'email.seed.follower.count': event.followers.length,
+      'email.gmail_thread.logical_key': getGmailThreadKeyString(key),
+    });
 
-          try {
-            const { message } = await createEmailMessage(event.seed, credentials.sender);
-            const result = await credentials.client.sendEmail(message);
-            logger.info('gmail root seed fallback email sent successfully', {
-              'email.attempt': attempt,
-              'email.message.id': result.id,
-              'email.message.thread_id': result.threadId,
-              'email.message.internal_date': result.internalDate,
-              'email.message.label_ids': result.labelIds,
+    return await db.transaction(
+      async tx => {
+        const row = assertSingle(await lockGmailThreads(tx, [key]));
+        if (row.gmailThreadId !== null)
+          return [event.seed, ...event.followers].map(email => ({
+            email,
+            batchAttempt: 0,
+          }));
+
+        try {
+          const { message } = await createEmailMessage(event.seed, credentials.sender);
+          const result = await credentials.client.sendEmail(message);
+          logger.info('gmail root seed fallback email sent successfully', {
+            'email.attempt': attempt,
+            'email.message.id': result.id,
+            'email.message.thread_id': result.threadId,
+            'email.message.internal_date': result.internalDate,
+            'email.message.label_ids': result.labelIds,
+          });
+          const gmailMessageId = await credentials.client.getMessageIdHeader(result.id);
+          await seedGmailThreadById(tx, row.id, result.threadId, [gmailMessageId]);
+        } catch (cause) {
+          if (cause instanceof GmailScopeError)
+            throw new NonRetriableError('missing gmail scopes', { cause });
+          if (cause instanceof GmailError && !isRetryableGmailStatus(cause.status))
+            throw new NonRetriableError('gmail seed fallback failed with non-retryable status', {
+              cause,
             });
-            const gmailMessageId = await credentials.client.getMessageIdHeader(result.id);
-            await seedGmailThreadById(tx, row.id, result.threadId, [gmailMessageId]);
-          } catch (cause) {
-            if (cause instanceof GmailScopeError)
-              throw new NonRetriableError('missing gmail scopes', { cause });
-            if (cause instanceof GmailError && !isRetryableGmailStatus(cause.status))
-              throw new NonRetriableError('gmail seed fallback failed with non-retryable status', {
-                cause,
-              });
-            throw cause;
-          }
+          throw cause;
+        }
 
-          return event.followers.map(email => ({ email, batchAttempt: 0 }));
-        },
-        { isolationLevel: 'read committed' },
-      ),
-  );
+        return event.followers.map(email => ({ email, batchAttempt: 0 }));
+      },
+      { isolationLevel: 'read committed' },
+    );
+  });
 }

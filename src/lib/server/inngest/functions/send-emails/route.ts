@@ -59,56 +59,58 @@ function groupEmailsByThreadKey(events: IteratorObject<{ data: EmailEvent }>) {
 }
 
 async function routeEmailEvents(events: { data: EmailEvent }[]) {
-  return await tracer.asyncSpan(
-    'route-emails',
-    async () =>
-      await db.transaction(
-        async tx => {
-          const groups = groupEmailsByThreadKey(events.values());
-          const rows = await lockOrCreateGmailThreads(
-            tx,
-            Array.from(groups.values(), ({ key }) => key),
-          );
-          const rowsByKey = getGmailThreadRowsByKey(rows.values());
-          const routedEvents = groups
-            .values()
-            .reduce<
-              ({ type: 'seed'; data: EmailSeedEvent } | { type: 'batch'; data: EmailBatchEvent })[]
-            >((routedEvents, group) => {
-              const row = assertDefined(rowsByKey.get(getGmailThreadKeyString(group.key)));
-              if (row.gmailThreadId === null) {
-                const [seed, ...followers] = group.emails;
-                routedEvents.push({
-                  type: 'seed',
+  return await tracer.asyncSpan('route-emails', async span => {
+    const groups = groupEmailsByThreadKey(events.values());
+    span.setAttributes({
+      'inngest.events.count': events.length,
+      'email.gmail_thread.logical_key.count': groups.size,
+    });
+    return await db.transaction(
+      async tx => {
+        const rows = await lockOrCreateGmailThreads(
+          tx,
+          Array.from(groups.values(), ({ key }) => key),
+        );
+        const rowsByKey = getGmailThreadRowsByKey(rows.values());
+        const routedEvents = groups
+          .values()
+          .reduce<
+            ({ type: 'seed'; data: EmailSeedEvent } | { type: 'batch'; data: EmailBatchEvent })[]
+          >((routedEvents, group) => {
+            const row = assertDefined(rowsByKey.get(getGmailThreadKeyString(group.key)));
+            if (row.gmailThreadId === null) {
+              const [seed, ...followers] = group.emails;
+              routedEvents.push({
+                type: 'seed',
+                data: {
+                  seed: assertDefined(seed),
+                  followers,
+                  seedAttempt: 0,
+                },
+              });
+            } else {
+              routedEvents.push(
+                ...group.emails.map(email => ({
+                  type: 'batch' as const,
                   data: {
-                    seed: assertDefined(seed),
-                    followers,
-                    seedAttempt: 0,
+                    email,
+                    batchAttempt: 0,
                   },
-                });
-              } else {
-                routedEvents.push(
-                  ...group.emails.map(email => ({
-                    type: 'batch' as const,
-                    data: {
-                      email,
-                      batchAttempt: 0,
-                    },
-                  })),
-                );
-              }
-              return routedEvents;
-            }, []);
+                })),
+              );
+            }
+            return routedEvents;
+          }, []);
 
-          logger.info('email routing completed', {
-            'email.count': events.length,
-            'email.routed_count': routedEvents.length,
-          });
-          return routedEvents;
-        },
-        { isolationLevel: 'read committed' },
-      ),
-  );
+        logger.info('email routing completed', {
+          'email.count': events.length,
+          'email.routed_count': routedEvents.length,
+        });
+        return routedEvents;
+      },
+      { isolationLevel: 'read committed' },
+    );
+  });
 }
 
 function getGmailThreadRowsByKey(

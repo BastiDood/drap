@@ -49,7 +49,15 @@ export const sendBatchedEmails = inngest.createFunction(
     const sent = await step.run(
       { id: 'send-threaded-emails', name: 'Send Threaded Emails' },
       async () =>
-        await tracer.asyncSpan('send-threaded-emails', async () => {
+        await tracer.asyncSpan('send-threaded-emails', async span => {
+          span.setAttributes({
+            'email.batch.request.count': requests.length,
+            'email.batch.attempt.max': Math.max(
+              0,
+              ...requests.map(request => request.batchAttempt),
+            ),
+          });
+
           const successes: { rowId: number; gmailMessageId: string }[] = [];
           const batchRetries: EmailBatchEvent[] = [];
           const fallbackFollowups: EmailBatchFallbackEvent[] = [];
@@ -130,7 +138,10 @@ export const sendBatchedEmails = inngest.createFunction(
             'messages.count': messages.size,
             'messages.success_count': successes.length,
             'messages.failure_count': failureCount,
+            'email.batch.retry.count': batchRetries.length,
+            'email.batch.fallback.count': fallbackFollowups.length,
           });
+
           return { successes, batchRetries, fallbackFollowups };
         }),
     );
@@ -138,7 +149,8 @@ export const sendBatchedEmails = inngest.createFunction(
     const metadata = await step.run(
       { id: 'fetch-threaded-email-metadata', name: 'Fetch Threaded Email Metadata' },
       async () =>
-        await tracer.asyncSpan('fetch-threaded-email-metadata', async () => {
+        await tracer.asyncSpan('fetch-threaded-email-metadata', async span => {
+          span.setAttribute('email.batch.success.count', sent.successes.length);
           const metadata: { rowId: number; gmailMessageIdHeader: string }[] = [];
           if (sent.successes.length === 0) return metadata;
           const { client } = await getRefreshedCredentials();
@@ -194,91 +206,96 @@ export const sendBatchedEmails = inngest.createFunction(
 );
 
 async function loadThreadedEmailRequests(events: { data: EmailBatchEvent }[]) {
-  return await tracer.asyncSpan(
-    'load-threaded-email-threads',
-    async () =>
-      await db.transaction(
-        async tx => {
-          const rows = await loadSeededGmailThreads(
-            tx,
-            Array.from(
-              new Map(
-                events.map(event => {
-                  const key = getGmailThreadKey(event.data.email);
-                  return [getGmailThreadKeyString(key), key];
-                }),
-              ).values(),
-            ),
-          );
+  return await tracer.asyncSpan('load-threaded-email-threads', async span => {
+    const keys = Array.from(
+      new Map(
+        events.map(event => {
+          const key = getGmailThreadKey(event.data.email);
+          return [getGmailThreadKeyString(key), key];
+        }),
+      ).values(),
+    );
 
-          const rowsByKey = new Map(rows.map(row => [getGmailThreadKeyString(row), row]));
-          return Array.from(events.entries(), ([index, event]) => {
-            const key = getGmailThreadKey(event.data.email);
-            const keyString = getGmailThreadKeyString(key);
-            const row = assertDefined(rowsByKey.get(keyString));
-            if (row.gmailMessageIds.length === 0)
-              throw new NonRetriableError('gmail thread has no persisted message ids');
-            return {
-              contentId: `${keyString}:${index}`,
-              rowId: Number(row.id),
-              email: event.data.email,
-              batchAttempt: event.data.batchAttempt,
-              gmailThreadId: row.gmailThreadId,
-              gmailMessageIds: row.gmailMessageIds,
-            };
-          });
-        },
-        { isolationLevel: 'read committed' },
-      ),
-  );
+    span.setAttributes({
+      'inngest.events.count': events.length,
+      'email.batch.attempt.max': Math.max(0, ...events.map(event => event.data.batchAttempt)),
+    });
+
+    return await db.transaction(
+      async tx => {
+        const rows = await loadSeededGmailThreads(tx, keys);
+
+        const rowsByKey = new Map(rows.map(row => [getGmailThreadKeyString(row), row]));
+        return Array.from(events.entries(), ([index, event]) => {
+          const key = getGmailThreadKey(event.data.email);
+          const keyString = getGmailThreadKeyString(key);
+          const row = assertDefined(rowsByKey.get(keyString));
+          if (row.gmailMessageIds.length === 0)
+            throw new NonRetriableError('gmail thread has no persisted message ids');
+          return {
+            contentId: `${keyString}:${index}`,
+            rowId: Number(row.id),
+            email: event.data.email,
+            batchAttempt: event.data.batchAttempt,
+            gmailThreadId: row.gmailThreadId,
+            gmailMessageIds: row.gmailMessageIds,
+          };
+        });
+      },
+      { isolationLevel: 'read committed' },
+    );
+  });
 }
 
 async function persistThreadedEmailMetadata(
   metadata: { rowId: number; gmailMessageIdHeader: string }[],
 ) {
-  return await tracer.asyncSpan(
-    'persist-threaded-email-metadata',
-    async () =>
-      await db.transaction(
-        async tx => {
-          const idsByRowId = metadata.reduce((idsByRowId, item) => {
-            const ids = idsByRowId.get(item.rowId) ?? [];
-            ids.push(item.gmailMessageIdHeader);
-            idsByRowId.set(item.rowId, ids);
-            return idsByRowId;
-          }, new Map<number, string[]>());
-          await appendGmailThreadsMessageIdsById(
-            tx,
-            Array.from(idsByRowId, ([rowId, gmailMessageIds]) => ({
-              id: BigInt(rowId),
-              gmailMessageIds,
-            })),
-          );
-        },
-        { isolationLevel: 'read committed' },
-      ),
-  );
+  return await tracer.asyncSpan('persist-threaded-email-metadata', async span => {
+    span.setAttribute('email.batch.metadata.count', metadata.length);
+
+    return await db.transaction(
+      async tx => {
+        const idsByRowId = metadata.reduce((idsByRowId, item) => {
+          const ids = idsByRowId.get(item.rowId) ?? [];
+          ids.push(item.gmailMessageIdHeader);
+          idsByRowId.set(item.rowId, ids);
+          return idsByRowId;
+        }, new Map<number, string[]>());
+        await appendGmailThreadsMessageIdsById(
+          tx,
+          Array.from(idsByRowId, ([rowId, gmailMessageIds]) => ({
+            id: BigInt(rowId),
+            gmailMessageIds,
+          })),
+        );
+      },
+      { isolationLevel: 'read committed' },
+    );
+  });
 }
 
 async function loadSeededGmailThreads(tx: DrizzleTransaction, keys: GmailThreadKey[]) {
-  if (keys.length === 0) return [];
-  return await tx
-    .select({
-      id: dbSchema.gmailThread.id,
-      draftId: dbSchema.gmailThread.draftId,
-      eventType: dbSchema.gmailThread.eventType,
-      round: dbSchema.gmailThread.round,
-      recipientUserId: dbSchema.gmailThread.recipientUserId,
-      gmailThreadId: sql`${dbSchema.gmailThread.gmailThreadId}`.mapWith(value => {
-        if (typeof value !== 'string')
-          throw new NonRetriableError('gmail thread must be seeded before batch send');
-        return value;
-      }),
-      gmailMessageIds: dbSchema.gmailThread.gmailMessageIds,
-    })
-    .from(dbSchema.gmailThread)
-    .where(getGmailThreadPredicate(keys))
-    .for('update');
+  return await tracer.asyncSpan('load-seeded-gmail-threads', async span => {
+    span.setAttribute('email.gmail_thread.logical_key.count', keys.length);
+    if (keys.length === 0) return [];
+    return await tx
+      .select({
+        id: dbSchema.gmailThread.id,
+        draftId: dbSchema.gmailThread.draftId,
+        eventType: dbSchema.gmailThread.eventType,
+        round: dbSchema.gmailThread.round,
+        recipientUserId: dbSchema.gmailThread.recipientUserId,
+        gmailThreadId: sql`${dbSchema.gmailThread.gmailThreadId}`.mapWith(value => {
+          if (typeof value !== 'string')
+            throw new NonRetriableError('gmail thread must be seeded before batch send');
+          return value;
+        }),
+        gmailMessageIds: dbSchema.gmailThread.gmailMessageIds,
+      })
+      .from(dbSchema.gmailThread)
+      .where(getGmailThreadPredicate(keys))
+      .for('update');
+  });
 }
 
 function getGmailThreadPredicate(keys: GmailThreadKey[]) {
