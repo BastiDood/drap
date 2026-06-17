@@ -82,6 +82,8 @@ async function seedFallbackEmailThread(
             'email.message.internal_date': result.internalDate,
             'email.message.label_ids': result.labelIds,
           });
+          // Keep Gmail metadata lookup in this transaction so seeded threads only become visible
+          // after their Gmail thread ID and first `Message-ID` header can be persisted together.
           const gmailMessageId = await credentials.client.getMessageIdHeader(result.id);
           await seedGmailThreadById(tx, row.id, result.threadId, [gmailMessageId]);
         } catch (cause) {

@@ -223,6 +223,8 @@ async function seedEmailThreads(
         }[] = [];
 
         if (successes.length > 0) {
+          // Keep Gmail metadata lookup in this transaction so seeded threads only become visible
+          // after their Gmail thread ID and first `Message-ID` header can be persisted together.
           let metadataResults: Awaited<ReturnType<typeof credentials.client.getMessageIdHeaders>>;
           try {
             metadataResults = await credentials.client.getMessageIdHeaders(

@@ -104,6 +104,8 @@ async function sendBatchFallbackEmail(
             'email.message.internal_date': result.internalDate,
             'email.message.label_ids': result.labelIds,
           });
+          // Keep Gmail metadata lookup in this transaction so fallback sends only complete after
+          // their `Message-ID` header has been appended to the local thread history.
           const gmailMessageId = await credentials.client.getMessageIdHeader(result.id);
           await appendGmailThreadMessageIdsById(tx, thread.id, [gmailMessageId]);
         } catch (cause) {
