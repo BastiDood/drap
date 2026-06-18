@@ -43,7 +43,11 @@
   email={user.email}
   familyName={user.familyName}
   givenName={user.givenName}
-  avatar={{ variant: 'profile', url: user.avatarUrl }}
+  avatar={{
+    variant: 'profile',
+    url: user.avatarUrl,
+    alt: `${user.givenName} ${user.familyName}`,
+  }}
   class={className}
   badges={hasBadges ? badges : null}
   actionButtons={hasActions ? actionButtons : null}

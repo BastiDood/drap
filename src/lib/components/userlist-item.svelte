@@ -6,16 +6,18 @@
   import * as Avatar from '$lib/components/ui/avatar';
   import { cn } from '$lib/components/ui/utils';
 
-  import DraftAvatar, { type DraftAvatarProps } from './draft-avatar.svelte';
+  import DraftAvatar from './draft-avatar.svelte';
 
   interface ProfileAvatarSource {
     variant: 'profile';
     url?: string | null;
+    alt?: string;
   }
 
   interface DraftAvatarSource {
     variant: 'draft';
-    props: DraftAvatarProps;
+    objectKey?: string | null;
+    alt: string;
   }
 
   type UserAvatar = ProfileAvatarSource | DraftAvatarSource;
@@ -51,20 +53,25 @@
   }: Props = $props();
 
   const hasActionButtons = $derived(typeof actionButtons === 'function');
+
+  function getDraftAvatarProps({ objectKey, alt }: DraftAvatarSource) {
+    if (typeof objectKey === 'undefined' || objectKey === null) return {};
+    return { avatar: { objectKey, alt } };
+  }
 </script>
 
 {#snippet userAvatar()}
   {#if avatar?.variant === 'profile'}
     <Avatar.Root class="size-12">
       {#if avatar.url}
-        <Avatar.Image src={avatar.url} alt={email} />
+        <Avatar.Image src={avatar.url} alt={avatar.alt ?? email} />
       {/if}
       <Avatar.Fallback>
         <UserIcon class="size-1/2 text-muted-foreground" />
       </Avatar.Fallback>
     </Avatar.Root>
   {:else if avatar?.variant === 'draft'}
-    <DraftAvatar {...avatar.props} />
+    <DraftAvatar {...getDraftAvatarProps(avatar)} class="size-12" />
   {/if}
 {/snippet}
 
@@ -95,18 +102,21 @@
           <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
           <a
             href={`mailto:${email}`}
-            class="min-w-0 max-w-min truncate text-sm text-muted-foreground hover:underline"
+            class="min-w-0 max-w-min truncate text-sm text-muted-foreground hover:underline text-start"
           >
             {email}
           </a>
         {:else}
           <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-          <a href={`mailto:${email}`} class="min-w-0 max-w-min truncate font-semibold hover:underline">
+          <a
+            href={`mailto:${email}`}
+            class="min-w-0 max-w-min truncate font-semibold hover:underline text-start"
+          >
             {email}
           </a>
         {/if}
         {#if studentNumber !== null}
-          <span class="text-sm text-muted-foreground">{studentNumber.toString()}</span>
+          <span class="text-sm text-muted-foreground text-start">{studentNumber.toString()}</span>
         {/if}
       </div>
       {#if hasActionButtons}

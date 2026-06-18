@@ -11,4 +11,9 @@
   const { email, givenName, familyName, avatarUrl } = $derived(user);
 </script>
 
-<UserlistItem {email} {givenName} {familyName} avatar={{ variant: 'profile', url: avatarUrl }} />
+<UserlistItem
+  {email}
+  {givenName}
+  {familyName}
+  avatar={{ variant: 'profile', url: avatarUrl, alt: `${givenName} ${familyName}` }}
+/>

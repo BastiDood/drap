@@ -32,7 +32,7 @@
 <UserlistItem
   {familyName}
   {givenName}
-  avatar={{ variant: 'profile', url: avatarUrl }}
+  avatar={{ variant: 'profile', url: avatarUrl, alt: `${givenName} ${familyName}` }}
   {email}
   class="border border-dashed p-3 opacity-80 transition-opacity hover:opacity-100"
 >
