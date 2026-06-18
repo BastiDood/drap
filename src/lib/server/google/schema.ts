@@ -4,7 +4,6 @@ export const TokenResponse = v.object({
   access_token: v.string(),
   // Refresh token, will not always be given with every TokenResponse (requires prompt=consent&access_type=offline)
   refresh_token: v.optional(v.string()),
-  // Always set to `OAUTH_SCOPE` for now.
   scope: v.pipe(
     v.string(),
     v.transform(str => str.split(' ')),
@@ -22,3 +21,17 @@ export const GmailMessageSendResult = v.object({
   internalDate: v.optional(v.string()),
 });
 export type GmailMessageSendResult = v.InferOutput<typeof GmailMessageSendResult>;
+
+export const GmailMessageMetadataResult = v.object({
+  id: v.string(),
+  threadId: v.string(),
+  payload: v.object({
+    headers: v.array(
+      v.object({
+        name: v.string(),
+        value: v.string(),
+      }),
+    ),
+  }),
+});
+export type GmailMessageMetadataResult = v.InferOutput<typeof GmailMessageMetadataResult>;

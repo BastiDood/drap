@@ -5,18 +5,17 @@ import { Component, Multipart } from 'multipart-ts';
 import type { MIMEMessage } from 'mimetext/node';
 import { parse } from 'valibot';
 
+import { GMAIL_METADATA_SCOPE, GMAIL_SEND_SCOPE } from '$lib/server/models/oauth';
 import { Logger } from '$lib/server/telemetry/logger';
 import { OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET } from '$lib/server/env/google';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
-import { GmailMessageSendResult, TokenResponse } from './schema';
-import { parseBatchSendResponse } from './http';
+import { GmailMessageMetadataResult, GmailMessageSendResult, TokenResponse } from './schema';
+import { parseBatchMetadataResponse, parseBatchSendResponse } from './http';
 
 const SERVICE_NAME = 'lib.server.google';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
-
-const GMAIL_SEND_SCOPE = 'https://www.googleapis.com/auth/gmail.send';
 
 export class GoogleOAuthClient {
   constructor(
@@ -160,7 +159,127 @@ export class GoogleOAuthClient {
       return await parseBatchSendResponse(response);
     });
   }
+
+  async getMessageIdHeader(messageId: string) {
+    return await tracer.asyncSpan('google-oauth-client-get-message-id-header', async span => {
+      if (!this.scopes.includes(GMAIL_METADATA_SCOPE)) GmailScopeError.throwNew(this.scopes);
+      span.setAttribute('email.message.id', messageId);
+
+      const url = new URL(
+        `https://gmail.googleapis.com/gmail/v1/users/me/messages/${encodeURIComponent(messageId)}`,
+      );
+      url.searchParams.set('format', 'metadata');
+      url.searchParams.append('metadataHeaders', 'Message-ID');
+
+      logger.trace('fetching gmail message metadata...');
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+        },
+      });
+
+      switch (response.status) {
+        case 200: {
+          const json = await response.json();
+          const result = parse(GmailMessageMetadataResult, json);
+          const messageIdHeader = getMessageIdHeaderValue(result, messageId);
+          logger.info('received gmail message metadata', {
+            'email.message.id': result.id,
+            'email.message.thread_id': result.threadId,
+            'email.message_id_header.length': messageIdHeader.length,
+          });
+          return messageIdHeader;
+        }
+        case 429:
+        // TODO: Handle rate limits.
+        // falls through
+        default: {
+          const body = await response.text();
+          return GmailError.throwNew(response.status, body);
+        }
+      }
+    });
+  }
+
+  async getMessageIdHeaders(messageIds: string[]) {
+    return await tracer.asyncSpan('google-oauth-client-get-message-id-headers', async span => {
+      if (!this.scopes.includes(GMAIL_METADATA_SCOPE)) GmailScopeError.throwNew(this.scopes);
+      if (messageIds.length > 100) BatchError.throwNew(messageIds.length);
+      span.setAttribute('messages.count', messageIds.length);
+
+      const multipart = new Multipart(
+        messageIds.map(messageId => {
+          const url = new URL(
+            `/gmail/v1/users/me/messages/${encodeURIComponent(messageId)}`,
+            'https://gmail.googleapis.com',
+          );
+          url.searchParams.set('format', 'metadata');
+          url.searchParams.append('metadataHeaders', 'Message-ID');
+
+          const encoder = new TextEncoder();
+          const body = encoder.encode(
+            HttpRawRequest.toString(
+              {
+                httpVersion: '1.1',
+                method: 'GET',
+                url: `${url.pathname}${url.search}`,
+              },
+              {},
+              '',
+            ),
+          );
+          return new Component(
+            { 'Content-ID': `<${messageId}>`, 'Content-Type': 'application/http' },
+            body,
+          );
+        }),
+      );
+
+      const contentType = multipart.headers.get('Content-Type');
+      assert(contentType !== null, 'missing content type when sending multipart request');
+
+      const response = await fetch('https://www.googleapis.com/batch/gmail/v1', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          'Content-Type': contentType,
+        },
+        body: multipart.bytes(),
+      });
+
+      if (response.status !== 200)
+        throw GmailError.throwNew(response.status, await response.text());
+
+      const metadataResults = await parseBatchMetadataResponse(response);
+      const results = new Map<string, GmailBatchMessageIdHeaderResult>();
+      for (const [messageId, result] of metadataResults)
+        if (result.ok)
+          results.set(messageId, {
+            ok: true,
+            value: getMessageIdHeaderValue(result.value, messageId),
+          });
+        else results.set(messageId, result);
+
+      return results;
+    });
+  }
 }
+
+export interface GmailBatchMessageIdHeaderSuccess {
+  ok: true;
+  value: string;
+}
+
+export interface GmailBatchMessageIdHeaderFailure {
+  ok: false;
+  status: number;
+  body: string;
+}
+
+export type GmailBatchMessageIdHeaderResult =
+  | GmailBatchMessageIdHeaderSuccess
+  | GmailBatchMessageIdHeaderFailure;
 
 export class GoogleOAuthToken {
   constructor(
@@ -211,13 +330,36 @@ export class BatchError extends Error {
 
 export class GmailScopeError extends Error {
   constructor(public readonly scopes: string[]) {
-    super(`missing gmail.send scope; available: ${scopes.join(', ')}`);
+    super(`missing required gmail scope; available: ${scopes.join(', ')}`);
     this.name = 'GmailScopeError';
   }
 
   static throwNew(scopes: string[]): never {
     const error = new GmailScopeError(scopes);
-    logger.error('missing gmail.send scope', error, { 'error.scopes': scopes });
+    logger.error('missing required gmail scope', error, { 'error.scopes': scopes });
     throw error;
   }
+}
+
+export class MissingGmailMessageIdHeaderError extends Error {
+  constructor(public readonly messageId: string) {
+    super(`gmail message metadata is missing Message-ID header: ${messageId}`);
+    this.name = 'MissingGmailMessageIdHeaderError';
+  }
+
+  static throwNew(messageId: string): never {
+    const error = new MissingGmailMessageIdHeaderError(messageId);
+    logger.error('gmail message metadata is missing Message-ID header', error, {
+      'email.message.id': messageId,
+    });
+    throw error;
+  }
+}
+
+function getMessageIdHeaderValue(metadata: GmailMessageMetadataResult, messageId: string) {
+  const header = metadata.payload.headers.find(
+    header => header.name.localeCompare('Message-ID', void 0, { sensitivity: 'base' }) === 0,
+  );
+  if (typeof header === 'undefined') MissingGmailMessageIdHeaderError.throwNew(messageId);
+  return header.value;
 }

@@ -22,7 +22,9 @@ const OAUTH_SCOPES = [
   'https://www.googleapis.com/auth/userinfo.profile',
   'https://www.googleapis.com/auth/userinfo.email',
 ];
-const SENDER_OAUTH_SCOPES = OAUTH_SCOPES.concat('https://www.googleapis.com/auth/gmail.send');
+export const GMAIL_SEND_SCOPE = 'https://www.googleapis.com/auth/gmail.send';
+export const GMAIL_METADATA_SCOPE = 'https://www.googleapis.com/auth/gmail.metadata';
+const SENDER_OAUTH_SCOPES = OAUTH_SCOPES.concat(GMAIL_SEND_SCOPE, GMAIL_METADATA_SCOPE);
 
 export const OAUTH_SCOPE_STRING = OAUTH_SCOPES.join(' ');
 export const SENDER_SCOPE_STRING = SENDER_OAUTH_SCOPES.join(' ');
@@ -35,7 +37,6 @@ export const TokenResponse = object({
   // JSON Web Token token containing the user's ID token.
   id_token: string(),
   access_token: string(),
-  // Always set to `OAUTH_SCOPE` for now.
   scope: pipe(
     string(),
     transform(str => str.split(' ')),

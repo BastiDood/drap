@@ -4,7 +4,6 @@ import { draft, user } from './app';
 
 import { bytea } from './custom/bytea';
 import { ulid } from './custom/ulid';
-import { uuid } from './custom/uuid';
 
 export const email = pgSchema('email');
 
@@ -46,8 +45,8 @@ export const inngestEventNameEnum = pgEnum('inngest_event_type_enum', [
 ]);
 export type InngestEventName = (typeof inngestEventNameEnum.enumValues)[number];
 
-export const emailThread = email.table(
-  'email_thread',
+export const gmailThread = email.table(
+  'gmail_thread',
   {
     createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
     id: bigint('id', { mode: 'bigint' }).notNull().generatedAlwaysAsIdentity().primaryKey(),
@@ -60,14 +59,14 @@ export const emailThread = email.table(
       .references(() => user.id, { onUpdate: 'cascade', onDelete: 'cascade' })
       .notNull(),
     gmailThreadId: text('gmail_thread_id'),
-    gmailMessageIds: uuid('gmail_message_ids').array().notNull(),
+    gmailMessageIds: text('gmail_message_ids').array().notNull(),
   },
   ({ draftId, eventType, round, recipientUserId, gmailThreadId }) => [
-    unique('thread_draft_event_round_recipient_idx')
+    unique('gmail_thread_logical_key_idx')
       .on(draftId, eventType, round, recipientUserId)
       .nullsNotDistinct(),
-    unique('thread_recipient_idx').on(gmailThreadId, recipientUserId),
+    unique('gmail_thread_recipient_idx').on(gmailThreadId, recipientUserId),
   ],
 );
-export type EmailThread = typeof emailThread.$inferSelect;
-export type NewEmailThread = typeof emailThread.$inferInsert;
+export type GmailThread = typeof gmailThread.$inferSelect;
+export type NewGmailThread = typeof gmailThread.$inferInsert;

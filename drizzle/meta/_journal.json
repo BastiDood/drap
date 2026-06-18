@@ -232,6 +232,13 @@
       "when": 1781332862023,
       "tag": "0032_add-email-thread-table",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1781484381656,
+      "tag": "0033_restructure-gmail-thread-table",
+      "breakpoints": true
     }
   ]
 }

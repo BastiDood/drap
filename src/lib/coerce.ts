@@ -1,4 +1,4 @@
-import { date, number, parse, string, union } from 'valibot';
+import { boolean, date, number, parse, string, union } from 'valibot';
 
 export class CoercionError extends Error {
   constructor(message: string) {
@@ -15,6 +15,10 @@ export function coerceDate(value: unknown) {
 
 export function coerceNullableDate(value: unknown) {
   return value === null ? null : coerceDate(value);
+}
+
+export function coerceBoolean(value: unknown) {
+  return parse(boolean(), value);
 }
 
 export function coerceNumber(value: unknown) {

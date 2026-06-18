@@ -30,12 +30,9 @@ import {
 } from '$lib/server/database/drizzle';
 import { coerceNumber } from '$lib/coerce';
 import { db } from '$lib/server/database';
+import { EmailEvent } from '$lib/server/inngest/schema';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
-import {
-  RoundStartedSeedEmailEvent,
-  RoundSubmittedSeedEmailEvent,
-} from '$lib/server/inngest/schema';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 const RankingsFormData = v.object({
@@ -348,27 +345,33 @@ export const actions = {
           ? facultyAndStaff
           : facultyAndStaff.filter(({ labId }) => labId === null);
         const roundSubmittedEvents = initialRecipients.map(recipient =>
-          RoundSubmittedSeedEmailEvent.create({
-            draftId: Number(draftId),
-            draftYear,
-            round: submittedRound,
-            labId: lab,
-            labName,
-            recipientUserId: recipient.id,
-            recipientEmail: recipient.email,
-            isCreate,
+          EmailEvent.create({
+            name: 'round-submitted',
+            data: {
+              draftId: Number(draftId),
+              draftYear,
+              round: submittedRound,
+              labId: lab,
+              labName,
+              recipientUserId: recipient.id,
+              recipientEmail: recipient.email,
+              isCreate,
+            },
           }),
         );
 
         const roundStartedEvents = roundsToNotify.flatMap(round =>
           facultyAndStaff.map(({ id, email, givenName, familyName }) =>
-            RoundStartedSeedEmailEvent.create({
-              draftId: Number(draftId),
-              draftYear,
-              round,
-              recipientUserId: id,
-              recipientEmail: email,
-              recipientName: `${givenName} ${familyName}`,
+            EmailEvent.create({
+              name: 'round-started',
+              data: {
+                draftId: Number(draftId),
+                draftYear,
+                round,
+                recipientUserId: id,
+                recipientEmail: email,
+                recipientName: `${givenName} ${familyName}`,
+              },
             }),
           ),
         );
