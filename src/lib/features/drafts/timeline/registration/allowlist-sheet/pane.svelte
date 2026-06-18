@@ -7,16 +7,14 @@
 
 <script lang="ts">
   import Trash2Icon from '@lucide/svelte/icons/trash-2';
-  import UserCircleIcon from '@lucide/svelte/icons/circle-user';
   import UsersIcon from '@lucide/svelte/icons/users';
   import { format } from 'date-fns';
   import { toast } from 'svelte-sonner';
   import { useQueryClient } from '@tanstack/svelte-query'; // eslint-disable-line no-restricted-imports
 
-  import * as Avatar from '$lib/components/ui/avatar';
   import * as Tooltip from '$lib/components/ui/tooltip';
   import Empty from '$lib/components/empty.svelte';
-  import Link from '$lib/components/link.svelte';
+  import UserlistItem from '$lib/components/userlist-item.svelte';
   import { assert } from '$lib/assert';
   import { Badge } from '$lib/components/ui/badge';
   import { Button } from '$lib/components/ui/button';
@@ -41,40 +39,13 @@
       </Empty>
     {:else}
       {#each allowlist as entry (entry.studentUserId)}
-        <div
-          class="flex items-center justify-between gap-4 rounded-md border border-dashed p-3 opacity-80 transition-opacity hover:opacity-100"
+        <UserlistItem
+          email={entry.studentEmail}
+          avatar={{ variant: 'profile', alt: entry.studentEmail }}
+          remarks={`Added ${format(entry.createdAt, 'PPp')} by ${entry.adminGivenName} ${entry.adminFamilyName}`}
+          class="border border-dashed p-3 opacity-80 transition-opacity hover:opacity-100"
         >
-          <div class="flex min-w-0 items-center gap-3 overflow-hidden">
-            <Avatar.Root class="size-10 shrink-0">
-              <Avatar.Fallback>
-                <UserCircleIcon class="size-10 text-muted-foreground" />
-              </Avatar.Fallback>
-            </Avatar.Root>
-            <div class="min-w-0 space-y-1">
-              <a
-                href="mailto:{entry.studentEmail}"
-                class="block truncate text-sm font-semibold hover:underline"
-              >
-                {entry.studentEmail}
-              </a>
-              <div
-                class="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground"
-              >
-                <span>
-                  Added <time datetime={entry.createdAt.toISOString()}>
-                    {format(entry.createdAt, 'PPp')}
-                  </time>
-                </span>
-                <span>
-                  by <Link href="mailto:{entry.adminEmail}" class="font-medium">
-                    {entry.adminGivenName}
-                    {entry.adminFamilyName}
-                  </Link>
-                </span>
-              </div>
-            </div>
-          </div>
-          <div class="flex shrink-0 items-center gap-2">
+          {#snippet actionButtons()}
             {#if entry.submittedAt === null}
               <Badge variant="outline" class="text-xs">Pending</Badge>
             {:else}
@@ -118,8 +89,8 @@
                 </Tooltip.Root>
               </Tooltip.Provider>
             </form>
-          </div>
-        </div>
+          {/snippet}
+        </UserlistItem>
       {/each}
     {/if}
   </div>
