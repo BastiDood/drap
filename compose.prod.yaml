@@ -20,7 +20,7 @@ services:
       MC_HOST_drap: http://${S3_ACCESS_KEY:?required}:${S3_SECRET_KEY:?required}@rustfs:9000
 
   drizzle-gateway:
-    image: ghcr.io/drizzle-team/gateway:1.2.0
+    image: ghcr.io/drizzle-team/gateway:1.3.0
     ports:
       - host_ip: 127.0.0.1
         published: 4983
