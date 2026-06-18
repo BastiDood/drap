@@ -559,7 +559,7 @@ export async function seedGmailThreadsById(
         thread =>
           sql`(${thread.id}::bigint, ${thread.gmailThreadId}, ${sql.param(thread.gmailMessageIds, schema.gmailThread.gmailMessageIds)}::text[])`,
       ),
-      ',',
+      sql.raw(','),
     );
     const thread = alias(schema.gmailThread, 'thread');
     return await db
@@ -594,7 +594,7 @@ export async function appendGmailThreadsMessageIdsById(
         thread =>
           sql`(${thread.id}::bigint, ${sql.param(thread.gmailMessageIds, schema.gmailThread.gmailMessageIds)}::text[])`,
       ),
-      ',',
+      sql.raw(','),
     );
     const thread = alias(schema.gmailThread, 'thread');
     return await db
