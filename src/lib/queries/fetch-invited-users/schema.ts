@@ -6,7 +6,6 @@ export const InvitedUser = v.object({
   givenName: v.string(),
   familyName: v.string(),
   avatarUrl: v.string(),
-  googleUserId: v.null(),
   labId: v.nullable(v.string()),
   labName: v.nullable(v.string()),
 });
