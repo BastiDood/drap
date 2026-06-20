@@ -70,7 +70,7 @@
     "mode-watcher": "^1.1.0",
     "multipart-ts": "^1.4.2",
     "papaparse": "^5.5.3",
-    "pg": "~8.21.0",
+    "pg": "^8.22.0",
     "runed": "^0.37.1",
     "svelte": "^5.56.3",
     "svelte-sonner": "^1.1.1",
