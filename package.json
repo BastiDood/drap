@@ -45,7 +45,7 @@
     "@opentelemetry/sdk-node": "^0.219.0",
     "@opentelemetry/sdk-trace-base": "^2.8.0",
     "@selemondev/svgl-svelte": "^2.15.0",
-    "@sveltejs/kit": "^2.66.0",
+    "@sveltejs/kit": "~2.65.2",
     "@tanstack/svelte-query": "^6.1.34",
     "bits-ui": "^2.18.1",
     "clsx": "^2.1.1",
