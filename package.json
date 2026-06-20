@@ -27,7 +27,7 @@
     "docker:prod:setup:bucket": "docker compose --file compose.yaml --file compose.prod.yaml --profile setup run --rm --no-deps setup-bucket",
     "docker:prod:setup:database": "docker compose --file compose.yaml --file compose.prod.yaml --file compose.prod.app.yaml --profile setup run --rm --no-deps setup-database",
     "docker:down": "docker compose down --remove-orphans",
-    "install:playwright": "playwright install chromium",
+    "install:playwright": "playwright install --only-shell chromium",
     "test:unit": "vitest",
     "test:playwright": "playwright test",
     "ui": "shadcn-svelte add --yes"
