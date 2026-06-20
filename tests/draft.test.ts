@@ -112,6 +112,24 @@ async function postFacultyRankings(
   );
 }
 
+async function postInterventions(page: Page, draft: number, pairs: Record<string, string>) {
+  return await page.evaluate(
+    async ({ draft, pairs }) => {
+      const data = new FormData();
+      data.set('draft', String(draft));
+      for (const [studentUserId, labId] of Object.entries(pairs)) data.set(studentUserId, labId);
+
+      const response = await fetch(`/dashboard/drafts/${draft}/?/intervene`, {
+        method: 'POST',
+        body: data,
+      });
+
+      return response.status;
+    },
+    { draft, pairs },
+  );
+}
+
 async function expectVisibleButtons(page: Page, labels: string[]) {
   for (const label of labels)
     await expect(page.getByRole('button', { name: label }).first()).toBeVisible();
@@ -2109,6 +2127,17 @@ test.describe('Draft Lifecycle', () => {
   });
 
   test.describe('Manual Intervention', () => {
+    test('rejects non-participating student from forged intervention payload', async ({
+      adminPage,
+      lateRegistrantUserId,
+    }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+
+      const status = await postInterventions(adminPage, 1, { [lateRegistrantUserId]: 'scl' });
+
+      expect(status).toBe(400);
+    });
+
     test('assigns first eligible student to a lab', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
       await adminPage.getByRole('button', { name: 'Show Eligible Students' }).first().click();

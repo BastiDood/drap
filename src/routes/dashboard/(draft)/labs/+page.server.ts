@@ -167,7 +167,7 @@ export const actions = {
   },
 };
 
-async function assertDraftExpectation(db: DrizzleTransaction, draftId?: string) {
+async function assertDraftExpectation(db: DbConnection, draftId?: string) {
   return await tracer.asyncSpan('assert-draft-expectation', async span => {
     const activeDraft = await getActiveDraft(db);
     if (typeof draftId === 'undefined') {

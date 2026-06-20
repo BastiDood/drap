@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 import * as v from 'valibot';
-import { and, asc, count, eq, isNotNull, isNull, lt, lte, sql, sum } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, isNotNull, isNull, lt, lte, sql, sum } from 'drizzle-orm';
 import { decode } from 'decode-formdata';
 import { eachDayOfInterval, startOfDay } from 'date-fns';
 import { error, fail } from '@sveltejs/kit';
@@ -252,9 +252,9 @@ function mapQuotaPairs(data: FormData) {
   return pairs;
 }
 
-function getUnknownLabIds(labIds: Iterable<string>, knownLabIds: ReadonlySet<string>) {
+function getUnknownIds(ids: Iterable<string>, knownIds: ReadonlySet<string>) {
   const unknown = new Set<string>();
-  for (const labId of labIds) if (!knownLabIds.has(labId)) unknown.add(labId);
+  for (const id of ids) if (!knownIds.has(id)) unknown.add(id);
   return Array.from(unknown);
 }
 
@@ -420,7 +420,7 @@ export const actions = {
           }
 
           const snapshotLabIds = new Set(await getDraftLabQuotaLabIds(db, draftId));
-          const unknownLabIds = getUnknownLabIds(
+          const unknownLabIds = getUnknownIds(
             pairs.map(([labId]) => labId),
             snapshotLabIds,
           );
@@ -537,7 +537,7 @@ export const actions = {
           }
 
           const snapshotLabIds = new Set(await getDraftLabQuotaLabIds(db, draftId));
-          const unknownLabIds = getUnknownLabIds(
+          const unknownLabIds = getUnknownIds(
             pairs.map(([, labId]) => labId),
             snapshotLabIds,
           );
@@ -548,6 +548,24 @@ export const actions = {
               'draft.snapshot_lab_count': snapshotLabIds.size,
               'draft.unknown_lab_count': unknownLabIds.length,
               'draft.unknown_lab_ids': unknownLabIds,
+            });
+            error(400);
+          }
+
+          const studentUserIds = pairs.map(([studentUserId]) => studentUserId);
+          const eligibleStudentUserIds = await getEligibleInterventionStudentUserIds(
+            db,
+            draftId,
+            studentUserIds,
+          );
+          const unknownStudentUserIds = getUnknownIds(studentUserIds, eligibleStudentUserIds);
+          if (unknownStudentUserIds.length > 0) {
+            logger.fatal('attempt to intervene draft with unknown students', void 0, {
+              'draft.id': draftId.toString(),
+              'draft.pair_count': pairs.length,
+              'draft.eligible_student_count': eligibleStudentUserIds.size,
+              'draft.unknown_student_count': unknownStudentUserIds.length,
+              'draft.unknown_student_ids': unknownStudentUserIds,
             });
             error(400);
           }
@@ -1149,6 +1167,35 @@ async function randomizeRemainingStudents(db: DbConnection, draftId: bigint) {
   });
 }
 
+async function getEligibleInterventionStudentUserIds(
+  db: DbConnection,
+  draftId: bigint,
+  studentUserIds: string[],
+) {
+  return await tracer.asyncSpan('get-eligible-intervention-student-user-ids', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    span.setAttribute('database.user.count', studentUserIds.length);
+    const results = await db
+      .select({ userId: schema.studentRank.userId })
+      .from(schema.studentRank)
+      .leftJoin(
+        schema.facultyChoiceUser,
+        and(
+          eq(schema.studentRank.draftId, schema.facultyChoiceUser.draftId),
+          eq(schema.studentRank.userId, schema.facultyChoiceUser.studentUserId),
+        ),
+      )
+      .where(
+        and(
+          eq(schema.studentRank.draftId, draftId),
+          inArray(schema.studentRank.userId, studentUserIds),
+          isNull(schema.facultyChoiceUser.studentUserId),
+        ),
+      );
+    return new Set(results.map(({ userId }) => userId));
+  });
+}
+
 async function concludeDraft(db: DbConnection, draftId: bigint) {
   return await tracer.asyncSpan('conclude-draft', async span => {
     span.setAttribute('database.draft.id', draftId.toString());
@@ -1189,7 +1236,7 @@ async function getAllowlistCountByDraft(db: DbConnection, draftId: bigint) {
 }
 
 async function addToAllowlist(
-  db: DrizzleTransaction,
+  db: DbConnection,
   draftId: bigint,
   studentUserId: string,
   adminUserId: string,
@@ -1215,7 +1262,7 @@ async function addToAllowlist(
   });
 }
 
-async function removeFromAllowlist(db: DrizzleTransaction, draftId: bigint, studentUserId: string) {
+async function removeFromAllowlist(db: DbConnection, draftId: bigint, studentUserId: string) {
   return await tracer.asyncSpan('remove-from-allowlist', async span => {
     span.setAttributes({
       'database.draft.id': draftId.toString(),
@@ -1232,11 +1279,7 @@ async function removeFromAllowlist(db: DrizzleTransaction, draftId: bigint, stud
   });
 }
 
-async function isRegisteredOrAssignedInDraft(
-  db: DrizzleTransaction,
-  draftId: bigint,
-  userId: string,
-) {
+async function isRegisteredOrAssignedInDraft(db: DbConnection, draftId: bigint, userId: string) {
   return await tracer.asyncSpan('is-registered-or-assigned-in-draft', async span => {
     span.setAttributes({
       'database.draft.id': draftId.toString(),
