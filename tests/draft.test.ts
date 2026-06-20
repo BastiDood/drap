@@ -2529,15 +2529,23 @@ test.describe('Draft Lifecycle', () => {
         await adminPage.getByRole('button', { name: 'See Results' }).click();
         await adminPage.waitForLoadState('networkidle');
 
-        await expect(adminPage.locator('#section-regular-drafted')).toContainText(
-          'Regular Drafted (4)',
+        const regularDrafted = adminPage.locator(
+          '#section-regular-drafted [data-slot="accordion-trigger"]',
         );
-        await expect(adminPage.locator('#section-intervention-drafted')).toContainText(
-          'Intervention Drafted (1)',
+        await expect(regularDrafted).toContainText('Regular Drafted');
+        await expect(regularDrafted.locator('[data-slot="badge"]')).toHaveText('4');
+
+        const interventionDrafted = adminPage.locator(
+          '#section-intervention-drafted [data-slot="accordion-trigger"]',
         );
-        await expect(adminPage.locator('#section-lottery-drafted')).toContainText(
-          'Lottery Drafted (3)',
+        await expect(interventionDrafted).toContainText('Intervention Drafted');
+        await expect(interventionDrafted.locator('[data-slot="badge"]')).toHaveText('1');
+
+        const lotteryDrafted = adminPage.locator(
+          '#section-lottery-drafted [data-slot="accordion-trigger"]',
         );
+        await expect(lotteryDrafted).toContainText('Lottery Drafted');
+        await expect(lotteryDrafted.locator('[data-slot="badge"]')).toHaveText('3');
       });
 
       test('show intervention assignment dates', async ({ adminPage }) => {
@@ -3256,15 +3264,23 @@ test.describe('Draft Lifecycle', () => {
       await adminPage.getByRole('button', { name: 'See Results' }).click();
       await adminPage.waitForLoadState('networkidle');
 
-      await expect(adminPage.locator('#section-regular-drafted')).toContainText(
-        'Regular Drafted (3)',
+      const regularDrafted = adminPage.locator(
+        '#section-regular-drafted [data-slot="accordion-trigger"]',
       );
-      await expect(adminPage.locator('#section-intervention-drafted')).toContainText(
-        'Intervention Drafted (0)',
+      await expect(regularDrafted).toContainText('Regular Drafted');
+      await expect(regularDrafted.locator('[data-slot="badge"]')).toHaveText('3');
+
+      const interventionDrafted = adminPage.locator(
+        '#section-intervention-drafted [data-slot="accordion-trigger"]',
       );
-      await expect(adminPage.locator('#section-lottery-drafted')).toContainText(
-        'Lottery Drafted (0)',
+      await expect(interventionDrafted).toContainText('Intervention Drafted');
+      await expect(interventionDrafted.locator('[data-slot="badge"]')).toHaveText('0');
+
+      const lotteryDrafted = adminPage.locator(
+        '#section-lottery-drafted [data-slot="accordion-trigger"]',
       );
+      await expect(lotteryDrafted).toContainText('Lottery Drafted');
+      await expect(lotteryDrafted.locator('[data-slot="badge"]')).toHaveText('0');
     });
 
     test('keeps lottery results sheet available in finalized first draft', async ({
