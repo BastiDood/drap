@@ -148,7 +148,7 @@
   <ul class="min-h-0 grow space-y-2 overflow-y-auto">
     {#each students as { id, email, givenName, familyName, avatarObjectKey, studentNumber, remark } (id)}
       {@const selected = hasSelection(id)}
-      <li>
+      <li data-selected={selected}>
         <button type="button" onclick={toggleSelection.bind(null, id)} class="w-full">
           <UserlistItem
             {email}
