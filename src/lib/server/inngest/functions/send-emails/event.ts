@@ -90,7 +90,6 @@ export async function createEmailMessage(
       subject = `[DRAP] Draft ${email.data.draftYear} Finalized`;
       html = await emailRenderer.render(DraftFinalization, {
         props: {
-          draftId: email.data.draftId,
           draftYear: email.data.draftYear,
         } satisfies ComponentProps<typeof DraftFinalization>,
       });

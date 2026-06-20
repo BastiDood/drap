@@ -32,7 +32,7 @@
           You can view more details about your lab assignment through your dashboard.
         </Text>
         <Button
-          href="{ORIGIN}/dashboard/"
+          href="{ORIGIN}/dashboard/lab/"
           target="_blank"
           pX={24}
           pY={12}

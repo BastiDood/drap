@@ -6,11 +6,10 @@
   import EmailLayout from './email-layout.svelte';
 
   interface Props {
-    draftId: number;
     draftYear: number;
   }
 
-  const { draftId, draftYear }: Props = $props();
+  const { draftYear }: Props = $props();
 </script>
 
 <EmailLayout preview="Draft {draftYear} has been finalized.">
@@ -24,15 +23,19 @@
     </Section>
     <Section class="px-4 pb-4">
       <Section class="mx-auto max-w-md rounded-lg bg-secondary/30 p-4 text-secondary-foreground">
-        <Text class="text-sm">Review the finalized draft in DRAP.</Text>
+        <!--
+        TODO: Discriminate between lab head and draft admin recipients so draft admins
+        can link directly to the finalized draft instead of the dashboard.
+        -->
+        <Text class="text-sm">View the finalized draft updates in DRAP.</Text>
         <Button
-          href="{ORIGIN}/dashboard/drafts/{draftId}/"
+          href="{ORIGIN}/dashboard/"
           target="_blank"
           pX={24}
           pY={12}
           class="mb-4 rounded-md bg-primary font-medium text-primary-foreground hover:bg-primary/90"
         >
-          View Draft
+          Go to Dashboard
         </Button>
       </Section>
     </Section>
