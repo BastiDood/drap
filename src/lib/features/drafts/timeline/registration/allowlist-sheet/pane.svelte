@@ -42,7 +42,9 @@
         <UserlistItem
           email={entry.studentEmail}
           avatar={{ variant: 'profile', alt: entry.studentEmail }}
-          remarks={`Added ${format(entry.createdAt, 'PPp')} by ${entry.adminGivenName} ${entry.adminFamilyName}`}
+          remarks={{
+            text: `Added ${format(entry.createdAt, 'PPp')} by ${entry.adminGivenName} ${entry.adminFamilyName}`,
+          }}
           class="border border-dashed p-3 opacity-80 transition-opacity hover:opacity-100"
         >
           {#snippet actionButtons()}

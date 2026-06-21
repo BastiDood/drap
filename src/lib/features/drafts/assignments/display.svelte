@@ -78,7 +78,6 @@
       {/if}
     </Accordion.Content>
   </Accordion.Item>
-
   <Accordion.Item id="section-intervention-drafted" value="intervention-drafted">
     <Accordion.Trigger class="py-3" level={3}>
       <span class="flex items-center gap-2">
@@ -129,7 +128,6 @@
       </ul>
     </Accordion.Content>
   </Accordion.Item>
-
   <Accordion.Item id="section-lottery-drafted" value="lottery-drafted">
     <Accordion.Trigger class="py-3" level={3}>
       <span class="flex items-center gap-2">

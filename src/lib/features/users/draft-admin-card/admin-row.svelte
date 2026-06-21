@@ -17,8 +17,6 @@
   import VolunteerButton from './volunteer-button.svelte';
 
   const { user, isSelf, role }: Props = $props();
-  const hasActions = $derived(role !== 'none' || isSelf);
-  const hasBadges = $derived(role !== 'none');
   const className = $derived(
     cn(
       'border-2 border-transparent p-3 transition-colors duration-150',
@@ -49,6 +47,10 @@
     alt: `${user.givenName} ${user.familyName}`,
   }}
   class={className}
-  badges={hasBadges ? badges : null}
-  actionButtons={hasActions ? actionButtons : null}
+  badges={{ none: null, candidate: badges, designated: badges }[role]}
+  actionButtons={{
+    none: isSelf ? actionButtons : null,
+    candidate: actionButtons,
+    designated: actionButtons,
+  }[role]}
 />

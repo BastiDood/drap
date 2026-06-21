@@ -1,6 +1,5 @@
 <script lang="ts">
   import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
-  import MessageSquareTextIcon from '@lucide/svelte/icons/message-square-text';
   import { SvelteSet } from 'svelte/reactivity';
   import { toast } from 'svelte-sonner';
 
@@ -160,8 +159,7 @@
               objectKey: avatarObjectKey,
               alt: `${givenName} ${familyName}`,
             }}
-            remarks={remark.length > 0 ? remark : null}
-            remarksIcon={MessageSquareTextIcon}
+            remarks={{ text: remark.length > 0 ? remark : null }}
             class={selected
               ? 'border border-primary/40 dark:bg-primary/20 bg-primary/15 transition-colors duration-150'
               : 'border border-transparent bg-muted transition-colors duration-150 hover:bg-muted/60'}

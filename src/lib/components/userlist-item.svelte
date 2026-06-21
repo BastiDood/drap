@@ -1,4 +1,5 @@
 <script lang="ts">
+  import MessageSquareTextIcon from '@lucide/svelte/icons/message-square-text';
   import UserIcon from '@lucide/svelte/icons/user';
   import type { LucideIcon } from '@lucide/svelte';
   import type { Snippet } from 'svelte';
@@ -22,37 +23,41 @@
 
   type UserAvatar = ProfileAvatarSource | DraftAvatarSource;
 
+  interface UserlistIcon {
+    icon: LucideIcon;
+    class?: string;
+  }
+
+  interface UserRemarks {
+    text?: string | null;
+    class?: string;
+  }
+
   interface Props {
     email: string;
     familyName?: string | null;
     givenName?: string | null;
     avatar?: UserAvatar;
-    icon?: LucideIcon;
-    iconClass?: string;
+    icon?: UserlistIcon;
     studentNumber?: bigint | null;
-    remarks?: string | null;
-    remarksIcon?: LucideIcon;
+    remarks?: UserRemarks;
     badges?: Snippet | null;
     actionButtons?: Snippet | null;
     class?: string;
   }
 
-  let {
+  const {
     email,
     familyName = null,
     givenName = null,
     avatar,
-    icon: Icon,
-    iconClass,
+    icon,
     studentNumber = null,
-    remarks = null,
-    remarksIcon: RemarksIcon,
+    remarks,
     badges,
     actionButtons,
     class: className,
   }: Props = $props();
-
-  const hasActionButtons = $derived(typeof actionButtons === 'function');
 
   function getDraftAvatarProps({ objectKey, alt }: DraftAvatarSource) {
     if (typeof objectKey === 'undefined' || objectKey === null) return {};
@@ -61,7 +66,9 @@
 </script>
 
 {#snippet userAvatar()}
-  {#if avatar?.variant === 'profile'}
+  {#if typeof avatar === 'undefined'}
+    <!-- Intentionally Empty -->
+  {:else if avatar.variant === 'profile'}
     <Avatar.Root class="size-12">
       {#if avatar.url}
         <Avatar.Image src={avatar.url} alt={avatar.alt ?? email} />
@@ -70,23 +77,21 @@
         <UserIcon class="size-1/2 text-muted-foreground" />
       </Avatar.Fallback>
     </Avatar.Root>
-  {:else if avatar?.variant === 'draft'}
+  {:else if avatar.variant === 'draft'}
     <DraftAvatar {...getDraftAvatarProps(avatar)} class="size-12" />
   {/if}
 {/snippet}
-
 <div class={cn('@container bg-card p-4 rounded-lg', className)}>
   <div class="flex flex-col gap-4">
     <div
-      class={cn(
-        'grid min-w-0 items-center gap-3',
-        'grid-cols-[auto_minmax(0,1fr)]',
-        hasActionButtons && '@sm:grid-cols-[auto_minmax(0,1fr)_auto]',
-      )}
+      class={cn('grid min-w-0 items-center gap-3', 'grid-cols-[auto_minmax(0,1fr)]', {
+        '@sm:grid-cols-[auto_minmax(0,1fr)_auto]': typeof actionButtons === 'function',
+      })}
     >
       <div class="flex shrink-0 items-center gap-3">
-        {#if typeof Icon !== 'undefined'}
-          <Icon class={cn('size-5 shrink-0 text-muted-foreground', iconClass)} />
+        {#if typeof icon !== 'undefined'}
+          {@const Icon = icon.icon}
+          <Icon class={cn('size-5 shrink-0 text-muted-foreground', icon.class)} />
         {/if}
         {@render userAvatar()}
       </div>
@@ -99,17 +104,15 @@
             </strong>
             {@render badges?.()}
           </span>
-          <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
           <a
-            href={`mailto:${email}`}
+            href="mailto:{email}"
             class="min-w-0 max-w-min truncate text-sm text-muted-foreground hover:underline text-start"
           >
             {email}
           </a>
         {:else}
-          <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
           <a
-            href={`mailto:${email}`}
+            href="mailto:{email}"
             class="min-w-0 max-w-min truncate font-semibold hover:underline text-start"
           >
             {email}
@@ -119,21 +122,22 @@
           <span class="text-sm text-muted-foreground text-start">{studentNumber.toString()}</span>
         {/if}
       </div>
-      {#if hasActionButtons}
+      {#if typeof actionButtons === 'function'}
         <div
           class="col-span-2 flex min-w-0 flex-wrap justify-end gap-2 justify-self-end @sm:col-span-1 @sm:col-start-3 @sm:row-start-1"
         >
-          {@render actionButtons?.()}
+          {@render actionButtons()}
         </div>
       {/if}
     </div>
-    {#if remarks !== null}
+    {#if typeof remarks?.text !== 'undefined' && remarks.text !== null}
       <div class="flex gap-2 border-t-2 p-3">
-        {#if typeof RemarksIcon !== 'undefined'}
-          <RemarksIcon class="size-4 shrink-0 text-muted-foreground" />
-        {/if}
+        <MessageSquareTextIcon class="size-4 shrink-0 text-muted-foreground" />
         <pre
-          class="min-w-0 text-start font-sans text-xs whitespace-pre-wrap text-muted-foreground">{remarks}</pre>
+          class={cn(
+            'min-w-0 text-start font-sans text-xs whitespace-pre-wrap text-muted-foreground',
+            remarks.class,
+          )}>{remarks.text}</pre>
       </div>
     {/if}
   </div>
