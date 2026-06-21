@@ -63,6 +63,13 @@
     if (typeof objectKey === 'undefined' || objectKey === null) return {};
     return { avatar: { objectKey, alt } };
   }
+
+  const displayName = $derived.by(() => {
+    const names: string[] = [];
+    if (familyName !== null && familyName.length > 0) names.push(familyName.toUpperCase());
+    if (givenName !== null && givenName.length > 0) names.push(givenName);
+    return names.join(', ');
+  });
 </script>
 
 {#snippet userAvatar()}
@@ -85,7 +92,7 @@
   <div class="flex flex-col gap-4">
     <div
       class={cn('grid min-w-0 items-center gap-3', 'grid-cols-[auto_minmax(0,1fr)]', {
-        '@sm:grid-cols-[auto_minmax(0,1fr)_auto]': typeof actionButtons === 'function',
+        '@sm:grid-cols-[auto_minmax(0,1fr)_max-content]': typeof actionButtons === 'function',
       })}
     >
       <div class="flex shrink-0 items-center gap-3">
@@ -96,24 +103,23 @@
         {@render userAvatar()}
       </div>
       <div class="flex min-w-0 flex-1 flex-col">
-        {#if familyName !== null && givenName !== null}
-          <span class="inline-flex gap-2">
-            <strong class="block min-w-0 truncate text-start">
-              <span class="uppercase">{familyName},</span>
-              {givenName}
+        {#if displayName.length > 0}
+          <span class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+            <strong class="block min-w-0 max-w-full truncate text-start">
+              {displayName}
             </strong>
             {@render badges?.()}
           </span>
           <a
             href="mailto:{email}"
-            class="min-w-0 max-w-min truncate text-sm text-muted-foreground hover:underline text-start"
+            class="block min-w-0 max-w-full truncate text-start text-sm text-muted-foreground hover:underline"
           >
             {email}
           </a>
         {:else}
           <a
             href="mailto:{email}"
-            class="min-w-0 max-w-min truncate font-semibold hover:underline text-start"
+            class="block min-w-0 max-w-full truncate text-start font-semibold hover:underline"
           >
             {email}
           </a>
@@ -124,7 +130,7 @@
       </div>
       {#if typeof actionButtons === 'function'}
         <div
-          class="col-span-2 flex min-w-0 flex-wrap justify-end gap-2 justify-self-end @sm:col-span-1 @sm:col-start-3 @sm:row-start-1"
+          class="col-span-2 flex min-w-0 flex-wrap items-center justify-end gap-2 justify-self-stretch @sm:col-span-1 @sm:col-start-3 @sm:row-start-1 @sm:justify-self-end"
         >
           {@render actionButtons()}
         </div>
