@@ -1,9 +1,33 @@
-# Production overrides (observability, Drizzle, production credentials).
+# Production overrides (observability, Drizzle, backup service, production credentials).
 
 services:
   postgres:
     environment:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+
+  databasus:
+    pull_policy: build
+    build: ./docker/databasus
+    ports:
+      - host_ip: 127.0.0.1
+        published: 4005
+        target: 4005
+        protocol: tcp
+    volumes:
+      - databasus-data:/databasus-data
+    networks:
+      - database
+    restart: always
+    healthcheck:
+      test:
+        - 'CMD'
+        - '/httpget'
+        - 'http://localhost:4005/api/v1/system/health'
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 30s
+      start_interval: 1s
 
   o2:
     environment:
@@ -38,4 +62,5 @@ services:
     restart: always
 
 volumes:
+  databasus-data:
   drizzle-gateway:
