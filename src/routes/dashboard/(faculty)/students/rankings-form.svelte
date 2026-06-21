@@ -1,11 +1,10 @@
 <script lang="ts">
   import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
-  import MessageSquareTextIcon from '@lucide/svelte/icons/message-square-text';
   import { SvelteSet } from 'svelte/reactivity';
   import { toast } from 'svelte-sonner';
 
   import * as Popover from '$lib/components/ui/popover';
-  import DraftAvatar from '$lib/components/draft-avatar.svelte';
+  import UserlistItem from '$lib/components/userlist-item.svelte';
   import { assert } from '$lib/assert';
   import { Badge } from '$lib/components/ui/badge';
   import { Button } from '$lib/components/ui/button';
@@ -148,46 +147,23 @@
   <ul class="min-h-0 grow space-y-2 overflow-y-auto">
     {#each students as { id, email, givenName, familyName, avatarObjectKey, studentNumber, remark } (id)}
       {@const selected = hasSelection(id)}
-      <li
-        data-selected={selected}
-        class="cursor-pointer rounded-md bg-muted transition-colors duration-150 hover:bg-muted/80 data-[selected=true]:bg-primary/20"
-      >
-        <button
-          type="button"
-          class="flex w-full flex-col gap-2 p-3"
-          onclick={toggleSelection.bind(null, id)}
-        >
-          <div class="flex items-center gap-3">
-            {#if avatarObjectKey === null}
-              <DraftAvatar class="size-10" />
-            {:else}
-              <DraftAvatar
-                avatar={{
-                  objectKey: avatarObjectKey,
-                  alt: `${givenName} ${familyName}`,
-                }}
-                class="size-10"
-              />
-            {/if}
-            <div class="flex flex-col">
-              <div class="flex items-center gap-1.5">
-                <strong class="text-start"
-                  ><span class="uppercase">{familyName}</span>, {givenName}</strong
-                >
-                {#if studentNumber !== null}
-                  <Badge variant="outline">{studentNumber}</Badge>
-                {/if}
-              </div>
-              <div class="text-start text-xs opacity-50">{email}</div>
-            </div>
-          </div>
-          {#if remark.length > 0}
-            <div class="flex items-start gap-1.5">
-              <MessageSquareTextIcon class="size-3.5 shrink-0" />
-              <pre
-                class="text-start font-sans text-xs whitespace-pre-wrap text-muted-foreground">{remark}</pre>
-            </div>
-          {/if}
+      <li data-selected={selected}>
+        <button type="button" onclick={toggleSelection.bind(null, id)} class="w-full">
+          <UserlistItem
+            {email}
+            {givenName}
+            {familyName}
+            {studentNumber}
+            avatar={{
+              variant: 'draft',
+              objectKey: avatarObjectKey,
+              alt: `${givenName} ${familyName}`,
+            }}
+            remarks={{ text: remark.length > 0 ? remark : null }}
+            class={selected
+              ? 'border border-primary/40 dark:bg-primary/20 bg-primary/15 transition-colors duration-150'
+              : 'border border-transparent bg-muted transition-colors duration-150 hover:bg-muted/60'}
+          ></UserlistItem>
         </button>
       </li>
     {/each}

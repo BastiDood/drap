@@ -1,12 +1,11 @@
 <script lang="ts">
   import Trash2Icon from '@lucide/svelte/icons/trash-2';
-  import UserCircleIcon from '@lucide/svelte/icons/circle-user';
   import { toast } from 'svelte-sonner';
   // eslint-disable-next-line no-restricted-imports
   import { useQueryClient } from '@tanstack/svelte-query';
 
-  import * as Avatar from '$lib/components/ui/avatar';
   import * as Tooltip from '$lib/components/ui/tooltip';
+  import UserlistItem from '$lib/components/userlist-item.svelte';
   import { assert } from '$lib/assert';
   import { Badge } from '$lib/components/ui/badge';
   import { Button } from '$lib/components/ui/button';
@@ -30,28 +29,20 @@
   const queryClient = useQueryClient();
 </script>
 
-<div
-  class="flex items-center justify-between gap-4 rounded-md border border-dashed p-3 opacity-80 transition-opacity hover:opacity-100"
+<UserlistItem
+  {familyName}
+  {givenName}
+  avatar={{ variant: 'profile', url: avatarUrl, alt: `${givenName} ${familyName}` }}
+  {email}
+  class="border border-dashed p-3 opacity-80 transition-opacity hover:opacity-100"
 >
-  <div class="flex items-center gap-3 overflow-hidden">
-    <Avatar.Root class="size-10 shrink-0">
-      <Avatar.Image src={avatarUrl} alt="{givenName} {familyName}" />
-      <Avatar.Fallback>
-        <UserCircleIcon class="size-10 text-muted-foreground" />
-      </Avatar.Fallback>
-    </Avatar.Root>
+  {#snippet badges()}
+    {#if labId !== null}
+      <Badge variant="secondary" class="shrink-0 text-xs uppercase">{labId}</Badge>
+    {/if}
+  {/snippet}
 
-    <div class="flex min-w-0 items-center gap-2">
-      <a href="mailto:{email}" class="truncate text-sm font-semibold hover:underline">
-        {email}
-      </a>
-      {#if labId !== null}
-        <Badge variant="secondary" class="shrink-0 text-xs uppercase">{labId}</Badge>
-      {/if}
-    </div>
-  </div>
-
-  <div class="flex shrink-0 items-center gap-2">
+  {#snippet actionButtons()}
     <form
       method="POST"
       action="/dashboard/users/?/delete-invite"
@@ -101,5 +92,5 @@
         </Tooltip.Root>
       </Tooltip.Provider>
     </form>
-  </div>
-</div>
+  {/snippet}
+</UserlistItem>

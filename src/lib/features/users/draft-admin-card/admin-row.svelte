@@ -9,9 +9,7 @@
 </script>
 
 <script lang="ts">
-  import UserCircleIcon from '@lucide/svelte/icons/circle-user';
-
-  import * as Avatar from '$lib/components/ui/avatar';
+  import UserlistItem from '$lib/components/userlist-item.svelte';
   import { cn } from '$lib/components/ui/utils';
 
   import AdminActions from './admin-actions.svelte';
@@ -19,43 +17,40 @@
   import VolunteerButton from './volunteer-button.svelte';
 
   const { user, isSelf, role }: Props = $props();
+  const className = $derived(
+    cn(
+      'border-2 border-transparent p-3 transition-colors duration-150',
+      role === 'designated' ? 'border-success/50 bg-success/20 dark:bg-success/5' : 'bg-muted',
+    ),
+  );
 </script>
 
-<div
-  class={cn(
-    'grid grid-cols-[auto_minmax(0,1fr)] items-center gap-x-3 gap-y-2 rounded-lg border-2 border-transparent p-3 transition-colors duration-150 @lg:grid-cols-[auto_minmax(0,1fr)_auto]',
-    role === 'designated' ? 'border-success/50 bg-success/20 dark:bg-success/5' : 'bg-muted',
-  )}
->
-  <Avatar.Root class="size-10 shrink-0">
-    <Avatar.Image src={user.avatarUrl} alt="{user.givenName} {user.familyName}" />
-    <Avatar.Fallback>
-      <UserCircleIcon class="size-10" />
-    </Avatar.Fallback>
-  </Avatar.Root>
-  <div class="min-w-0">
-    <div class="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-      <strong class="truncate"
-        ><span class="uppercase">{user.familyName}</span>, {user.givenName}</strong
-      >
-      <RoleBadge {role} />
-    </div>
-    <a
-      href="mailto:{user.email}"
-      class="block truncate text-sm opacity-70 hover:underline hover:opacity-100"
-    >
-      {user.email}
-    </a>
-  </div>
+{#snippet actionButtons()}
   {#if role === 'none'}
-    {#if isSelf}
-      <div class="col-span-2 justify-self-end @lg:col-span-1">
-        <VolunteerButton />
-      </div>
-    {/if}
+    <VolunteerButton />
   {:else}
-    <div class="col-span-2 justify-self-end @lg:col-span-1">
-      <AdminActions userId={user.id} {role} />
-    </div>
+    <AdminActions userId={user.id} {role} />
   {/if}
-</div>
+{/snippet}
+
+{#snippet badges()}
+  <RoleBadge {role} />
+{/snippet}
+
+<UserlistItem
+  email={user.email}
+  familyName={user.familyName}
+  givenName={user.givenName}
+  avatar={{
+    variant: 'profile',
+    url: user.avatarUrl,
+    alt: `${user.givenName} ${user.familyName}`,
+  }}
+  class={className}
+  badges={{ none: null, candidate: badges, designated: badges }[role]}
+  actionButtons={{
+    none: isSelf ? actionButtons : null,
+    candidate: actionButtons,
+    designated: actionButtons,
+  }[role]}
+/>
