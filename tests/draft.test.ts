@@ -1687,7 +1687,7 @@ test.describe('Draft Lifecycle', () => {
         await ndslHeadPage.goto('/dashboard/students/');
         await expectStatCards(ndslHeadPage, { quota: 2, remaining: 1, drafted: 1 });
         await expectPreviousPicksTab(ndslHeadPage, 1, [
-          /Draftee, Eager/u,
+          /DRAFTEE, Eager/u,
           /202012345/u,
           /eager\.student@up\.edu\.ph/u,
         ]);
@@ -1732,7 +1732,7 @@ test.describe('Draft Lifecycle', () => {
         await expectStatCards(cslHeadPage, { quota: 2, remaining: 1, drafted: 1 });
         await expect(cslHeadPage.locator('#selection-progress')).toContainText('0/1 Slots');
         await expectPreviousPicksTab(cslHeadPage, 1, [
-          /Candidate, Patient/u,
+          /CANDIDATE, Patient/u,
           /202012346/u,
           /patient\.student@up\.edu\.ph/u,
         ]);
@@ -1811,7 +1811,7 @@ test.describe('Draft Lifecycle', () => {
         await expectStatCards(ndslHeadPage, { quota: 2, remaining: 1, drafted: 1 });
         await expect(ndslHeadPage.locator('#selection-progress')).toContainText('0/1 Slots');
         await expectPreviousPicksTab(ndslHeadPage, 1, [
-          /Draftee, Eager/u,
+          /DRAFTEE, Eager/u,
           /202012345/u,
           /eager\.student@up\.edu\.ph/u,
         ]);
@@ -1864,12 +1864,12 @@ test.describe('Draft Lifecycle', () => {
         await cslHeadPage.goto('/dashboard/students/');
         await expectStatCards(cslHeadPage, { quota: 2, remaining: 0, drafted: 2 });
         await expectPreviousPicksTab(cslHeadPage, 1, [
-          /Candidate, Patient/u,
+          /CANDIDATE, Patient/u,
           /202012346/u,
           /patient\.student@up\.edu\.ph/u,
         ]);
         await expectPreviousPicksTab(cslHeadPage, 2, [
-          /ToDrafted, Partial/u,
+          /TODRAFTED, Partial/u,
           /202012349/u,
           /partial-drafted\.student@up\.edu\.ph/u,
         ]);
@@ -2095,12 +2095,12 @@ test.describe('Draft Lifecycle', () => {
     test('NDSL sees Previous Picks with Round 1 and Round 3', async ({ ndslHeadPage }) => {
       await ndslHeadPage.goto('/dashboard/students/');
       await expectPreviousPicksTab(ndslHeadPage, 1, [
-        /Draftee, Eager/u,
+        /DRAFTEE, Eager/u,
         /202012345/u,
         /eager\.student@up\.edu\.ph/u,
       ]);
       await expectPreviousPicksTab(ndslHeadPage, 3, [
-        /FullRanker, Unlucky/u,
+        /FULLRANKER, Unlucky/u,
         /202012348/u,
         /unlucky\.student@up\.edu\.ph/u,
       ]);
@@ -2266,12 +2266,12 @@ test.describe('Draft Lifecycle', () => {
     test('NDSL sees Previous Picks with Round 1 and Round 3', async ({ ndslHeadPage }) => {
       await ndslHeadPage.goto('/dashboard/students/');
       await expectPreviousPicksTab(ndslHeadPage, 1, [
-        /Draftee, Eager/u,
+        /DRAFTEE, Eager/u,
         /202012345/u,
         /eager\.student@up\.edu\.ph/u,
       ]);
       await expectPreviousPicksTab(ndslHeadPage, 3, [
-        /FullRanker, Unlucky/u,
+        /FULLRANKER, Unlucky/u,
         /202012348/u,
         /unlucky\.student@up\.edu\.ph/u,
       ]);
