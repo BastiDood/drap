@@ -1,4 +1,4 @@
-FROM ghcr.io/jqlang/jq:1.8.1 AS jq
+FROM ghcr.io/jqlang/jq:1.8.2 AS jq
 FROM busybox:1.38.0-uclibc AS busybox
 
 # Download the Spamhaus drop list.
