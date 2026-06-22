@@ -1,5 +1,6 @@
 <script lang="ts">
   import * as Table from '$lib/components/ui/table';
+  import DateTime from '$lib/components/date-time.svelte';
   import DesignatedLab from '$lib/users/designated-lab.svelte';
   import type { DraftAssignmentRecord } from '$lib/features/drafts/types';
 
@@ -14,6 +15,7 @@
   <Table.Root>
     <Table.Header>
       <Table.Row>
+        <Table.Head>Registration Date</Table.Head>
         <Table.Head>Student Number</Table.Head>
         <Table.Head>Name</Table.Head>
         <Table.Head>Email</Table.Head>
@@ -21,8 +23,11 @@
       </Table.Row>
     </Table.Header>
     <Table.Body>
-      {#each assignments as { id, studentNumber, familyName, givenName, email, labId } (id)}
+      {#each assignments as { id, createdAt, studentNumber, familyName, givenName, email, labId } (id)}
         <Table.Row>
+          <Table.Cell>
+            <DateTime date={createdAt} />
+          </Table.Cell>
           <Table.Cell class="tabular-nums">
             {studentNumber ?? 'N/A'}
           </Table.Cell>
@@ -34,7 +39,7 @@
         </Table.Row>
       {:else}
         <Table.Row>
-          <Table.Cell colspan={4}>
+          <Table.Cell colspan={5}>
             <p class="my-8 text-center text-sm text-muted-foreground">
               No lottery assignments were recorded.
             </p>

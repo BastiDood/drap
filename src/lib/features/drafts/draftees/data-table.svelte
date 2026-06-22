@@ -10,6 +10,7 @@
   import type { Snippet } from 'svelte';
 
   import * as Table from '$lib/components/ui/table';
+  import DateTime from '$lib/components/date-time.svelte';
   import DesignatedLab from '$lib/users/designated-lab.svelte';
   import PreferredLab from '$lib/users/preferred-lab.svelte';
   import { Button } from '$lib/components/ui/button';
@@ -37,6 +38,17 @@
   // Shape the table columns
   const columnHelper = createColumnHelper<ExtendedStudent>();
   const columns = [
+    columnHelper.accessor(({ createdAt }) => createdAt, {
+      id: 'createdAt',
+      enableGlobalFilter: false,
+      header: header =>
+        renderComponent(SortByHeader, {
+          header: 'Registration Date',
+          onclick: header.column.getToggleSortingHandler(),
+          sortState: header.column.getIsSorted(),
+        }),
+      cell: info => renderComponent(DateTime, { date: info.getValue() }),
+    }),
     columnHelper.accessor(({ studentNumber }) => studentNumber, {
       id: 'studentNumber',
       enableGlobalFilter: false,

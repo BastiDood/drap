@@ -6,7 +6,7 @@ export interface Lab extends Pick<schema.Lab, 'id' | 'name'> {
 
 export interface Student extends Pick<
   schema.User,
-  'id' | 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
+  'id' | 'createdAt' | 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
 > {
   labId: string | null;
   labs: string[];
@@ -41,7 +41,7 @@ export interface DraftLabQuotaSnapshot {
 
 export interface DraftAssignmentRecord extends Pick<
   schema.User,
-  'id' | 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
+  'id' | 'createdAt' | 'email' | 'givenName' | 'familyName' | 'avatarUrl' | 'studentNumber'
 > {
   round: schema.FacultyChoiceUser['round'];
   labId: schema.Lab['id'];
