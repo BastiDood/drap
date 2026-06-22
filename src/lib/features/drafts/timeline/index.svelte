@@ -1,10 +1,9 @@
 <script lang="ts">
-  import ArrowUpFromLineIcon from '@lucide/svelte/icons/arrow-up-from-line';
-  import { format, lightFormat } from 'date-fns';
+  import { format } from 'date-fns';
 
+  import ExportCsvButton from '$lib/features/export/csv/index.svelte';
   import RegisteredDraftees from '$lib/features/drafts/draftees/registered/index.svelte';
   import { Badge } from '$lib/components/ui/badge';
-  import { Button } from '$lib/components/ui/button';
   import type {
     Draft,
     DraftAssignmentSummary,
@@ -15,7 +14,7 @@
     LotteryAggregate,
   } from '$lib/features/drafts/types';
   import { DraftPhase, getDraftPhase } from '$lib/features/drafts/phase';
-  import { resolve } from '$app/paths';
+  import { ExportCsvButtonVariant } from '$lib/features/export/csv/variant';
 
   import Step from './step.svelte';
 
@@ -135,35 +134,12 @@
               : 'No students have registered for this draft.'}
           </RegisteredDraftees>
         {/if}
+        <ExportCsvButton {draftId} {requestedAt} variant={ExportCsvButtonVariant.Students} />
         <StartForm {draftId} />
       {:else}
-        <Button
-          href={resolve(`/dashboard/drafts/${draftId}/students.csv`)}
-          download="{lightFormat(requestedAt, 'yyyy-MM-dd')}_{draftId}_students.csv"
-          variant="outline"
-          size="sm"
-        >
-          <ArrowUpFromLineIcon class="size-4" />
-          <span>Student Ranks</span>
-        </Button>
-        <Button
-          href={resolve(`/dashboard/drafts/${draftId}/results.csv`)}
-          download="{lightFormat(requestedAt, 'yyyy-MM-dd')}_{draftId}_results.csv"
-          variant="outline"
-          size="sm"
-        >
-          <ArrowUpFromLineIcon class="size-4" />
-          <span>Results</span>
-        </Button>
-        <Button
-          href={resolve(`/dashboard/drafts/${draftId}/system-logs.csv`)}
-          download="{lightFormat(requestedAt, 'yyyy-MM-dd')}_{draftId}_system-logs.csv"
-          variant="outline"
-          size="sm"
-        >
-          <ArrowUpFromLineIcon class="size-4" />
-          <span>System Logs</span>
-        </Button>
+        <ExportCsvButton {draftId} {requestedAt} variant={ExportCsvButtonVariant.Students} />
+        <ExportCsvButton {draftId} {requestedAt} variant={ExportCsvButtonVariant.Results} />
+        <ExportCsvButton {draftId} {requestedAt} variant={ExportCsvButtonVariant.SystemLogs} />
       {/if}
     </div>
   </div>
