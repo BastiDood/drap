@@ -128,18 +128,18 @@
     <div class="flex flex-wrap gap-2 lg:justify-end">
       {#if currentPhase === DraftPhase.Registration || currentPhase === DraftPhase.RegistrationClosed}
         {#if studentCount > 0}
+          <ExportCsvButton
+            {draftId}
+            {requestedAt}
+            variant={ExportCsvButtonVariant.Students}
+            size="default"
+          />
           <RegisteredDraftees {draftId} variant="primary">
             {currentPhase === DraftPhase.Registration
               ? 'No students have registered yet.'
               : 'No students have registered for this draft.'}
           </RegisteredDraftees>
         {/if}
-        <ExportCsvButton
-          {draftId}
-          {requestedAt}
-          variant={ExportCsvButtonVariant.Students}
-          size="default"
-        />
         <StartForm {draftId} />
       {:else}
         <ExportCsvButton {draftId} {requestedAt} variant={ExportCsvButtonVariant.Students} />
