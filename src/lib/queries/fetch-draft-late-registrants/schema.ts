@@ -3,6 +3,7 @@ import * as v from 'valibot';
 export const LateRegistrants = v.array(
   v.object({
     id: v.string(),
+    createdAt: v.date(),
     email: v.string(),
     givenName: v.string(),
     familyName: v.string(),

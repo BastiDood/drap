@@ -424,6 +424,7 @@ export async function getDraftAssignmentRecords(db: DbConnection, draftId: bigin
     return await db
       .select({
         id: schema.facultyChoiceUser.studentUserId,
+        createdAt: student.createdAt,
         labId: schema.facultyChoiceUser.labId,
         round: schema.facultyChoiceUser.round,
         assignedAt: choice.createdAt,

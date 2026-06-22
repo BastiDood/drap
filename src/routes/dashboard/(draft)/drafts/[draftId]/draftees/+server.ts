@@ -61,6 +61,7 @@ async function getStudentsInDraftTaggedByLab(db: DbConnection, draftId: bigint) 
     return await db
       .select({
         id: schema.user.id,
+        createdAt: schema.user.createdAt,
         email: schema.user.email,
         givenName: schema.user.givenName,
         familyName: schema.user.familyName,

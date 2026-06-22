@@ -3,6 +3,7 @@ import * as v from 'valibot';
 export const DraftAssignmentRecords = v.array(
   v.object({
     id: v.string(),
+    createdAt: v.date(),
     labId: v.string(),
     round: v.nullable(v.number()),
     assignedAt: v.nullable(v.date()),
