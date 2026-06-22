@@ -2875,6 +2875,23 @@ test.describe('Draft Lifecycle', () => {
         });
         expect(status).toBe(400);
       });
+
+      test('forged submission with missing remarks fails outright', async ({
+        snapshotGuardStudentPage,
+      }) => {
+        await snapshotGuardStudentPage.goto('/dashboard/student/');
+        const status = await snapshotGuardStudentPage.evaluate(async () => {
+          const data = new FormData();
+          data.set('draft', '2');
+          data.append('labs', 'csl');
+          const response = await fetch('/dashboard/student/?/submit', {
+            method: 'POST',
+            body: data,
+          });
+          return response.status;
+        });
+        expect(status).toBe(500);
+      });
     });
   });
 
@@ -2901,6 +2918,10 @@ test.describe('Draft Lifecycle', () => {
         await secondRoundNdslFirstChoicePage
           .getByRole('button', { name: 'Computer Security Laboratory' })
           .click();
+        await secondRoundNdslFirstChoicePage
+          .locator('textarea[name="remarks"]')
+          .first()
+          .fill(`${'a'.repeat(1027)}\n`);
 
         await secondRoundNdslFirstChoicePage.getByLabel('Photo Consent').selectOption('google');
         secondRoundNdslFirstChoicePage.on('dialog', dialog => dialog.accept());

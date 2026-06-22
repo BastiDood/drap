@@ -1,4 +1,4 @@
-import assert, { fail } from 'node:assert/strict';
+import assert, { fail, strictEqual } from 'node:assert/strict';
 
 import * as v from 'valibot';
 import { and, asc, eq, isNotNull, lt, sql } from 'drizzle-orm';
@@ -35,7 +35,13 @@ import { Tracer } from '$lib/server/telemetry/tracer';
 const SubmitFormData = v.object({
   draft: v.pipe(v.string(), v.minLength(1)),
   labs: v.array(v.pipe(v.string(), v.minLength(1))),
-  remarks: v.array(v.string()),
+  remarks: v.array(
+    v.pipe(
+      v.string(),
+      v.transform(remark => remark.replaceAll(/\r\n?/gu, '\n')),
+      v.maxLength(1028),
+    ),
+  ),
   avatar: v.nullish(v.union([v.literal('google'), v.instance(File)])),
 });
 
@@ -248,6 +254,8 @@ export const actions = {
         'ranking.lab_count': labs.length,
         'ranking.remarks_count': remarks.length,
       });
+
+      strictEqual(labs.length, remarks.length, 'submitted lab rankings with mismatched remarks');
 
       // Zero preferences allowed - student goes directly to lottery
       const draftId = BigInt(draftIdField);
