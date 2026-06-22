@@ -134,7 +134,12 @@
               : 'No students have registered for this draft.'}
           </RegisteredDraftees>
         {/if}
-        <ExportCsvButton {draftId} {requestedAt} variant={ExportCsvButtonVariant.Students} />
+        <ExportCsvButton
+          {draftId}
+          {requestedAt}
+          variant={ExportCsvButtonVariant.Students}
+          size="default"
+        />
         <StartForm {draftId} />
       {:else}
         <ExportCsvButton {draftId} {requestedAt} variant={ExportCsvButtonVariant.Students} />

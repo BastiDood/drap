@@ -5,7 +5,7 @@
   import { lightFormat } from 'date-fns';
   import type { LucideIcon } from '@lucide/svelte';
 
-  import { Button } from '$lib/components/ui/button';
+  import { Button, type ButtonSize } from '$lib/components/ui/button';
   import { resolve } from '$app/paths';
 
   import { ExportCsvButtonVariant } from './variant';
@@ -14,9 +14,10 @@
     draftId: string;
     variant: ExportCsvButtonVariant;
     requestedAt: Date;
+    size?: ButtonSize;
   }
 
-  const { draftId, requestedAt, variant }: Props = $props();
+  const { draftId, requestedAt, variant, size = 'sm' }: Props = $props();
 
   const metadata = $derived.by(() => {
     let icon: LucideIcon;
@@ -45,7 +46,7 @@
   href={resolve(`/dashboard/drafts/${draftId}/${variant}.csv`)}
   download="{lightFormat(requestedAt, 'yyyy-MM-dd')}_{draftId}_{variant}.csv"
   variant="outline"
-  size="sm"
+  {size}
 >
   <metadata.icon class="size-4" />
   <span>{metadata.label}</span>
