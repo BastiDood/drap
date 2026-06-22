@@ -28,11 +28,11 @@
   // Shape the table columns
   const columnHelper = createColumnHelper<Student>();
   const columns = [
-    columnHelper.accessor(({ createdAt }) => createdAt, {
-      id: 'createdAt',
+    columnHelper.accessor(({ submittedAt }) => submittedAt, {
+      id: 'submittedAt',
       header: header =>
         renderComponent(SortByHeader, {
-          header: 'Registration Date',
+          header: 'Submission Date',
           onclick: header.column.getToggleSortingHandler(),
           sortState: header.column.getIsSorted(),
         }),

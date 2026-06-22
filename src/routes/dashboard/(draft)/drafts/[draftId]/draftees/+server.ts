@@ -61,7 +61,7 @@ async function getStudentsInDraftTaggedByLab(db: DbConnection, draftId: bigint) 
     return await db
       .select({
         id: schema.user.id,
-        createdAt: schema.user.createdAt,
+        submittedAt: schema.studentRank.createdAt,
         email: schema.user.email,
         givenName: schema.user.givenName,
         familyName: schema.user.familyName,
@@ -89,7 +89,7 @@ async function getStudentsInDraftTaggedByLab(db: DbConnection, draftId: bigint) 
         ),
       )
       .where(eq(schema.studentRank.draftId, draftId))
-      .groupBy(schema.user.id, schema.facultyChoiceUser.labId)
+      .groupBy(schema.user.id, schema.studentRank.createdAt, schema.facultyChoiceUser.labId)
       .orderBy(schema.user.familyName);
   });
 }

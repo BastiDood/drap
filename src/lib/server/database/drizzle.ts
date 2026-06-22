@@ -424,7 +424,7 @@ export async function getDraftAssignmentRecords(db: DbConnection, draftId: bigin
     return await db
       .select({
         id: schema.facultyChoiceUser.studentUserId,
-        createdAt: student.createdAt,
+        submittedAt: schema.studentRank.createdAt,
         labId: schema.facultyChoiceUser.labId,
         round: schema.facultyChoiceUser.round,
         assignedAt: choice.createdAt,
@@ -437,6 +437,13 @@ export async function getDraftAssignmentRecords(db: DbConnection, draftId: bigin
       })
       .from(schema.facultyChoiceUser)
       .innerJoin(student, eq(schema.facultyChoiceUser.studentUserId, student.id))
+      .innerJoin(
+        schema.studentRank,
+        and(
+          eq(schema.facultyChoiceUser.draftId, schema.studentRank.draftId),
+          eq(schema.facultyChoiceUser.studentUserId, schema.studentRank.userId),
+        ),
+      )
       .innerJoin(schema.lab, eq(schema.facultyChoiceUser.labId, schema.lab.id))
       .leftJoin(
         choice,

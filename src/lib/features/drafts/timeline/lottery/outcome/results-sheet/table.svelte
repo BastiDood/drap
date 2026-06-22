@@ -15,7 +15,7 @@
   <Table.Root>
     <Table.Header>
       <Table.Row>
-        <Table.Head>Registration Date</Table.Head>
+        <Table.Head>Submission Date</Table.Head>
         <Table.Head>Student Number</Table.Head>
         <Table.Head>Name</Table.Head>
         <Table.Head>Email</Table.Head>
@@ -23,10 +23,10 @@
       </Table.Row>
     </Table.Header>
     <Table.Body>
-      {#each assignments as { id, createdAt, studentNumber, familyName, givenName, email, labId } (id)}
+      {#each assignments as { id, submittedAt, studentNumber, familyName, givenName, email, labId } (id)}
         <Table.Row>
           <Table.Cell>
-            <DateTime date={createdAt} />
+            <DateTime date={submittedAt} />
           </Table.Cell>
           <Table.Cell class="tabular-nums">
             {studentNumber ?? 'N/A'}

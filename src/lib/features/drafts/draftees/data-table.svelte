@@ -38,12 +38,12 @@
   // Shape the table columns
   const columnHelper = createColumnHelper<ExtendedStudent>();
   const columns = [
-    columnHelper.accessor(({ createdAt }) => createdAt, {
-      id: 'createdAt',
+    columnHelper.accessor(({ submittedAt }) => submittedAt, {
+      id: 'submittedAt',
       enableGlobalFilter: false,
       header: header =>
         renderComponent(SortByHeader, {
-          header: 'Registration Date',
+          header: 'Submission Date',
           onclick: header.column.getToggleSortingHandler(),
           sortState: header.column.getIsSorted(),
         }),
