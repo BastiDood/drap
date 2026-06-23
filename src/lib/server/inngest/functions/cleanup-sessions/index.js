@@ -25,7 +25,7 @@ export const cleanupSessions = inngest.createFunction(
           const now = new Date(event.ts);
           const { rowCount } = await db
             .delete(session)
-            .where(lt(session.expiredAt, sql`${now} - interval '30 days'`));
+            .where(lt(session.expiredAt, sql`${now}::timestamptz - interval '30 days'`));
           logger.info('sessions cleaned up', { count: rowCount });
           return rowCount;
         }),
