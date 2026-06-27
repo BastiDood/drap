@@ -113,7 +113,7 @@ services:
         PUBLIC_ORIGIN: ${SCHEME:?required}://${HOST:?required}
     environment:
       ADDRESS_HEADER: X-Forwarded-For
-      BODY_SIZE_LIMIT: 4M
+      BODY_SIZE_LIMIT: 5M
       DRAP_ASSERT_DOMAIN: up.edu.ph
       DRAP_ENABLE_EMAILS: 1
       DRAP_ENCRYPTION_KEY: ${DRAP_ENCRYPTION_KEY:?required}
