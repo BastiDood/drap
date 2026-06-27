@@ -6,8 +6,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
 
   databasus:
-    pull_policy: build
-    build: ./docker/databasus
+    image: databasus/databasus:v3.47.1
     ports:
       - host_ip: 127.0.0.1
         published: 4005
@@ -21,13 +20,12 @@ services:
     healthcheck:
       test:
         - 'CMD'
-        - '/httpget'
-        - 'http://localhost:4005/api/v1/system/health'
+        - 'databasus'
+        - 'healthcheck'
       interval: 30s
-      timeout: 3s
+      timeout: 5s
       retries: 3
-      start_period: 30s
-      start_interval: 1s
+      start_period: 60s
 
   o2:
     environment:
