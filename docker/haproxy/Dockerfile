@@ -22,7 +22,7 @@ COPY --from=feodo /out/feodo.lst /inputs/feodo.lst
 RUN mkdir -p /out \
   && cat /inputs/drop.lst /inputs/feodo.lst | sort -u > /out/external.lst
 
-FROM haproxy:3.4.0-alpine3.24
+FROM haproxy:3.4.1-alpine3.24
 COPY --from=blocklists /out/external.lst /usr/local/etc/haproxy/external.lst
 COPY haproxy.cfg /usr/local/etc/haproxy/haproxy.cfg
 COPY allowed-paths.lst /usr/local/etc/haproxy/allowed-paths.lst
