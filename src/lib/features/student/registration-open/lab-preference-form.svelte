@@ -167,6 +167,7 @@
               );
               break;
             default:
+              toast.error('Failed to submit lab preferences.');
               break;
           }
           break;

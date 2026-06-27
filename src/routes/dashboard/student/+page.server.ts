@@ -376,7 +376,10 @@ export const actions = {
             'avatar.actual_size': error.size,
             'avatar.max_size': error.maxBytes,
           });
-          return actionFailure(413, { message: 'Uploaded avatar file is too large.' });
+          return actionFailure(413, {
+            message:
+              'Your uploaded photo is too large. Please try again with a file smaller than 4 MiB.',
+          });
         } else if (error instanceof S3RemoteProtocolError) {
           logger.fatal(error.message, void 0, { 'avatar.protocol': error.protocol });
           return actionFailure(400, {
