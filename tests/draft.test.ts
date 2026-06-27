@@ -5,6 +5,10 @@ import { CUSTOM_AVATAR_TOO_LARGE_MESSAGE } from '$lib/features/student/registrat
 
 import { test } from './fixtures/users';
 
+const CUSTOM_AVATAR_TEST_PNG = Buffer.from(
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=',
+  'base64',
+);
 const draftYearPattern = /Draft \d{4}/u;
 
 function getDraftRow(page: Page, draftId: string) {
@@ -1039,11 +1043,18 @@ test.describe('Draft Lifecycle', () => {
       ).toBeVisible();
     });
 
-    test('Idle submits 0 prefs (goes directly to lottery)', async ({ idleBystanderPage }) => {
+    test('Idle submits 0 prefs with a custom photo (goes directly to lottery)', async ({
+      idleBystanderPage,
+    }) => {
       await idleBystanderPage.goto('/dashboard/student/');
       await expect(idleBystanderPage.getByText('Select Lab Preference')).toBeVisible();
 
-      await idleBystanderPage.getByLabel('Photo Consent').selectOption('none');
+      await idleBystanderPage.getByLabel('Photo Consent').selectOption('custom');
+      await idleBystanderPage.getByLabel('Custom Image').setInputFiles({
+        name: 'avatar.png',
+        mimeType: 'image/png',
+        buffer: CUSTOM_AVATAR_TEST_PNG,
+      });
       idleBystanderPage.on('dialog', dialog => dialog.accept());
       const responsePromise = idleBystanderPage.waitForResponse('/dashboard/student/?/submit');
       await idleBystanderPage.getByRole('button', { name: 'Submit Lab Preferences' }).click();
