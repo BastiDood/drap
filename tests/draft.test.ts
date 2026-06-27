@@ -1,6 +1,7 @@
-import * as devalue from 'devalue';
 import { addDays, subDays } from 'date-fns';
 import { expect, type Locator, type Page } from '@playwright/test';
+
+import { CUSTOM_AVATAR_TOO_LARGE_MESSAGE } from '$lib/features/student/registration-open/constants';
 
 import { test } from './fixtures/users';
 
@@ -1005,9 +1006,6 @@ test.describe('Draft Lifecycle', () => {
     test('Idle gets a validation failure for an oversized custom photo', async ({
       idleBystanderPage,
     }) => {
-      const message =
-        'Your uploaded photo is too large. Please try again with a file smaller than 4 MiB.';
-
       await idleBystanderPage.goto('/dashboard/student/');
       await idleBystanderPage.getByLabel('Photo Consent').selectOption('custom');
       await idleBystanderPage.getByLabel('Custom Image').setInputFiles({
@@ -1016,16 +1014,13 @@ test.describe('Draft Lifecycle', () => {
         buffer: Buffer.alloc(4 * 1024 * 1024 + 1),
       });
 
-      idleBystanderPage.on('dialog', dialog => dialog.accept());
-      const responsePromise = idleBystanderPage.waitForResponse('/dashboard/student/?/submit');
+      const noSubmission = expect(
+        idleBystanderPage.waitForResponse('/dashboard/student/?/submit', { timeout: 1000 }),
+      ).rejects.toThrow();
       await idleBystanderPage.getByRole('button', { name: 'Submit Lab Preferences' }).click();
-      const response = await responsePromise;
-      const result = await response.json();
-      const data = devalue.parse(result.data);
 
-      expect(result.type).toBe('failure');
-      expect(result.status).toBe(413);
-      expect(data.message).toBe(message);
+      await expect(idleBystanderPage.getByText(CUSTOM_AVATAR_TOO_LARGE_MESSAGE)).toBeVisible();
+      await noSubmission;
     });
 
     test('Eager sees photo-share receipt copy after reload', async ({ eagerDrafteePage }) => {
