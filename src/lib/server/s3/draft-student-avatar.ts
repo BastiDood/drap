@@ -4,13 +4,13 @@ import { Buffer } from 'node:buffer';
 import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getStreamAsBuffer } from 'get-stream';
 
+import { CUSTOM_AVATAR_MAX_BYTES } from '$lib/features/student/registration-open/constants';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 import { assertPayloadSize, assertSecureCdnUrl, normalizeImageContentType } from './util';
 // TODO: import defer { s3 } from './client';
 // https://github.com/rolldown/rolldown/issues/4857
 
-const MAX_AVATAR_BYTES = 4 * 1024 * 1024;
 const DRAFT_AVATAR_BUCKET = 'draft-student-avatar';
 
 const SERVICE_NAME = 's3.draft-student-avatar';
@@ -86,11 +86,11 @@ export async function uploadDraftAvatarFromCdn(
     if (contentLength !== null) {
       // Some CDNs don't return `Content-Length`, so this assertion is mainly advisory.
       const expectedSize = Number.parseInt(contentLength, 10);
-      assertPayloadSize(expectedSize, MAX_AVATAR_BYTES);
+      assertPayloadSize(expectedSize, CUSTOM_AVATAR_MAX_BYTES);
     }
 
     assert(response.body !== null, 'avatar response body is null');
-    const bytes = await getStreamAsBuffer(response.body, { maxBuffer: MAX_AVATAR_BYTES });
+    const bytes = await getStreamAsBuffer(response.body, { maxBuffer: CUSTOM_AVATAR_MAX_BYTES });
     await putDraftAvatarObject(objectKey, normalizedContentType, bytes);
   });
 }
@@ -105,7 +105,7 @@ export async function uploadDraftAvatarOverride(objectKey: string, file: File) {
 
     // Ban SVGs for user-uploaded avatars because it is untrusted data (potential XSS attack vector!).
     const normalizedContentType = normalizeImageContentType(file.type);
-    assertPayloadSize(file.size, MAX_AVATAR_BYTES);
+    assertPayloadSize(file.size, CUSTOM_AVATAR_MAX_BYTES);
 
     const bytes = Buffer.from(await file.arrayBuffer());
     await putDraftAvatarObject(objectKey, normalizedContentType, bytes);

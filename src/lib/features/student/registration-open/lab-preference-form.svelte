@@ -25,6 +25,7 @@
   import { Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui/tooltip';
 
   import AvatarConsent from './avatar-consent.svelte';
+  import { CUSTOM_AVATAR_MAX_BYTES, CUSTOM_AVATAR_TOO_LARGE_MESSAGE } from './constants';
   import { DebouncedMirror } from './debounced-mirror.svelte';
 
   interface Props {
@@ -113,7 +114,14 @@
   enctype="multipart/form-data"
   action="/dashboard/student/?/submit"
   class="@container space-y-4"
-  use:enhance={({ submitter, cancel }) => {
+  use:enhance={({ formData, submitter, cancel }) => {
+    const avatar = formData.get('avatar');
+    if (avatar instanceof File && avatar.size > CUSTOM_AVATAR_MAX_BYTES) {
+      toast.error(CUSTOM_AVATAR_TOO_LARGE_MESSAGE);
+      cancel();
+      return;
+    }
+
     let message: string;
     const labCount = persistedSelectedLabs.current.length;
     switch (labCount) {

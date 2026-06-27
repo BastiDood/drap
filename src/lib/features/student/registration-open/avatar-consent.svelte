@@ -5,6 +5,8 @@
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
 
+  import { CUSTOM_AVATAR_MAX_SIZE_LABEL } from './constants';
+
   interface Props {
     avatarUrl: string;
   }
@@ -74,7 +76,9 @@
           accept="image/jpeg,image/png,image/webp"
           required
         />
-        <p class="text-xs text-muted-foreground">JPEG, PNG, or WebP. Up to 4&nbsp;MiB.</p>
+        <p class="text-xs text-muted-foreground">
+          JPEG, PNG, or WebP. Up to {CUSTOM_AVATAR_MAX_SIZE_LABEL}.
+        </p>
       {/if}
     </div>
   </Card.Content>

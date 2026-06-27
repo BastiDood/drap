@@ -9,6 +9,7 @@ import { MaxBufferError } from 'get-stream';
 
 import * as schema from '$lib/server/database/schema';
 import { assertOptional, assertSingle } from '$lib/server/assert';
+import { CUSTOM_AVATAR_TOO_LARGE_MESSAGE } from '$lib/features/student/registration-open/constants';
 import { db } from '$lib/server/database';
 import {
   type DbConnection,
@@ -376,10 +377,7 @@ export const actions = {
             'avatar.actual_size': error.size,
             'avatar.max_size': error.maxBytes,
           });
-          return actionFailure(413, {
-            message:
-              'Your uploaded photo is too large. Please try again with a file smaller than 4 MiB.',
-          });
+          return actionFailure(413, { message: CUSTOM_AVATAR_TOO_LARGE_MESSAGE });
         } else if (error instanceof S3RemoteProtocolError) {
           logger.fatal(error.message, void 0, { 'avatar.protocol': error.protocol });
           return actionFailure(400, {
