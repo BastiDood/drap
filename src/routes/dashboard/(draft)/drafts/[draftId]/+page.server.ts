@@ -1723,15 +1723,13 @@ async function insertLotteryChoices(
     if (assignmentUserIdToLabPairs.length > 0) {
       const facultyUserId = mode === 'intervention' ? adminUserId : null;
       await db.insert(schema.facultyChoiceUser).values(
-        assignmentUserIdToLabPairs.map(
-          ([studentUserId, labId]): schema.NewFacultyChoiceUser => ({
-            facultyUserId,
-            studentUserId,
-            draftId,
-            round,
-            labId,
-          }),
-        ),
+        assignmentUserIdToLabPairs.map(([studentUserId, labId]): schema.NewFacultyChoiceUser => ({
+          facultyUserId,
+          studentUserId,
+          draftId,
+          round,
+          labId,
+        })),
       );
     }
 

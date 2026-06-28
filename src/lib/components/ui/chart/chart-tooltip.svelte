@@ -22,8 +22,7 @@
     labelClassName?: string;
     labelAccessor?: ((data: unknown) => unknown) | null;
     labelFormatter?:
-      | ((value: unknown, payload: TooltipPayload[]) => string | number | Snippet)
-      | null;
+      ((value: unknown, payload: TooltipPayload[]) => string | number | Snippet) | null;
     valueFormatter?: ((value: unknown) => string | number) | null;
     formatter?: Snippet<
       [

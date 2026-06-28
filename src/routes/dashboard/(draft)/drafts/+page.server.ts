@@ -142,12 +142,10 @@ async function initDraft(db: DrizzleTransaction, maxRounds: number, registration
     const labs = await db.select({ labId: schema.activeLabView.id }).from(schema.activeLabView);
     if (labs.length > 0)
       await db.insert(schema.draftLabQuota).values(
-        labs.map(
-          ({ labId }): Pick<schema.NewDraftLabQuota, 'draftId' | 'labId'> => ({
-            draftId: draft.id,
-            labId,
-          }),
-        ),
+        labs.map(({ labId }): Pick<schema.NewDraftLabQuota, 'draftId' | 'labId'> => ({
+          draftId: draft.id,
+          labId,
+        })),
       );
 
     return draft;

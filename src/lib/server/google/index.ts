@@ -278,8 +278,7 @@ export interface GmailBatchMessageIdHeaderFailure {
 }
 
 export type GmailBatchMessageIdHeaderResult =
-  | GmailBatchMessageIdHeaderSuccess
-  | GmailBatchMessageIdHeaderFailure;
+  GmailBatchMessageIdHeaderSuccess | GmailBatchMessageIdHeaderFailure;
 
 export class GoogleOAuthToken {
   constructor(
