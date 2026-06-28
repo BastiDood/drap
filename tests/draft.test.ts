@@ -3685,7 +3685,9 @@ test.describe('Draft Lifecycle', () => {
   test.describe('Repeat Draftee Regression', () => {
     test.describe.configure({ mode: 'serial' });
 
-    test('Repeat completes profile before the repeated draft runs', async ({ repeatDrafteePage }) => {
+    test('Repeat completes profile before the repeated draft runs', async ({
+      repeatDrafteePage,
+    }) => {
       await repeatDrafteePage.goto('/dashboard/student/');
       await repeatDrafteePage.getByLabel('Student Number').fill('202112364');
       const responsePromise = repeatDrafteePage.waitForResponse('/dashboard/?/profile');
@@ -3720,8 +3722,9 @@ test.describe('Draft Lifecycle', () => {
         .click();
       await repeatDrafteePage.getByLabel('Photo Consent').selectOption('none');
       repeatDrafteePage.once('dialog', dialog => dialog.accept());
-      const submitResponsePromise =
-        repeatDrafteePage.waitForResponse('/dashboard/student/?/submit');
+      const submitResponsePromise = repeatDrafteePage.waitForResponse(
+        '/dashboard/student/?/submit',
+      );
       await repeatDrafteePage.getByRole('button', { name: 'Submit Lab Preferences' }).click();
       const submitResponse = await submitResponsePromise;
       const submitResponseData = await submitResponse.json();
@@ -3756,8 +3759,9 @@ test.describe('Draft Lifecycle', () => {
       await ndslHeadPage.goto('/dashboard/students/');
       await ndslHeadPage.getByRole('button', { name: /Repeat/u }).click();
       ndslHeadPage.once('dialog', dialog => dialog.accept());
-      const selectionResponsePromise =
-        ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
+      const selectionResponsePromise = ndslHeadPage.waitForResponse(
+        '/dashboard/students/?/rankings',
+      );
       await ndslHeadPage.getByRole('button', { name: 'Submit Selection' }).click();
       const selectionResponse = await selectionResponsePromise;
       const selectionResponseData = await selectionResponse.json();
@@ -3802,15 +3806,18 @@ test.describe('Draft Lifecycle', () => {
       expect(createResponseData.type).toBe('success');
     });
 
-    test('Repeat submits NDSL preference again in the fifth draft', async ({ repeatDrafteePage }) => {
+    test('Repeat submits NDSL preference again in the fifth draft', async ({
+      repeatDrafteePage,
+    }) => {
       await repeatDrafteePage.goto('/dashboard/student/');
       await repeatDrafteePage
         .getByRole('button', { name: 'Networks and Distributed Systems Laboratory' })
         .click();
       await repeatDrafteePage.getByLabel('Photo Consent').selectOption('none');
       repeatDrafteePage.once('dialog', dialog => dialog.accept());
-      const submitResponsePromise =
-        repeatDrafteePage.waitForResponse('/dashboard/student/?/submit');
+      const submitResponsePromise = repeatDrafteePage.waitForResponse(
+        '/dashboard/student/?/submit',
+      );
       await repeatDrafteePage.getByRole('button', { name: 'Submit Lab Preferences' }).click();
       const submitResponse = await submitResponsePromise;
       const submitResponseData = await submitResponse.json();
@@ -3845,8 +3852,9 @@ test.describe('Draft Lifecycle', () => {
       await ndslHeadPage.goto('/dashboard/students/');
       await ndslHeadPage.getByRole('button', { name: /Repeat/u }).click();
       ndslHeadPage.once('dialog', dialog => dialog.accept());
-      const selectionResponsePromise =
-        ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
+      const selectionResponsePromise = ndslHeadPage.waitForResponse(
+        '/dashboard/students/?/rankings',
+      );
       await ndslHeadPage.getByRole('button', { name: 'Submit Selection' }).click();
       const selectionResponse = await selectionResponsePromise;
       const selectionResponseData = await selectionResponse.json();
