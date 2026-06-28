@@ -1,7 +1,11 @@
 import { addDays, subDays } from 'date-fns';
+import { eq } from 'drizzle-orm';
 import { expect, type Locator, type Page } from '@playwright/test';
 
+import * as schema from '$lib/server/database/schema';
+import { assertSingle } from '$lib/server/assert';
 import { CUSTOM_AVATAR_TOO_LARGE_MESSAGE } from '$lib/features/student/registration-open/constants';
+import type { DrizzleDatabase } from '$lib/server/database/drizzle';
 
 import { test } from './fixtures/users';
 
@@ -92,6 +96,16 @@ async function getHistoryTimelineTexts(page: Page, draftId: number) {
   const rows = page.locator('section > ol.border-s > li.ms-6 ol.space-y-1 > li');
   const textContents = await rows.allTextContents();
   return textContents.map(text => text.replaceAll(/\s+/gu, ' ').trim());
+}
+
+async function clearCurrentLabAssignment(database: DrizzleDatabase, userId: string) {
+  const row = await database
+    .update(schema.user)
+    .set({ labId: null })
+    .where(eq(schema.user.id, userId))
+    .returning({ id: schema.user.id })
+    .then(assertSingle);
+  expect(row.id).toBe(userId);
 }
 
 async function postFacultyRankings(
@@ -3668,6 +3682,202 @@ test.describe('Draft Lifecycle', () => {
     });
   });
 
+  test.describe('Repeat Draftee Regression', () => {
+    test.describe.configure({ mode: 'serial' });
+
+    test('Repeat completes profile before the repeated draft runs', async ({ repeatDrafteePage }) => {
+      await repeatDrafteePage.goto('/dashboard/student/');
+      await repeatDrafteePage.getByLabel('Student Number').fill('202112364');
+      const responsePromise = repeatDrafteePage.waitForResponse('/dashboard/?/profile');
+      await repeatDrafteePage.getByRole('button', { name: 'Complete Profile' }).click();
+      const response = await responsePromise;
+      const responseData = await response.json();
+      expect(responseData.type).toBe('success');
+    });
+
+    test('creates fourth draft for Repeat', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/');
+      await adminPage.getByRole('button', { name: 'Create Draft' }).click();
+
+      const dialog = adminPage.getByRole('dialog');
+      const formattedDate = addDays(new Date(), 1).toISOString().slice(0, 16);
+
+      await dialog.locator('input#closesAt').fill(formattedDate);
+      await dialog.locator('input#rounds').fill('1');
+
+      adminPage.once('dialog', async dialog => await dialog.accept());
+      const createResponsePromise = adminPage.waitForResponse('/dashboard/drafts/?/init');
+      await dialog.getByRole('button', { name: 'Create Draft' }).click();
+      const createResponse = await createResponsePromise;
+      const createResponseData = await createResponse.json();
+      expect(createResponseData.type).toBe('success');
+    });
+
+    test('Repeat submits NDSL preference in the fourth draft', async ({ repeatDrafteePage }) => {
+      await repeatDrafteePage.goto('/dashboard/student/');
+      await repeatDrafteePage
+        .getByRole('button', { name: 'Networks and Distributed Systems Laboratory' })
+        .click();
+      await repeatDrafteePage.getByLabel('Photo Consent').selectOption('none');
+      repeatDrafteePage.once('dialog', dialog => dialog.accept());
+      const submitResponsePromise =
+        repeatDrafteePage.waitForResponse('/dashboard/student/?/submit');
+      await repeatDrafteePage.getByRole('button', { name: 'Submit Lab Preferences' }).click();
+      const submitResponse = await submitResponsePromise;
+      const submitResponseData = await submitResponse.json();
+      expect(submitResponseData.type).toBe('success');
+    });
+
+    test('completes fourth draft with Repeat assigned to NDSL', async ({
+      adminPage,
+      ndslHeadPage,
+    }) => {
+      await adminPage.goto('/dashboard/drafts/4/');
+      await adminPage.getByRole('button', { name: 'Setup Quota' }).click();
+      const editor = adminPage.locator('#draft-quota-editor-initial');
+
+      await editor.locator('input[name="ndsl"]').fill('1');
+      await editor.locator('input[name="scl"]').fill('0');
+      await editor.locator('input[name="cvmil"]').fill('0');
+
+      const quotaResponsePromise = adminPage.waitForResponse('/dashboard/drafts/4/?/quota');
+      await editor.getByRole('button', { name: 'Update Initial Snapshots' }).click();
+      const quotaResponse = await quotaResponsePromise;
+      const quotaResponseData = await quotaResponse.json();
+      expect(quotaResponseData.type).toBe('success');
+
+      adminPage.once('dialog', dialog => dialog.accept());
+      const startResponsePromise = adminPage.waitForResponse('/dashboard/drafts/4/?/start');
+      await adminPage.getByRole('button', { name: 'Start Draft' }).click();
+      const startResponse = await startResponsePromise;
+      const startResponseData = await startResponse.json();
+      expect(startResponseData.type).toBe('success');
+
+      await ndslHeadPage.goto('/dashboard/students/');
+      await ndslHeadPage.getByRole('button', { name: /Repeat/u }).click();
+      ndslHeadPage.once('dialog', dialog => dialog.accept());
+      const selectionResponsePromise =
+        ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
+      await ndslHeadPage.getByRole('button', { name: 'Submit Selection' }).click();
+      const selectionResponse = await selectionResponsePromise;
+      const selectionResponseData = await selectionResponse.json();
+      expect(selectionResponseData.type).toBe('success');
+
+      await adminPage.goto('/dashboard/drafts/4/');
+      adminPage.once('dialog', dialog => dialog.accept());
+      const concludeResponsePromise = adminPage.waitForResponse('/dashboard/drafts/4/?/conclude');
+      await adminPage.getByRole('button', { name: 'Run Lottery' }).click();
+      const concludeResponse = await concludeResponsePromise;
+      const concludeResponseData = await concludeResponse.json();
+      expect(concludeResponseData.type).toBe('success');
+
+      adminPage.once('dialog', dialog => dialog.accept());
+      const finalizeResponsePromise = adminPage.waitForResponse('/dashboard/drafts/4/?/finalize');
+      await adminPage.getByRole('button', { name: 'Finalize Draft' }).click();
+      const finalizeResponse = await finalizeResponsePromise;
+      const finalizeResponseData = await finalizeResponse.json();
+      expect(finalizeResponseData.type).toBe('success');
+    });
+
+    test('clears Repeat current assignment before the next draft', async ({
+      database,
+      repeatDrafteeUserId,
+    }) => await clearCurrentLabAssignment(database, repeatDrafteeUserId));
+
+    test('creates fifth draft for Repeat', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/');
+      await adminPage.getByRole('button', { name: 'Create Draft' }).click();
+
+      const dialog = adminPage.getByRole('dialog');
+      const formattedDate = addDays(new Date(), 1).toISOString().slice(0, 16);
+
+      await dialog.locator('input#closesAt').fill(formattedDate);
+      await dialog.locator('input#rounds').fill('1');
+
+      adminPage.once('dialog', async dialog => await dialog.accept());
+      const createResponsePromise = adminPage.waitForResponse('/dashboard/drafts/?/init');
+      await dialog.getByRole('button', { name: 'Create Draft' }).click();
+      const createResponse = await createResponsePromise;
+      const createResponseData = await createResponse.json();
+      expect(createResponseData.type).toBe('success');
+    });
+
+    test('Repeat submits NDSL preference again in the fifth draft', async ({ repeatDrafteePage }) => {
+      await repeatDrafteePage.goto('/dashboard/student/');
+      await repeatDrafteePage
+        .getByRole('button', { name: 'Networks and Distributed Systems Laboratory' })
+        .click();
+      await repeatDrafteePage.getByLabel('Photo Consent').selectOption('none');
+      repeatDrafteePage.once('dialog', dialog => dialog.accept());
+      const submitResponsePromise =
+        repeatDrafteePage.waitForResponse('/dashboard/student/?/submit');
+      await repeatDrafteePage.getByRole('button', { name: 'Submit Lab Preferences' }).click();
+      const submitResponse = await submitResponsePromise;
+      const submitResponseData = await submitResponse.json();
+      expect(submitResponseData.type).toBe('success');
+    });
+
+    test('completes fifth draft with Repeat assigned to NDSL', async ({
+      adminPage,
+      ndslHeadPage,
+    }) => {
+      await adminPage.goto('/dashboard/drafts/5/');
+      await adminPage.getByRole('button', { name: 'Setup Quota' }).click();
+      const editor = adminPage.locator('#draft-quota-editor-initial');
+
+      await editor.locator('input[name="ndsl"]').fill('1');
+      await editor.locator('input[name="scl"]').fill('0');
+      await editor.locator('input[name="cvmil"]').fill('0');
+
+      const quotaResponsePromise = adminPage.waitForResponse('/dashboard/drafts/5/?/quota');
+      await editor.getByRole('button', { name: 'Update Initial Snapshots' }).click();
+      const quotaResponse = await quotaResponsePromise;
+      const quotaResponseData = await quotaResponse.json();
+      expect(quotaResponseData.type).toBe('success');
+
+      adminPage.once('dialog', dialog => dialog.accept());
+      const startResponsePromise = adminPage.waitForResponse('/dashboard/drafts/5/?/start');
+      await adminPage.getByRole('button', { name: 'Start Draft' }).click();
+      const startResponse = await startResponsePromise;
+      const startResponseData = await startResponse.json();
+      expect(startResponseData.type).toBe('success');
+
+      await ndslHeadPage.goto('/dashboard/students/');
+      await ndslHeadPage.getByRole('button', { name: /Repeat/u }).click();
+      ndslHeadPage.once('dialog', dialog => dialog.accept());
+      const selectionResponsePromise =
+        ndslHeadPage.waitForResponse('/dashboard/students/?/rankings');
+      await ndslHeadPage.getByRole('button', { name: 'Submit Selection' }).click();
+      const selectionResponse = await selectionResponsePromise;
+      const selectionResponseData = await selectionResponse.json();
+      expect(selectionResponseData.type).toBe('success');
+
+      await adminPage.goto('/dashboard/drafts/5/');
+      adminPage.once('dialog', dialog => dialog.accept());
+      const concludeResponsePromise = adminPage.waitForResponse('/dashboard/drafts/5/?/conclude');
+      await adminPage.getByRole('button', { name: 'Run Lottery' }).click();
+      const concludeResponse = await concludeResponsePromise;
+      const concludeResponseData = await concludeResponse.json();
+      expect(concludeResponseData.type).toBe('success');
+
+      adminPage.once('dialog', dialog => dialog.accept());
+      const finalizeResponsePromise = adminPage.waitForResponse('/dashboard/drafts/5/?/finalize');
+      await adminPage.getByRole('button', { name: 'Finalize Draft' }).click();
+      const finalizeResponse = await finalizeResponsePromise;
+      const finalizeResponseData = await finalizeResponse.json();
+      expect(finalizeResponseData.type).toBe('success');
+    });
+
+    test('Repeat can view fifth draft lab assignment without ambiguity', async ({
+      repeatDrafteePage,
+    }) => {
+      await repeatDrafteePage.goto('/dashboard/lab/');
+      await getDraftAccordionTrigger(repeatDrafteePage, '5').click();
+
+      await expect(repeatDrafteePage.getByText(/Repeat/u)).toBeVisible();
+    });
+  });
+
   test.describe('Logout', () => {
     test('admin can log out and lands on home', async ({ adminPage }) =>
       await assertLogout(adminPage));
@@ -3710,5 +3920,7 @@ test.describe('Draft Lifecycle', () => {
     }) => await assertLogout(secondRoundSclSecondChoicePage));
     test('SnapshotGuard can log out and lands on home', async ({ snapshotGuardStudentPage }) =>
       await assertLogout(snapshotGuardStudentPage));
+    test('Repeat can log out and lands on home', async ({ repeatDrafteePage }) =>
+      await assertLogout(repeatDrafteePage));
   });
 });

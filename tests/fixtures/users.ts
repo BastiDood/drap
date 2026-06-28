@@ -567,6 +567,46 @@ const testSnapshotGuardStudent = testLabs.extend<
   },
 });
 
+const testRepeatDraftee = testLabs.extend<
+  { repeatDrafteePage: Page },
+  { repeatDrafteeUserId: string }
+>({
+  repeatDrafteeUserId: [
+    async ({ database, labs: _ }, use) => {
+      const { id: userId } = await createTestUser(database, {
+        email: 'repeat.student@up.edu.ph',
+        googleUserId: 'test-repeat-student',
+        givenName: 'Repeat',
+        familyName: 'Draftee',
+        avatarUrl: 'https://avatar.vercel.sh/repeat.svg',
+        isAdmin: false,
+        labId: null,
+      });
+      await use(userId);
+    },
+    { scope: 'worker' },
+  ],
+  async repeatDrafteePage({ database, browser, repeatDrafteeUserId }, use) {
+    const context = await browser.newContext();
+    const page = await context.newPage();
+    const sessionId = await insertDummySession(database, repeatDrafteeUserId);
+    await context.addCookies([
+      {
+        name: 'sid',
+        value: sessionId,
+        domain: 'localhost',
+        path: '/dashboard',
+        httpOnly: true,
+        sameSite: 'Lax',
+      },
+    ]);
+    await page.goto('/dashboard/');
+    await use(page);
+    await deleteValidSession(database, sessionId);
+    await context.close();
+  },
+});
+
 const testNdslHead = testLabs.extend<{ ndslHeadPage: Page }, { ndslHeadUserId: string }>({
   ndslHeadUserId: [
     async ({ database, labs: _ }, use) => {
@@ -871,6 +911,7 @@ export const test = mergeTests(
   testSecondRoundCslFirstChoice,
   testSecondRoundSclSecondChoice,
   testSnapshotGuardStudent,
+  testRepeatDraftee,
   testPartialToDrafted,
   testPartialToLottery,
 );
