@@ -164,6 +164,7 @@ async function getUserLabAssignmentDraftId(db: DbConnection, userId: string, lab
         ),
       )
       .orderBy(desc(schema.labMemberView.draftId))
+      .limit(1) // resolve ambiguity in case of multiple draft assignments
       .then(assertOptional);
   });
 }
