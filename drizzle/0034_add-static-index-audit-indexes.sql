@@ -1,0 +1,20 @@
+CREATE INDEX "draft_lab_quota_lab_id_idx" ON "drap"."draft_lab_quota" USING btree ("lab_id");--> statement-breakpoint
+CREATE INDEX "draft_registration_allowlist_draft_created_at_idx" ON "drap"."draft_registration_allowlist" USING btree ("draft_id","created_at");--> statement-breakpoint
+CREATE INDEX "draft_registration_allowlist_student_user_id_idx" ON "drap"."draft_registration_allowlist" USING btree ("student_user_id");--> statement-breakpoint
+CREATE INDEX "draft_registration_allowlist_admin_user_id_idx" ON "drap"."draft_registration_allowlist" USING btree ("admin_user_id");--> statement-breakpoint
+CREATE INDEX "faculty_choice_draft_created_round_lab_idx" ON "drap"."faculty_choice" USING btree ("draft_id","created_at","round","lab_id");--> statement-breakpoint
+CREATE INDEX "faculty_choice_lab_id_idx" ON "drap"."faculty_choice" USING btree ("lab_id");--> statement-breakpoint
+CREATE INDEX "faculty_choice_user_id_idx" ON "drap"."faculty_choice" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "faculty_choice_user_draft_lab_round_student_idx" ON "drap"."faculty_choice_user" USING btree ("draft_id","lab_id","round","student_user_id");--> statement-breakpoint
+CREATE INDEX "faculty_choice_user_draft_round_lab_idx" ON "drap"."faculty_choice_user" USING btree ("draft_id","round","lab_id");--> statement-breakpoint
+CREATE INDEX "faculty_choice_user_student_user_id_idx" ON "drap"."faculty_choice_user" USING btree ("student_user_id");--> statement-breakpoint
+CREATE INDEX "faculty_choice_user_faculty_user_id_idx" ON "drap"."faculty_choice_user" USING btree ("faculty_user_id");--> statement-breakpoint
+CREATE INDEX "faculty_choice_user_lab_id_idx" ON "drap"."faculty_choice_user" USING btree ("lab_id");--> statement-breakpoint
+CREATE INDEX "student_rank_draft_created_at_idx" ON "drap"."student_rank" USING btree ("draft_id","created_at");--> statement-breakpoint
+CREATE INDEX "student_rank_user_id_idx" ON "drap"."student_rank" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "student_rank_lab_draft_lab_index_user_idx" ON "drap"."student_rank_lab" USING btree ("draft_id","lab_id","index","user_id");--> statement-breakpoint
+CREATE INDEX "student_rank_lab_user_id_idx" ON "drap"."student_rank_lab" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "student_rank_lab_lab_id_idx" ON "drap"."student_rank_lab" USING btree ("lab_id");--> statement-breakpoint
+CREATE INDEX "user_lab_id_idx" ON "drap"."user" USING btree ("lab_id");--> statement-breakpoint
+CREATE INDEX "session_user_id_idx" ON "auth"."session" USING btree ("user_id");--> statement-breakpoint
+CREATE INDEX "gmail_thread_recipient_user_id_idx" ON "email"."gmail_thread" USING btree ("recipient_user_id");

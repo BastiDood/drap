@@ -239,6 +239,13 @@
       "when": 1781484381656,
       "tag": "0033_restructure-gmail-thread-table",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1782726629802,
+      "tag": "0034_add-static-index-audit-indexes",
+      "breakpoints": true
     }
   ]
 }
