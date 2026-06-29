@@ -20,7 +20,10 @@ export const session = auth.table(
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
   },
-  ({ expiredAt }) => [index('session_expired_at_idx').on(expiredAt)],
+  ({ expiredAt, userId }) => [
+    index('session_expired_at_idx').on(expiredAt),
+    index('session_user_id_idx').on(userId),
+  ],
 );
 export type Session = typeof session.$inferSelect;
 export type NewSession = typeof session.$inferInsert;

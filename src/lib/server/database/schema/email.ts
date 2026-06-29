@@ -1,4 +1,13 @@
-import { bigint, pgEnum, pgSchema, smallint, text, timestamp, unique } from 'drizzle-orm/pg-core';
+import {
+  bigint,
+  index,
+  pgEnum,
+  pgSchema,
+  smallint,
+  text,
+  timestamp,
+  unique,
+} from 'drizzle-orm/pg-core';
 
 import { draft, user } from './app';
 
@@ -66,6 +75,7 @@ export const gmailThread = email.table(
       .on(draftId, eventType, round, recipientUserId)
       .nullsNotDistinct(),
     unique('gmail_thread_recipient_idx').on(gmailThreadId, recipientUserId),
+    index('gmail_thread_recipient_user_id_idx').on(recipientUserId),
   ],
 );
 export type GmailThread = typeof gmailThread.$inferSelect;

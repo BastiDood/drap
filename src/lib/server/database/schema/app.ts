@@ -3,6 +3,7 @@ import {
   boolean,
   check,
   foreignKey,
+  index,
   pgSchema,
   primaryKey,
   smallint,
@@ -62,7 +63,8 @@ export const user = app.table(
     familyName: text('family_name').notNull().default(''),
     avatarUrl: text('avatar').notNull().default(''),
   },
-  ({ email, studentNumber }) => [
+  ({ email, labId, studentNumber }) => [
+    index('user_lab_id_idx').on(labId),
     check(
       'user_student_number_within_bounds',
       sql`${studentNumber} BETWEEN 100000000 AND 1000000000`,
@@ -112,6 +114,7 @@ export const draftLabQuota = app.table(
   },
   ({ draftId, labId, initialQuota, lotteryQuota }) => [
     primaryKey({ columns: [draftId, labId] }),
+    index('draft_lab_quota_lab_id_idx').on(labId),
     check('draft_lab_quota_initial_quota_non_negative_check', sql`${initialQuota} >= 0`),
     check('draft_lab_quota_lottery_quota_non_negative_check', sql`${lotteryQuota} >= 0`),
   ],
@@ -133,7 +136,12 @@ export const draftRegistrationAllowlist = app.table(
       .references(() => user.id, { onUpdate: 'cascade' }),
     createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
   },
-  ({ draftId, studentUserId }) => [primaryKey({ columns: [draftId, studentUserId] })],
+  ({ draftId, studentUserId, adminUserId, createdAt }) => [
+    primaryKey({ columns: [draftId, studentUserId] }),
+    index('draft_registration_allowlist_draft_created_at_idx').on(draftId, createdAt),
+    index('draft_registration_allowlist_student_user_id_idx').on(studentUserId),
+    index('draft_registration_allowlist_admin_user_id_idx').on(adminUserId),
+  ],
 );
 export type DraftRegistrationAllowlist = typeof draftRegistrationAllowlist.$inferSelect;
 export type NewDraftRegistrationAllowlist = typeof draftRegistrationAllowlist.$inferInsert;
@@ -151,7 +159,11 @@ export const studentRank = app.table(
     // Points to the avatar object key in the `draft-student-avatar` bucket.
     avatarObjectKey: uuid('avatar_object_key').unique(),
   },
-  ({ draftId, userId }) => [primaryKey({ columns: [draftId, userId] })],
+  ({ draftId, userId, createdAt }) => [
+    primaryKey({ columns: [draftId, userId] }),
+    index('student_rank_draft_created_at_idx').on(draftId, createdAt),
+    index('student_rank_user_id_idx').on(userId),
+  ],
 );
 export type StudentRank = typeof studentRank.$inferSelect;
 export type NewStudentRank = typeof studentRank.$inferInsert;
@@ -171,7 +183,12 @@ export const studentRankLab = app.table(
     index: bigint('index', { mode: 'bigint' }).notNull(),
     remark: varchar('remark', { length: 1028 }).notNull().default(''),
   },
-  ({ draftId, userId, labId }) => [primaryKey({ columns: [draftId, userId, labId] })],
+  ({ draftId, userId, labId, index: rankIndex }) => [
+    primaryKey({ columns: [draftId, userId, labId] }),
+    index('student_rank_lab_draft_lab_index_user_idx').on(draftId, labId, rankIndex, userId),
+    index('student_rank_lab_user_id_idx').on(userId),
+    index('student_rank_lab_lab_id_idx').on(labId),
+  ],
 );
 export type StudentRankLab = typeof studentRankLab.$inferSelect;
 export type NewStudentRankLab = typeof studentRankLab.$inferInsert;
@@ -190,7 +207,10 @@ export const facultyChoice = app.table(
     // Possibly `null` to model the fact that faculty choices can be automated by the system.
     userId: ulid('user_id').references(() => user.id, { onUpdate: 'cascade' }),
   },
-  ({ draftId, round, labId }) => [
+  ({ draftId, round, labId, userId, createdAt }) => [
+    index('faculty_choice_draft_created_round_lab_idx').on(draftId, createdAt, round, labId),
+    index('faculty_choice_lab_id_idx').on(labId),
+    index('faculty_choice_user_id_idx').on(userId),
     check('faculty_choice_post_registration_round_check', sql`${round} > 0`),
     unique('faculty_choice_only_once_per_draft_round').on(draftId, round, labId).nullsNotDistinct(),
   ],
@@ -220,6 +240,16 @@ export const facultyChoiceUser = app.table(
       foreignColumns: [facultyChoice.draftId, facultyChoice.round, facultyChoice.labId],
     }),
     unique('faculty_choice_user_unique_student_selection_per_draft').on(draftId, studentUserId),
+    index('faculty_choice_user_draft_lab_round_student_idx').on(
+      draftId,
+      labId,
+      round,
+      studentUserId,
+    ),
+    index('faculty_choice_user_draft_round_lab_idx').on(draftId, round, labId),
+    index('faculty_choice_user_student_user_id_idx').on(studentUserId),
+    index('faculty_choice_user_faculty_user_id_idx').on(facultyUserId),
+    index('faculty_choice_user_lab_id_idx').on(labId),
     check(
       'faculty_choice_user_different_student_and_faculty_users',
       sql`${studentUserId} <> ${facultyUserId}`,
