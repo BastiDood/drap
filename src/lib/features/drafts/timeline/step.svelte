@@ -75,13 +75,19 @@
           />
         </Collapsible.Trigger>
         <Collapsible.Content>
-          {#if flush}
-            {@render children()}
-          {:else}
-            <div class="rounded-lg bg-background p-4">
-              {@render children()}
-            </div>
-          {/if}
+          {#snippet child({ props, open: contentOpen })}
+            {#if contentOpen}
+              <div {...props}>
+                {#if flush}
+                  {@render children()}
+                {:else}
+                  <div class="rounded-lg bg-background p-4">
+                    {@render children()}
+                  </div>
+                {/if}
+              </div>
+            {/if}
+          {/snippet}
         </Collapsible.Content>
       </Collapsible.Root>
     {:else}
