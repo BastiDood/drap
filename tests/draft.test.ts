@@ -933,18 +933,19 @@ test.describe('Draft Lifecycle', () => {
 
   test.describe('Round 1 — 1st choice', () => {
     test('admin draft page shows regular loader labels', async ({ adminPage }) => {
-      const noResponseBeforeOpen = expect(
-        adminPage.waitForResponse(
-          response => new URL(response.url()).pathname === '/dashboard/drafts/1/assignment-summary',
-          { timeout: 1000 },
-        ),
-      ).rejects.toThrow();
+      const assignmentSummaryResponse = adminPage.waitForResponse(
+        response => new URL(response.url()).pathname === '/dashboard/drafts/1/assignment-summary',
+      );
 
       await adminPage.goto('/dashboard/drafts/1/');
-      await expect(adminPage.getByRole('button', { name: /Regular Rounds/u })).toBeVisible();
-      await adminPage.waitForLoadState('networkidle');
-      await noResponseBeforeOpen;
-      await openRegularRounds(adminPage);
+      const regularRoundsTrigger = adminPage.getByRole('button', { name: /Regular Rounds/u });
+      await expect(regularRoundsTrigger).toBeVisible();
+      await expect(regularRoundsTrigger).toHaveAttribute('aria-expanded', 'true');
+
+      const response = await assignmentSummaryResponse;
+      expect(response.ok()).toBeTruthy();
+
+      await expect(adminPage.locator('#regular-round-summary-chart')).toBeVisible();
 
       await adminPage.getByRole('tab', { name: 'Registered Students' }).click();
       await expect(adminPage.getByRole('tabpanel', { name: 'Registered Students' })).toBeVisible();
@@ -1725,19 +1726,20 @@ test.describe('Draft Lifecycle', () => {
 
   test.describe('Lottery Phase', () => {
     test('draft enters lottery phase', async ({ adminPage }) => {
-      const noResponseBeforeOpen = expect(
-        adminPage.waitForResponse(
-          response =>
-            new URL(response.url()).pathname === '/dashboard/drafts/1/interventions-aggregate',
-          { timeout: 1000 },
-        ),
-      ).rejects.toThrow();
+      const interventionsAggregateResponse = adminPage.waitForResponse(
+        response =>
+          new URL(response.url()).pathname === '/dashboard/drafts/1/interventions-aggregate',
+      );
 
       await adminPage.goto('/dashboard/drafts/1/');
-      await expect(adminPage.getByRole('heading', { name: 'Interventions' })).toBeVisible();
-      await adminPage.waitForLoadState('networkidle');
-      await noResponseBeforeOpen;
-      await openInterventions(adminPage);
+      const interventionsTrigger = adminPage.getByRole('button', { name: /^Interventions$/u });
+      await expect(interventionsTrigger).toBeVisible();
+      await expect(interventionsTrigger).toHaveAttribute('aria-expanded', 'true');
+
+      const response = await interventionsAggregateResponse;
+      expect(response.ok()).toBeTruthy();
+
+      await expect(adminPage.locator('#quota-dumbbell-chart')).toBeVisible();
       await expectSheetContents(
         adminPage,
         'See Drafted',
