@@ -27,12 +27,6 @@
   import StartForm from './registration/start-form.svelte';
   import SummaryPhase from './summary/index.svelte';
 
-  interface TimelineData {
-    date: Date;
-    label: string;
-    count: number;
-  }
-
   interface Props {
     draftId: bigint;
     requestedAt: Date;
@@ -42,7 +36,6 @@
     snapshots: DraftLabQuotaSnapshot[];
     allowlistCount: number;
     lateRegistrantsCount: number;
-    timelineData: TimelineData[];
     assignmentSummary: DraftAssignmentSummary;
     draftSummaryChartData: DraftSummaryChartData;
     interventionsAggregate: InterventionsAggregate;
@@ -58,7 +51,6 @@
     snapshots,
     allowlistCount,
     lateRegistrantsCount,
-    timelineData,
     assignmentSummary,
     draftSummaryChartData,
     interventionsAggregate,
@@ -250,7 +242,6 @@
           draftCreatedAt={draft.activePeriodStart}
           registrationClosedAt={draft.registrationClosedAt}
           startedAt={draft.startedAt}
-          {timelineData}
           {studentCount}
           {lateRegistrantsCount}
         />

@@ -4,13 +4,7 @@
   import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
   import StatCardGroup from '$lib/features/drafts/timeline/stat-card-group.svelte';
 
-  import RegistrantsChart from './registrants-chart.svelte';
-
-  interface TimelineData {
-    date: Date;
-    label: string;
-    count: number;
-  }
+  import RegistrantsChart from './registrants/index.svelte';
 
   interface Props {
     draftId: string;
@@ -18,7 +12,6 @@
     registrationClosedAt: Date;
     startedAt: Date | null;
     requestedAt: Date;
-    timelineData: TimelineData[];
     studentCount: number;
     lateRegistrantsCount: number;
   }
@@ -29,7 +22,6 @@
     registrationClosedAt,
     startedAt,
     requestedAt,
-    timelineData,
     studentCount,
     lateRegistrantsCount,
   }: Props = $props();
@@ -53,12 +45,5 @@
       {/snippet}
     </StatCard>
   </StatCardGroup>
-  <RegistrantsChart
-    {draftId}
-    {draftCreatedAt}
-    {registrationClosedAt}
-    {startedAt}
-    {requestedAt}
-    {timelineData}
-  />
+  <RegistrantsChart {draftId} {draftCreatedAt} {registrationClosedAt} {startedAt} {requestedAt} />
 </div>

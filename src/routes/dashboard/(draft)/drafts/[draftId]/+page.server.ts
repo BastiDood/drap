@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 import * as v from 'valibot';
 import { and, asc, count, eq, inArray, isNotNull, isNull, lt, lte, sql, sum } from 'drizzle-orm';
 import { decode } from 'decode-formdata';
-import { eachDayOfInterval, startOfDay } from 'date-fns';
 import { error, fail } from '@sveltejs/kit';
 import { repeat, roundrobin, zip } from 'itertools';
 
@@ -61,11 +60,6 @@ const QuotaActionFormData = v.object({
 const SERVICE_NAME = 'routes.dashboard.admin.drafts.detail';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
-const dayFormat = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
-
-function formatDayLabel(value: Date) {
-  return dayFormat.format(value);
-}
 
 export async function load({ params, locals: { session } }) {
   if (typeof session?.user === 'undefined') {
@@ -113,7 +107,6 @@ export async function load({ params, locals: { session } }) {
       quotaSnapshots,
       allowlistCount,
       lateRegistrantsCount,
-      timelineData,
       assignmentCountsByAttribute,
       labDistribution,
       supplyVsDemand,
@@ -130,12 +123,6 @@ export async function load({ params, locals: { session } }) {
           quotaSnapshots: await getDraftLabQuotaSnapshots(db, draftId),
           allowlistCount: await getAllowlistCountByDraft(db, draftId),
           lateRegistrantsCount: await getLateRegistrantsCountByDraft(db, draftId),
-          timelineData: await getDraftRegistrationTimeline(
-            db,
-            draftId,
-            draft.activePeriodStart,
-            draft.startedAt ?? requestedAt,
-          ),
           assignmentCountsByAttribute: await getDraftAssignmentCountsByAttribute(db, draftId),
           labDistribution: await getDraftLabDistribution(db, draftId, studentCount),
           supplyVsDemand: await getDraftSupplyDemand(db, draftId),
@@ -209,7 +196,6 @@ export async function load({ params, locals: { session } }) {
       draftSummaryChartData,
       allowlistCount,
       lateRegistrantsCount,
-      timelineData,
       interventionsAggregate,
       lotteryAggregate,
     };
@@ -1330,36 +1316,6 @@ async function getLateRegistrantsCountByDraft(db: DbConnection, draftId: bigint)
       )
       .then(assertSingle);
     return result;
-  });
-}
-
-async function getDraftRegistrationTimeline(
-  db: DbConnection,
-  id: bigint,
-  draftCreatedAt: Date,
-  chartEnd: Date,
-) {
-  return await tracer.asyncSpan('get-draft-registration-timeline', async span => {
-    span.setAttribute('database.draft.id', id.toString());
-    const rows = await db
-      .select({
-        date: sql`date_trunc('day', ${schema.studentRank.createdAt})`.mapWith(coerceDate),
-        count: count(schema.studentRank.userId),
-      })
-      .from(schema.studentRank)
-      .where(eq(schema.studentRank.draftId, id))
-      .groupBy(({ date }) => date)
-      .orderBy(({ date }) => date);
-
-    const countByDay = new Map(rows.map(({ date, count }) => [startOfDay(date).getTime(), count]));
-    return eachDayOfInterval({
-      start: startOfDay(draftCreatedAt),
-      end: startOfDay(chartEnd),
-    }).map(date => ({
-      date,
-      label: formatDayLabel(date),
-      count: countByDay.get(date.getTime()) ?? 0,
-    }));
   });
 }
 
