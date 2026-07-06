@@ -205,13 +205,7 @@
         {/if}
       </Step>
     {/if}
-    <Step
-      title="Registration"
-      status={registrationStatus}
-      open={currentPhase === DraftPhase.Registration ||
-        currentPhase === DraftPhase.RegistrationClosed}
-      last
-    >
+    <Step title="Registration" status={registrationStatus} last>
       {#snippet metadata()}
         <span class="text-sm text-muted-foreground">
           {studentCount}

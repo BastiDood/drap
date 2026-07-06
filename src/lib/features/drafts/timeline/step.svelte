@@ -17,7 +17,6 @@
     last?: boolean;
     collapsible?: boolean;
     flush?: boolean;
-    open?: boolean;
     children: Snippet;
     metadata?: Snippet;
   }
@@ -28,7 +27,6 @@
     last = false,
     collapsible = true,
     flush = false,
-    open = $bindable(false),
     children,
     metadata,
   }: Props = $props();
@@ -58,7 +56,7 @@
   <!-- Content Area -->
   <div class="min-w-0 grow pb-6">
     {#if collapsible}
-      <Collapsible.Root bind:open>
+      <Collapsible.Root open={status === 'active'}>
         <Collapsible.Trigger
           class="-ml-2 flex w-full items-center justify-between rounded-lg px-2 py-1 hover:bg-muted/50"
         >
