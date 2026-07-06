@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
 import * as v from 'valibot';
-import { and, asc, count, eq, inArray, isNotNull, isNull, lt, lte, sql, sum } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, isNull, lt, sql, sum } from 'drizzle-orm';
 import { decode } from 'decode-formdata';
 import { error, fail } from '@sveltejs/kit';
 import { repeat, roundrobin, zip } from 'itertools';
@@ -23,23 +23,23 @@ import {
   getUserByEmail,
   incrementDraftRound,
 } from '$lib/server/database/drizzle';
-import { coerceDate, coerceNullableNumber, coerceNumber } from '$lib/coerce';
-import { db } from '$lib/server/database';
-import { EmailEvent } from '$lib/server/inngest/schema';
-import {
-  getDraftPhase,
-  isInterventionsRendered,
-  isLotteryRendered,
-} from '$lib/features/drafts/phase';
-import { inngest } from '$lib/server/inngest/client';
-import { Logger } from '$lib/server/telemetry/logger';
-import { Tracer } from '$lib/server/telemetry/tracer';
-
 import {
   buildDraftAssignmentSummary,
   buildDraftSummaryChartData,
   buildLotteryAggregate,
-} from './assignment-summary';
+} from '$lib/features/drafts/timeline/aggregates/builders';
+import { coerceDate, coerceNullableNumber, coerceNumber } from '$lib/coerce';
+import { db } from '$lib/server/database';
+import type {
+  DraftAssignmentSummary,
+  DraftSummaryChartData,
+  LotteryAggregate,
+} from '$lib/features/drafts/types';
+import { DraftPhase, getDraftPhase } from '$lib/features/drafts/phase';
+import { EmailEvent } from '$lib/server/inngest/schema';
+import { inngest } from '$lib/server/inngest/client';
+import { Logger } from '$lib/server/telemetry/logger';
+import { Tracer } from '$lib/server/telemetry/tracer';
 
 const enum AllowlistAddResult {
   NotAStudent = -3,
@@ -97,56 +97,64 @@ export async function load({ params, locals: { session } }) {
       error(404);
     }
 
-    const phase = getDraftPhase(draft);
-    const needsLotteryRows = isLotteryRendered(phase);
-    const needsInterventionsRows = isInterventionsRendered(phase);
     const requestedAt = new Date();
+    const currentPhase = getDraftPhase(draft);
 
-    const {
-      studentCount,
-      quotaSnapshots,
-      allowlistCount,
-      lateRegistrantsCount,
-      assignmentCountsByAttribute,
-      labDistribution,
-      supplyVsDemand,
-      preferenceAlignment,
-      interventionsAggregate,
-      lotteryStatCards,
-      lotteryOutcomeRows,
-    } = await db.transaction(
-      // Needs to be done sequentially because parallel queries in a transaction are not supported.
-      async db => {
-        const studentCount = await getStudentCountInDraft(db, draftId);
-        return {
-          studentCount,
-          quotaSnapshots: await getDraftLabQuotaSnapshots(db, draftId),
-          allowlistCount: await getAllowlistCountByDraft(db, draftId),
-          lateRegistrantsCount: await getLateRegistrantsCountByDraft(db, draftId),
-          assignmentCountsByAttribute: await getDraftAssignmentCountsByAttribute(db, draftId),
-          labDistribution: await getDraftLabDistribution(db, draftId, studentCount),
-          supplyVsDemand: await getDraftSupplyDemand(db, draftId),
-          preferenceAlignment: await getDraftPreferenceAlignment(db, draftId),
-          interventionsAggregate: needsInterventionsRows
-            ? await getInterventionsAggregate(db, draftId, draft.maxRounds, studentCount)
-            : {
-                statCards: { poolSize: 0, totalLotteryQuota: 0, delta: 0 },
-                dumbbellRows: [],
-              },
-          lotteryStatCards: needsLotteryRows
-            ? await getLotteryStatCards(db, draftId)
-            : {
-                poolSize: 0,
-                topChoice: 0,
-                rankedLab: 0,
-                unranked: 0,
-                medianRankHonored: null,
-              },
-          lotteryOutcomeRows: needsLotteryRows ? await getLotteryOutcomePerLab(db, draftId) : [],
-        };
-      },
-      { isolationLevel: 'repeatable read' },
-    );
+    const { studentCount, quotaSnapshots, allowlistCount, lateRegistrantsCount, summary } =
+      await db.transaction(
+        // Needs to be done sequentially because parallel queries in a transaction are not supported.
+        async db => {
+          const studentCount = await getStudentCountInDraft(db, draftId);
+          const quotaSnapshots = await getDraftLabQuotaSnapshots(db, draftId);
+          const labs = quotaSnapshots.map(({ labId, labName, initialQuota }) => ({
+            id: labId,
+            name: labName,
+            quota: initialQuota,
+          }));
+
+          let summary: {
+            assignmentSummary: DraftAssignmentSummary;
+            draftSummaryChartData: DraftSummaryChartData;
+            lotteryAggregate: LotteryAggregate | null;
+          } | null = null;
+          switch (currentPhase) {
+            case DraftPhase.Review:
+            case DraftPhase.Finalized:
+              summary = {
+                assignmentSummary: buildDraftAssignmentSummary(
+                  await getDraftAssignmentCountsByAttribute(db, draftId),
+                  labs,
+                  draft.maxRounds,
+                  studentCount,
+                ),
+                draftSummaryChartData: buildDraftSummaryChartData(
+                  await getDraftLabDistribution(db, draftId, studentCount),
+                  await getDraftPreferenceAlignment(db, draftId),
+                  await getDraftSupplyDemand(db, draftId),
+                ),
+                lotteryAggregate:
+                  currentPhase === DraftPhase.Review
+                    ? buildLotteryAggregate(
+                        await getLotteryOutcomePerLab(db, draftId),
+                        await getLotteryStatCards(db, draftId),
+                      )
+                    : null,
+              };
+              break;
+            default:
+              break;
+          }
+
+          return {
+            studentCount,
+            quotaSnapshots,
+            allowlistCount: await getAllowlistCountByDraft(db, draftId),
+            lateRegistrantsCount: await getLateRegistrantsCountByDraft(db, draftId),
+            summary,
+          };
+        },
+        { isolationLevel: 'repeatable read' },
+      );
 
     const labs = quotaSnapshots.map(({ labId, labName, initialQuota }) => ({
       id: labId,
@@ -159,31 +167,6 @@ export async function load({ params, locals: { session } }) {
       'draft.round.current': draft.currRound,
       'draft.round.max': draft.maxRounds,
     });
-    const assignmentSummary = buildDraftAssignmentSummary(
-      assignmentCountsByAttribute,
-      labs,
-      draft.maxRounds,
-      studentCount,
-    );
-
-    const draftSummaryChartData = buildDraftSummaryChartData(
-      labDistribution,
-      preferenceAlignment,
-      supplyVsDemand,
-    );
-
-    const lotteryAggregate = needsLotteryRows
-      ? buildLotteryAggregate(lotteryOutcomeRows, lotteryStatCards)
-      : {
-          statCards: {
-            poolSize: 0,
-            topChoice: 0,
-            rankedLab: 0,
-            unranked: 0,
-            medianRankHonored: null,
-          },
-          outcomeStacks: [],
-        };
 
     return {
       draftId,
@@ -192,12 +175,9 @@ export async function load({ params, locals: { session } }) {
       labs,
       studentCount,
       snapshots: quotaSnapshots,
-      assignmentSummary,
-      draftSummaryChartData,
       allowlistCount,
       lateRegistrantsCount,
-      interventionsAggregate,
-      lotteryAggregate,
+      summary,
     };
   });
 }
@@ -1319,6 +1299,21 @@ async function getLateRegistrantsCountByDraft(db: DbConnection, draftId: bigint)
   });
 }
 
+async function getDraftAssignmentCountsByAttribute(db: DbConnection, draftId: bigint) {
+  return await tracer.asyncSpan('get-draft-assignment-counts-by-lab', async span => {
+    span.setAttribute('database.draft.id', draftId.toString());
+    return await db
+      .select({
+        labId: schema.facultyChoiceUser.labId,
+        round: schema.facultyChoiceUser.round,
+        count: count(schema.facultyChoiceUser.studentUserId),
+      })
+      .from(schema.facultyChoiceUser)
+      .where(eq(schema.facultyChoiceUser.draftId, draftId))
+      .groupBy(({ labId, round }) => [labId, round]);
+  });
+}
+
 async function getDraftPreferenceAlignment(db: DbConnection, draftId: bigint) {
   return await tracer.asyncSpan('get-draft-preference-alignment', async span => {
     span.setAttribute('database.draft.id', draftId.toString());
@@ -1548,86 +1543,6 @@ async function getLotteryStatCards(db: DbConnection, draftId: bigint) {
   });
 }
 
-async function getInterventionsAggregate(
-  db: DbConnection,
-  draftId: bigint,
-  maxRounds: number,
-  totalStudents: number,
-) {
-  return await tracer.asyncSpan('get-interventions-aggregate', async span => {
-    span.setAttribute('database.draft.id', draftId.toString());
-    const regularAssignedByLab = db.$with('regular_assigned_by_lab').as(
-      db
-        .select({
-          labId: schema.facultyChoiceUser.labId,
-          regularAssigned: count(schema.facultyChoiceUser.studentUserId).as('regular_assigned'),
-        })
-        .from(schema.facultyChoiceUser)
-        .where(
-          and(
-            eq(schema.facultyChoiceUser.draftId, draftId),
-            isNotNull(schema.facultyChoiceUser.round),
-            lte(schema.facultyChoiceUser.round, maxRounds),
-          ),
-        )
-        .groupBy(({ labId }) => labId),
-    );
-    const nonLotteryAssigned = db.$with('non_lottery_assigned').as(
-      db
-        .select({
-          nonLotteryAssigned: count(schema.facultyChoiceUser.studentUserId).as(
-            'non_lottery_assigned',
-          ),
-        })
-        .from(schema.facultyChoiceUser)
-        .where(
-          and(
-            eq(schema.facultyChoiceUser.draftId, draftId),
-            isNotNull(schema.facultyChoiceUser.round),
-          ),
-        ),
-    );
-    const regularVacancies = sql`greatest(${schema.draftLabQuota.initialQuota} - coalesce(${regularAssignedByLab.regularAssigned}, 0), 0)`;
-    const poolSize = sql`greatest(${totalStudents} - coalesce(${nonLotteryAssigned.nonLotteryAssigned}, 0), 0)`;
-    const totalLotteryQuota = sql`sum(${schema.draftLabQuota.lotteryQuota}) over ()`;
-    const gap = sql`${schema.draftLabQuota.lotteryQuota} - ${regularVacancies}`;
-
-    const rows = await db
-      .with(regularAssignedByLab, nonLotteryAssigned)
-      .select({
-        poolSize: poolSize.mapWith(coerceNumber),
-        totalLotteryQuota: totalLotteryQuota.mapWith(coerceNumber),
-        delta: sql`${poolSize} - ${totalLotteryQuota}`.mapWith(coerceNumber),
-        labId: schema.draftLabQuota.labId,
-        labName: schema.lab.name,
-        naturalLeftover: regularVacancies.mapWith(coerceNumber),
-        lotteryQuota: schema.draftLabQuota.lotteryQuota,
-        gap: gap.mapWith(coerceNumber),
-      })
-      .from(schema.draftLabQuota)
-      .innerJoin(schema.lab, eq(schema.draftLabQuota.labId, schema.lab.id))
-      .leftJoin(regularAssignedByLab, eq(schema.draftLabQuota.labId, regularAssignedByLab.labId))
-      .leftJoin(nonLotteryAssigned, sql`true`)
-      .where(eq(schema.draftLabQuota.draftId, draftId))
-      .orderBy(sql`abs(${gap}) desc`, asc(schema.lab.name));
-
-    return {
-      statCards: {
-        poolSize: rows[0]?.poolSize ?? 0,
-        totalLotteryQuota: rows[0]?.totalLotteryQuota ?? 0,
-        delta: rows[0]?.delta ?? 0,
-      },
-      dumbbellRows: rows.map(({ labId, labName, naturalLeftover, lotteryQuota, gap }) => ({
-        labId,
-        labName,
-        naturalLeftover,
-        lotteryQuota,
-        gap,
-      })),
-    };
-  });
-}
-
 async function insertLotteryChoices(
   db: DrizzleTransaction,
   draftId: bigint,
@@ -1707,20 +1622,5 @@ async function syncResultsToUsers(db: DbConnection, draftId: bigint) {
         ),
       )
       .returning({ userId: schema.user.id, labId: schema.facultyChoiceUser.labId });
-  });
-}
-
-async function getDraftAssignmentCountsByAttribute(db: DbConnection, draftId: bigint) {
-  return await tracer.asyncSpan('get-draft-assignment-counts-by-lab', async span => {
-    span.setAttribute('database.draft.id', draftId.toString());
-    return await db
-      .select({
-        labId: schema.facultyChoiceUser.labId,
-        round: schema.facultyChoiceUser.round,
-        count: count(schema.facultyChoiceUser.studentUserId),
-      })
-      .from(schema.facultyChoiceUser)
-      .where(eq(schema.facultyChoiceUser.draftId, draftId))
-      .groupBy(({ labId, round }) => [labId, round]);
   });
 }

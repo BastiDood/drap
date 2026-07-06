@@ -25,37 +25,24 @@
   interface Props {
     draftId: string;
     draft: Pick<Draft, 'maxRounds'>;
-    totalStudents: number;
+    studentCount: number;
     assignmentSummary: DraftAssignmentSummary;
     draftSummaryChartData: DraftSummaryChartData;
-    lotteryAggregate: LotteryAggregate;
-    isReview: boolean;
+    lotteryAggregate: LotteryAggregate | null;
   }
 
   const {
     draftId,
     draft,
-    totalStudents,
+    studentCount,
     assignmentSummary,
     draftSummaryChartData,
     lotteryAggregate,
-    isReview,
   }: Props = $props();
 </script>
 
 <div class="@container space-y-4">
-  {#if isReview}
-    <Alert.Root variant="warning" class="grid-cols-[auto_1fr_auto] items-center gap-x-3">
-      <SparklesIcon class="text-accent" />
-      <Alert.Title>Draft Review</Alert.Title>
-      <Alert.Description>
-        Lottery assignments are complete. Review results below before finalizing.
-      </Alert.Description>
-      <div class="col-start-2 mt-2 sm:col-start-3 sm:row-span-2 sm:row-start-1 sm:mt-0">
-        <FinalizeForm {draftId} />
-      </div>
-    </Alert.Root>
-  {:else}
+  {#if lotteryAggregate === null}
     <Alert.Root variant="success" class="grid-cols-[auto_1fr_auto] items-center gap-x-3">
       <CheckCircle2Icon class="text-success" />
       <Alert.Title>Draft Finalized</Alert.Title>
@@ -66,12 +53,23 @@
         <DraftAssignments {draftId} maxRounds={draft.maxRounds} />
       </div>
     </Alert.Root>
+  {:else}
+    <Alert.Root variant="warning" class="grid-cols-[auto_1fr_auto] items-center gap-x-3">
+      <SparklesIcon class="text-accent" />
+      <Alert.Title>Draft Review</Alert.Title>
+      <Alert.Description>
+        Lottery assignments are complete. Review results below before finalizing.
+      </Alert.Description>
+      <div class="col-start-2 mt-2 sm:col-start-3 sm:row-span-2 sm:row-start-1 sm:mt-0">
+        <FinalizeForm {draftId} />
+      </div>
+    </Alert.Root>
   {/if}
   <StatCardGroup columns="two">
     <StatCard icon={UsersIcon}>
       {#snippet title()}Total Students{/snippet}
       {#snippet body()}
-        <p id="stat-total-students" class="text-2xl font-bold tabular-nums">{totalStudents}</p>
+        <p id="stat-total-students" class="text-2xl font-bold tabular-nums">{studentCount}</p>
       {/snippet}
       {#snippet subtitle()}All Registered Participants{/snippet}
     </StatCard>
@@ -92,7 +90,7 @@
       <LabDistributionChart data={draftSummaryChartData.labDistribution} />
       <PreferenceAlignmentChart data={draftSummaryChartData.preferenceAlignment} />
     </div>
-    {#if isReview}
+    {#if lotteryAggregate !== null}
       <LotteryCompleted {draftId} {lotteryAggregate} />
     {/if}
   </div>

@@ -5,7 +5,7 @@ import {
   buildDraftSummaryChartData,
   buildLotteryAggregate,
   buildPreferenceAlignment,
-} from './assignment-summary';
+} from './builders';
 
 describe('buildDraftAssignmentSummary', () => {
   test('builds zero-filled phase series and aggregate metrics from grouped assignment rows', () => {

@@ -9,7 +9,6 @@
     DraftAssignmentSummary,
     DraftLabQuotaSnapshot,
     DraftSummaryChartData,
-    InterventionsAggregate,
     Lab,
     LotteryAggregate,
   } from '$lib/features/drafts/types';
@@ -18,14 +17,20 @@
 
   import Step from './step.svelte';
 
-  import InterventionsActive from './interventions/active.svelte';
-  import LotteryCompleted from './lottery/completed.svelte';
+  import InterventionsLoader from './interventions/loader.svelte';
+  import LotteryLoader from './lottery/loader.svelte';
   import RegistrationActive from './registration/active.svelte';
   import RegistrationClosed from './registration/closed.svelte';
   import RegistrationCompleted from './registration/completed.svelte';
-  import RegularPhase from './regular/index.svelte';
+  import RegularLoader from './regular/loader.svelte';
   import StartForm from './registration/start-form.svelte';
   import SummaryPhase from './summary/index.svelte';
+
+  interface SummaryData {
+    assignmentSummary: DraftAssignmentSummary;
+    draftSummaryChartData: DraftSummaryChartData;
+    lotteryAggregate: LotteryAggregate | null;
+  }
 
   interface Props {
     draftId: bigint;
@@ -36,10 +41,7 @@
     snapshots: DraftLabQuotaSnapshot[];
     allowlistCount: number;
     lateRegistrantsCount: number;
-    assignmentSummary: DraftAssignmentSummary;
-    draftSummaryChartData: DraftSummaryChartData;
-    interventionsAggregate: InterventionsAggregate;
-    lotteryAggregate: LotteryAggregate;
+    summary: SummaryData | null;
   }
 
   const {
@@ -51,10 +53,7 @@
     snapshots,
     allowlistCount,
     lateRegistrantsCount,
-    assignmentSummary,
-    draftSummaryChartData,
-    interventionsAggregate,
-    lotteryAggregate,
+    summary,
   }: Props = $props();
   const draftId = $derived(rawDraftId.toString());
   const draftYear = $derived(draft.activePeriodStart.getFullYear());
@@ -155,41 +154,29 @@
                 <span class="text-sm text-muted-foreground">Pending Finalization</span>
               {/if}
             {/snippet}
-            <SummaryPhase
-              {draftId}
-              {draft}
-              totalStudents={studentCount}
-              {assignmentSummary}
-              {draftSummaryChartData}
-              {lotteryAggregate}
-              isReview={currentPhase === DraftPhase.Review}
-            />
+            {#if summary !== null}
+              <SummaryPhase {draftId} {draft} {studentCount} {...summary} />
+            {/if}
           </Step>
           {#if currentPhase === DraftPhase.Finalized}
             <Step title="Lottery" status="completed">
-              <LotteryCompleted {draftId} {lotteryAggregate} />
+              <LotteryLoader {draftId} />
             </Step>
           {/if}
         {/if}
         <Step
           title="Interventions"
           status={currentPhase === DraftPhase.Intervention ? 'active' : 'completed'}
-          open={currentPhase === DraftPhase.Intervention}
         >
-          <InterventionsActive
+          <InterventionsLoader
             {draftId}
             {labs}
             {snapshots}
-            rows={interventionsAggregate.dumbbellRows}
             isHistorical={currentPhase !== DraftPhase.Intervention}
           />
         </Step>
       {/if}
-      <Step
-        title="Regular Rounds"
-        status={regularStatus}
-        open={currentPhase === DraftPhase.Regular}
-      >
+      <Step title="Regular Rounds" status={regularStatus}>
         {#snippet metadata()}
           <span class="text-sm text-muted-foreground">
             {draft.currRound === null
@@ -198,21 +185,21 @@
           </span>
         {/snippet}
         {#if draft.currRound !== null && draft.currRound > 0 && draft.currRound <= draft.maxRounds}
-          <RegularPhase
+          <RegularLoader
             {draftId}
             {requestedAt}
             round={draft.currRound}
             {labs}
-            {assignmentSummary}
+            initialAssignmentSummary={summary?.assignmentSummary}
             showUndrafted
           />
         {:else if currentPhase === DraftPhase.Intervention || currentPhase === DraftPhase.Review || currentPhase === DraftPhase.Finalized}
-          <RegularPhase
+          <RegularLoader
             {draftId}
             {requestedAt}
             round={draft.maxRounds}
             {labs}
-            {assignmentSummary}
+            initialAssignmentSummary={summary?.assignmentSummary}
             showUndrafted={false}
           />
         {/if}
