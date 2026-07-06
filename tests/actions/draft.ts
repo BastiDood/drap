@@ -13,6 +13,22 @@ interface Quotas {
   scl?: number;
 }
 
+export async function openRegularRounds(page: Page) {
+  const regularRoundsTrigger = page.getByRole('button', { name: /Regular Rounds/u });
+  const isAriaExpanded = await regularRoundsTrigger.getAttribute('aria-expanded');
+  if (isAriaExpanded !== 'true') await regularRoundsTrigger.click();
+
+  await expect(page.locator('#regular-round-summary-chart')).toBeVisible();
+}
+
+export async function openInterventions(page: Page) {
+  const interventionsTrigger = page.getByRole('button', { name: /^Interventions$/u });
+  const isAriaExpanded = await interventionsTrigger.getAttribute('aria-expanded');
+  if (isAriaExpanded !== 'true') await interventionsTrigger.click();
+
+  await expect(page.locator('#quota-dumbbell-chart')).toBeVisible();
+}
+
 export async function createDraft(page: Page, input: CreateDraftInput) {
   await page.goto('/dashboard/drafts/');
   await page.waitForLoadState('networkidle');
@@ -53,7 +69,10 @@ export async function updateLotteryQuota(page: Page, draftId: string, quotas: Qu
   await page.goto(`/dashboard/drafts/${draftId}/`);
   await page.waitForLoadState('networkidle');
   await expect(page.locator('main')).toBeVisible();
-  await page.getByRole('button', { name: 'Edit Lottery Quota' }).click();
+  await openInterventions(page);
+
+  const editLotteryQuotaButton = page.getByRole('button', { name: 'Edit Lottery Quota' });
+  await editLotteryQuotaButton.click();
   const editor = page.locator('#draft-quota-editor-lottery');
   await expect(editor).toBeVisible();
 
@@ -82,11 +101,13 @@ export async function startDraft(page: Page, draftId: string) {
 export async function runLottery(page: Page, draftId: string) {
   await page.goto(`/dashboard/drafts/${draftId}/`);
   await page.waitForLoadState('networkidle');
+  await openInterventions(page);
   page.once('dialog', async dialog => await dialog.accept());
 
-  await expect(page.getByRole('button', { name: 'Run Lottery' })).toBeVisible();
+  const runLotteryButton = page.getByRole('button', { name: 'Run Lottery' });
+  await expect(runLotteryButton).toBeVisible();
   const responsePromise = page.waitForResponse(`/dashboard/drafts/${draftId}/?/conclude`);
-  await page.getByRole('button', { name: 'Run Lottery' }).click();
+  await runLotteryButton.click();
   const response = await responsePromise;
   const responseData = await response.json();
   expect(responseData.type).toBe('success');

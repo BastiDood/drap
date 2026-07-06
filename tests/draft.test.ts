@@ -16,6 +16,8 @@ import {
 import {
   createDraft,
   finalizeDraft,
+  openInterventions,
+  openRegularRounds,
   runLottery,
   startDraft,
   updateInitialQuota,
@@ -931,8 +933,18 @@ test.describe('Draft Lifecycle', () => {
 
   test.describe('Round 1 — 1st choice', () => {
     test('admin draft page shows regular loader labels', async ({ adminPage }) => {
+      const noResponseBeforeOpen = expect(
+        adminPage.waitForResponse(
+          response => new URL(response.url()).pathname === '/dashboard/drafts/1/assignment-summary',
+          { timeout: 1000 },
+        ),
+      ).rejects.toThrow();
+
       await adminPage.goto('/dashboard/drafts/1/');
-      await expect(adminPage.locator('#regular-round-summary-chart')).toBeVisible();
+      await expect(adminPage.getByRole('button', { name: /Regular Rounds/u })).toBeVisible();
+      await adminPage.waitForLoadState('networkidle');
+      await noResponseBeforeOpen;
+      await openRegularRounds(adminPage);
 
       await adminPage.getByRole('tab', { name: 'Registered Students' }).click();
       await expect(adminPage.getByRole('tabpanel', { name: 'Registered Students' })).toBeVisible();
@@ -955,7 +967,7 @@ test.describe('Draft Lifecycle', () => {
       ).rejects.toThrow();
 
       await adminPage.goto('/dashboard/drafts/1/');
-      await expect(adminPage.locator('#regular-round-summary-chart')).toBeVisible();
+      await openRegularRounds(adminPage);
       await adminPage.waitForLoadState('networkidle');
       await noResponseBeforeOpen;
 
@@ -970,6 +982,7 @@ test.describe('Draft Lifecycle', () => {
 
     test('View System Logs opens the regular-round drawer', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
+      await openRegularRounds(adminPage);
 
       await expectDrawerContents(adminPage, 'View System Logs', [
         /System Logs/u,
@@ -979,6 +992,7 @@ test.describe('Draft Lifecycle', () => {
 
     test('View Undrafted opens the regular-round drawer', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
+      await openRegularRounds(adminPage);
 
       await expectDrawerContents(adminPage, 'View Undrafted', [
         /Undrafted Students/u,
@@ -994,6 +1008,7 @@ test.describe('Draft Lifecycle', () => {
       );
 
       await adminPage.goto('/dashboard/drafts/1/');
+      await openRegularRounds(adminPage);
       await adminPage.getByRole('tab', { name: 'Registered Students' }).click();
       await expect(adminPage.getByRole('tabpanel', { name: 'Registered Students' })).toBeVisible();
       await initialResponse;
@@ -1016,6 +1031,7 @@ test.describe('Draft Lifecycle', () => {
       );
 
       await adminPage.goto('/dashboard/drafts/1/');
+      await openRegularRounds(adminPage);
       await adminPage.getByRole('tab', { name: 'Registered Students' }).click();
       await expect(adminPage.getByRole('tabpanel', { name: 'Registered Students' })).toBeVisible();
       await initialResponse;
@@ -1277,6 +1293,7 @@ test.describe('Draft Lifecycle', () => {
     test('draft is now in Round 2', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
       await expect(adminPage.getByText(/Round 2/u).first()).toBeVisible();
+      await openRegularRounds(adminPage);
       await expectRegularStudentsContents(
         adminPage,
         'Already Drafted',
@@ -1490,6 +1507,7 @@ test.describe('Draft Lifecycle', () => {
     test('draft is now in Round 3', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
       await expect(adminPage.getByText(/Round 3/u).first()).toBeVisible();
+      await openRegularRounds(adminPage);
       await expectRegularStudentsContents(
         adminPage,
         'Already Drafted',
@@ -1636,15 +1654,15 @@ test.describe('Draft Lifecycle', () => {
       await expect(
         adminPage.getByRole('heading', { name: 'Interventions', exact: true }),
       ).toBeVisible();
+      await openInterventions(adminPage);
       await expectVisibleButtons(adminPage, ['Show Eligible Students', 'See Drafted']);
-      await expect(adminPage.locator('#quota-dumbbell-chart')).toBeVisible();
       await expect(adminPage.getByRole('button', { name: 'Run Lottery' })).toBeVisible();
 
-      await adminPage.getByRole('button', { name: /Regular Rounds/u }).click();
-      await expect(adminPage.locator('#regular-round-summary-chart')).toBeVisible();
+      await openRegularRounds(adminPage);
       await expect(adminPage.getByRole('tab', { name: 'Registered Students' })).toBeVisible();
       await expect(adminPage.getByRole('button', { name: 'View Undrafted' })).toHaveCount(0);
 
+      await openInterventions(adminPage);
       await adminPage.getByRole('button', { name: 'Show Eligible Students' }).first().click();
       await expect(adminPage.getByRole('button', { name: 'Apply Interventions' })).toBeVisible();
     });
@@ -1707,8 +1725,19 @@ test.describe('Draft Lifecycle', () => {
 
   test.describe('Lottery Phase', () => {
     test('draft enters lottery phase', async ({ adminPage }) => {
+      const noResponseBeforeOpen = expect(
+        adminPage.waitForResponse(
+          response =>
+            new URL(response.url()).pathname === '/dashboard/drafts/1/interventions-aggregate',
+          { timeout: 1000 },
+        ),
+      ).rejects.toThrow();
+
       await adminPage.goto('/dashboard/drafts/1/');
       await expect(adminPage.getByRole('heading', { name: 'Interventions' })).toBeVisible();
+      await adminPage.waitForLoadState('networkidle');
+      await noResponseBeforeOpen;
+      await openInterventions(adminPage);
       await expectSheetContents(
         adminPage,
         'See Drafted',
@@ -1726,6 +1755,7 @@ test.describe('Draft Lifecycle', () => {
       ).rejects.toThrow();
 
       await adminPage.goto('/dashboard/drafts/1/');
+      await openInterventions(adminPage);
       await expectVisibleButtons(adminPage, ['Show Eligible Students']);
       await adminPage.waitForLoadState('networkidle');
       await noResponseBeforeOpen;
@@ -1733,6 +1763,7 @@ test.describe('Draft Lifecycle', () => {
 
     test('show eligible students fetches when the sheet opens', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
+      await openInterventions(adminPage);
       await expectVisibleButtons(adminPage, ['Show Eligible Students']);
       const responsePromise = adminPage.waitForResponse(
         response => new URL(response.url()).pathname === '/dashboard/drafts/1/draftees',
@@ -1743,6 +1774,7 @@ test.describe('Draft Lifecycle', () => {
 
     test('edit lottery quota button opens sheet', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
+      await openInterventions(adminPage);
       await expect(adminPage.getByRole('button', { name: 'Edit Lottery Quota' })).toBeVisible();
       await adminPage.getByRole('button', { name: 'Edit Lottery Quota' }).click();
 
@@ -1756,6 +1788,7 @@ test.describe('Draft Lifecycle', () => {
 
     test('interventions sheet does not contain quota editor', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
+      await openInterventions(adminPage);
       await adminPage.getByRole('button', { name: 'Show Eligible Students' }).click();
 
       const sheet = adminPage.locator('[data-slot="sheet-content"]').last();
@@ -1799,6 +1832,7 @@ test.describe('Draft Lifecycle', () => {
   test.describe('Conclude Error Case', () => {
     test('conclude fails with mismatched quota', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
+      await openInterventions(adminPage);
       adminPage.on('dialog', async dialog => await dialog.accept());
 
       await expect(adminPage.getByRole('button', { name: 'Run Lottery' })).toBeVisible();
@@ -1829,6 +1863,7 @@ test.describe('Draft Lifecycle', () => {
 
     test('assigns first eligible student to a lab', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/1/');
+      await openInterventions(adminPage);
       await adminPage.getByRole('button', { name: 'Show Eligible Students' }).first().click();
       const interventionForm = adminPage.locator('form[action*="intervene"]');
       await expect(interventionForm).toBeVisible();
@@ -1850,6 +1885,7 @@ test.describe('Draft Lifecycle', () => {
     test.describe('lottery snapshot updates', () => {
       test('partially updates lottery snapshots', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/drafts/1/');
+        await openInterventions(adminPage);
         await adminPage.getByRole('button', { name: 'Edit Lottery Quota' }).click();
         const sheet = adminPage.locator('[data-slot="sheet-content"]').last();
         const editor = sheet.locator('#draft-quota-editor-lottery');
@@ -1872,6 +1908,7 @@ test.describe('Draft Lifecycle', () => {
 
       test('shows committed placeholders after lottery snapshot update', async ({ adminPage }) => {
         await adminPage.goto('/dashboard/drafts/1/');
+        await openInterventions(adminPage);
         await adminPage.getByRole('button', { name: 'Edit Lottery Quota' }).click();
         const sheet = adminPage.locator('[data-slot="sheet-content"]').last();
         const editor = sheet.locator('#draft-quota-editor-lottery');
@@ -1892,6 +1929,13 @@ test.describe('Draft Lifecycle', () => {
     test('runs lottery successfully', async ({ adminPage }) => await runLottery(adminPage, '1'));
 
     test('enters review phase with finalize action', async ({ adminPage }) => {
+      const noLotteryAggregateResponse = expect(
+        adminPage.waitForResponse(
+          response => new URL(response.url()).pathname === '/dashboard/drafts/1/lottery-aggregate',
+          { timeout: 1000 },
+        ),
+      ).rejects.toThrow();
+
       await adminPage.goto('/dashboard/drafts/1/');
       await expect(adminPage.getByText(/Started .* · Review/u)).toBeVisible();
       await expect(adminPage.getByRole('heading', { name: 'Review Phase' })).toHaveCount(0);
@@ -1901,6 +1945,8 @@ test.describe('Draft Lifecycle', () => {
       await expect(adminPage.getByText('Per-Lab Lottery Outcome')).toBeVisible();
       await expect(adminPage.getByRole('button', { name: 'Finalize Draft' })).toBeVisible();
       await expect(adminPage.getByRole('button', { name: 'View Undrafted' })).toHaveCount(0);
+      await adminPage.waitForLoadState('networkidle');
+      await noLotteryAggregateResponse;
     });
 
     test('shows lottery-only results in a review sheet', async ({ adminPage }) => {
@@ -2708,6 +2754,7 @@ test.describe('Draft Lifecycle', () => {
     test('lottery stage shows zero eligible students', async ({ adminPage }) => {
       await adminPage.goto('/dashboard/drafts/2/');
       await expect(adminPage.getByRole('heading', { name: 'Interventions' })).toBeVisible();
+      await openInterventions(adminPage);
       await expectVisibleButtons(adminPage, ['Show Eligible Students']);
       await adminPage.getByRole('button', { name: 'Show Eligible Students' }).first().click();
       await expect(
