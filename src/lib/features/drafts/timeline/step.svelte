@@ -30,6 +30,8 @@
     children,
     metadata,
   }: Props = $props();
+
+  let open = $derived(status === 'active');
 </script>
 
 <div class="relative flex gap-4">
@@ -56,7 +58,7 @@
   <!-- Content Area -->
   <div class="min-w-0 grow pb-6">
     {#if collapsible}
-      <Collapsible.Root open={status === 'active'}>
+      <Collapsible.Root bind:open>
         <Collapsible.Trigger
           class="-ml-2 flex w-full items-center justify-between rounded-lg px-2 py-1 hover:bg-muted/50"
         >
