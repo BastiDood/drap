@@ -43,3 +43,8 @@ export function buildRegistrationTimelineData({
 export function getRegistrationClosedAnnotationDay(registrationClosedAt: Date) {
   return startOfDay(addDays(registrationClosedAt, 1));
 }
+
+export function getRegistrationTimelineEnd(chartEnd: Date, registrationClosedAt: Date) {
+  const annotationDay = getRegistrationClosedAnnotationDay(registrationClosedAt);
+  return chartEnd.getTime() < annotationDay.getTime() ? annotationDay : chartEnd;
+}

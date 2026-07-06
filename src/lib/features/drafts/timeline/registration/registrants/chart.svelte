@@ -13,6 +13,7 @@
     buildRegistrationTimelineData,
     formatDayLabel,
     getRegistrationClosedAnnotationDay,
+    getRegistrationTimelineEnd,
   } from './utils';
 
   interface Props {
@@ -33,10 +34,14 @@
 
   const integerFormat = format('d');
 
+  const timelineEnd = $derived(
+    getRegistrationTimelineEnd(startedAt ?? requestedAt, registrationClosedAt),
+  );
+
   const timelineData = $derived(
     buildRegistrationTimelineData({
       draftCreatedAt,
-      chartEnd: startedAt ?? requestedAt,
+      chartEnd: timelineEnd,
       registrationTimestamps,
     }),
   );
@@ -46,7 +51,7 @@
   const [chartStart, chartEnd] = $derived.by(() => {
     const [first, ...rest] = timelineData;
     const start = first?.date ?? draftCreatedAt;
-    const end = rest.at(-1)?.date ?? startedAt ?? requestedAt;
+    const end = rest.at(-1)?.date ?? timelineEnd;
     return [start, end];
   });
 
