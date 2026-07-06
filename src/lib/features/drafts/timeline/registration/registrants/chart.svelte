@@ -69,14 +69,16 @@
         x: registrationClosedDay,
         label: 'Registration Closed',
         labelPlacement: 'top-left' as const,
+        labelXOffset: 8,
+        labelYOffset: 8,
         props: {
           line: {
-            stroke: '#ef4444',
-            strokeDasharray: '4,4',
-            strokeWidth: 1,
+            class: '!stroke-red-500',
+            dashArray: '4,4',
+            strokeWidth: 2,
           },
           label: {
-            fill: '#ef4444',
+            class: '!fill-red-500 font-semibold',
           },
         },
       },
