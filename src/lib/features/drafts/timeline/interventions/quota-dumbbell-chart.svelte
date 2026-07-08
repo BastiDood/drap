@@ -171,7 +171,7 @@
           padding={{ left: 70, top: 12, right: 32, bottom: 36 }}
           props={{
             xAxis: {
-              format: (value: number) => integerFormat(value),
+              format: 'integer',
               tickLabelProps: { dx: -4 },
             },
             yAxis: { grid: false },
