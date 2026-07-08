@@ -1,7 +1,6 @@
 <script lang="ts">
   import { Area, AreaChart, LinearGradient } from 'layerchart/svg';
   import { cubicOut } from 'svelte/easing';
-  import { format } from 'd3-format';
   import { max } from 'd3-array';
   import type { MotionOptions } from 'layerchart/utils/motion.svelte';
   import { prefersReducedMotion } from 'svelte/motion';
@@ -31,8 +30,6 @@
     requestedAt,
     registrationTimestamps,
   }: Props = $props();
-
-  const integerFormat = format('d');
 
   const timelineEnd = $derived(
     getRegistrationTimelineEnd(startedAt ?? requestedAt, registrationClosedAt),
@@ -137,7 +134,7 @@
       },
       yAxis: {
         ticks: 4,
-        format: value => integerFormat(value),
+        format: 'integer',
         motion: axisMotion,
         tickLabelProps: { dx: -8 },
       },

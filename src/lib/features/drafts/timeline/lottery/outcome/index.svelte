@@ -136,7 +136,7 @@
             },
             yAxis: {
               ticks: 4,
-              format: (value: number) => integerFormat(value),
+              format: 'integer',
               tickLabelProps: { dx: -8 },
             },
           }}

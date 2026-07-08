@@ -2,7 +2,6 @@
   import { Area, AreaChart, LinearGradient } from 'layerchart/svg';
   import { cubicOut } from 'svelte/easing';
   import { cumsum } from 'd3-array';
-  import { format } from 'd3-format';
   import type { MotionOptions } from 'layerchart/utils/motion.svelte';
   import { prefersReducedMotion } from 'svelte/motion';
   import { scalePoint } from 'd3-scale';
@@ -84,8 +83,6 @@
           },
         },
   );
-
-  const integerFormat = format('d');
 </script>
 
 <Card.Root
@@ -172,7 +169,7 @@
           },
           yAxis: {
             ticks: 4,
-            format: value => integerFormat(value),
+            format: 'integer',
             motion: axisMotion,
             tickLabelProps: { dx: -8 },
           },
