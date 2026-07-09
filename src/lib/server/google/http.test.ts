@@ -111,7 +111,6 @@ describe('parseBatchSendResponse', () => {
             value: {
               id: 'gmail-message-id',
               threadId: 'gmail-thread-id',
-              labelIds: ['UNREAD', 'SENT', 'INBOX'],
             },
           },
         ],
@@ -149,8 +148,6 @@ describe('parseBatchSendResponse', () => {
             value: {
               id: 'pony-message-id',
               threadId: 'pony-thread-id',
-              labelIds: ['SENT'],
-              internalDate: '1735689600000',
             },
           },
         ],
@@ -161,7 +158,6 @@ describe('parseBatchSendResponse', () => {
             value: {
               id: 'sheep-message-id',
               threadId: 'sheep-thread-id',
-              labelIds: ['SENT', 'UNREAD'],
             },
           },
         ],
@@ -356,7 +352,6 @@ describe('parseBatchSendResponse', () => {
             value: {
               id: 'pony-message-id',
               threadId: 'pony-thread-id',
-              labelIds: ['SENT'],
             },
           },
         ],

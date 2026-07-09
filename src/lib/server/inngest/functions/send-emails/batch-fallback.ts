@@ -101,8 +101,6 @@ async function sendBatchFallbackEmail(
             'email.attempt': attempt,
             'email.message.id': result.id,
             'email.message.thread_id': result.threadId,
-            'email.message.internal_date': result.internalDate,
-            'email.message.label_ids': result.labelIds,
           });
           // Keep Gmail metadata lookup in this transaction so fallback sends only complete after
           // their `Message-ID` header has been appended to the local thread history.

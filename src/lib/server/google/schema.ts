@@ -17,8 +17,6 @@ export type TokenResponse = v.InferOutput<typeof TokenResponse>;
 export const GmailMessageSendResult = v.object({
   id: v.string(),
   threadId: v.string(),
-  labelIds: v.array(v.string()),
-  internalDate: v.optional(v.string()),
 });
 export type GmailMessageSendResult = v.InferOutput<typeof GmailMessageSendResult>;
 

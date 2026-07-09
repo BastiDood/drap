@@ -91,8 +91,6 @@ export class GoogleOAuthClient {
           logger.info('received successful response from gmail api', {
             'email.message.id': result.id,
             'email.message.thread_id': result.threadId,
-            'email.message.label_ids': result.labelIds,
-            'email.message.internal_date': result.internalDate,
           });
 
           return result;

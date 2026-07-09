@@ -79,8 +79,6 @@ async function seedFallbackEmailThread(
             'email.attempt': attempt,
             'email.message.id': result.id,
             'email.message.thread_id': result.threadId,
-            'email.message.internal_date': result.internalDate,
-            'email.message.label_ids': result.labelIds,
           });
           // Keep Gmail metadata lookup in this transaction so seeded threads only become visible
           // after their Gmail thread ID and first `Message-ID` header can be persisted together.

@@ -110,8 +110,6 @@ export const sendBatchedEmails = inngest.createFunction(
               logger.info('gmail threaded batch email sent successfully', {
                 'email.message.id': result.value.id,
                 'email.message.thread_id': result.value.threadId,
-                'email.message.internal_date': result.value.internalDate,
-                'email.message.label_ids': result.value.labelIds,
               });
               continue;
             }
