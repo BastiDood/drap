@@ -10,6 +10,9 @@ engineStrict: true
 
 minimumReleaseAgeStrict: true
 
+minimumReleaseAgeExclude:
+  - vite@8.1.4
+
 trustPolicy: no-downgrade
 
 trustPolicyIgnoreAfter: 525600 # 1 Year
