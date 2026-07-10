@@ -28,6 +28,17 @@ export const sendSeedEmailFallback = inngest.createFunction(
   {
     id: 'send-seed-email-fallback',
     name: 'Send Seed Email Fallback',
+    concurrency: {
+      limit: 1,
+      scope: 'env',
+      key: '"gmail-designated-sender"',
+    },
+    throttle: {
+      limit: 2,
+      period: '1m',
+      burst: 1,
+    },
+    retries: 0,
     triggers: EmailSeedFallbackEvent,
   },
   async ({ event, step, attempt }) => {

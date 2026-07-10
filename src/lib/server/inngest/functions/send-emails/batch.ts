@@ -35,7 +35,22 @@ export const sendBatchedEmails = inngest.createFunction(
   {
     id: 'send-batched-emails',
     name: 'Send Batched Emails',
-    batchEvents: { maxSize: 50, timeout: '5s' },
+    batchEvents: {
+      maxSize: 10,
+      timeout: '10s',
+      key: 'event.data.batchAttempt',
+    },
+    concurrency: {
+      limit: 1,
+      scope: 'env',
+      key: '"gmail-designated-sender"',
+    },
+    throttle: {
+      limit: 2,
+      period: '1m',
+      burst: 1,
+    },
+    retries: 3,
     triggers: EmailBatchEvent,
   },
   async ({ events, step }) => {

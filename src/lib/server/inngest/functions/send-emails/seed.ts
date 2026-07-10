@@ -42,7 +42,22 @@ export const sendSeedEmails = inngest.createFunction(
   {
     id: 'send-seed-emails',
     name: 'Send Seed Emails',
-    batchEvents: { maxSize: 50, timeout: '5s' },
+    batchEvents: {
+      maxSize: 10,
+      timeout: '10s',
+      key: 'event.data.seedAttempt',
+    },
+    concurrency: {
+      limit: 1,
+      scope: 'env',
+      key: '"gmail-designated-sender"',
+    },
+    throttle: {
+      limit: 2,
+      period: '1m',
+      burst: 1,
+    },
+    retries: 0,
     triggers: EmailSeedEvent,
   },
   async ({ events, step }) => {

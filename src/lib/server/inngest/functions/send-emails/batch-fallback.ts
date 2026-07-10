@@ -30,6 +30,17 @@ export const sendBatchEmailFallback = inngest.createFunction(
   {
     id: 'send-batch-email-fallback',
     name: 'Send Batch Email Fallback',
+    concurrency: {
+      limit: 1,
+      scope: 'env',
+      key: '"gmail-designated-sender"',
+    },
+    throttle: {
+      limit: 2,
+      period: '1m',
+      burst: 1,
+    },
+    retries: 0,
     triggers: EmailBatchFallbackEvent,
   },
   async ({ event, step, attempt }) => {
