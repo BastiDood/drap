@@ -36,6 +36,13 @@ const SERVICE_NAME = 'inngest.functions.send-emails.batch';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
 
+interface BatchSuccess {
+  rowId: number;
+  gmailMessageId: string;
+  gmailThreadId: string;
+  batchAttempt: number;
+}
+
 export const sendBatchedEmails = inngest.createFunction(
   {
     id: 'send-batched-emails',
@@ -78,7 +85,7 @@ export const sendBatchedEmails = inngest.createFunction(
             ),
           });
 
-          const successes: { rowId: number; gmailMessageId: string }[] = [];
+          const successes: BatchSuccess[] = [];
           const batchRetries: { data: EmailBatchEvent; ts: number }[] = [];
           const fallbackFollowups: {
             data: EmailBatchFallbackEvent;
@@ -141,6 +148,8 @@ export const sendBatchedEmails = inngest.createFunction(
               successes.push({
                 rowId: request.rowId,
                 gmailMessageId: result.value.id,
+                gmailThreadId: result.value.threadId,
+                batchAttempt: request.batchAttempt,
               });
               logger.info('gmail threaded batch email sent successfully', {
                 'email.message.id': result.value.id,
@@ -200,6 +209,18 @@ export const sendBatchedEmails = inngest.createFunction(
           span.setAttribute('email.batch.success.count', sent.successes.length);
           const metadata: { rowId: number; gmailMessageIdHeader: string }[] = [];
           if (sent.successes.length === 0) return metadata;
+
+          span.setAttributes({
+            'email.delivery.transport': 'batch',
+            'email.delivery.attempt.max': Math.max(
+              0,
+              ...sent.successes.map(item => item.batchAttempt),
+            ),
+            'email.gmail_thread.row_ids': sent.successes.map(item => String(item.rowId)),
+            'email.message.ids': sent.successes.map(item => item.gmailMessageId),
+            'email.message.thread_ids': sent.successes.map(item => item.gmailThreadId),
+          });
+
           const { client } = await getRefreshedCredentials();
           let results: Awaited<ReturnType<typeof client.getMessageIdHeaders>>;
           try {

@@ -19,6 +19,9 @@ import { lockGmailThreads, seedGmailThreadById } from '$lib/server/database/driz
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
+import { GmailDeliveryAttempt } from './retry';
+import { ManualMetadataReconciliationRequiredError } from './errors';
+
 const SERVICE_NAME = 'inngest.functions.send-emails.seed-fallback';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
@@ -80,17 +83,11 @@ async function seedFallbackEmailThread(
             batchAttempt: 0,
           }));
 
+        const { message } = await createEmailMessage(event.seed, credentials.sender);
+
+        let result: Awaited<ReturnType<typeof credentials.client.sendEmail>>;
         try {
-          const { message } = await createEmailMessage(event.seed, credentials.sender);
-          const result = await credentials.client.sendEmail(message);
-          logger.info('gmail root seed fallback email sent successfully', {
-            'email.message.id': result.id,
-            'email.message.thread_id': result.threadId,
-          });
-          // Keep Gmail metadata lookup in this transaction so seeded threads only become visible
-          // after their Gmail thread ID and first `Message-ID` header can be persisted together.
-          const gmailMessageId = await credentials.client.getMessageIdHeader(result.id);
-          await seedGmailThreadById(tx, row.id, result.threadId, [gmailMessageId]);
+          result = await credentials.client.sendEmail(message);
         } catch (cause) {
           if (cause instanceof GmailScopeError)
             throw new NonRetriableError('missing gmail scopes', { cause });
@@ -100,6 +97,35 @@ async function seedFallbackEmailThread(
             });
           throw cause;
         }
+
+        logger.info('gmail root seed fallback email sent successfully', {
+          'email.message.id': result.id,
+          'email.message.thread_id': result.threadId,
+        });
+
+        // Keep Gmail metadata lookup in this transaction so seeded threads only become visible
+        // after their Gmail thread ID and first `Message-ID` header can be persisted together.
+        let gmailMessageId: string;
+        try {
+          gmailMessageId = await credentials.client.getMessageIdHeader(result.id);
+        } catch (cause) {
+          span.setAttributes({
+            'email.reconciliation.required': true,
+            'email.reconciliation.stage': 'gmail-metadata',
+            'email.reconciliation.message.count': 1,
+            'email.delivery.transport': 'single-fallback',
+            'email.delivery.attempt': GmailDeliveryAttempt.SingleFallback,
+          });
+          if (cause instanceof Error)
+            logger.fatal('gmail seed fallback requires manual metadata reconciliation', cause, {
+              'email.gmail_thread.row_id': String(row.id),
+              'email.message.id': result.id,
+              'email.message.thread_id': result.threadId,
+            });
+          throw new ManualMetadataReconciliationRequiredError({ cause });
+        }
+
+        await seedGmailThreadById(tx, row.id, result.threadId, [gmailMessageId]);
 
         return event.followers.map(email => ({ email, batchAttempt: 0 }));
       },

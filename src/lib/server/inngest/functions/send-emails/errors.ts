@@ -1,3 +1,12 @@
+import { NonRetriableError } from 'inngest';
+
+export class ManualMetadataReconciliationRequiredError extends NonRetriableError {
+  constructor(options: ErrorOptions) {
+    super('gmail send succeeded but metadata requires manual reconciliation', options);
+    this.name = 'ManualMetadataReconciliationRequiredError';
+  }
+}
+
 export class UnreachableEmailEventTypeError extends Error {
   constructor() {
     super('unreachable email event type');

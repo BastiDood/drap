@@ -21,6 +21,9 @@ import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
+import { GmailDeliveryAttempt } from './retry';
+import { ManualMetadataReconciliationRequiredError } from './errors';
+
 const SERVICE_NAME = 'inngest.functions.send-emails.batch-fallback';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
@@ -101,16 +104,9 @@ async function sendBatchFallbackEmail(
           },
         );
 
+        let result: Awaited<ReturnType<typeof credentials.client.sendEmail>>;
         try {
-          const result = await credentials.client.sendEmail(message, gmailThreadId);
-          logger.info('gmail batch fallback email sent successfully', {
-            'email.message.id': result.id,
-            'email.message.thread_id': result.threadId,
-          });
-          // Keep Gmail metadata lookup in this transaction so fallback sends only complete after
-          // their `Message-ID` header has been appended to the local thread history.
-          const gmailMessageId = await credentials.client.getMessageIdHeader(result.id);
-          await appendGmailThreadMessageIdsById(tx, thread.id, [gmailMessageId]);
+          result = await credentials.client.sendEmail(message, gmailThreadId);
         } catch (cause) {
           if (cause instanceof GmailScopeError)
             throw new NonRetriableError('missing gmail scopes', { cause });
@@ -120,6 +116,34 @@ async function sendBatchFallbackEmail(
             });
           throw cause;
         }
+        logger.info('gmail batch fallback email sent successfully', {
+          'email.message.id': result.id,
+          'email.message.thread_id': result.threadId,
+        });
+
+        // Keep Gmail metadata lookup in this transaction so fallback sends only complete after
+        // their `Message-ID` header has been appended to the local thread history.
+        let gmailMessageId: string;
+        try {
+          gmailMessageId = await credentials.client.getMessageIdHeader(result.id);
+        } catch (cause) {
+          span.setAttributes({
+            'email.reconciliation.required': true,
+            'email.reconciliation.stage': 'gmail-metadata',
+            'email.reconciliation.message.count': 1,
+            'email.delivery.transport': 'single-fallback',
+            'email.delivery.attempt': GmailDeliveryAttempt.SingleFallback,
+          });
+          if (cause instanceof Error)
+            logger.fatal('gmail batch fallback requires manual metadata reconciliation', cause, {
+              'email.gmail_thread.row_id': String(thread.id),
+              'email.message.id': result.id,
+              'email.message.thread_id': result.threadId,
+            });
+          throw new ManualMetadataReconciliationRequiredError({ cause });
+        }
+
+        await appendGmailThreadMessageIdsById(tx, thread.id, [gmailMessageId]);
       },
       { isolationLevel: 'read committed' },
     );

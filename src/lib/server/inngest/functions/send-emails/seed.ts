@@ -1,5 +1,6 @@
 import type { MIMEMessage } from 'mimetext/node';
 import { NonRetriableError } from 'inngest';
+import type { Span } from '@opentelemetry/api';
 
 import { assertDefined } from '$lib/server/assert';
 import {
@@ -31,7 +32,11 @@ import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
 import { GmailRetryKind, getGmailRetryTimestamp, planGmailRetry } from './retry';
-import { MissingGmailMetadataResultError, MissingGmailSeedBatchResultError } from './errors';
+import {
+  ManualMetadataReconciliationRequiredError,
+  MissingGmailMetadataResultError,
+  MissingGmailSeedBatchResultError,
+} from './errors';
 
 const SERVICE_NAME = 'inngest.functions.send-emails.seed';
 const logger = Logger.byName(SERVICE_NAME);
@@ -40,6 +45,33 @@ const tracer = Tracer.byName(SERVICE_NAME);
 interface SeedRequest {
   key: ReturnType<typeof getGmailThreadKey>;
   data: EmailSeedEvent;
+}
+
+interface SeedSuccess {
+  rowId: number;
+  gmailMessageId: string;
+  gmailThreadId: string;
+  seedAttempt: number;
+}
+
+function recordManualSeedMetadataReconciliation(
+  span: Span,
+  successes: SeedSuccess[],
+  error?: Error,
+) {
+  span.setAttributes({
+    'email.reconciliation.required': true,
+    'email.reconciliation.stage': 'gmail-metadata',
+    'email.reconciliation.message.count': successes.length,
+    'email.delivery.transport': 'batch',
+    'email.delivery.attempt.max': Math.max(0, ...successes.map(item => item.seedAttempt)),
+  });
+  for (const success of successes)
+    logger.fatal('gmail seed send requires manual metadata reconciliation', error, {
+      'email.gmail_thread.row_id': String(success.rowId),
+      'email.message.id': success.gmailMessageId,
+      'email.message.thread_id': success.gmailThreadId,
+    });
 }
 
 export const sendSeedEmails = inngest.createFunction(
@@ -159,11 +191,7 @@ async function seedEmailThreads(
           );
         }
 
-        const successes: {
-          rowId: number;
-          gmailMessageId: string;
-          gmailThreadId: string;
-        }[] = [];
+        const successes: SeedSuccess[] = [];
         const seedRetries: { data: EmailSeedEvent; ts: number }[] = [];
         const seedFallbacks: { data: EmailSeedFallbackEvent; ts: number }[] = [];
 
@@ -220,6 +248,7 @@ async function seedEmailThreads(
               rowId: Number(request.rowId),
               gmailMessageId: result.value.id,
               gmailThreadId: result.value.threadId,
+              seedAttempt: request.data.seedAttempt,
             });
             logger.info('gmail root seed email sent successfully', {
               'email.message.id': result.value.id,
@@ -281,29 +310,24 @@ async function seedEmailThreads(
               successes.map(item => item.gmailMessageId),
             );
           } catch (cause) {
-            if (cause instanceof GmailScopeError)
-              throw new NonRetriableError('missing gmail scopes', { cause });
-            if (cause instanceof GmailError && !isRetryableGmailFailure(cause.failure))
-              throw new NonRetriableError(
-                'gmail seed metadata request failed with non-retryable status',
-                { cause },
-              );
-            throw cause;
+            if (cause instanceof Error)
+              recordManualSeedMetadataReconciliation(span, successes, cause);
+            else recordManualSeedMetadataReconciliation(span, successes);
+            throw new ManualMetadataReconciliationRequiredError({ cause });
           }
 
           for (const item of successes) {
             const result = metadataResults.get(item.gmailMessageId);
-            if (typeof result === 'undefined')
-              throw new MissingGmailMetadataResultError(item.gmailMessageId);
+            if (typeof result === 'undefined') {
+              const cause = new MissingGmailMetadataResultError(item.gmailMessageId);
+              recordManualSeedMetadataReconciliation(span, successes, cause);
+              throw new ManualMetadataReconciliationRequiredError({ cause });
+            }
             if (!result.ok) {
-              if (!isRetryableGmailFailure(result.failure)) {
-                logGmailFailure(span, result.failure);
-                throw new NonRetriableError(
-                  'gmail seed metadata request failed with non-retryable status',
-                  { cause: new GmailError(result.failure) },
-                );
-              }
-              GmailError.throwFailure(span, result.failure);
+              logGmailFailure(span, result.failure);
+              const cause = new GmailError(result.failure);
+              recordManualSeedMetadataReconciliation(span, successes, cause);
+              throw new ManualMetadataReconciliationRequiredError({ cause });
             }
             metadata.push({
               rowId: item.rowId,
