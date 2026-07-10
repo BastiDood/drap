@@ -165,8 +165,11 @@ describe('parseBatchSendResponse', () => {
           ITEM3,
           {
             ok: false,
-            status: 304,
-            body: '',
+            failure: {
+              status: 304,
+              details: [],
+              retryDelayMs: null,
+            },
           },
         ],
       ]),
@@ -264,9 +267,11 @@ describe('parseBatchSendResponse', () => {
     );
   });
 
-  it('throws on non-http multipart parts', async () => {
+  it('throws on multipart parts that are not application/http', async () => {
     const response = createMultipartResponse([
-      ['Content-Type: text/plain', `Content-ID: <response-${ITEM1}>`, '', 'not http'].join('\r\n'),
+      ['Content-Type: application/httpx', `Content-ID: <response-${ITEM1}>`, '', 'not http'].join(
+        '\r\n',
+      ),
     ]);
 
     await expect(parseBatchSendResponse(response)).rejects.toBeInstanceOf(NonHttpBatchPartError);
@@ -280,9 +285,19 @@ describe('parseBatchSendResponse', () => {
     );
   });
 
-  it('throws when the outer response content type is not multipart', async () => {
+  it('throws when the outer response content type is not multipart/mixed', async () => {
     const response = new Response('irrelevant', {
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': `multipart/related; boundary=${BATCH_BOUNDARY}` },
+    });
+
+    await expect(parseBatchSendResponse(response)).rejects.toBeInstanceOf(
+      InvalidBatchContentTypeError,
+    );
+  });
+
+  it('throws when the outer multipart/mixed response omits its boundary', async () => {
+    const response = new Response('irrelevant', {
+      headers: { 'Content-Type': 'multipart/mixed' },
     });
 
     await expect(parseBatchSendResponse(response)).rejects.toBeInstanceOf(
@@ -328,7 +343,7 @@ describe('parseBatchSendResponse', () => {
     );
   });
 
-  it('accepts application/http content types regardless of case', async () => {
+  it('accepts application/http content types with case-insensitive essence and parameters', async () => {
     const ponyBody = createGmailSuccessBody({
       id: 'pony-message-id',
       threadId: 'pony-thread-id',
@@ -336,7 +351,7 @@ describe('parseBatchSendResponse', () => {
     });
     const response = createMultipartResponse([
       [
-        'Content-Type: Application/HTTP',
+        'Content-Type: Application/HTTP; charset=UTF-8',
         `Content-ID: <response-${ITEM1}>`,
         '',
         ...createSuccessfulResponseLines(ponyBody, 'etag/pony'),
@@ -359,14 +374,38 @@ describe('parseBatchSendResponse', () => {
     );
   });
 
-  it('returns failure items with status and body passthrough for non-2xx parts', async () => {
-    const errorBody = JSON.stringify({ error: { code: 500, message: 'backend failure' } });
+  it('returns structured Gmail failures for non-2xx parts', async () => {
+    const errorBody = JSON.stringify({
+      error: {
+        code: 500,
+        message: 'backend failure',
+        errors: [
+          {
+            domain: 'global',
+            reason: 'backendError',
+            message: 'backend failure',
+          },
+        ],
+      },
+    });
     const response = createMultipartResponse([
       createApplicationHttpPart(ITEM1, createServerErrorResponseLines(errorBody)),
     ]);
 
     await expect(parseBatchSendResponse(response)).resolves.toEqual(
-      new Map([[ITEM1, { ok: false, status: 500, body: errorBody }]]),
+      new Map([
+        [
+          ITEM1,
+          {
+            ok: false,
+            failure: {
+              status: 500,
+              details: [{ domain: 'global', reason: 'backendError' }],
+              retryDelayMs: null,
+            },
+          },
+        ],
+      ]),
     );
   });
 

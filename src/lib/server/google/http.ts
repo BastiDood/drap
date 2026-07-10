@@ -1,4 +1,5 @@
 import assert, { strictEqual } from 'node:assert/strict';
+import { MIMEType } from 'node:util';
 
 import * as v from 'valibot';
 import { chunked } from 'itertools';
@@ -33,7 +34,14 @@ function parseBatchResponse<const TSchema extends v.GenericSchema>(
     if (contentType === null) MissingBatchContentTypeError.throwNew();
     span.setAttribute('response.content_type', contentType);
 
-    if (!contentType.toLowerCase().startsWith('multipart/'))
+    let mimeType: MIMEType;
+    try {
+      mimeType = new MIMEType(contentType);
+    } catch (cause) {
+      InvalidBatchContentTypeError.throwNew(contentType, cause);
+    }
+
+    if (mimeType.essence !== 'multipart/mixed' || !mimeType.params.has('boundary'))
       InvalidBatchContentTypeError.throwNew(contentType);
 
     const body = await response.arrayBuffer();
@@ -61,8 +69,14 @@ function parseBatchPart<const TSchema extends v.GenericSchema>(
     if (contentType === null) MissingBatchPartContentTypeError.throwNew();
     span.setAttribute('multipart.content_type', contentType);
 
-    if (!contentType.toLowerCase().startsWith('application/http'))
-      NonHttpBatchPartError.throwNew(contentType);
+    let mimeType: MIMEType;
+    try {
+      mimeType = new MIMEType(contentType);
+    } catch (cause) {
+      NonHttpBatchPartError.throwNew(contentType, cause);
+    }
+
+    if (mimeType.essence !== 'application/http') NonHttpBatchPartError.throwNew(contentType);
 
     const partContentId = part.headers.get('Content-ID');
     if (partContentId === null) MissingBatchPartContentIdError.throwNew();
@@ -193,13 +207,17 @@ export class MissingBatchContentTypeError extends Error {
 }
 
 export class InvalidBatchContentTypeError extends Error {
-  constructor(public readonly contentType: string) {
+  constructor(
+    public readonly contentType: string,
+    cause?: unknown,
+  ) {
     super(`unexpected content type when reading multipart response: ${contentType}`);
     this.name = 'InvalidBatchContentTypeError';
+    this.cause = cause;
   }
 
-  static throwNew(contentType: string): never {
-    const error = new InvalidBatchContentTypeError(contentType);
+  static throwNew(contentType: string, cause?: unknown): never {
+    const error = new InvalidBatchContentTypeError(contentType, cause);
     logger.error('unexpected content type when reading multipart response', error, {
       'error.content_type': contentType,
     });
@@ -222,13 +240,17 @@ export type GmailBatchSendResult = GmailBatchResult<GmailMessageSendResult>;
 export type GmailBatchMetadataResult = GmailBatchResult<GmailMessageMetadataResult>;
 
 export class NonHttpBatchPartError extends Error {
-  constructor(public readonly contentType: string) {
+  constructor(
+    public readonly contentType: string,
+    cause?: unknown,
+  ) {
     super(`unexpected gmail batch part content type: ${contentType}`);
     this.name = 'NonHttpBatchPartError';
+    this.cause = cause;
   }
 
-  static throwNew(contentType: string): never {
-    const error = new NonHttpBatchPartError(contentType);
+  static throwNew(contentType: string, cause?: unknown): never {
+    const error = new NonHttpBatchPartError(contentType, cause);
     logger.error('unexpected gmail batch part content type', error, {
       'error.content_type': contentType,
     });
