@@ -400,7 +400,15 @@ describe('parseBatchSendResponse', () => {
             ok: false,
             failure: {
               status: 500,
-              details: [{ domain: 'global', reason: 'backendError' }],
+              code: 500,
+              message: 'backend failure',
+              details: [
+                {
+                  domain: 'global',
+                  reason: 'backendError',
+                  message: 'backend failure',
+                },
+              ],
               retryDelayMs: null,
             },
           },

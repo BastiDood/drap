@@ -4,17 +4,14 @@ import HttpRawRequest from 'http-raw-request';
 import { Component, Multipart } from 'multipart-ts';
 import type { MIMEMessage } from 'mimetext/node';
 import { parse } from 'valibot';
+import type { Span } from '@opentelemetry/api';
 
 import { GMAIL_METADATA_SCOPE, GMAIL_SEND_SCOPE } from '$lib/server/models/oauth';
 import { Logger } from '$lib/server/telemetry/logger';
 import { OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET } from '$lib/server/env/google';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
-import {
-  deriveOtelAttributesFromGmailFailure,
-  type GmailFailure,
-  parseGmailFailure,
-} from './failure';
+import { type GmailFailure, logGmailFailure, parseGmailFailure } from './failure';
 import { GmailMessageMetadataResult, GmailMessageSendResult, TokenResponse } from './schema';
 import { parseBatchMetadataResponse, parseBatchSendResponse } from './http';
 
@@ -104,7 +101,7 @@ export class GoogleOAuthClient {
         // TODO: Handle rate limits.
         // falls through
         default: {
-          return await GmailError.throwResponse(response);
+          return await GmailError.throwResponse(span, response);
         }
       }
     });
@@ -154,7 +151,7 @@ export class GoogleOAuthClient {
         body: multipart.bytes(),
       });
 
-      if (response.status !== 200) return await GmailError.throwResponse(response);
+      if (response.status !== 200) return await GmailError.throwResponse(span, response);
 
       return await parseBatchSendResponse(response);
     });
@@ -195,7 +192,7 @@ export class GoogleOAuthClient {
         // TODO: Handle rate limits.
         // falls through
         default: {
-          return await GmailError.throwResponse(response);
+          return await GmailError.throwResponse(span, response);
         }
       }
     });
@@ -247,7 +244,7 @@ export class GoogleOAuthClient {
         body: multipart.bytes(),
       });
 
-      if (response.status !== 200) return await GmailError.throwResponse(response);
+      if (response.status !== 200) return await GmailError.throwResponse(span, response);
 
       const metadataResults = await parseBatchMetadataResponse(response);
       const results = new Map<string, GmailBatchMessageIdHeaderResult>();
@@ -298,15 +295,19 @@ export class GmailError extends Error {
     this.name = 'UpstreamGmailError';
   }
 
-  static throwFailure(failure: GmailFailure): never {
+  static throwFailure(span: Span, failure: GmailFailure): never {
     const error = new GmailError(failure);
-    logger.error('gmail api request failed', error, deriveOtelAttributesFromGmailFailure(failure));
+    logGmailFailure(span, failure);
+    logger.error('gmail api request failed', error);
     throw error;
   }
 
-  static async throwResponse(response: Response): Promise<never> {
+  static async throwResponse(span: Span, response: Response): Promise<never> {
     const body = await response.text();
-    return GmailError.throwFailure(parseGmailFailure(response.status, response.headers, body));
+    return GmailError.throwFailure(
+      span,
+      parseGmailFailure(response.status, response.headers, body),
+    );
   }
 }
 

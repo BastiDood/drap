@@ -9,10 +9,6 @@ import {
 } from '$lib/server/inngest/functions/send-emails/event';
 import { db } from '$lib/server/database';
 import {
-  deriveOtelAttributesFromGmailFailure,
-  isRetryableGmailFailure,
-} from '$lib/server/google/failure';
-import {
   EmailBatchEvent,
   EmailSeedEvent,
   EmailSeedFallbackEvent,
@@ -24,6 +20,7 @@ import {
 } from '$lib/server/inngest/functions/send-emails/auth';
 import { GmailError, GmailScopeError } from '$lib/server/google';
 import { inngest } from '$lib/server/inngest/client';
+import { isRetryableGmailFailure, logGmailFailure } from '$lib/server/google/failure';
 import { lockGmailThreads, seedGmailThreadsById } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
@@ -220,9 +217,8 @@ async function seedEmailThreads(
                 followers: request.data.followers,
               });
 
-          const attributes = deriveOtelAttributesFromGmailFailure(result.failure);
-          attributes['email.seed.attempt'] = request.data.seedAttempt;
-          logger.error('gmail root seed email failed', void 0, attributes);
+          span.setAttribute('email.seed.attempt', request.data.seedAttempt);
+          logGmailFailure(span, result.failure);
         }
 
         logger.info('gmail seed batch completed', {
@@ -261,12 +257,14 @@ async function seedEmailThreads(
             if (typeof result === 'undefined')
               throw new MissingGmailMetadataResultError(item.gmailMessageId);
             if (!result.ok) {
-              if (!isRetryableGmailFailure(result.failure))
+              if (!isRetryableGmailFailure(result.failure)) {
+                logGmailFailure(span, result.failure);
                 throw new NonRetriableError(
                   'gmail seed metadata request failed with non-retryable status',
                   { cause: new GmailError(result.failure) },
                 );
-              GmailError.throwFailure(result.failure);
+              }
+              GmailError.throwFailure(span, result.failure);
             }
             metadata.push({
               rowId: item.rowId,
