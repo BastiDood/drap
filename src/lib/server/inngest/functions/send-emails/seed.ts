@@ -6,9 +6,12 @@ import {
   createEmailMessage,
   getGmailThreadKey,
   getGmailThreadKeyString,
-  isRetryableGmailStatus,
 } from '$lib/server/inngest/functions/send-emails/event';
 import { db } from '$lib/server/database';
+import {
+  deriveOtelAttributesFromGmailFailure,
+  isRetryableGmailFailure,
+} from '$lib/server/google/failure';
 import {
   EmailBatchEvent,
   EmailSeedEvent,
@@ -177,7 +180,7 @@ async function seedEmailThreads(
         } catch (cause) {
           if (cause instanceof GmailScopeError)
             throw new NonRetriableError('missing gmail scopes', { cause });
-          if (cause instanceof GmailError && !isRetryableGmailStatus(cause.status))
+          if (cause instanceof GmailError && !isRetryableGmailFailure(cause.failure))
             throw new NonRetriableError(
               'gmail seed batch request failed with non-retryable status',
               { cause },
@@ -205,22 +208,21 @@ async function seedEmailThreads(
           }
 
           ++failureCount;
-          if (request.data.seedAttempt < MAX_SEED_ATTEMPTS)
-            seedRetries.push({
-              ...request.data,
-              seedAttempt: request.data.seedAttempt + 1,
-            });
-          else
-            seedFallbacks.push({
-              seed: request.data.seed,
-              followers: request.data.followers,
-            });
+          if (isRetryableGmailFailure(result.failure))
+            if (request.data.seedAttempt < MAX_SEED_ATTEMPTS)
+              seedRetries.push({
+                ...request.data,
+                seedAttempt: request.data.seedAttempt + 1,
+              });
+            else
+              seedFallbacks.push({
+                seed: request.data.seed,
+                followers: request.data.followers,
+              });
 
-          logger.error('gmail root seed email failed', void 0, {
-            'email.seed.attempt': request.data.seedAttempt,
-            'error.gmail.response.status': result.status,
-            'error.gmail.response.body': result.body,
-          });
+          const attributes = deriveOtelAttributesFromGmailFailure(result.failure);
+          attributes['email.seed.attempt'] = request.data.seedAttempt;
+          logger.error('gmail root seed email failed', void 0, attributes);
         }
 
         logger.info('gmail seed batch completed', {
@@ -246,7 +248,7 @@ async function seedEmailThreads(
           } catch (cause) {
             if (cause instanceof GmailScopeError)
               throw new NonRetriableError('missing gmail scopes', { cause });
-            if (cause instanceof GmailError && !isRetryableGmailStatus(cause.status))
+            if (cause instanceof GmailError && !isRetryableGmailFailure(cause.failure))
               throw new NonRetriableError(
                 'gmail seed metadata request failed with non-retryable status',
                 { cause },
@@ -259,12 +261,12 @@ async function seedEmailThreads(
             if (typeof result === 'undefined')
               throw new MissingGmailMetadataResultError(item.gmailMessageId);
             if (!result.ok) {
-              if (!isRetryableGmailStatus(result.status))
+              if (!isRetryableGmailFailure(result.failure))
                 throw new NonRetriableError(
                   'gmail seed metadata request failed with non-retryable status',
-                  { cause: new GmailError(result.status, result.body) },
+                  { cause: new GmailError(result.failure) },
                 );
-              GmailError.throwNew(result.status, result.body);
+              GmailError.throwFailure(result.failure);
             }
             metadata.push({
               rowId: item.rowId,

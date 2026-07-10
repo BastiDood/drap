@@ -13,9 +13,12 @@ import {
   createEmailMessage,
   getGmailThreadKey,
   getGmailThreadKeyString,
-  isRetryableGmailStatus,
 } from '$lib/server/inngest/functions/send-emails/event';
 import { db } from '$lib/server/database';
+import {
+  deriveOtelAttributesFromGmailFailure,
+  isRetryableGmailFailure,
+} from '$lib/server/google/failure';
 import { EmailBatchEvent, EmailBatchFallbackEvent } from '$lib/server/inngest/schema';
 import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
 import { getRefreshedCredentials } from '$lib/server/inngest/functions/send-emails/auth';
@@ -103,7 +106,7 @@ export const sendBatchedEmails = inngest.createFunction(
           } catch (cause) {
             if (cause instanceof GmailScopeError)
               throw new NonRetriableError('missing gmail scopes', { cause });
-            if (cause instanceof GmailError && !isRetryableGmailStatus(cause.status))
+            if (cause instanceof GmailError && !isRetryableGmailFailure(cause.failure))
               throw new NonRetriableError(
                 'gmail threaded batch request failed with non-retryable status',
                 { cause },
@@ -130,21 +133,20 @@ export const sendBatchedEmails = inngest.createFunction(
             }
 
             ++failureCount;
-            if (request.batchAttempt < MAX_BATCH_ATTEMPTS)
-              batchRetries.push({
-                email: request.email,
-                batchAttempt: request.batchAttempt + 1,
-              });
-            else
-              fallbackFollowups.push({
-                email: request.email,
-              });
+            if (isRetryableGmailFailure(result.failure))
+              if (request.batchAttempt < MAX_BATCH_ATTEMPTS)
+                batchRetries.push({
+                  email: request.email,
+                  batchAttempt: request.batchAttempt + 1,
+                });
+              else
+                fallbackFollowups.push({
+                  email: request.email,
+                });
 
-            logger.error('gmail threaded batch email failed', void 0, {
-              'email.batch.attempt': request.batchAttempt,
-              'error.gmail.response.status': result.status,
-              'error.gmail.response.body': result.body,
-            });
+            const attributes = deriveOtelAttributesFromGmailFailure(result.failure);
+            attributes['email.batch.attempt'] = request.batchAttempt;
+            logger.error('gmail threaded batch email failed', void 0, attributes);
           }
 
           logger.info('gmail threaded batch completed', {
@@ -175,7 +177,7 @@ export const sendBatchedEmails = inngest.createFunction(
           } catch (cause) {
             if (cause instanceof GmailScopeError)
               throw new NonRetriableError('missing gmail scopes', { cause });
-            if (cause instanceof GmailError && !isRetryableGmailStatus(cause.status))
+            if (cause instanceof GmailError && !isRetryableGmailFailure(cause.failure))
               throw new NonRetriableError(
                 'gmail threaded metadata request failed with non-retryable status',
                 { cause },
@@ -188,12 +190,12 @@ export const sendBatchedEmails = inngest.createFunction(
             if (typeof result === 'undefined')
               throw new MissingGmailMetadataResultError(item.gmailMessageId);
             if (!result.ok) {
-              if (!isRetryableGmailStatus(result.status))
+              if (!isRetryableGmailFailure(result.failure))
                 throw new NonRetriableError(
                   'gmail threaded metadata request failed with non-retryable status',
-                  { cause: new GmailError(result.status, result.body) },
+                  { cause: new GmailError(result.failure) },
                 );
-              GmailError.throwNew(result.status, result.body);
+              GmailError.throwFailure(result.failure);
             }
             metadata.push({
               rowId: item.rowId,

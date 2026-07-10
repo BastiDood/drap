@@ -10,6 +10,11 @@ import { Logger } from '$lib/server/telemetry/logger';
 import { OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET } from '$lib/server/env/google';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
+import {
+  deriveOtelAttributesFromGmailFailure,
+  type GmailFailure,
+  parseGmailFailure,
+} from './failure';
 import { GmailMessageMetadataResult, GmailMessageSendResult, TokenResponse } from './schema';
 import { parseBatchMetadataResponse, parseBatchSendResponse } from './http';
 
@@ -99,8 +104,7 @@ export class GoogleOAuthClient {
         // TODO: Handle rate limits.
         // falls through
         default: {
-          const body = await response.text();
-          return GmailError.throwNew(response.status, body);
+          return await GmailError.throwResponse(response);
         }
       }
     });
@@ -118,6 +122,8 @@ export class GoogleOAuthClient {
       const multipart = new Multipart(
         Array.from(messages.entries(), ([contentId, { message, gmailThreadId }]) => {
           const encoder = new TextEncoder();
+          const payload: { raw: string; threadId?: string } = { raw: message.asEncoded() };
+          if (typeof gmailThreadId !== 'undefined') payload.threadId = gmailThreadId;
           const body = encoder.encode(
             HttpRawRequest.toString(
               {
@@ -126,10 +132,7 @@ export class GoogleOAuthClient {
                 url: '/gmail/v1/users/me/messages/send',
               },
               { 'Content-Type': 'application/json' },
-              JSON.stringify({
-                ...(typeof gmailThreadId !== 'undefined' && { threadId: gmailThreadId }),
-                raw: message.asEncoded(),
-              }),
+              JSON.stringify(payload),
             ),
           );
           return new Component(
@@ -151,8 +154,7 @@ export class GoogleOAuthClient {
         body: multipart.bytes(),
       });
 
-      if (response.status !== 200)
-        throw GmailError.throwNew(response.status, await response.text());
+      if (response.status !== 200) return await GmailError.throwResponse(response);
 
       return await parseBatchSendResponse(response);
     });
@@ -193,8 +195,7 @@ export class GoogleOAuthClient {
         // TODO: Handle rate limits.
         // falls through
         default: {
-          const body = await response.text();
-          return GmailError.throwNew(response.status, body);
+          return await GmailError.throwResponse(response);
         }
       }
     });
@@ -246,8 +247,7 @@ export class GoogleOAuthClient {
         body: multipart.bytes(),
       });
 
-      if (response.status !== 200)
-        throw GmailError.throwNew(response.status, await response.text());
+      if (response.status !== 200) return await GmailError.throwResponse(response);
 
       const metadataResults = await parseBatchMetadataResponse(response);
       const results = new Map<string, GmailBatchMessageIdHeaderResult>();
@@ -271,8 +271,7 @@ export interface GmailBatchMessageIdHeaderSuccess {
 
 export interface GmailBatchMessageIdHeaderFailure {
   ok: false;
-  status: number;
-  body: string;
+  failure: GmailFailure;
 }
 
 export type GmailBatchMessageIdHeaderResult =
@@ -294,21 +293,20 @@ export class RefreshedGoogleOAuth {
 }
 
 export class GmailError extends Error {
-  constructor(
-    public status: number,
-    public body: string,
-  ) {
-    super(`upstream gmail api returned status ${status}: ${body}`);
+  constructor(public readonly failure: GmailFailure) {
+    super(`upstream gmail api returned status ${failure.status}`);
     this.name = 'UpstreamGmailError';
   }
 
-  static throwNew(status: number, body: string): never {
-    const error = new GmailError(status, body);
-    logger.error('gmail api error message', error, {
-      'error.gmail.response.status': status,
-      'error.gmail.response.body': body,
-    });
+  static throwFailure(failure: GmailFailure): never {
+    const error = new GmailError(failure);
+    logger.error('gmail api request failed', error, deriveOtelAttributesFromGmailFailure(failure));
     throw error;
+  }
+
+  static async throwResponse(response: Response): Promise<never> {
+    const body = await response.text();
+    return GmailError.throwFailure(parseGmailFailure(response.status, response.headers, body));
   }
 }
 

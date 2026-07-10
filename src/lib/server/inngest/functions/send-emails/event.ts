@@ -141,19 +141,6 @@ export async function createEmailMessage(
   };
 }
 
-export function isRetryableGmailStatus(status: number) {
-  switch (status) {
-    case 429:
-    case 500:
-    case 502:
-    case 503:
-    case 504:
-      return true;
-    default:
-      return false;
-  }
-}
-
 export function getGmailThreadKey(email: EmailEvent): GmailThreadKey {
   const { data } = email;
   return {

@@ -8,7 +8,6 @@ import {
   createEmailMessage,
   getGmailThreadKey,
   getGmailThreadKeyString,
-  isRetryableGmailStatus,
 } from '$lib/server/inngest/functions/send-emails/event';
 import { db } from '$lib/server/database';
 import { EmailBatchFallbackEvent } from '$lib/server/inngest/schema';
@@ -19,6 +18,7 @@ import {
 } from '$lib/server/inngest/functions/send-emails/auth';
 import { GmailError, GmailScopeError } from '$lib/server/google';
 import { inngest } from '$lib/server/inngest/client';
+import { isRetryableGmailFailure } from '$lib/server/google/failure';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
@@ -120,7 +120,7 @@ async function sendBatchFallbackEmail(
         } catch (cause) {
           if (cause instanceof GmailScopeError)
             throw new NonRetriableError('missing gmail scopes', { cause });
-          if (cause instanceof GmailError && !isRetryableGmailStatus(cause.status))
+          if (cause instanceof GmailError && !isRetryableGmailFailure(cause.failure))
             throw new NonRetriableError('gmail batch fallback failed with non-retryable status', {
               cause,
             });

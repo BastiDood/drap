@@ -1,4 +1,7 @@
+import assert, { strictEqual } from 'node:assert/strict';
+
 import * as v from 'valibot';
+import { chunked } from 'itertools';
 import { Component, Multipart } from 'multipart-ts';
 import { HTTPParser } from 'http-parser-js';
 
@@ -6,6 +9,7 @@ import { Logger } from '$lib/server/telemetry/logger';
 import { stripPrefix } from '$lib/strings';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
+import { type GmailFailure, parseGmailFailure } from './failure';
 import { GmailMessageMetadataResult, GmailMessageSendResult } from './schema';
 
 const SERVICE_NAME = 'lib.server.google.http';
@@ -65,7 +69,7 @@ function parseBatchPart<const TSchema extends v.GenericSchema>(
     span.setAttribute('multipart.content_id', partContentId);
 
     const contentId = normalizeBatchContentId(partContentId);
-    const { status, body } = parseApplicationHttpResponse(Buffer.from(part.body));
+    const { status, headers, body } = parseApplicationHttpResponse(Buffer.from(part.body));
 
     if (status >= 200 && status < 300) {
       logger.debug('successfully parsed gmail batch part', { 'http.part.content_id': contentId });
@@ -74,7 +78,7 @@ function parseBatchPart<const TSchema extends v.GenericSchema>(
     }
 
     logger.warn('failed to parse gmail batch part', { 'http.part.status': status });
-    return [contentId, { ok: false, status, body }];
+    return [contentId, { ok: false, failure: parseGmailFailure(status, headers, body) }];
   });
 }
 
@@ -84,13 +88,16 @@ function parseApplicationHttpResponse(data: Buffer) {
     const parser = new HTTPParser(HTTPParser.RESPONSE);
 
     let status: number | undefined;
+    let headers = new Headers();
     const bodyChunks: Buffer[] = [];
 
-    parser.onHeadersComplete = ({ statusCode }) =>
+    parser.onHeadersComplete = ({ statusCode, headers: rawHeaders }) =>
       tracer.span('parse-application-http-response-headers-complete', span => {
         span.setAttribute('http.response.status', statusCode);
         status = statusCode;
+        headers = headersFromRawPairs(rawHeaders);
       });
+
     parser.onBody = (chunk, offset, length) =>
       tracer.span('parse-application-http-response-body', span => {
         span.setAttributes({
@@ -105,11 +112,30 @@ function parseApplicationHttpResponse(data: Buffer) {
     logger.trace('parsed http', { 'http.response.size': executeResult });
 
     const finishResult = parser.finish();
-    if (finishResult instanceof Error) throw finishResult;
+    if (typeof finishResult !== 'undefined') {
+      logger.fatal('failed to parse http response', finishResult);
+      throw finishResult;
+    }
 
     if (typeof status === 'undefined') MissingBatchPartStatusError.throwNew();
-    return { status, body: Buffer.concat(bodyChunks).toString('utf-8') };
+
+    return {
+      status,
+      headers,
+      body: Buffer.concat(bodyChunks).toString('utf-8'),
+    };
   });
+}
+
+function headersFromRawPairs(pairs: string[]) {
+  const headers = new Headers();
+  for (const [name, value, ...rest] of chunked(pairs, 2)) {
+    strictEqual(rest.length, 0, 'expected http header name/value pair');
+    assert(typeof value !== 'undefined', 'expected http header value');
+    assert(typeof name !== 'undefined', 'expected http header name');
+    headers.append(name, value);
+  }
+  return headers;
 }
 
 function normalizeBatchContentId(contentId: string) {
@@ -188,8 +214,7 @@ export interface GmailBatchSuccess<TValue> {
 
 export interface GmailBatchFailure {
   ok: false;
-  status: number;
-  body: string;
+  failure: GmailFailure;
 }
 
 export type GmailBatchResult<TValue> = GmailBatchSuccess<TValue> | GmailBatchFailure;
