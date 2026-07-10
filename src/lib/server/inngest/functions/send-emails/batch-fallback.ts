@@ -18,7 +18,6 @@ import {
 } from '$lib/server/inngest/functions/send-emails/auth';
 import { GmailError, GmailScopeError } from '$lib/server/google';
 import { inngest } from '$lib/server/inngest/client';
-import { isRetryableGmailFailure } from '$lib/server/google/failure';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
@@ -43,14 +42,14 @@ export const sendBatchEmailFallback = inngest.createFunction(
     retries: 0,
     triggers: EmailBatchFallbackEvent,
   },
-  async ({ event, step, attempt }) => {
+  async ({ event, step }) => {
     if (!ENABLE_EMAILS) throw new NonRetriableError('emails disabled during dry run');
 
     await step.run(
       { id: 'send-batch-fallback-email', name: 'Send Batch Fallback Email' },
       async () => {
         const credentials = await getRefreshedCredentials();
-        return await sendBatchFallbackEmail(event.data, credentials, attempt);
+        return await sendBatchFallbackEmail(event.data, credentials);
       },
     );
   },
@@ -59,14 +58,10 @@ export const sendBatchEmailFallback = inngest.createFunction(
 async function sendBatchFallbackEmail(
   event: EmailBatchFallbackEvent,
   credentials: RefreshedCredentials,
-  attempt: number,
 ) {
   return await tracer.asyncSpan('send-batch-fallback-email', async span => {
     const key = getGmailThreadKey(event.email);
-    span.setAttributes({
-      'email.batch.fallback.attempt': attempt,
-      'email.gmail_thread.logical_key': getGmailThreadKeyString(key),
-    });
+    span.setAttribute('email.gmail_thread.logical_key', getGmailThreadKeyString(key));
     return await db.transaction(
       async tx => {
         const thread = assertSingle(
@@ -109,7 +104,6 @@ async function sendBatchFallbackEmail(
         try {
           const result = await credentials.client.sendEmail(message, gmailThreadId);
           logger.info('gmail batch fallback email sent successfully', {
-            'email.attempt': attempt,
             'email.message.id': result.id,
             'email.message.thread_id': result.threadId,
           });
@@ -120,8 +114,8 @@ async function sendBatchFallbackEmail(
         } catch (cause) {
           if (cause instanceof GmailScopeError)
             throw new NonRetriableError('missing gmail scopes', { cause });
-          if (cause instanceof GmailError && !isRetryableGmailFailure(cause.failure))
-            throw new NonRetriableError('gmail batch fallback failed with non-retryable status', {
+          if (cause instanceof GmailError)
+            throw new NonRetriableError('gmail threaded email exhausted delivery attempts', {
               cause,
             });
           throw cause;

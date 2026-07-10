@@ -15,7 +15,6 @@ import {
 } from '$lib/server/inngest/functions/send-emails/auth';
 import { GmailError, GmailScopeError } from '$lib/server/google';
 import { inngest } from '$lib/server/inngest/client';
-import { isRetryableGmailFailure } from '$lib/server/google/failure';
 import { lockGmailThreads, seedGmailThreadById } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
@@ -41,14 +40,14 @@ export const sendSeedEmailFallback = inngest.createFunction(
     retries: 0,
     triggers: EmailSeedFallbackEvent,
   },
-  async ({ event, step, attempt }) => {
+  async ({ event, step }) => {
     if (!ENABLE_EMAILS) throw new NonRetriableError('emails disabled during dry run');
 
     const followups = await step.run(
       { id: 'seed-fallback-email-thread', name: 'Seed Fallback Email Thread' },
       async () => {
         const credentials = await getRefreshedCredentials();
-        return await seedFallbackEmailThread(event.data, credentials, attempt);
+        return await seedFallbackEmailThread(event.data, credentials);
       },
     );
 
@@ -64,12 +63,10 @@ export const sendSeedEmailFallback = inngest.createFunction(
 async function seedFallbackEmailThread(
   event: EmailSeedFallbackEvent,
   credentials: RefreshedCredentials,
-  attempt: number,
 ) {
   return await tracer.asyncSpan('seed-fallback-email-thread', async span => {
     const key = getGmailThreadKey(event.seed);
     span.setAttributes({
-      'email.seed.fallback.attempt': attempt,
       'email.seed.follower.count': event.followers.length,
       'email.gmail_thread.logical_key': getGmailThreadKeyString(key),
     });
@@ -87,7 +84,6 @@ async function seedFallbackEmailThread(
           const { message } = await createEmailMessage(event.seed, credentials.sender);
           const result = await credentials.client.sendEmail(message);
           logger.info('gmail root seed fallback email sent successfully', {
-            'email.attempt': attempt,
             'email.message.id': result.id,
             'email.message.thread_id': result.threadId,
           });
@@ -98,8 +94,8 @@ async function seedFallbackEmailThread(
         } catch (cause) {
           if (cause instanceof GmailScopeError)
             throw new NonRetriableError('missing gmail scopes', { cause });
-          if (cause instanceof GmailError && !isRetryableGmailFailure(cause.failure))
-            throw new NonRetriableError('gmail seed fallback failed with non-retryable status', {
+          if (cause instanceof GmailError)
+            throw new NonRetriableError('gmail seed email exhausted delivery attempts', {
               cause,
             });
           throw cause;

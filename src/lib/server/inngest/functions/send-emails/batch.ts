@@ -18,18 +18,23 @@ import { db } from '$lib/server/database';
 import { EmailBatchEvent, EmailBatchFallbackEvent } from '$lib/server/inngest/schema';
 import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
 import { getRefreshedCredentials } from '$lib/server/inngest/functions/send-emails/auth';
+import type { GmailBatchSendResult } from '$lib/server/google/http';
 import { GmailError, GmailScopeError } from '$lib/server/google';
+import {
+  type GmailFailure,
+  isRetryableGmailFailure,
+  logGmailFailure,
+} from '$lib/server/google/failure';
 import { inngest } from '$lib/server/inngest/client';
-import { isRetryableGmailFailure, logGmailFailure } from '$lib/server/google/failure';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
+import { GmailRetryKind, getGmailRetryTimestamp, planGmailRetry } from './retry';
 import { MissingGmailBatchResultError, MissingGmailMetadataResultError } from './errors';
 
 const SERVICE_NAME = 'inngest.functions.send-emails.batch';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
-const MAX_BATCH_ATTEMPTS = 3;
 
 export const sendBatchedEmails = inngest.createFunction(
   {
@@ -74,8 +79,11 @@ export const sendBatchedEmails = inngest.createFunction(
           });
 
           const successes: { rowId: number; gmailMessageId: string }[] = [];
-          const batchRetries: EmailBatchEvent[] = [];
-          const fallbackFollowups: EmailBatchFallbackEvent[] = [];
+          const batchRetries: { data: EmailBatchEvent; ts: number }[] = [];
+          const fallbackFollowups: {
+            data: EmailBatchFallbackEvent;
+            ts: number;
+          }[] = [];
 
           if (requests.length === 0) return { successes, batchRetries, fallbackFollowups };
 
@@ -98,24 +106,36 @@ export const sendBatchedEmails = inngest.createFunction(
 
           logger.debug('sending threaded email batch', { 'messages.count': messages.size });
           let results: Awaited<ReturnType<typeof client.sendEmails>>;
+          let outerFailure: GmailFailure | undefined;
           try {
             results = await client.sendEmails(messages);
           } catch (cause) {
             if (cause instanceof GmailScopeError)
               throw new NonRetriableError('missing gmail scopes', { cause });
-            if (cause instanceof GmailError && !isRetryableGmailFailure(cause.failure))
-              throw new NonRetriableError(
-                'gmail threaded batch request failed with non-retryable status',
-                { cause },
+            if (cause instanceof GmailError) {
+              if (!isRetryableGmailFailure(cause.failure))
+                throw new NonRetriableError(
+                  'gmail threaded batch request failed with non-retryable status',
+                  { cause },
+                );
+              outerFailure = cause.failure;
+              results = new Map<string, GmailBatchSendResult>(
+                requests.map(request => [request.contentId, { ok: false, failure: cause.failure }]),
               );
-            throw cause;
+            } else {
+              throw new NonRetriableError('gmail threaded batch send outcome is ambiguous', {
+                cause,
+              });
+            }
           }
 
           let failureCount = 0;
           for (const request of requests) {
             const result = results.get(request.contentId);
             if (typeof result === 'undefined')
-              throw new MissingGmailBatchResultError(request.contentId);
+              throw new NonRetriableError('gmail threaded batch send outcome is ambiguous', {
+                cause: new MissingGmailBatchResultError(request.contentId),
+              });
 
             if (result.ok) {
               successes.push({
@@ -130,19 +150,35 @@ export const sendBatchedEmails = inngest.createFunction(
             }
 
             ++failureCount;
-            if (isRetryableGmailFailure(result.failure))
-              if (request.batchAttempt < MAX_BATCH_ATTEMPTS)
-                batchRetries.push({
-                  email: request.email,
-                  batchAttempt: request.batchAttempt + 1,
-                });
-              else
-                fallbackFollowups.push({
-                  email: request.email,
-                });
-
             span.setAttribute('email.batch.attempt', request.batchAttempt);
-            logGmailFailure(span, result.failure);
+            if (typeof outerFailure === 'undefined') logGmailFailure(span, result.failure);
+
+            const retryPlan = planGmailRetry(request.batchAttempt, result.failure);
+            switch (retryPlan.kind) {
+              case GmailRetryKind.Batch:
+                batchRetries.push({
+                  data: {
+                    email: request.email,
+                    batchAttempt: retryPlan.attempt,
+                  },
+                  ts: getGmailRetryTimestamp(retryPlan.attempt, result.failure),
+                });
+                break;
+              case GmailRetryKind.Fallback:
+                fallbackFollowups.push({
+                  data: { email: request.email },
+                  ts: getGmailRetryTimestamp(retryPlan.attempt, result.failure),
+                });
+                break;
+              case GmailRetryKind.Terminal:
+                logger.error('gmail threaded email failed with terminal status');
+                break;
+              case GmailRetryKind.Exhausted:
+                logger.error('gmail threaded email exhausted delivery attempts');
+                break;
+              default:
+                throw new NonRetriableError('invalid gmail threaded retry plan');
+            }
           }
 
           logger.info('gmail threaded batch completed', {
@@ -210,10 +246,11 @@ export const sendBatchedEmails = inngest.createFunction(
     );
 
     const followups = [
-      ...sent.batchRetries.map(data => EmailBatchEvent.create(data)),
-      ...sent.fallbackFollowups.map(data => EmailBatchFallbackEvent.create(data)),
+      ...sent.batchRetries.map(({ data, ts }) => EmailBatchEvent.create(data, { ts })),
+      ...sent.fallbackFollowups.map(({ data, ts }) => EmailBatchFallbackEvent.create(data, { ts })),
     ];
-    if (followups.length > 0) await step.sendEvent('dispatch-threaded-email-followups', followups);
+    if (followups.length === 0) return 0;
+    await step.sendEvent('dispatch-threaded-email-followups', followups);
     return followups.length;
   },
 );

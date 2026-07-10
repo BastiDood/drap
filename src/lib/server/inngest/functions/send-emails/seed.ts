@@ -18,20 +18,24 @@ import {
   getRefreshedCredentials,
   type RefreshedCredentials,
 } from '$lib/server/inngest/functions/send-emails/auth';
+import type { GmailBatchSendResult } from '$lib/server/google/http';
 import { GmailError, GmailScopeError } from '$lib/server/google';
+import {
+  type GmailFailure,
+  isRetryableGmailFailure,
+  logGmailFailure,
+} from '$lib/server/google/failure';
 import { inngest } from '$lib/server/inngest/client';
-import { isRetryableGmailFailure, logGmailFailure } from '$lib/server/google/failure';
 import { lockGmailThreads, seedGmailThreadsById } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 
+import { GmailRetryKind, getGmailRetryTimestamp, planGmailRetry } from './retry';
 import { MissingGmailMetadataResultError, MissingGmailSeedBatchResultError } from './errors';
 
 const SERVICE_NAME = 'inngest.functions.send-emails.seed';
 const logger = Logger.byName(SERVICE_NAME);
 const tracer = Tracer.byName(SERVICE_NAME);
-
-const MAX_SEED_ATTEMPTS = 3;
 
 interface SeedRequest {
   key: ReturnType<typeof getGmailThreadKey>;
@@ -72,15 +76,21 @@ export const sendSeedEmails = inngest.createFunction(
       },
     );
 
-    const followups = [
+    const immediateFollowups = [
       ...readyBatches.map(data => EmailBatchEvent.create(data)),
-      ...seedRetries.map(data => EmailSeedEvent.create(data)),
-      ...seedFallbacks.map(data => EmailSeedFallbackEvent.create(data)),
       ...followerBatches.map(data => EmailBatchEvent.create(data)),
     ];
+    if (immediateFollowups.length > 0)
+      await step.sendEvent('dispatch-seed-followups', immediateFollowups);
 
-    if (followups.length > 0) await step.sendEvent('dispatch-seed-followups', followups);
-    return followups.length;
+    const delayedFollowups = [
+      ...seedRetries.map(({ data, ts }) => EmailSeedEvent.create(data, { ts })),
+      ...seedFallbacks.map(({ data, ts }) => EmailSeedFallbackEvent.create(data, { ts })),
+    ];
+    if (delayedFollowups.length === 0) return immediateFollowups.length;
+    await step.sendEvent('dispatch-seed-email-retry', delayedFollowups);
+
+    return immediateFollowups.length + delayedFollowups.length;
   },
 );
 
@@ -154,8 +164,8 @@ async function seedEmailThreads(
           gmailMessageId: string;
           gmailThreadId: string;
         }[] = [];
-        const seedRetries: EmailSeedEvent[] = [];
-        const seedFallbacks: EmailSeedFallbackEvent[] = [];
+        const seedRetries: { data: EmailSeedEvent; ts: number }[] = [];
+        const seedFallbacks: { data: EmailSeedFallbackEvent; ts: number }[] = [];
 
         if (pendingSeeds.length === 0)
           return { readyBatches, seedRetries, seedFallbacks, followerBatches: [] };
@@ -171,25 +181,39 @@ async function seedEmailThreads(
         );
 
         logger.debug('sending root seed email batch', { 'messages.count': messages.size });
+
         let results: Awaited<ReturnType<typeof credentials.client.sendEmails>>;
+        let outerFailure: GmailFailure | undefined;
         try {
           results = await credentials.client.sendEmails(messages);
         } catch (cause) {
           if (cause instanceof GmailScopeError)
             throw new NonRetriableError('missing gmail scopes', { cause });
-          if (cause instanceof GmailError && !isRetryableGmailFailure(cause.failure))
-            throw new NonRetriableError(
-              'gmail seed batch request failed with non-retryable status',
-              { cause },
+          if (cause instanceof GmailError) {
+            if (!isRetryableGmailFailure(cause.failure))
+              throw new NonRetriableError(
+                'gmail seed batch request failed with non-retryable status',
+                { cause },
+              );
+            outerFailure = cause.failure;
+            results = new Map<string, GmailBatchSendResult>(
+              pendingSeeds.map(request => [
+                String(request.rowId),
+                { ok: false, failure: cause.failure },
+              ]),
             );
-          throw cause;
+          } else {
+            throw new NonRetriableError('gmail seed batch send outcome is ambiguous', { cause });
+          }
         }
 
         let failureCount = 0;
         for (const request of pendingSeeds) {
           const result = results.get(String(request.rowId));
           if (typeof result === 'undefined')
-            throw new MissingGmailSeedBatchResultError(Number(request.rowId));
+            throw new NonRetriableError('gmail seed batch send outcome is ambiguous', {
+              cause: new MissingGmailSeedBatchResultError(Number(request.rowId)),
+            });
 
           if (result.ok) {
             successes.push({
@@ -205,20 +229,35 @@ async function seedEmailThreads(
           }
 
           ++failureCount;
-          if (isRetryableGmailFailure(result.failure))
-            if (request.data.seedAttempt < MAX_SEED_ATTEMPTS)
-              seedRetries.push({
-                ...request.data,
-                seedAttempt: request.data.seedAttempt + 1,
-              });
-            else
-              seedFallbacks.push({
-                seed: request.data.seed,
-                followers: request.data.followers,
-              });
-
           span.setAttribute('email.seed.attempt', request.data.seedAttempt);
-          logGmailFailure(span, result.failure);
+          if (typeof outerFailure === 'undefined') logGmailFailure(span, result.failure);
+
+          const retryPlan = planGmailRetry(request.data.seedAttempt, result.failure);
+          switch (retryPlan.kind) {
+            case GmailRetryKind.Batch:
+              seedRetries.push({
+                data: { ...request.data, seedAttempt: retryPlan.attempt },
+                ts: getGmailRetryTimestamp(retryPlan.attempt, result.failure),
+              });
+              break;
+            case GmailRetryKind.Fallback:
+              seedFallbacks.push({
+                data: {
+                  seed: request.data.seed,
+                  followers: request.data.followers,
+                },
+                ts: getGmailRetryTimestamp(retryPlan.attempt, result.failure),
+              });
+              break;
+            case GmailRetryKind.Terminal:
+              logger.error('gmail seed email failed with terminal status');
+              break;
+            case GmailRetryKind.Exhausted:
+              logger.error('gmail seed email exhausted delivery attempts');
+              break;
+            default:
+              throw new NonRetriableError('invalid gmail seed retry plan');
+          }
         }
 
         logger.info('gmail seed batch completed', {
