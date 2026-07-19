@@ -10,8 +10,9 @@ engineStrict: true
 
 minimumReleaseAgeStrict: true
 
-minimumReleaseAgeExclude:
-  - vite@8.1.4
+overrides:
+  '@inngest/ai@0.1.7>@types/node': '-'
+  '@inngest/ai@0.1.7>typescript': '-'
 
 trustPolicy: no-downgrade
 
