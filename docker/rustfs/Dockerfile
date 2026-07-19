@@ -1,3 +1,3 @@
-FROM rustfs/rustfs:1.0.0-beta.8
+FROM rustfs/rustfs:1.0.0-beta.10
 
 COPY --chmod=755 health.sh /health
