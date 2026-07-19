@@ -88,7 +88,7 @@
     <DraftAvatar {...getDraftAvatarProps(avatar)} class="size-12" />
   {/if}
 {/snippet}
-<div class={cn('@container bg-card p-4 rounded-lg', className)}>
+<div class={cn('@container rounded-lg bg-card p-4', className)}>
   <div class="flex flex-col gap-4">
     <div
       class={cn('grid min-w-0 items-center gap-3', 'grid-cols-[auto_minmax(0,1fr)]', {
@@ -105,27 +105,27 @@
       <div class="flex min-w-0 flex-1 flex-col">
         {#if displayName.length > 0}
           <span class="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-            <strong class="block min-w-0 max-w-full truncate text-start">
+            <strong class="block max-w-full min-w-0 truncate text-start">
               {displayName}
             </strong>
             {@render badges?.()}
           </span>
           <a
             href="mailto:{email}"
-            class="block min-w-0 max-w-full truncate text-start text-sm text-muted-foreground hover:underline"
+            class="block max-w-full min-w-0 truncate text-start text-sm text-muted-foreground hover:underline"
           >
             {email}
           </a>
         {:else}
           <a
             href="mailto:{email}"
-            class="block min-w-0 max-w-full truncate text-start font-semibold hover:underline"
+            class="block max-w-full min-w-0 truncate text-start font-semibold hover:underline"
           >
             {email}
           </a>
         {/if}
         {#if studentNumber !== null}
-          <span class="text-sm text-muted-foreground text-start">{studentNumber.toString()}</span>
+          <span class="text-start text-sm text-muted-foreground">{studentNumber.toString()}</span>
         {/if}
       </div>
       {#if typeof actionButtons === 'function'}

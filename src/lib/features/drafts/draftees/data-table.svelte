@@ -226,7 +226,7 @@
               {#if variant === 'registration-sheet'}
                 <div class="my-8">{@render children?.()}</div>
               {:else}
-                <p class="text-center my-8 text-xl empty:hidden">{@render children?.()}</p>
+                <p class="my-8 text-center text-xl empty:hidden">{@render children?.()}</p>
               {/if}
             </Table.Cell>
           </Table.Row>

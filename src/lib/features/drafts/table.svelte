@@ -113,7 +113,7 @@
       </Table.Row>
     {:else}
       <Table.Row>
-        <Table.Cell colspan={6} class="text-muted-foreground py-8 text-center">
+        <Table.Cell colspan={6} class="py-8 text-center text-muted-foreground">
           No drafts found. Create one to get started.
         </Table.Cell>
       </Table.Row>

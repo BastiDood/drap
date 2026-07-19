@@ -48,7 +48,7 @@
               <ul class="space-y-2">
                 {#each assignments as { id, email, givenName, familyName, avatarUrl, studentNumber, labId } (id)}
                   <li
-                    class="grid items-center gap-3 rounded-lg bg-card p-2 @container sm:grid-cols-[minmax(0,1fr)_auto]"
+                    class="@container grid items-center gap-3 rounded-lg bg-card p-2 sm:grid-cols-[minmax(0,1fr)_auto]"
                   >
                     <UserlistItem
                       {email}
@@ -89,7 +89,7 @@
       <ul class="space-y-2">
         {#each interventionDrafted as { id, email, givenName, familyName, avatarUrl, studentNumber, labId, assignedAt } (id)}
           <li
-            class="grid items-center gap-3 rounded-lg bg-card p-2 @container sm:grid-cols-[minmax(0,1fr)_auto]"
+            class="@container grid items-center gap-3 rounded-lg bg-card p-2 sm:grid-cols-[minmax(0,1fr)_auto]"
           >
             <UserlistItem
               {email}
@@ -139,7 +139,7 @@
       <ul class="space-y-2">
         {#each lotteryDrafted as { id, email, givenName, familyName, avatarUrl, studentNumber, labId } (id)}
           <li
-            class="grid items-center gap-3 rounded-lg bg-card p-2 @container sm:grid-cols-[minmax(0,1fr)_auto]"
+            class="@container grid items-center gap-3 rounded-lg bg-card p-2 sm:grid-cols-[minmax(0,1fr)_auto]"
           >
             <UserlistItem
               {email}

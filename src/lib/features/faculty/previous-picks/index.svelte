@@ -29,7 +29,7 @@
   <Card.Header>
     <Card.Title>Previous Picks</Card.Title>
   </Card.Header>
-  <Card.Content class="min-h-0 flex grow flex-col">
+  <Card.Content class="flex min-h-0 grow flex-col">
     {#if researchers.length === 0}
       <Empty media={{ icon: ClipboardListIcon, size: 'sm' }}>
         {#snippet title()}No Picks Yet{/snippet}

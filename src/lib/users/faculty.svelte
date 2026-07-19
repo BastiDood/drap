@@ -26,7 +26,7 @@
 </script>
 
 <div class="block h-full">
-  <Card.Root class="flex h-full flex-col justify-center items-center gap-4 p-4 text-center">
+  <Card.Root class="flex h-full flex-col items-center justify-center gap-4 p-4 text-center">
     <Avatar.Root class="size-16">
       <Avatar.Image src={avatarUrl} alt="{givenName} {familyName}" />
       <Avatar.Fallback>
@@ -48,7 +48,7 @@
         </a>
       </div>
     </div>
-    <Card.Footer class="w-full flex justify-center p-0">
+    <Card.Footer class="flex w-full justify-center p-0">
       <form
         method="post"
         action="/dashboard/users/?/demote-head"

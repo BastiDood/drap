@@ -256,7 +256,7 @@
     </div>
   </section>
 
-  <section class="space-y-6 prose max-w-none dark:prose-invert">
+  <section class="prose max-w-none space-y-6 dark:prose-invert">
     <h2 class="border-b border-border pb-2">Contributors</h2>
     <div class="not-prose">
       <ContributorTabs />

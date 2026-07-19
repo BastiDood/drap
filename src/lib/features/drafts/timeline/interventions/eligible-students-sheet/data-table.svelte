@@ -158,7 +158,7 @@
       {:else}
         <Table.Row>
           <Table.Cell colspan={columns.length}>
-            <p class="text-center my-8 text-xl">
+            <p class="my-8 text-center text-xl">
               All students for this draft have been drafted. Yippee!
             </p>
           </Table.Cell>

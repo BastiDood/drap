@@ -80,7 +80,7 @@
           <Card.Header>
             <Card.Title>Student Selection</Card.Title>
           </Card.Header>
-          <Card.Content class="min-h-0 flex grow flex-col">
+          <Card.Content class="flex min-h-0 grow flex-col">
             {#if autoAcknowledgeReason === 'quota-exhausted'}
               <Empty media={{ icon: CircleSlashIcon, size: 'sm' }}>
                 {#snippet title()}No Slots Remaining{/snippet}

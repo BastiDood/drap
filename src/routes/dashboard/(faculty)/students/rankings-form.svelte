@@ -161,7 +161,7 @@
             }}
             remarks={{ text: remark.length > 0 ? remark : null }}
             class={selected
-              ? 'border border-primary/40 dark:bg-primary/20 bg-primary/15 transition-colors duration-150'
+              ? 'border border-primary/40 bg-primary/15 transition-colors duration-150 dark:bg-primary/20'
               : 'border border-transparent bg-muted transition-colors duration-150 hover:bg-muted/60'}
           ></UserlistItem>
         </button>
