@@ -33,7 +33,7 @@
     "ui": "shadcn-svelte add --yes"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1097.0",
+    "@aws-sdk/client-s3": "^3.1098.0",
     "@better-svelte-email/components": "^2.1.1",
     "@better-svelte-email/server": "^2.1.1",
     "@internationalized/date": "^3.12.2",
@@ -45,7 +45,7 @@
     "@opentelemetry/sdk-node": "^0.221.0",
     "@opentelemetry/sdk-trace-base": "^2.10.0",
     "@selemondev/svgl-svelte": "^2.17.0",
-    "@sveltejs/kit": "^2.70.1",
+    "@sveltejs/kit": "^2.70.2",
     "@tanstack/svelte-query": "^6.1.38",
     "bits-ui": "^2.18.1",
     "clsx": "^2.1.1",
@@ -63,8 +63,8 @@
     "http-raw-request": "^2.0.2",
     "inngest": "^4.13.0",
     "itertools": "^2.7.1",
-    "jose": "^6.2.4",
-    "layerchart": "^2.0.2",
+    "jose": "^6.2.5",
+    "layerchart": "^2.0.3",
     "mime-types": "^3.0.2",
     "mimetext": "^3.0.28",
     "mode-watcher": "^1.1.0",
