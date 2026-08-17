@@ -6,7 +6,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
 
   databasus:
-    image: databasus/databasus:v3.51.0
+    image: databasus/databasus:v3.53.0
     ports:
       - host_ip: 127.0.0.1
         published: 4005

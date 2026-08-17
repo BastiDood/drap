@@ -1,5 +1,5 @@
 ARG postgres_major=17
-ARG postgres_release=${postgres_major}.10
+ARG postgres_release=${postgres_major}.11
 ARG pgx_ulid_release=0.2.3
 
 FROM scratch AS pgx_ulid

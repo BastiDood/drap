@@ -18,7 +18,7 @@ services:
     environment:
       # Development-only credentials!
       ZO_ROOT_USER_EMAIL: admin@example.com
-      ZO_ROOT_USER_PASSWORD: password
+      ZO_ROOT_USER_PASSWORD: Password123*
 
   rustfs:
     environment:
