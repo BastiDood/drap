@@ -1,5 +1,5 @@
 FROM ghcr.io/cryptaliagy/httpget:0.1.23 AS httpget
 
-FROM public.ecr.aws/zinclabs/openobserve:v0.92.2
+FROM public.ecr.aws/zinclabs/openobserve:v1.0.3
 
 COPY --from=httpget /httpget /httpget

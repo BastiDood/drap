@@ -1,4 +1,4 @@
-FROM node:24.19.0-alpine3.24 AS base
+FROM node:26.9.0-alpine3.24 AS base
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
@@ -32,7 +32,7 @@ COPY static/ static/
 COPY src/ src/
 RUN pnpm build && pnpm prune --prod --ignore-scripts --config.confirm-modules-purge=false
 
-FROM gcr.io/distroless/nodejs24-debian13:nonroot-${TARGETARCH} AS deploy
+FROM gcr.io/distroless/nodejs26-debian13:nonroot-${TARGETARCH} AS deploy
 
 WORKDIR /app
 COPY --from=build /app/node_modules node_modules/
