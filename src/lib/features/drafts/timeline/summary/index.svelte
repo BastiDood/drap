@@ -4,6 +4,7 @@
   import LotteryCompleted from '$lib/features/drafts/timeline/lottery/completed.svelte';
   import StatCardGroup from '$lib/features/drafts/timeline/stat-card-group.svelte';
   import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
+  import DraftRoundsChart from '$lib/features/drafts/timeline/summary/draft-rounds-chart/index.svelte';
   import type {
     Draft,
     DraftAssignmentSummary,
@@ -15,7 +16,6 @@
   import SparklesIcon from '@lucide/svelte/icons/sparkles';
   import UsersIcon from '@lucide/svelte/icons/users';
 
-  import DraftRoundsChart from './draft-rounds-chart.svelte';
   import FinalizeForm from './finalize-form.svelte';
   import LabDistributionChart from './lab-distribution-chart.svelte';
   import PreferenceAlignmentChart from './preference-alignment-chart.svelte';

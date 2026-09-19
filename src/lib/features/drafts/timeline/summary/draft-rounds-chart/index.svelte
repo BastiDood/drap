@@ -11,6 +11,13 @@
   import { cubicOut } from 'svelte/easing';
   import { prefersReducedMotion } from 'svelte/motion';
 
+  import {
+    getDraftRoundsChartMax,
+    getDraftRoundsChartMetricLabel,
+    getDraftRoundsChartPoints,
+    getDraftRoundsChartTitle,
+  } from './data';
+
   interface Props {
     chart: DraftAssignmentSummary['chart'];
   }
@@ -29,39 +36,22 @@
   const selectedSeries = $derived(selectedLab ?? chart.allLabs);
   const cumulativeAssigned = $derived(Array.from(cumsum(selectedSeries.assignedByPhase)));
   const chartPoints = $derived.by(() =>
-    chart.phases.map((phase, index) => {
-      const assigned = selectedSeries.assignedByPhase[index] ?? 0;
-      const remaining = Math.max(selectedSeries.capacity - (cumulativeAssigned[index] ?? 0), 0);
-      return {
-        ...phase,
-        assigned,
-        remaining,
-        value: chartMode === 'assigned' ? assigned : remaining,
-      };
+    getDraftRoundsChartPoints({
+      phases: chart.phases,
+      selectedSeries,
+      cumulativeAssigned,
+      chartMode,
     }),
   );
 
-  const chartMax = $derived(
-    chartMode === 'assigned'
-      ? Math.max(selectedSeries.assignedMax, 1)
-      : Math.max(selectedSeries.capacity, 1),
-  );
+  const chartMax = $derived(getDraftRoundsChartMax(selectedSeries, chartMode));
 
   const axisLabelByTooltipLabel = $derived(
     new Map(chart.phases.map(({ tooltipLabel, axisLabel }) => [tooltipLabel, axisLabel])),
   );
 
-  const chartTitle = $derived.by(() => {
-    if (chartMode === 'assigned') return 'Students Assigned';
-    if (selectedLabId === '') return 'Students Not Yet Assigned';
-    return 'Labs Remaining Quota';
-  });
-
-  const activeMetricLabel = $derived.by(() => {
-    if (chartMode === 'assigned') return 'Assigned';
-    if (selectedLabId === '') return 'Not Yet Assigned';
-    return 'Remaining Quota';
-  });
+  const chartTitle = $derived(getDraftRoundsChartTitle(chartMode, selectedLabId));
+  const activeMetricLabel = $derived(getDraftRoundsChartMetricLabel(chartMode, selectedLabId));
 
   const { chartMotion, axisMotion } = $derived<{
     chartMotion: MotionOptions;
