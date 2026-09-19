@@ -45,7 +45,9 @@
   }
 
   type DraftTimelineEntry =
-    DraftEventTimelineEntry | DraftFinalizedTimelineEntry | DraftCreatedTimelineEntry;
+    | DraftEventTimelineEntry
+    | DraftFinalizedTimelineEntry
+    | DraftCreatedTimelineEntry;
 
   const timelineEntries = $derived.by(() => {
     const seeded: DraftTimelineEntry[] =

@@ -33,7 +33,10 @@ interface GmailRetryPlanExhausted {
 }
 
 type GmailRetryPlan =
-  GmailRetryPlanBatch | GmailRetryPlanFallback | GmailRetryPlanTerminal | GmailRetryPlanExhausted;
+  | GmailRetryPlanBatch
+  | GmailRetryPlanFallback
+  | GmailRetryPlanTerminal
+  | GmailRetryPlanExhausted;
 
 export function planGmailRetry(attempt: number, failure: GmailFailure): GmailRetryPlan {
   if (!isRetryableGmailFailure(failure)) return { kind: GmailRetryKind.Terminal };

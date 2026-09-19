@@ -1,0 +1,15 @@
+{
+  "$schema": "./node_modules/oxfmt/configuration_schema.json",
+  "useTabs": false,
+  "arrowParens": "avoid",
+  "tabWidth": 2,
+  "singleQuote": true,
+  "printWidth": 100,
+  "trailingComma": "all",
+  "sortPackageJson": false,
+  "sortTailwindcss": {
+    "functions": ["cn", "tv"],
+    "stylesheet": "./src/routes/app.css"
+  },
+  "svelte": { "allowShorthand": true }
+}

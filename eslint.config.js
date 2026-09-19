@@ -1,7 +1,6 @@
 import globals from 'globals';
 import html from '@html-eslint/eslint-plugin';
 import htmlSvelte from '@html-eslint/eslint-plugin-svelte';
-import imsort from '@bastidood/eslint-plugin-imsort';
 import js from '@eslint/js';
 import prettier from 'eslint-config-prettier';
 import svelte from 'eslint-plugin-svelte';
@@ -64,14 +63,7 @@ export default defineConfig(
   },
   {
     files: ['**/*.js', '**/*.ts', '**/*.svelte'],
-    extends: [
-      js.configs.recommended,
-      ...ts.configs.recommended,
-      ...ts.configs.stylistic,
-      imsort.configs.all,
-      prettier,
-    ],
-    plugins: { '@bastidood/imsort': imsort },
+    extends: [js.configs.recommended, ...ts.configs.recommended, ...ts.configs.stylistic, prettier],
     rules: {
       '@typescript-eslint/class-methods-use-this': 'error',
       '@typescript-eslint/default-param-last': 'error',

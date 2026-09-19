@@ -57,15 +57,13 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
-      - name: Cache ESLint and Prettier Runs
+      - name: Cache ESLint Runs
         uses: actions/cache@v6.1.0
         with:
-          path: |
-            .eslintcache
-            .prettiercache
-          key: ${{ runner.os }}-lint-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.js', '.prettierrc.json') }}
+          path: .eslintcache
+          key: ${{ runner.os }}-eslint-${{ hashFiles('pnpm-lock.yaml', 'eslint.config.js') }}
           restore-keys: |
-            ${{ runner.os }}-lint-
+            ${{ runner.os }}-eslint-
 
       - name: Check Formatters
         run: pnpm fmt
