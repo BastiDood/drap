@@ -6,6 +6,8 @@
   import type { schema } from '$lib/server/database/drizzle';
   import ClipboardListIcon from '@lucide/svelte/icons/clipboard-list';
 
+  import { groupPreviousPicks } from './group-picks';
+
   interface Researcher extends Pick<
     schema.User,
     'email' | 'givenName' | 'familyName' | 'studentNumber'
@@ -20,8 +22,9 @@
 
   const { researchers }: Props = $props();
 
-  const researchersByRound = $derived(Object.groupBy(researchers, r => r.round));
-  const latestRound = $derived(Math.max(...Object.keys(researchersByRound).map(Number)).toString());
+  const { researchersByRound, latestRound, sortedRounds } = $derived(
+    groupPreviousPicks(researchers),
+  );
 </script>
 
 <Card.Root id="previous-picks" variant="soft">
@@ -35,9 +38,6 @@
         {#snippet description()}Students you select will appear here after each round.{/snippet}
       </Empty>
     {:else}
-      {@const sortedRounds = Object.keys(researchersByRound)
-        .map(Number)
-        .sort((a, b) => a - b)}
       <Tabs.Root value={latestRound}>
         <Tabs.List>
           {#each sortedRounds as round (round)}
