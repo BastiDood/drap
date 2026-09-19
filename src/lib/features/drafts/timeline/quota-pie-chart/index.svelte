@@ -3,9 +3,10 @@
   import * as Chart from '$lib/components/ui/chart';
   import { CHART_COLORS } from '$lib/constants';
   import type { DraftLabQuotaSnapshot } from '$lib/features/drafts/types';
-  import { sum } from 'd3-array';
   import { format } from 'd3-format';
   import { PieChart } from 'layerchart/svg';
+
+  import { getQuota, getQuotaPieChartData, getTotalQuota } from './data';
 
   interface Props {
     snapshots: DraftLabQuotaSnapshot[];
@@ -26,16 +27,14 @@
     return labId.toUpperCase();
   }
 
-  const totalQuota = $derived(
-    sum(snapshots, s => (mode === 'initial' ? s.initialQuota : s.lotteryQuota)),
-  );
+  const totalQuota = $derived(getTotalQuota(snapshots, mode));
 
   const hasQuota = $derived(totalQuota > 0);
 
   const chartConfig = $derived(
     Object.fromEntries(
       snapshots.map((snapshot, i) => {
-        const quota = mode === 'initial' ? snapshot.initialQuota : snapshot.lotteryQuota;
+        const quota = getQuota(snapshot, mode);
         let label = `${integerFormat(quota)} Student`;
         if (quota !== 1) label += 's';
         return [
@@ -50,18 +49,10 @@
   );
 
   const chartData = $derived(
-    snapshots
-      .filter(s => (mode === 'initial' ? s.initialQuota : s.lotteryQuota) > 0)
-      .map((snapshot, i) => {
-        const quota = mode === 'initial' ? snapshot.initialQuota : snapshot.lotteryQuota;
-        return {
-          key: shortLabel(snapshot),
-          label: shortLabel(snapshot),
-          labName: snapshot.labName,
-          value: quota,
-          color: chartColor(i),
-        };
-      }),
+    getQuotaPieChartData(snapshots, mode).map((snapshot, i) => ({
+      ...snapshot,
+      color: chartColor(i),
+    })),
   );
 </script>
 
