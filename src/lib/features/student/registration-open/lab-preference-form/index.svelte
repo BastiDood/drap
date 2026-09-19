@@ -10,6 +10,10 @@
   import * as Card from '$lib/components/ui/card';
   import { TextArea } from '$lib/components/ui/textarea';
   import { Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui/tooltip';
+  import {
+    CUSTOM_AVATAR_MAX_BYTES,
+    CUSTOM_AVATAR_TOO_LARGE_MESSAGE,
+  } from '$lib/features/student/registration-open/constants';
   import type { schema } from '$lib/server/database/drizzle';
   import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
   import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
@@ -24,8 +28,13 @@
   import * as v from 'valibot';
 
   import AvatarConsent from './avatar-consent.svelte';
-  import { CUSTOM_AVATAR_MAX_BYTES, CUSTOM_AVATAR_TOO_LARGE_MESSAGE } from './constants';
   import { DebouncedMirror } from './debounced-mirror.svelte';
+  import {
+    moveLabDown as moveSelectedLabDown,
+    moveLabUp as moveSelectedLabUp,
+    removeSelectedLab,
+    selectLab as selectAvailableLab,
+  } from './selection';
 
   interface Props {
     user: Pick<schema.User, 'id' | 'avatarUrl'>;
@@ -69,40 +78,42 @@
   }
 
   function selectLab(index: number) {
-    if (persistedSelectedLabs.current.length >= draft.maxRounds) return;
-    persistedSelectedLabs.current.push(...persistedAvailableLabs.current.splice(index, 1));
+    const next = selectAvailableLab(
+      {
+        selectedLabs: persistedSelectedLabs.current,
+        availableLabs: persistedAvailableLabs.current,
+      },
+      draft.maxRounds,
+      index,
+    );
+    if (typeof next === 'undefined') return;
+
+    persistedAvailableLabs.current = next.availableLabs;
+    persistedSelectedLabs.current = next.selectedLabs;
   }
 
   function moveLabUp(above: number) {
-    // eslint-disable-next-line no-param-reassign
-    const below = above--;
-    if (above < 0) return;
-
-    const temp = persistedSelectedLabs.current[below];
-    assert(typeof temp !== 'undefined');
-    const target = persistedSelectedLabs.current[above];
-    assert(typeof target !== 'undefined');
-
-    persistedSelectedLabs.current[below] = target;
-    persistedSelectedLabs.current[above] = temp;
+    const next = moveSelectedLabUp(persistedSelectedLabs.current, above);
+    if (typeof next === 'undefined') return;
+    persistedSelectedLabs.current = next;
   }
 
   function moveLabDown(below: number) {
-    // eslint-disable-next-line no-param-reassign
-    const above = below++;
-    if (below >= persistedSelectedLabs.current.length) return;
-
-    const temp = persistedSelectedLabs.current[below];
-    assert(typeof temp !== 'undefined');
-    const target = persistedSelectedLabs.current[above];
-    assert(typeof target !== 'undefined');
-
-    persistedSelectedLabs.current[below] = target;
-    persistedSelectedLabs.current[above] = temp;
+    const next = moveSelectedLabDown(persistedSelectedLabs.current, below);
+    if (typeof next === 'undefined') return;
+    persistedSelectedLabs.current = next;
   }
 
   function resetSelection(index: number) {
-    persistedAvailableLabs.current.push(...persistedSelectedLabs.current.splice(index, 1));
+    const next = removeSelectedLab(
+      {
+        selectedLabs: persistedSelectedLabs.current,
+        availableLabs: persistedAvailableLabs.current,
+      },
+      index,
+    );
+    persistedSelectedLabs.current = next.selectedLabs;
+    persistedAvailableLabs.current = next.availableLabs;
   }
 
   const [send, receive] = crossfade(DURATION);

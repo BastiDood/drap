@@ -3,7 +3,7 @@
   import type { schema } from '$lib/server/database/drizzle';
   import { format } from 'date-fns';
 
-  import LabPreferenceForm from './lab-preference-form.svelte';
+  import LabPreferenceForm from './lab-preference-form/index.svelte';
 
   interface Props {
     user: Pick<schema.User, 'id' | 'avatarUrl'>;

@@ -4,8 +4,7 @@
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
   import * as NativeSelect from '$lib/components/ui/native-select';
-
-  import { CUSTOM_AVATAR_MAX_SIZE_LABEL } from './constants';
+  import { CUSTOM_AVATAR_MAX_SIZE_LABEL } from '$lib/features/student/registration-open/constants';
 
   interface Props {
     avatarUrl: string;
