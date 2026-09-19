@@ -2,7 +2,7 @@
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
   import type { Snippet } from 'svelte';
 
-  import DataTable from '$lib/features/drafts/draftees/data-table.svelte';
+  import DataTable from '$lib/features/drafts/draftees/data-table/index.svelte';
   import Empty from '$lib/components/empty.svelte';
   import { createFetchDraftLateRegistrantsQuery } from '$lib/queries/fetch-draft-late-registrants';
 

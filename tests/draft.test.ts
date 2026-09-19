@@ -894,6 +894,95 @@ test.describe('Draft Lifecycle', () => {
     });
   });
 
+  test.describe('Registration Table', () => {
+    test('searches registered students by name and email', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+      await adminPage.getByRole('button', { name: /^Registration /u }).click();
+      await adminPage.getByRole('button', { name: 'View All Draftees' }).click();
+      const sheet = adminPage.locator('[data-slot="sheet-content"]').last();
+      const search = sheet.getByPlaceholder('Search students...');
+      const studentNumbers = sheet.getByRole('cell', { name: /^2020\d{5}$/u });
+
+      await expect(studentNumbers).toHaveCount(8);
+      await search.fill('patient');
+      await expect(studentNumbers).toHaveText(['202012346']);
+      await search.fill('eager.student@up.edu.ph');
+      await expect(studentNumbers).toHaveText(['202012345']);
+      await search.clear();
+      await expect(studentNumbers).toHaveCount(8);
+    });
+
+    test('sorts registered students through the student-number header', async ({ adminPage }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+      await adminPage.getByRole('button', { name: /^Registration /u }).click();
+      await adminPage.getByRole('button', { name: 'View All Draftees' }).click();
+      const sheet = adminPage.locator('[data-slot="sheet-content"]').last();
+      const studentNumbers = sheet.getByRole('cell', { name: /^2020\d{5}$/u });
+      const sort = sheet.getByRole('button', { name: 'Student Number', exact: true });
+
+      await expect(studentNumbers).toHaveCount(8);
+      await sort.click();
+      await expect(studentNumbers.first()).toHaveText('202012353');
+      await expect(studentNumbers.last()).toHaveText('202012345');
+      await sort.click();
+      await expect(studentNumbers).toHaveText([
+        '202012345',
+        '202012346',
+        '202012347',
+        '202012348',
+        '202012349',
+        '202012350',
+        '202012351',
+        '202012353',
+      ]);
+    });
+
+    test('filters registered students by a preferred lab and clears the filter', async ({
+      adminPage,
+    }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+      await adminPage.getByRole('button', { name: /^Registration /u }).click();
+      await adminPage.getByRole('button', { name: 'View All Draftees' }).click();
+      const sheet = adminPage.locator('[data-slot="sheet-content"]').last();
+      const studentNumbers = sheet.getByRole('cell', { name: /^2020\d{5}$/u });
+      const preferences = sheet.getByRole('button', {
+        name: 'Lab Preferences',
+        exact: true,
+        expanded: false,
+      });
+
+      await expect(studentNumbers).toHaveCount(8);
+      await preferences.click();
+      await adminPage.getByRole('menuitemcheckbox', { name: /ndsl\s+4/iu }).click();
+      await expect(studentNumbers).toHaveCount(4);
+      await expect(sheet.getByRole('cell', { name: '202012345', exact: true })).toBeVisible();
+      await expect(sheet.getByRole('cell', { name: '202012348', exact: true })).toBeVisible();
+      await expect(adminPage.getByRole('menu')).toBeHidden();
+      await preferences.click();
+      await adminPage.getByRole('menuitem', { name: 'Clear Filters', exact: true }).click();
+      await expect(studentNumbers).toHaveCount(8);
+    });
+
+    test('late-only filtering excludes on-time registrations without showing the hidden column', async ({
+      adminPage,
+    }) => {
+      await adminPage.goto('/dashboard/drafts/1/');
+      await adminPage.getByRole('button', { name: /^Registration /u }).click();
+      await adminPage.getByRole('button', { name: 'View All Draftees' }).click();
+      const sheet = adminPage.locator('[data-slot="sheet-content"]').last();
+      const studentNumbers = sheet.getByRole('cell', { name: /^2020\d{5}$/u });
+      const lateOnly = sheet.getByRole('button', { name: 'Late Only', exact: true });
+
+      await expect(studentNumbers).toHaveCount(8);
+      await expect(sheet.getByRole('columnheader', { name: 'Late', exact: true })).toHaveCount(0);
+      await lateOnly.click();
+      await expect(studentNumbers).toHaveCount(0);
+      await expect(sheet.locator('tbody td')).toHaveAttribute('colspan', '6');
+      await lateOnly.click();
+      await expect(studentNumbers).toHaveCount(8);
+    });
+  });
+
   test.describe('Late Registrant', () => {
     test('sees registration closed message', async ({ lateRegistrantPage }) => {
       await lateRegistrantPage.goto('/dashboard/student/');

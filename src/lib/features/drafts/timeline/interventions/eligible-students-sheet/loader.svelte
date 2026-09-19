@@ -11,7 +11,7 @@
   import { enhance } from '$app/forms';
   import type { Lab } from '$lib/features/drafts/types';
 
-  import DataTable from './data-table.svelte';
+  import DataTable from './data-table/index.svelte';
 
   interface Props {
     draftId: string;
