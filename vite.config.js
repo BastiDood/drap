@@ -19,6 +19,7 @@ export default defineConfig({
     },
     tailwind(),
     sveltekit({
+      alias: { $tests: './tests' },
       adapter: adapter(),
       csp: {
         mode: 'auto',

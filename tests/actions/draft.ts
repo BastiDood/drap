@@ -31,7 +31,7 @@ export async function openInterventions(page: Page) {
 
 export async function createDraft(page: Page, input: CreateDraftInput) {
   await page.goto('/dashboard/drafts/');
-  await page.waitForLoadState('networkidle');
+
   await page.getByRole('button', { name: 'Create Draft' }).click();
 
   const dialog = page.getByRole('dialog');
@@ -50,7 +50,7 @@ export async function createDraft(page: Page, input: CreateDraftInput) {
 
 export async function updateInitialQuota(page: Page, draftId: string, quotas: Quotas) {
   await page.goto(`/dashboard/drafts/${draftId}/`);
-  await page.waitForLoadState('networkidle');
+
   await page.getByRole('button', { name: 'Setup Quota' }).click();
   const editor = page.locator('#draft-quota-editor-initial');
   await expect(editor).toBeVisible();
@@ -67,7 +67,7 @@ export async function updateInitialQuota(page: Page, draftId: string, quotas: Qu
 
 export async function updateLotteryQuota(page: Page, draftId: string, quotas: Quotas) {
   await page.goto(`/dashboard/drafts/${draftId}/`);
-  await page.waitForLoadState('networkidle');
+
   await expect(page.locator('main')).toBeVisible();
   await openInterventions(page);
 
@@ -88,7 +88,7 @@ export async function updateLotteryQuota(page: Page, draftId: string, quotas: Qu
 
 export async function startDraft(page: Page, draftId: string) {
   await page.goto(`/dashboard/drafts/${draftId}/`);
-  await page.waitForLoadState('networkidle');
+
   page.once('dialog', async dialog => await dialog.accept());
 
   const responsePromise = page.waitForResponse(`/dashboard/drafts/${draftId}/?/start`);
@@ -100,7 +100,7 @@ export async function startDraft(page: Page, draftId: string) {
 
 export async function runLottery(page: Page, draftId: string) {
   await page.goto(`/dashboard/drafts/${draftId}/`);
-  await page.waitForLoadState('networkidle');
+
   await openInterventions(page);
   page.once('dialog', async dialog => await dialog.accept());
 
@@ -115,7 +115,7 @@ export async function runLottery(page: Page, draftId: string) {
 
 export async function finalizeDraft(page: Page, draftId: string) {
   await page.goto(`/dashboard/drafts/${draftId}/`);
-  await page.waitForLoadState('networkidle');
+
   page.once('dialog', async dialog => await dialog.accept());
 
   await expect(page.getByRole('button', { name: 'Finalize Draft' })).toBeVisible();

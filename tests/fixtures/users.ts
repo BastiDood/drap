@@ -1,879 +1,531 @@
+import { assertSingle } from '$lib/server/assert';
 import {
+  type DbConnection,
   type DrizzleDatabase,
   deleteValidSession,
   insertDummySession,
-  upsertOpenIdUser,
 } from '$lib/server/database/drizzle';
 import * as schema from '$lib/server/database/schema';
-import { mergeTests, type Page } from '@playwright/test';
+import type { Browser, Page } from '@playwright/test';
 import { eq, sql } from 'drizzle-orm';
 
 import { testDatabase } from './database';
-import { testLabs } from './labs';
 
-// Student fixtures with behavior-based names for E2E testing
-// Each student has a specific role in the draft lifecycle tests
-
-interface TestUserOptions {
+interface E2eUser {
   email: string;
   googleUserId: string;
   givenName: string;
   familyName: string;
-  avatarUrl?: string;
+  avatarUrl: string;
   isAdmin: boolean;
-  labId: string | null;
+  labId: 'ndsl' | 'csl' | 'scl' | 'cvmil' | 'acl' | null;
 }
 
-async function createTestUser(
+interface UserIdFixtures {
+  eagerDrafteeUserId: string;
+  patientCandidateUserId: string;
+  persistentHopefulUserId: string;
+  unluckyFullRankerUserId: string;
+  partialToDraftedUserId: string;
+  partialToLotteryUserId: string;
+  noRankStudentUserId: string;
+  idleBystanderUserId: string;
+  lateRegistrantUserId: string;
+  secondRoundNdslFirstChoiceUserId: string;
+  secondRoundCslFirstChoiceUserId: string;
+  secondRoundSclSecondChoiceUserId: string;
+  snapshotGuardStudentUserId: string;
+  repeatDrafteeUserId: string;
+  ndslHeadUserId: string;
+  cslHeadUserId: string;
+  sclHeadUserId: string;
+  cvmilHeadUserId: string;
+  aclHeadUserId: string;
+  adminEmail: string;
+  adminUserId: string;
+  secondAdminUserId: string;
+}
+
+interface UserPageFixtures {
+  eagerDrafteePage: Page;
+  patientCandidatePage: Page;
+  persistentHopefulPage: Page;
+  unluckyFullRankerPage: Page;
+  partialToDraftedPage: Page;
+  partialToLotteryPage: Page;
+  noRankStudentPage: Page;
+  idleBystanderPage: Page;
+  lateRegistrantPage: Page;
+  secondRoundNdslFirstChoicePage: Page;
+  secondRoundCslFirstChoicePage: Page;
+  secondRoundSclSecondChoicePage: Page;
+  snapshotGuardStudentPage: Page;
+  repeatDrafteePage: Page;
+  ndslHeadPage: Page;
+  cslHeadPage: Page;
+  sclHeadPage: Page;
+  cvmilHeadPage: Page;
+  aclHeadPage: Page;
+  adminPage: Page;
+  secondAdminPage: Page;
+}
+
+export const e2eUsers = {
+  eagerDraftee: {
+    email: 'eager.student@up.edu.ph',
+    googleUserId: 'test-eager-student',
+    givenName: 'Eager',
+    familyName: 'Draftee',
+    avatarUrl: 'https://avatar.vercel.sh/eager.svg',
+    isAdmin: false,
+    labId: null,
+  },
+  patientCandidate: {
+    email: 'patient.student@up.edu.ph',
+    googleUserId: 'test-patient-student',
+    givenName: 'Patient',
+    familyName: 'Candidate',
+    avatarUrl: '',
+    isAdmin: false,
+    labId: null,
+  },
+  persistentHopeful: {
+    email: 'persistent.student@up.edu.ph',
+    googleUserId: 'test-persistent-student',
+    givenName: 'Persistent',
+    familyName: 'Hopeful',
+    avatarUrl: '',
+    isAdmin: false,
+    labId: null,
+  },
+  unluckyFullRanker: {
+    email: 'unlucky.student@up.edu.ph',
+    googleUserId: 'test-unlucky-student',
+    givenName: 'Unlucky',
+    familyName: 'FullRanker',
+    avatarUrl: 'https://avatar.vercel.sh/unlucky.svg',
+    isAdmin: false,
+    labId: null,
+  },
+  partialToDrafted: {
+    email: 'partial-drafted.student@up.edu.ph',
+    googleUserId: 'test-partial-drafted-student',
+    givenName: 'Partial',
+    familyName: 'ToDrafted',
+    avatarUrl: 'https://avatar.vercel.sh/partial-drafted.svg',
+    isAdmin: false,
+    labId: null,
+  },
+  partialToLottery: {
+    email: 'partial-lottery.student@up.edu.ph',
+    googleUserId: 'test-partial-lottery-student',
+    givenName: 'Partial',
+    familyName: 'ToLottery',
+    avatarUrl: '',
+    isAdmin: false,
+    labId: null,
+  },
+  noRankStudent: {
+    email: 'no-rank.student@up.edu.ph',
+    googleUserId: 'test-no-rank-student',
+    givenName: 'NoRank',
+    familyName: 'Student',
+    avatarUrl: '',
+    isAdmin: false,
+    labId: null,
+  },
+  idleBystander: {
+    email: 'idle.student@up.edu.ph',
+    googleUserId: 'test-idle-student',
+    givenName: 'Idle',
+    familyName: 'Bystander',
+    avatarUrl: '',
+    isAdmin: false,
+    labId: null,
+  },
+  lateRegistrant: {
+    email: 'late.student@up.edu.ph',
+    googleUserId: 'test-late-student',
+    givenName: 'Late',
+    familyName: 'Registrant',
+    avatarUrl: '',
+    isAdmin: false,
+    labId: null,
+  },
+  secondRoundNdslFirstChoice: {
+    email: 'second-ndsl-first-choice.student@up.edu.ph',
+    googleUserId: 'test-second-ndsl-first-choice-student',
+    givenName: 'SecondNdsl',
+    familyName: 'FirstChoice',
+    avatarUrl: 'https://avatar.vercel.sh/second-ndsl.svg',
+    isAdmin: false,
+    labId: null,
+  },
+  secondRoundCslFirstChoice: {
+    email: 'second-csl-first-choice.student@up.edu.ph',
+    googleUserId: 'test-second-csl-first-choice-student',
+    givenName: 'SecondCsl',
+    familyName: 'FirstChoice',
+    avatarUrl: '',
+    isAdmin: false,
+    labId: null,
+  },
+  secondRoundSclSecondChoice: {
+    email: 'second-scl-second-choice.student@up.edu.ph',
+    googleUserId: 'test-second-scl-second-choice-student',
+    givenName: 'SecondScl',
+    familyName: 'SecondChoice',
+    avatarUrl: 'https://avatar.vercel.sh/second-scl.svg',
+    isAdmin: false,
+    labId: null,
+  },
+  snapshotGuardStudent: {
+    email: 'snapshot-guard.student@up.edu.ph',
+    googleUserId: 'test-snapshot-guard-student',
+    givenName: 'Snapshot',
+    familyName: 'Guard',
+    avatarUrl: '',
+    isAdmin: false,
+    labId: null,
+  },
+  repeatDraftee: {
+    email: 'repeat.student@up.edu.ph',
+    googleUserId: 'test-repeat-student',
+    givenName: 'Repeat',
+    familyName: 'Draftee',
+    avatarUrl: 'https://avatar.vercel.sh/repeat.svg',
+    isAdmin: false,
+    labId: null,
+  },
+  ndslHead: {
+    email: 'ndsl@up.edu.ph',
+    googleUserId: 'test-ndsl-head',
+    givenName: 'NDSL',
+    familyName: 'Head',
+    avatarUrl: '',
+    isAdmin: true,
+    labId: 'ndsl',
+  },
+  cslHead: {
+    email: 'csl@up.edu.ph',
+    googleUserId: 'test-csl-head',
+    givenName: 'CSL',
+    familyName: 'Head',
+    avatarUrl: '',
+    isAdmin: true,
+    labId: 'csl',
+  },
+  sclHead: {
+    email: 'scl@up.edu.ph',
+    googleUserId: 'test-scl-head',
+    givenName: 'SCL',
+    familyName: 'Head',
+    avatarUrl: '',
+    isAdmin: true,
+    labId: 'scl',
+  },
+  cvmilHead: {
+    email: 'cvmil@up.edu.ph',
+    googleUserId: 'test-cvmil-head',
+    givenName: 'CVMIL',
+    familyName: 'Head',
+    avatarUrl: '',
+    isAdmin: true,
+    labId: 'cvmil',
+  },
+  aclHead: {
+    email: 'acl@up.edu.ph',
+    googleUserId: 'test-acl-head',
+    givenName: 'ACL',
+    familyName: 'Head',
+    avatarUrl: '',
+    isAdmin: true,
+    labId: 'acl',
+  },
+  admin: {
+    email: 'admin@up.edu.ph',
+    googleUserId: 'test-admin',
+    givenName: 'Draft',
+    familyName: 'Administrator',
+    avatarUrl: '',
+    isAdmin: true,
+    labId: null,
+  },
+  secondAdmin: {
+    email: 'second.admin@up.edu.ph',
+    googleUserId: 'test-second-admin',
+    givenName: 'Second',
+    familyName: 'Administrator',
+    avatarUrl: '',
+    isAdmin: true,
+    labId: null,
+  },
+} satisfies Record<string, E2eUser>;
+
+export async function seedE2eUsers(database: DbConnection) {
+  await database.insert(schema.user).values(Object.values(e2eUsers));
+}
+
+async function lookupE2eUserId(database: DrizzleDatabase, email: string) {
+  return await database
+    .select({ id: schema.user.id })
+    .from(schema.user)
+    .where(eq(schema.user.email, email))
+    .then(assertSingle);
+}
+
+async function useAuthenticatedDashboardPage(
   database: DrizzleDatabase,
-  { avatarUrl = '', ...options }: TestUserOptions,
+  browser: Browser,
+  userId: string,
+  use: (page: Page) => Promise<void>,
 ) {
-  return await database.transaction(
-    async db => {
-      const { id: userId } = await upsertOpenIdUser(
-        db,
-        options.email,
-        options.googleUserId,
-        options.givenName,
-        options.familyName,
-        avatarUrl,
-      );
-      await db
-        .update(schema.user)
-        .set({ isAdmin: options.isAdmin, labId: options.labId })
-        .where(eq(schema.user.id, userId));
-      return { id: userId };
-    },
-    { isolationLevel: 'read committed' },
-  );
+  const context = await browser.newContext();
+  try {
+    const sessionId = await insertDummySession(database, userId);
+    try {
+      const page = await context.newPage();
+      await context.addCookies([
+        {
+          name: 'sid',
+          value: sessionId,
+          domain: 'localhost',
+          path: '/dashboard',
+          httpOnly: true,
+          sameSite: 'Lax',
+        },
+      ]);
+      await page.goto('/dashboard/');
+      await use(page);
+    } finally {
+      await deleteValidSession(database, sessionId);
+    }
+  } finally {
+    await context.close();
+  }
 }
 
-const testEagerDraftee = testLabs.extend<
-  { eagerDrafteePage: Page },
-  { eagerDrafteeUserId: string }
->({
+const testUsers = testDatabase.extend<UserPageFixtures, UserIdFixtures>({
   eagerDrafteeUserId: [
-    async ({ database, labs: _ }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'eager.student@up.edu.ph',
-        googleUserId: 'test-eager-student',
-        givenName: 'Eager',
-        familyName: 'Draftee',
-        avatarUrl: 'https://avatar.vercel.sh/eager.svg',
-        isAdmin: false,
-        labId: null,
-      });
-      await use(userId);
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.eagerDraftee.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  patientCandidateUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.patientCandidate.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  persistentHopefulUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.persistentHopeful.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  unluckyFullRankerUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.unluckyFullRanker.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  partialToDraftedUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.partialToDrafted.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  partialToLotteryUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.partialToLottery.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  noRankStudentUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.noRankStudent.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  idleBystanderUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.idleBystander.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  lateRegistrantUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.lateRegistrant.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  secondRoundNdslFirstChoiceUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.secondRoundNdslFirstChoice.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  secondRoundCslFirstChoiceUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.secondRoundCslFirstChoice.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  secondRoundSclSecondChoiceUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.secondRoundSclSecondChoice.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  snapshotGuardStudentUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.snapshotGuardStudent.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  repeatDrafteeUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.repeatDraftee.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  ndslHeadUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.ndslHead.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  cslHeadUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.cslHead.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  sclHeadUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.sclHead.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  cvmilHeadUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.cvmilHead.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  aclHeadUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.aclHead.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  adminEmail: [e2eUsers.admin.email, { scope: 'worker' }],
+  adminUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.admin.email);
+      await use(id);
+    },
+    { scope: 'worker' },
+  ],
+  secondAdminUserId: [
+    async ({ database }, use) => {
+      const { id } = await lookupE2eUserId(database, e2eUsers.secondAdmin.email);
+      await use(id);
     },
     { scope: 'worker' },
   ],
   async eagerDrafteePage({ database, browser, eagerDrafteeUserId }, use) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, eagerDrafteeUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, eagerDrafteeUserId, use);
   },
-});
-
-const testPatientCandidate = testLabs.extend<
-  { patientCandidatePage: Page },
-  { patientCandidateUserId: string }
->({
-  patientCandidateUserId: [
-    async ({ database, labs: _ }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'patient.student@up.edu.ph',
-        googleUserId: 'test-patient-student',
-        givenName: 'Patient',
-        familyName: 'Candidate',
-        isAdmin: false,
-        labId: null,
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async patientCandidatePage({ database, browser, patientCandidateUserId }, use) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, patientCandidateUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, patientCandidateUserId, use);
   },
-});
-
-const testPersistentHopeful = testLabs.extend<
-  { persistentHopefulPage: Page },
-  { persistentHopefulUserId: string }
->({
-  persistentHopefulUserId: [
-    async ({ database, labs: _ }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'persistent.student@up.edu.ph',
-        googleUserId: 'test-persistent-student',
-        givenName: 'Persistent',
-        familyName: 'Hopeful',
-        isAdmin: false,
-        labId: null,
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async persistentHopefulPage({ database, browser, persistentHopefulUserId }, use) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, persistentHopefulUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, persistentHopefulUserId, use);
   },
-});
-
-const testUnluckyFullRanker = testLabs.extend<
-  { unluckyFullRankerPage: Page },
-  { unluckyFullRankerUserId: string }
->({
-  unluckyFullRankerUserId: [
-    async ({ database, labs: _ }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'unlucky.student@up.edu.ph',
-        googleUserId: 'test-unlucky-student',
-        givenName: 'Unlucky',
-        familyName: 'FullRanker',
-        avatarUrl: 'https://avatar.vercel.sh/unlucky.svg',
-        isAdmin: false,
-        labId: null,
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async unluckyFullRankerPage({ database, browser, unluckyFullRankerUserId }, use) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, unluckyFullRankerUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, unluckyFullRankerUserId, use);
   },
-});
-
-const testPartialToDrafted = testLabs.extend<
-  { partialToDraftedPage: Page },
-  { partialToDraftedUserId: string }
->({
-  partialToDraftedUserId: [
-    async ({ database, labs: _ }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'partial-drafted.student@up.edu.ph',
-        googleUserId: 'test-partial-drafted-student',
-        givenName: 'Partial',
-        familyName: 'ToDrafted',
-        avatarUrl: 'https://avatar.vercel.sh/partial-drafted.svg',
-        isAdmin: false,
-        labId: null,
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async partialToDraftedPage({ database, browser, partialToDraftedUserId }, use) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, partialToDraftedUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, partialToDraftedUserId, use);
   },
-});
-
-const testPartialToLottery = testLabs.extend<
-  { partialToLotteryPage: Page },
-  { partialToLotteryUserId: string }
->({
-  partialToLotteryUserId: [
-    async ({ database, labs: _ }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'partial-lottery.student@up.edu.ph',
-        googleUserId: 'test-partial-lottery-student',
-        givenName: 'Partial',
-        familyName: 'ToLottery',
-        isAdmin: false,
-        labId: null,
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async partialToLotteryPage({ database, browser, partialToLotteryUserId }, use) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, partialToLotteryUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, partialToLotteryUserId, use);
   },
-});
-
-const testNoRankStudent = testLabs.extend<
-  { noRankStudentPage: Page },
-  { noRankStudentUserId: string }
->({
-  noRankStudentUserId: [
-    async ({ database, labs: _ }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'no-rank.student@up.edu.ph',
-        googleUserId: 'test-no-rank-student',
-        givenName: 'NoRank',
-        familyName: 'Student',
-        isAdmin: false,
-        labId: null,
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async noRankStudentPage({ database, browser, noRankStudentUserId }, use) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, noRankStudentUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, noRankStudentUserId, use);
   },
-});
-
-const testIdleBystander = testLabs.extend<
-  { idleBystanderPage: Page },
-  { idleBystanderUserId: string }
->({
-  idleBystanderUserId: [
-    async ({ database, labs: _ }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'idle.student@up.edu.ph',
-        googleUserId: 'test-idle-student',
-        givenName: 'Idle',
-        familyName: 'Bystander',
-        isAdmin: false,
-        labId: null,
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async idleBystanderPage({ database, browser, idleBystanderUserId }, use) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, idleBystanderUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, idleBystanderUserId, use);
   },
-});
-
-const testLateRegistrant = testLabs.extend<
-  { lateRegistrantPage: Page },
-  { lateRegistrantUserId: string }
->({
-  lateRegistrantUserId: [
-    async ({ database, labs: _ }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'late.student@up.edu.ph',
-        googleUserId: 'test-late-student',
-        givenName: 'Late',
-        familyName: 'Registrant',
-        isAdmin: false,
-        labId: null,
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async lateRegistrantPage({ database, browser, lateRegistrantUserId }, use) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, lateRegistrantUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, lateRegistrantUserId, use);
   },
-});
-
-const testSecondRoundNdslFirstChoice = testLabs.extend<
-  { secondRoundNdslFirstChoicePage: Page },
-  { secondRoundNdslFirstChoiceUserId: string }
->({
-  secondRoundNdslFirstChoiceUserId: [
-    async ({ database, labs: _ }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'second-ndsl-first-choice.student@up.edu.ph',
-        googleUserId: 'test-second-ndsl-first-choice-student',
-        givenName: 'SecondNdsl',
-        familyName: 'FirstChoice',
-        avatarUrl: 'https://avatar.vercel.sh/second-ndsl.svg',
-        isAdmin: false,
-        labId: null,
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async secondRoundNdslFirstChoicePage(
     { database, browser, secondRoundNdslFirstChoiceUserId },
     use,
   ) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, secondRoundNdslFirstChoiceUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, secondRoundNdslFirstChoiceUserId, use);
   },
-});
-
-const testSecondRoundCslFirstChoice = testLabs.extend<
-  { secondRoundCslFirstChoicePage: Page },
-  { secondRoundCslFirstChoiceUserId: string }
->({
-  secondRoundCslFirstChoiceUserId: [
-    async ({ database, labs: _ }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'second-csl-first-choice.student@up.edu.ph',
-        googleUserId: 'test-second-csl-first-choice-student',
-        givenName: 'SecondCsl',
-        familyName: 'FirstChoice',
-        isAdmin: false,
-        labId: null,
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async secondRoundCslFirstChoicePage({ database, browser, secondRoundCslFirstChoiceUserId }, use) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, secondRoundCslFirstChoiceUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, secondRoundCslFirstChoiceUserId, use);
   },
-});
-
-const testSecondRoundSclSecondChoice = testLabs.extend<
-  { secondRoundSclSecondChoicePage: Page },
-  { secondRoundSclSecondChoiceUserId: string }
->({
-  secondRoundSclSecondChoiceUserId: [
-    async ({ database, labs: _ }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'second-scl-second-choice.student@up.edu.ph',
-        googleUserId: 'test-second-scl-second-choice-student',
-        givenName: 'SecondScl',
-        familyName: 'SecondChoice',
-        avatarUrl: 'https://avatar.vercel.sh/second-scl.svg',
-        isAdmin: false,
-        labId: null,
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async secondRoundSclSecondChoicePage(
     { database, browser, secondRoundSclSecondChoiceUserId },
     use,
   ) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, secondRoundSclSecondChoiceUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, secondRoundSclSecondChoiceUserId, use);
   },
-});
-
-const testSnapshotGuardStudent = testLabs.extend<
-  { snapshotGuardStudentPage: Page },
-  { snapshotGuardStudentUserId: string }
->({
-  snapshotGuardStudentUserId: [
-    async ({ database, labs: _ }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'snapshot-guard.student@up.edu.ph',
-        googleUserId: 'test-snapshot-guard-student',
-        givenName: 'Snapshot',
-        familyName: 'Guard',
-        isAdmin: false,
-        labId: null,
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async snapshotGuardStudentPage({ database, browser, snapshotGuardStudentUserId }, use) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, snapshotGuardStudentUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, snapshotGuardStudentUserId, use);
   },
-});
-
-const testRepeatDraftee = testLabs.extend<
-  { repeatDrafteePage: Page },
-  { repeatDrafteeUserId: string }
->({
-  repeatDrafteeUserId: [
-    async ({ database, labs: _ }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'repeat.student@up.edu.ph',
-        googleUserId: 'test-repeat-student',
-        givenName: 'Repeat',
-        familyName: 'Draftee',
-        avatarUrl: 'https://avatar.vercel.sh/repeat.svg',
-        isAdmin: false,
-        labId: null,
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async repeatDrafteePage({ database, browser, repeatDrafteeUserId }, use) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, repeatDrafteeUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, repeatDrafteeUserId, use);
   },
-});
-
-const testNdslHead = testLabs.extend<{ ndslHeadPage: Page }, { ndslHeadUserId: string }>({
-  ndslHeadUserId: [
-    async ({ database, labs: _ }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'ndsl@up.edu.ph',
-        googleUserId: 'test-ndsl-head',
-        givenName: 'NDSL',
-        familyName: 'Head',
-        isAdmin: true,
-        labId: 'ndsl',
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async ndslHeadPage({ database, browser, ndslHeadUserId }, use) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, ndslHeadUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, ndslHeadUserId, use);
   },
-});
-
-const testCslHead = testLabs.extend<{ cslHeadPage: Page }, { cslHeadUserId: string }>({
-  cslHeadUserId: [
-    async ({ database, labs: _ }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'csl@up.edu.ph',
-        googleUserId: 'test-csl-head',
-        givenName: 'CSL',
-        familyName: 'Head',
-        isAdmin: true,
-        labId: 'csl',
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async cslHeadPage({ database, browser, cslHeadUserId }, use) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, cslHeadUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, cslHeadUserId, use);
   },
-});
-
-const testSclHead = testLabs.extend<{ sclHeadPage: Page }, { sclHeadUserId: string }>({
-  sclHeadUserId: [
-    async ({ database, labs: _ }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'scl@up.edu.ph',
-        googleUserId: 'test-scl-head',
-        givenName: 'SCL',
-        familyName: 'Head',
-        isAdmin: true,
-        labId: 'scl',
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async sclHeadPage({ database, browser, sclHeadUserId }, use) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, sclHeadUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, sclHeadUserId, use);
   },
-});
-
-const testCvmilHead = testLabs.extend<{ cvmilHeadPage: Page }, { cvmilHeadUserId: string }>({
-  cvmilHeadUserId: [
-    async ({ database, labs: _ }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'cvmil@up.edu.ph',
-        googleUserId: 'test-cvmil-head',
-        givenName: 'CVMIL',
-        familyName: 'Head',
-        isAdmin: true,
-        labId: 'cvmil',
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async cvmilHeadPage({ database, browser, cvmilHeadUserId }, use) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, cvmilHeadUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, cvmilHeadUserId, use);
   },
-});
-
-const testAclHead = testLabs.extend<{ aclHeadPage: Page }, { aclHeadUserId: string }>({
-  aclHeadUserId: [
-    async ({ database, labs: _ }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'acl@up.edu.ph',
-        googleUserId: 'test-acl-head',
-        givenName: 'ACL',
-        familyName: 'Head',
-        isAdmin: true,
-        labId: 'acl',
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async aclHeadPage({ database, browser, aclHeadUserId }, use) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, aclHeadUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, aclHeadUserId, use);
   },
-});
-
-const testAdmin = testDatabase.extend<
-  { adminPage: Page },
-  { adminEmail: string; adminUserId: string }
->({
-  adminEmail: [
-    // eslint-disable-next-line no-empty-pattern
-    async ({}, use, workerInfo) => {
-      await use(`admin+worker-${workerInfo.workerIndex}@up.edu.ph`);
-    },
-    { scope: 'worker' },
-  ],
-  adminUserId: [
-    async ({ adminEmail, database }, use, workerInfo) => {
-      const { id: userId } = await createTestUser(database, {
-        email: adminEmail,
-        googleUserId: `test-admin-worker-${workerInfo.workerIndex}`,
-        givenName: 'Draft',
-        familyName: 'Administrator',
-        isAdmin: true,
-        labId: null,
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async adminPage({ database, browser, adminUserId }, use) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, adminUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, adminUserId, use);
   },
-});
-
-const testSecondAdmin = testDatabase.extend<
-  { secondAdminPage: Page },
-  { secondAdminUserId: string }
->({
-  secondAdminUserId: [
-    async ({ database }, use) => {
-      const { id: userId } = await createTestUser(database, {
-        email: 'second.admin@up.edu.ph',
-        googleUserId: 'test-second-admin',
-        givenName: 'Second',
-        familyName: 'Administrator',
-        isAdmin: true,
-        labId: null,
-      });
-      await use(userId);
-    },
-    { scope: 'worker' },
-  ],
   async secondAdminPage({ database, browser, secondAdminUserId }, use) {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    const sessionId = await insertDummySession(database, secondAdminUserId);
-    await context.addCookies([
-      {
-        name: 'sid',
-        value: sessionId,
-        domain: 'localhost',
-        path: '/dashboard',
-        httpOnly: true,
-        sameSite: 'Lax',
-      },
-    ]);
-    await page.goto('/dashboard/');
-    await use(page);
-    await deleteValidSession(database, sessionId);
-    await context.close();
+    await useAuthenticatedDashboardPage(database, browser, secondAdminUserId, use);
   },
 });
 
-// Seeds a candidate_sender row for the current worker's admin user so parallel
-// E2E workers never contend on the same sender records.
-const testCandidateSender = testAdmin.extend<{ seededCandidateSender: string }>({
+export const test = testUsers.extend<{ seededCandidateSender: string }>({
   async seededCandidateSender({ adminUserId, database }, use) {
     await database.insert(schema.candidateSender).values({
       userId: adminUserId,
@@ -884,33 +536,12 @@ const testCandidateSender = testAdmin.extend<{ seededCandidateSender: string }>(
       refreshTokenIv: sql`''::bytea`,
       refreshTokenCipher: sql`''::bytea`,
     });
-    await use(adminUserId);
-    await database
-      .delete(schema.candidateSender)
-      .where(eq(schema.candidateSender.userId, adminUserId));
+    try {
+      await use(adminUserId);
+    } finally {
+      await database
+        .delete(schema.candidateSender)
+        .where(eq(schema.candidateSender.userId, adminUserId));
+    }
   },
 });
-
-export const test = mergeTests(
-  testSecondAdmin,
-  testCandidateSender,
-  testNdslHead,
-  testCslHead,
-  testSclHead,
-  testCvmilHead,
-  testAclHead,
-  testEagerDraftee,
-  testPatientCandidate,
-  testPersistentHopeful,
-  testUnluckyFullRanker,
-  testNoRankStudent,
-  testIdleBystander,
-  testLateRegistrant,
-  testSecondRoundNdslFirstChoice,
-  testSecondRoundCslFirstChoice,
-  testSecondRoundSclSecondChoice,
-  testSnapshotGuardStudent,
-  testRepeatDraftee,
-  testPartialToDrafted,
-  testPartialToLottery,
-);
