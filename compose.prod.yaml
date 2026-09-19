@@ -34,6 +34,8 @@ services:
 
   rustfs:
     environment:
+      RUSTFS_OBS_ENDPOINT: http://o2:5080/api/default
+      RUSTFS_OBS_ENDPOINT_HEADERS: ${OTEL_EXPORTER_OTLP_HEADERS:?required}
       RUSTFS_ACCESS_KEY: ${S3_ACCESS_KEY:?required}
       RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:?required}
 

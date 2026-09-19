@@ -93,6 +93,7 @@ services:
       - rustfs-logs:/logs
     networks:
       - storage
+      - telemetry
     restart: always
     healthcheck:
       test:

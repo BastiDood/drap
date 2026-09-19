@@ -78,21 +78,21 @@ Development and production do not use the same environment-variable surface. The
 
 For host-run app processes, `pnpm docker:dev` already starts PostgreSQL, Inngest, OpenObserve, and RustFS with local-friendly defaults. You still need to export the app-facing variables below yourself.
 
-| **Variable**                  | **Used by**                                 | **Required** | **Recommended**                                                                                           |
-| ----------------------------- | ------------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------- |
-| `PUBLIC_ORIGIN`               | Public absolute URLs, metadata, and emails. | Yes          | `http://localhost:5173` for `pnpm dev`; `http://localhost:4173` for Playwright.                           |
-| `ORIGIN`                      | Google OAuth callback base URL.             | Yes          | Same value as `PUBLIC_ORIGIN`.                                                                            |
-| `POSTGRES_URL`                | App database connection.                    | Yes          | `postgresql://postgres:password@localhost:5432/postgres`; use `/test` in CI.                              |
-| `GOOGLE_OAUTH_CLIENT_ID`      | Google OAuth login.                         | Yes          | Value from the [Google Cloud Console].                                                                    |
-| `GOOGLE_OAUTH_CLIENT_SECRET`  | Google OAuth login.                         | Yes          | Value from the [Google Cloud Console].                                                                    |
-| `DRAP_ENCRYPTION_KEY`         | Encrypts sensitive OAuth tokens.            | Yes          | Generate with `pnpm random:bytes -- 32`.                                                                  |
-| `DRAP_ASSERT_DOMAIN`          | Allowed email-domain restriction.           | No           | `up.edu.ph` for production-like behavior.                                                                 |
-| `DRAP_ENABLE_EMAILS`          | Real email delivery.                        | No           | Leave unset unless you intentionally want live email delivery.                                            |
-| `S3_ENDPOINT`                 | App-facing S3 API endpoint.                 | Yes          | `http://localhost:9000` for host-run local development; do not use the Docker network hostname here.      |
-| `S3_REGION`                   | S3 signing region.                          | Yes          | `us-east-1` for local development.                                                                        |
-| `INNGEST_DEV`                 | Host-run app access to local Inngest.       | Yes          | `http://localhost:8288`; the server itself is provided by `pnpm docker:dev`.                              |
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | Local OpenTelemetry export endpoint.        | No           | `http://localhost:5080/api/default`; OpenObserve is provided by `pnpm docker:dev`.                        |
-| `OTEL_EXPORTER_OTLP_HEADERS`  | Local OpenTelemetry auth headers.           | No           | `Authorization=Basic%20YWRtaW5AZXhhbXBsZS5jb206cGFzc3dvcmQ%3D`; credentials come from `compose.dev.yaml`. |
+| **Variable**                  | **Used by**                                 | **Required** | **Recommended**                                                                                             |
+| ----------------------------- | ------------------------------------------- | ------------ | ----------------------------------------------------------------------------------------------------------- |
+| `PUBLIC_ORIGIN`               | Public absolute URLs, metadata, and emails. | Yes          | `http://localhost:5173` for `pnpm dev`; `http://localhost:4173` for Playwright.                             |
+| `ORIGIN`                      | Google OAuth callback base URL.             | Yes          | Same value as `PUBLIC_ORIGIN`.                                                                              |
+| `POSTGRES_URL`                | App database connection.                    | Yes          | `postgresql://postgres:password@localhost:5432/postgres`; use `/test` in CI.                                |
+| `GOOGLE_OAUTH_CLIENT_ID`      | Google OAuth login.                         | Yes          | Value from the [Google Cloud Console].                                                                      |
+| `GOOGLE_OAUTH_CLIENT_SECRET`  | Google OAuth login.                         | Yes          | Value from the [Google Cloud Console].                                                                      |
+| `DRAP_ENCRYPTION_KEY`         | Encrypts sensitive OAuth tokens.            | Yes          | Generate with `pnpm random:bytes -- 32`.                                                                    |
+| `DRAP_ASSERT_DOMAIN`          | Allowed email-domain restriction.           | No           | `up.edu.ph` for production-like behavior.                                                                   |
+| `DRAP_ENABLE_EMAILS`          | Real email delivery.                        | No           | Leave unset unless you intentionally want live email delivery.                                              |
+| `S3_ENDPOINT`                 | App-facing S3 API endpoint.                 | Yes          | `http://localhost:9000` for host-run local development; do not use the Docker network hostname here.        |
+| `S3_REGION`                   | S3 signing region.                          | Yes          | `us-east-1` for local development.                                                                          |
+| `INNGEST_DEV`                 | Host-run app access to local Inngest.       | Yes          | `http://localhost:8288`; the server itself is provided by `pnpm docker:dev`.                                |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | Local OpenTelemetry export endpoint.        | No           | `http://localhost:5080/api/default`; OpenObserve is provided by `pnpm docker:dev`.                          |
+| `OTEL_EXPORTER_OTLP_HEADERS`  | Local OpenTelemetry auth headers.           | No           | `Authorization=Basic%20YWRtaW5AZXhhbXBsZS5jb206UGFzc3dvcmQxMjMq`; credentials come from `compose.dev.yaml`. |
 
 </details>
 
@@ -288,7 +288,9 @@ The production HAProxy ingress uses a coarse path allowlist for the public site 
 
 ### Local Telemetry with OpenObserve
 
-To enable full observability in local development:
+RustFS exports traces, metrics, and logs directly to OpenObserve with fixed development credentials and production credentials from `OTEL_EXPORTER_OTLP_HEADERS`. CI disables export because it does not run OpenObserve.
+
+To enable application telemetry in local development:
 
 1. Start the local services (including OpenObserve):
    ```bash
@@ -297,7 +299,7 @@ To enable full observability in local development:
 2. Export the OTLP endpoint before running the dev server. Trace export uses OTLP over HTTP automatically:
    ```bash
    export OTEL_EXPORTER_OTLP_ENDPOINT='http://localhost:5080/api/default'
-   export OTEL_EXPORTER_OTLP_HEADERS='Authorization=Basic%20YWRtaW5AZXhhbXBsZS5jb206cGFzc3dvcmQ%3D'
+   export OTEL_EXPORTER_OTLP_HEADERS='Authorization=Basic%20YWRtaW5AZXhhbXBsZS5jb206UGFzc3dvcmQxMjMq'
    pnpm dev
    ```
 3. View traces and logs at `http://localhost:5080`.

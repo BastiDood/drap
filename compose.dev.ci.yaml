@@ -1,5 +1,8 @@
 services:
   o2: !reset null
+  rustfs:
+    environment:
+      RUSTFS_OBS_ENDPOINT: !reset null
   inngest:
     command:
       - inngest
