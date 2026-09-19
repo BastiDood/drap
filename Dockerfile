@@ -1,8 +1,6 @@
-FROM node:26.9.0-alpine3.24 AS base
+FROM ghcr.io/pnpm/pnpm:12.5.1 AS base
 
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable pnpm
+RUN pnpm runtime set node 26.9.0 --global
 
 WORKDIR /app
 
