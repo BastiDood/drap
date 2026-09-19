@@ -1,11 +1,10 @@
-import { cron } from 'inngest';
-import { lt, sql } from 'drizzle-orm';
-
 import { db } from '$lib/server/database';
+import { session } from '$lib/server/database/schema/auth';
 import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
-import { session } from '$lib/server/database/schema/auth';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import { lt, sql } from 'drizzle-orm';
+import { cron } from 'inngest';
 
 const SERVICE_NAME = 'inngest.functions.cleanup-sessions';
 const logger = Logger.byName(SERVICE_NAME);

@@ -1,11 +1,10 @@
 <script lang="ts">
-  import PlusIcon from '@lucide/svelte/icons/plus';
-  import Trash2Icon from '@lucide/svelte/icons/trash-2';
-
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
+  import PlusIcon from '@lucide/svelte/icons/plus';
+  import Trash2Icon from '@lucide/svelte/icons/trash-2';
 
   interface AssignmentRow {
     id: string;

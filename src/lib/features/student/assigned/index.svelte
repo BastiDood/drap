@@ -1,10 +1,9 @@
 <script lang="ts">
-  import PartyPopperIcon from '@lucide/svelte/icons/party-popper';
-
+  import { resolve } from '$app/paths';
   import Empty from '$lib/components/empty.svelte';
   import { Button } from '$lib/components/ui/button';
-  import { resolve } from '$app/paths';
   import type { schema } from '$lib/server/database/drizzle';
+  import PartyPopperIcon from '@lucide/svelte/icons/party-popper';
 
   interface Props {
     lab: Pick<schema.Lab, 'name'>;

@@ -1,8 +1,7 @@
 <script lang="ts" module>
+  import { cn } from '$lib/components/ui/utils';
   import type { Snippet } from 'svelte';
   import { tv, type VariantProps } from 'tailwind-variants';
-
-  import { cn } from '$lib/components/ui/utils';
 
   export const statCardGroupVariants = tv({
     base: 'grid w-full grid-cols-1 gap-2',

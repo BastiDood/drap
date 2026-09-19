@@ -1,9 +1,8 @@
-import { error, redirect } from '@sveltejs/kit';
-
 import { db } from '$lib/server/database';
 import { deleteValidSession } from '$lib/server/database/drizzle';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import { error, redirect } from '@sveltejs/kit';
 
 const SERVICE_NAME = 'routes.dashboard.oauth';
 const logger = Logger.byName(SERVICE_NAME);

@@ -1,7 +1,7 @@
 <script lang="ts">
+  import { DraftTable, InitDialog } from '$lib/features/drafts';
   import AssignedStatsChart from '$lib/features/drafts/stats/assigned-stats-chart.svelte';
   import { buildAssignedStatsChart } from '$lib/features/drafts/stats/chart-data';
-  import { DraftTable, InitDialog } from '$lib/features/drafts';
 
   const { data } = $props();
   const { drafts, draftStatsRecords } = $derived(data);

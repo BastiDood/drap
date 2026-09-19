@@ -1,10 +1,9 @@
 <script>
-  import ArrowRightIcon from '@lucide/svelte/icons/arrow-right';
-  import ScrollTextIcon from '@lucide/svelte/icons/scroll-text';
-
+  import { resolve } from '$app/paths';
   import Logo from '$lib/assets/logo-DRAP-colored.svg';
   import { Button } from '$lib/components/ui/button';
-  import { resolve } from '$app/paths';
+  import ArrowRightIcon from '@lucide/svelte/icons/arrow-right';
+  import ScrollTextIcon from '@lucide/svelte/icons/scroll-text';
 </script>
 
 <div

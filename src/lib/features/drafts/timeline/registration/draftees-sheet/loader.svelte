@@ -5,12 +5,11 @@
 </script>
 
 <script lang="ts">
+  import Empty from '$lib/components/empty.svelte';
+  import { createFetchDraftLateRegistrantsQuery } from '$lib/queries/fetch-draft-late-registrants';
+  import { createFetchDrafteesQuery } from '$lib/queries/fetch-draftees';
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
   import UsersIcon from '@lucide/svelte/icons/users';
-
-  import Empty from '$lib/components/empty.svelte';
-  import { createFetchDrafteesQuery } from '$lib/queries/fetch-draftees';
-  import { createFetchDraftLateRegistrantsQuery } from '$lib/queries/fetch-draft-late-registrants';
 
   import DrafteesSheetContent from './content.svelte';
 

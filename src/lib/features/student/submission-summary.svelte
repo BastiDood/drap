@@ -1,4 +1,6 @@
 <script lang="ts">
+  import * as Card from '$lib/components/ui/card';
+  import type { schema } from '$lib/server/database/drizzle';
   import AlertCircle from '@lucide/svelte/icons/alert-circle';
   import Calendar from '@lucide/svelte/icons/calendar';
   import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
@@ -6,9 +8,6 @@
   import Clock from '@lucide/svelte/icons/clock';
   import MessageSquare from '@lucide/svelte/icons/message-square';
   import { format } from 'date-fns';
-
-  import * as Card from '$lib/components/ui/card';
-  import type { schema } from '$lib/server/database/drizzle';
 
   export interface Lab extends Pick<schema.Lab, 'name'> {
     remark: string;

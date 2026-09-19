@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 
-import { type CustomTypeValues, customType } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
+import { type CustomTypeValues, customType } from 'drizzle-orm/pg-core';
 
 export class ClosedTimestampWithTimezoneRange {
   constructor(

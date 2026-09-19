@@ -1,10 +1,9 @@
 <script lang="ts">
-  import BarChart3Icon from '@lucide/svelte/icons/bar-chart-3';
-
+  import { Button } from '$lib/components/ui/button';
   import * as Sheet from '$lib/components/ui/sheet';
   import QuotaSnapshotForm from '$lib/features/drafts/timeline/quota-snapshot-form.svelte';
-  import { Button } from '$lib/components/ui/button';
   import type { DraftLabQuotaSnapshot } from '$lib/features/drafts/types';
+  import BarChart3Icon from '@lucide/svelte/icons/bar-chart-3';
 
   interface Props {
     draftId: string;

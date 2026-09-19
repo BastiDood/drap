@@ -9,8 +9,8 @@
 </script>
 
 <script lang="ts">
-  import UserlistItem from '$lib/components/userlist-item.svelte';
   import { cn } from '$lib/components/ui/utils';
+  import UserlistItem from '$lib/components/userlist-item.svelte';
 
   import AdminActions from './admin-actions.svelte';
   import RoleBadge from './role-badge.svelte';

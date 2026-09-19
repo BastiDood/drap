@@ -3,26 +3,25 @@
 </script>
 
 <script lang="ts">
-  import * as v from 'valibot';
+  import { enhance } from '$app/forms';
+  import { assert } from '$lib/assert';
+  import Empty from '$lib/components/empty.svelte';
+  import { Button } from '$lib/components/ui/button';
+  import * as Card from '$lib/components/ui/card';
+  import { TextArea } from '$lib/components/ui/textarea';
+  import { Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui/tooltip';
+  import type { schema } from '$lib/server/database/drizzle';
   import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
   import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
   import BoxSelectIcon from '@lucide/svelte/icons/box-select';
   import InboxIcon from '@lucide/svelte/icons/inbox';
   import XIcon from '@lucide/svelte/icons/x';
-  import { crossfade } from 'svelte/transition';
-  import { flip } from 'svelte/animate';
   import { mergeProps } from 'bits-ui';
   import { PersistedState } from 'runed';
   import { toast } from 'svelte-sonner';
-
-  import * as Card from '$lib/components/ui/card';
-  import Empty from '$lib/components/empty.svelte';
-  import { assert } from '$lib/assert';
-  import { Button } from '$lib/components/ui/button';
-  import { enhance } from '$app/forms';
-  import type { schema } from '$lib/server/database/drizzle';
-  import { TextArea } from '$lib/components/ui/textarea';
-  import { Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui/tooltip';
+  import { flip } from 'svelte/animate';
+  import { crossfade } from 'svelte/transition';
+  import * as v from 'valibot';
 
   import AvatarConsent from './avatar-consent.svelte';
   import { CUSTOM_AVATAR_MAX_BYTES, CUSTOM_AVATAR_TOO_LARGE_MESSAGE } from './constants';

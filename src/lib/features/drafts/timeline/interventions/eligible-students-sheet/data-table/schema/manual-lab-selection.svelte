@@ -1,6 +1,5 @@
 <script lang="ts">
   import * as NativeSelect from '$lib/components/ui/native-select';
-
   import type { Lab } from '$lib/features/drafts/types';
 
   interface Props {

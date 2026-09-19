@@ -1,12 +1,11 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
+  import Logo from '$lib/assets/logo-DRAP-icon-colored.svg';
   import BugIcon from '@lucide/svelte/icons/bug';
   import GitForkIcon from '@lucide/svelte/icons/git-fork';
   import HistoryIcon from '@lucide/svelte/icons/history';
   import LockIcon from '@lucide/svelte/icons/lock';
   import { SvglGitHubLogo } from '@selemondev/svgl-svelte';
-
-  import Logo from '$lib/assets/logo-DRAP-icon-colored.svg';
-  import { resolve } from '$app/paths';
 
   import Link from './link.svelte';
 </script>

@@ -1,14 +1,13 @@
 import process from 'node:process';
 
-import { AwsInstrumentation } from '@opentelemetry/instrumentation-aws-sdk';
-import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
-import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
-import { InngestSpanProcessor } from 'inngest/experimental';
-import { NodeSDK } from '@opentelemetry/sdk-node';
-import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
-import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
-
 import { inngest } from '$lib/server/inngest/client';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { AwsInstrumentation } from '@opentelemetry/instrumentation-aws-sdk';
+import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
+import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
+import { NodeSDK } from '@opentelemetry/sdk-node';
+import { BatchSpanProcessor } from '@opentelemetry/sdk-trace-base';
+import { InngestSpanProcessor } from 'inngest/experimental';
 
 const sdk = new NodeSDK({
   serviceName: 'drap',

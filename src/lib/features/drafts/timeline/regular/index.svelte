@@ -1,17 +1,15 @@
 <script lang="ts">
+  import { Button } from '$lib/components/ui/button';
+  import * as Card from '$lib/components/ui/card';
+  import * as Drawer from '$lib/components/ui/drawer';
+  import * as Tabs from '$lib/components/ui/tabs';
+  import type { DraftAssignmentSummary, Lab } from '$lib/features/drafts/types';
   import ChartColumnIcon from '@lucide/svelte/icons/chart-column';
   import GraduationCapIcon from '@lucide/svelte/icons/graduation-cap';
   import PaperclipIcon from '@lucide/svelte/icons/paperclip';
 
-  import * as Card from '$lib/components/ui/card';
-  import * as Drawer from '$lib/components/ui/drawer';
-  import * as Tabs from '$lib/components/ui/tabs';
-  import { Button } from '$lib/components/ui/button';
-  import type { DraftAssignmentSummary, Lab } from '$lib/features/drafts/types';
-
   import RoundSummaryChart from './round-summary-chart.svelte';
   import StudentsSummary from './students-summary.svelte';
-
   import SystemLogsLoader from './system-logs/loader.svelte';
   import UndraftedDrawer from './undrafted-drawer/index.svelte';
 

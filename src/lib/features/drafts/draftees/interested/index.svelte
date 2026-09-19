@@ -1,6 +1,6 @@
 <script lang="ts">
-  import * as Sheet from '$lib/components/ui/sheet';
   import { Button } from '$lib/components/ui/button';
+  import * as Sheet from '$lib/components/ui/sheet';
 
   import Loader, { type Props } from './loader.svelte';
 

@@ -1,11 +1,10 @@
 <script>
-  import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
-
-  import BottomNav from '$lib/components/bottom-nav.svelte';
   import { browser, dev } from '$app/environment';
-  import { DevTools } from '$lib/features/dev-tools';
+  import BottomNav from '$lib/components/bottom-nav.svelte';
   import { SidebarProvider } from '$lib/components/ui/sidebar';
   import { Toaster } from '$lib/components/ui/sonner';
+  import { DevTools } from '$lib/features/dev-tools';
+  import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 
   import SideBar from './side-bar.svelte';
 

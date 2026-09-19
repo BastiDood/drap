@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { Drawer as DrawerPrimitive } from 'vaul-svelte';
-
   import { cn } from '$lib/components/ui/utils';
+  import { Drawer as DrawerPrimitive } from 'vaul-svelte';
 
   let {
     ref = $bindable(null),

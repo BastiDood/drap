@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { getChartContext } from 'layerchart';
-  import type { HTMLAttributes } from 'svelte/elements';
-  import type { Snippet } from 'svelte';
-  import { Tooltip as TooltipPrimitive } from 'layerchart/svg';
-
   import { cn, type WithElementRef, type WithoutChildren } from '$lib/components/ui/utils';
+  import { getChartContext } from 'layerchart';
+  import { Tooltip as TooltipPrimitive } from 'layerchart/svg';
+  import type { Snippet } from 'svelte';
+  import type { HTMLAttributes } from 'svelte/elements';
 
   import { getPayloadConfigFromPayload, type TooltipPayload, useChart } from './chart-utils';
 

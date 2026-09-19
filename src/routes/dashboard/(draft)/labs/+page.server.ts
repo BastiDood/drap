@@ -1,9 +1,3 @@
-import * as v from 'valibot';
-import { decode } from 'decode-formdata';
-import { eq, sql } from 'drizzle-orm';
-import { error, redirect } from '@sveltejs/kit';
-
-import * as schema from '$lib/server/database/schema';
 import { db } from '$lib/server/database';
 import {
   type DbConnection,
@@ -11,9 +5,14 @@ import {
   getActiveDraft,
   getLabRegistry,
 } from '$lib/server/database/drizzle';
+import * as schema from '$lib/server/database/schema';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
 import { validateBigInt } from '$lib/validators';
+import { error, redirect } from '@sveltejs/kit';
+import { decode } from 'decode-formdata';
+import { eq, sql } from 'drizzle-orm';
+import * as v from 'valibot';
 
 const LabFormData = v.object({
   labId: v.pipe(v.string(), v.minLength(1)),

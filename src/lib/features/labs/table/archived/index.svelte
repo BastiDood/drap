@@ -9,9 +9,8 @@
 </script>
 
 <script lang="ts">
-  import { format } from 'date-fns';
-
   import * as Table from '$lib/components/ui/table';
+  import { format } from 'date-fns';
 
   import RestoreForm from './form.svelte';
 

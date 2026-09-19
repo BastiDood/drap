@@ -8,10 +8,9 @@
 </script>
 
 <script lang="ts">
+  import Empty from '$lib/components/empty.svelte';
   import UsersIcon from '@lucide/svelte/icons/users';
   import { SvelteMap } from 'svelte/reactivity';
-
-  import Empty from '$lib/components/empty.svelte';
 
   import DrafteesSheetTable from './table.svelte';
 

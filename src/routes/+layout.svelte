@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { ModeWatcher } from 'mode-watcher';
-
   import banner from '$lib/banner.png?url';
   import { ORIGIN } from '$lib/env';
+  import { ModeWatcher } from 'mode-watcher';
 
   import './app.css';
 

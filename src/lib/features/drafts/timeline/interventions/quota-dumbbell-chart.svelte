@@ -1,21 +1,19 @@
 <script lang="ts">
-  import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
-  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
-  import { BarChart } from 'layerchart/svg';
-  import { format } from 'd3-format';
-  import { max } from 'd3-array';
-  import { scaleLinear } from 'd3-scale';
-
+  import { assert } from '$lib/assert';
   import * as Card from '$lib/components/ui/card';
   import * as Chart from '$lib/components/ui/chart';
   import * as Empty from '$lib/components/ui/empty';
   import * as Popover from '$lib/components/ui/popover';
   import DraftedDraftees from '$lib/features/drafts/draftees/drafted/index.svelte';
-  import { assert } from '$lib/assert';
   import type { DraftLabQuotaSnapshot, DumbbellRow, Lab } from '$lib/features/drafts/types';
+  import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
+  import { max } from 'd3-array';
+  import { format } from 'd3-format';
+  import { scaleLinear } from 'd3-scale';
+  import { BarChart } from 'layerchart/svg';
 
   import EditLotteryQuota from './edit-lottery-quota.svelte';
-
   import EligibleStudentsSheet from './eligible-students-sheet/index.svelte';
 
   interface Props {

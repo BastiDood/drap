@@ -1,9 +1,8 @@
 <script>
-  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
-
+  import { page } from '$app/state';
   import Empty from '$lib/components/empty.svelte';
   import { Button } from '$lib/components/ui/button';
-  import { page } from '$app/state';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
 
   const { status, error } = $derived(page);
 </script>

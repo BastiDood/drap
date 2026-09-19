@@ -1,13 +1,12 @@
-import { count, eq } from 'drizzle-orm';
-import { error, json } from '@sveltejs/kit';
-
-import * as schema from '$lib/server/database/schema';
-import { assertSingle } from '$lib/server/assert';
 import { buildDraftAssignmentSummary } from '$lib/features/drafts/timeline/aggregates/builders';
+import { assertSingle } from '$lib/server/assert';
 import { db } from '$lib/server/database';
 import { type DbConnection, getDraftById } from '$lib/server/database/drizzle';
+import * as schema from '$lib/server/database/schema';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import { error, json } from '@sveltejs/kit';
+import { count, eq } from 'drizzle-orm';
 
 const SERVICE_NAME = 'routes.dashboard.admin.drafts.assignment-summary';
 const logger = Logger.byName(SERVICE_NAME);

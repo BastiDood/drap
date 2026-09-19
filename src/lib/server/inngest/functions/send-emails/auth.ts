@@ -1,16 +1,15 @@
-import { and, eq, gte, isNotNull, isNull, sql } from 'drizzle-orm';
-import { NonRetriableError } from 'inngest';
-import type { PgUpdateSetSource } from 'drizzle-orm/pg-core';
-
-import * as dbSchema from '$lib/server/database/schema';
+import { decryptSecret, encryptSecret } from '$lib/crypto';
 import { assertOptional } from '$lib/server/assert';
 import { db } from '$lib/server/database';
-import { decryptSecret, encryptSecret } from '$lib/crypto';
 import type { DrizzleTransaction, schema } from '$lib/server/database/drizzle';
+import * as dbSchema from '$lib/server/database/schema';
 import { ENCRYPTION_KEY } from '$lib/server/env/drap/crypto';
 import { GoogleOAuthClient } from '$lib/server/google';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import { and, eq, gte, isNotNull, isNull, sql } from 'drizzle-orm';
+import type { PgUpdateSetSource } from 'drizzle-orm/pg-core';
+import { NonRetriableError } from 'inngest';
 
 const SERVICE_NAME = 'inngest.functions.send-emails.auth';
 const logger = Logger.byName(SERVICE_NAME);

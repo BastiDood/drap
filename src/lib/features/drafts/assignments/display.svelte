@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { format } from 'date-fns';
-
   import * as Accordion from '$lib/components/ui/accordion';
-  import UserlistItem from '$lib/components/userlist-item.svelte';
   import { Badge } from '$lib/components/ui/badge';
+  import UserlistItem from '$lib/components/userlist-item.svelte';
   import type { DraftAssignmentRecord } from '$lib/features/drafts/types';
+  import { format } from 'date-fns';
 
   interface Props {
     regularDrafted: DraftAssignmentRecord[];

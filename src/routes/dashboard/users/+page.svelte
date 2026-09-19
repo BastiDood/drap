@@ -1,7 +1,7 @@
 <script lang="ts">
   import * as Card from '$lib/components/ui/card';
-  import Faculty from '$lib/users/faculty.svelte';
   import { DraftAdminCard } from '$lib/features/users';
+  import Faculty from '$lib/users/faculty.svelte';
 
   import InviteSheet from './invite-sheet.svelte';
 

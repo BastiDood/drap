@@ -1,8 +1,7 @@
 <script lang="ts">
-  import UsersIcon from '@lucide/svelte/icons/users';
-
-  import * as Sheet from '$lib/components/ui/sheet';
   import { Button } from '$lib/components/ui/button';
+  import * as Sheet from '$lib/components/ui/sheet';
+  import UsersIcon from '@lucide/svelte/icons/users';
 
   import DrafteesSheetLoader from './loader.svelte';
 

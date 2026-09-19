@@ -1,9 +1,8 @@
 <script lang="ts">
-  import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
-
   import * as Card from '$lib/components/ui/card';
   import * as Popover from '$lib/components/ui/popover';
   import { cn } from '$lib/components/ui/utils';
+  import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
 
   interface Props {
     quota: number;

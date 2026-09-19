@@ -1,9 +1,8 @@
 <script lang="ts">
-  import GraduationCapIcon from '@lucide/svelte/icons/graduation-cap';
-
-  import * as Sheet from '$lib/components/ui/sheet';
   import { Button, type ButtonSize } from '$lib/components/ui/button';
+  import * as Sheet from '$lib/components/ui/sheet';
   import { cn } from '$lib/components/ui/utils';
+  import GraduationCapIcon from '@lucide/svelte/icons/graduation-cap';
 
   import Loader, { type Props } from './loader.svelte';
 

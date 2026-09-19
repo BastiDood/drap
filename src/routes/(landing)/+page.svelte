@@ -1,14 +1,13 @@
 <script lang="ts">
-  import FlaskConicalIcon from '@lucide/svelte/icons/flask-conical';
-  import GraduationCapIcon from '@lucide/svelte/icons/graduation-cap';
-  import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
-
-  import * as Accordion from '$lib/components/ui/accordion';
+  import { asset, resolve } from '$app/paths';
   import banner from '$lib/banner.png?url';
   import Hero from '$lib/components/hero.svelte';
   import Link from '$lib/components/link.svelte';
-  import { asset, resolve } from '$app/paths';
+  import * as Accordion from '$lib/components/ui/accordion';
   import { ContributorTabs } from '$lib/features/contributors';
+  import FlaskConicalIcon from '@lucide/svelte/icons/flask-conical';
+  import GraduationCapIcon from '@lucide/svelte/icons/graduation-cap';
+  import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
 </script>
 
 <div class="m-6">

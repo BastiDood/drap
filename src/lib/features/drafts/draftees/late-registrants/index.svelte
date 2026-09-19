@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { tv } from 'tailwind-variants';
-
-  import * as Drawer from '$lib/components/ui/drawer';
   import { Button } from '$lib/components/ui/button';
+  import * as Drawer from '$lib/components/ui/drawer';
+  import { tv } from 'tailwind-variants';
 
   import Loader, { type Props as LoaderProps } from './loader.svelte';
 

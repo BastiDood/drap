@@ -6,20 +6,19 @@
 </script>
 
 <script lang="ts">
-  import Trash2Icon from '@lucide/svelte/icons/trash-2';
-  import UsersIcon from '@lucide/svelte/icons/users';
-  import { format } from 'date-fns';
-  import { toast } from 'svelte-sonner';
-  import { useQueryClient } from '@tanstack/svelte-query'; // eslint-disable-line no-restricted-imports
-
-  import * as Tooltip from '$lib/components/ui/tooltip';
-  import Empty from '$lib/components/empty.svelte';
-  import UserlistItem from '$lib/components/userlist-item.svelte';
+  import { enhance } from '$app/forms';
   import { assert } from '$lib/assert';
+  import Empty from '$lib/components/empty.svelte';
   import { Badge } from '$lib/components/ui/badge';
   import { Button } from '$lib/components/ui/button';
+  import * as Tooltip from '$lib/components/ui/tooltip';
+  import UserlistItem from '$lib/components/userlist-item.svelte';
   import type { DraftRegistrationAllowlistEntry } from '$lib/features/drafts/types';
-  import { enhance } from '$app/forms';
+  import Trash2Icon from '@lucide/svelte/icons/trash-2';
+  import UsersIcon from '@lucide/svelte/icons/users';
+  import { useQueryClient } from '@tanstack/svelte-query'; // eslint-disable-line no-restricted-imports
+  import { format } from 'date-fns';
+  import { toast } from 'svelte-sonner';
 
   import AllowlistForm from './form.svelte';
 

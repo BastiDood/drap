@@ -11,13 +11,12 @@
 </script>
 
 <script lang="ts">
+  import Link from '$lib/components/link.svelte';
+  import * as Avatar from '$lib/components/ui/avatar';
+  import * as Card from '$lib/components/ui/card';
   import GlobeIcon from '@lucide/svelte/icons/globe';
   import MailIcon from '@lucide/svelte/icons/mail';
   import { SvglGitHubLogo, SvglLinkedInLogo } from '@selemondev/svgl-svelte';
-
-  import * as Avatar from '$lib/components/ui/avatar';
-  import * as Card from '$lib/components/ui/card';
-  import Link from '$lib/components/link.svelte';
 
   const { name, role, avatar, website, email, github, linkedin }: Props = $props();
 </script>

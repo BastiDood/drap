@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { format } from 'date-fns';
-
   import Callout from '$lib/components/callout.svelte';
   import type { schema } from '$lib/server/database/drizzle';
+  import { format } from 'date-fns';
 
   import LabPreferenceForm from './lab-preference-form.svelte';
 

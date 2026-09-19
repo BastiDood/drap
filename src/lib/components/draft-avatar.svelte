@@ -1,8 +1,7 @@
 <script lang="ts">
-  import UserIcon from '@lucide/svelte/icons/user';
-
-  import * as Avatar from '$lib/components/ui/avatar';
   import { resolve } from '$app/paths';
+  import * as Avatar from '$lib/components/ui/avatar';
+  import UserIcon from '@lucide/svelte/icons/user';
 
   export interface DraftAvatarProps {
     avatar?: {

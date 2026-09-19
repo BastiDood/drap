@@ -1,9 +1,7 @@
 <script lang="ts">
-  import { format } from 'date-fns';
-
-  import ExportCsvButton from '$lib/features/export/csv/index.svelte';
-  import RegisteredDraftees from '$lib/features/drafts/draftees/registered/index.svelte';
   import { Badge } from '$lib/components/ui/badge';
+  import RegisteredDraftees from '$lib/features/drafts/draftees/registered/index.svelte';
+  import { DraftPhase, getDraftPhase } from '$lib/features/drafts/phase';
   import type {
     Draft,
     DraftAssignmentSummary,
@@ -12,18 +10,18 @@
     Lab,
     LotteryAggregate,
   } from '$lib/features/drafts/types';
-  import { DraftPhase, getDraftPhase } from '$lib/features/drafts/phase';
+  import ExportCsvButton from '$lib/features/export/csv/index.svelte';
   import { ExportCsvButtonVariant } from '$lib/features/export/csv/variant';
-
-  import Step from './step.svelte';
+  import { format } from 'date-fns';
 
   import InterventionsLoader from './interventions/loader.svelte';
   import LotteryLoader from './lottery/loader.svelte';
   import RegistrationActive from './registration/active.svelte';
   import RegistrationClosed from './registration/closed.svelte';
   import RegistrationCompleted from './registration/completed.svelte';
-  import RegularLoader from './regular/loader.svelte';
   import StartForm from './registration/start-form.svelte';
+  import RegularLoader from './regular/loader.svelte';
+  import Step from './step.svelte';
   import SummaryPhase from './summary/index.svelte';
 
   interface SummaryData {

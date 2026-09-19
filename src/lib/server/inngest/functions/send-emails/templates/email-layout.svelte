@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ORIGIN } from '$lib/env';
   import {
     Body,
     Container,
@@ -10,8 +11,6 @@
     Text,
   } from '@better-svelte-email/components';
   import type { Snippet } from 'svelte';
-
-  import { ORIGIN } from '$lib/env';
 
   import ConfidentialityNotice from './confidentiality-notice.svelte';
 

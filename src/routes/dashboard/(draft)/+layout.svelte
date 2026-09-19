@@ -1,7 +1,7 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
   import Callout from '$lib/components/callout.svelte';
   import Link from '$lib/components/link.svelte';
-  import { resolve } from '$app/paths';
 
   const { data, children } = $props();
   const { candidateSenders } = $derived(data);

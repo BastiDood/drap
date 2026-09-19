@@ -1,10 +1,9 @@
 <script lang="ts">
+  import Empty from '$lib/components/empty.svelte';
+  import type { DraftLabQuotaSnapshot, Lab } from '$lib/features/drafts/types';
+  import { createFetchDraftInterventionsAggregateQuery } from '$lib/queries/fetch-draft-interventions-aggregate';
   import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
-
-  import Empty from '$lib/components/empty.svelte';
-  import { createFetchDraftInterventionsAggregateQuery } from '$lib/queries/fetch-draft-interventions-aggregate';
-  import type { DraftLabQuotaSnapshot, Lab } from '$lib/features/drafts/types';
 
   import InterventionsActive from './active.svelte';
 

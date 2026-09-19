@@ -1,10 +1,9 @@
 <script lang="ts">
+  import Empty from '$lib/components/empty.svelte';
+  import type { DraftAssignmentSummary, Lab } from '$lib/features/drafts/types';
+  import { createFetchDraftAssignmentSummaryQuery } from '$lib/queries/fetch-draft-assignment-summary';
   import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
-
-  import Empty from '$lib/components/empty.svelte';
-  import { createFetchDraftAssignmentSummaryQuery } from '$lib/queries/fetch-draft-assignment-summary';
-  import type { DraftAssignmentSummary, Lab } from '$lib/features/drafts/types';
 
   import RegularPhase from './index.svelte';
 

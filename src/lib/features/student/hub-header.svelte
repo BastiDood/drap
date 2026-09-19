@@ -1,11 +1,10 @@
 <script lang="ts">
-  import PencilIcon from '@lucide/svelte/icons/pencil';
-
   import * as Avatar from '$lib/components/ui/avatar';
-  import * as Sheet from '$lib/components/ui/sheet';
   import { Badge } from '$lib/components/ui/badge';
   import { Button } from '$lib/components/ui/button';
+  import * as Sheet from '$lib/components/ui/sheet';
   import type { schema } from '$lib/server/database/drizzle';
+  import PencilIcon from '@lucide/svelte/icons/pencil';
 
   import ProfileForm from './profile-form.svelte';
 

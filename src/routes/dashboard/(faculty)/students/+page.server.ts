@@ -1,6 +1,25 @@
 import assert, { strictEqual } from 'node:assert/strict';
 
-import * as v from 'valibot';
+import { coerceNumber } from '$lib/coerce';
+import { assertOptional, assertSingle } from '$lib/server/assert';
+import { db } from '$lib/server/database';
+import {
+  autoAcknowledgeLabsWithoutPreferences,
+  type DbConnection,
+  type DrizzleTransaction,
+  getDraftByIdForUpdate,
+  getDraftNotificationRecipients,
+  getLabById,
+  getPendingLabCountInDraft,
+  incrementDraftRound,
+} from '$lib/server/database/drizzle';
+import * as schema from '$lib/server/database/schema';
+import { inngest } from '$lib/server/inngest/client';
+import { EmailEvent } from '$lib/server/inngest/schema';
+import { Logger } from '$lib/server/telemetry/logger';
+import { Tracer } from '$lib/server/telemetry/tracer';
+import { error, fail, redirect } from '@sveltejs/kit';
+import { decode } from 'decode-formdata';
 import {
   and,
   count,
@@ -13,27 +32,7 @@ import {
   or,
   sql,
 } from 'drizzle-orm';
-import { decode } from 'decode-formdata';
-import { error, fail, redirect } from '@sveltejs/kit';
-
-import * as schema from '$lib/server/database/schema';
-import { assertOptional, assertSingle } from '$lib/server/assert';
-import {
-  autoAcknowledgeLabsWithoutPreferences,
-  type DbConnection,
-  type DrizzleTransaction,
-  getDraftByIdForUpdate,
-  getDraftNotificationRecipients,
-  getLabById,
-  getPendingLabCountInDraft,
-  incrementDraftRound,
-} from '$lib/server/database/drizzle';
-import { coerceNumber } from '$lib/coerce';
-import { db } from '$lib/server/database';
-import { EmailEvent } from '$lib/server/inngest/schema';
-import { inngest } from '$lib/server/inngest/client';
-import { Logger } from '$lib/server/telemetry/logger';
-import { Tracer } from '$lib/server/telemetry/tracer';
+import * as v from 'valibot';
 
 const RankingsFormData = v.object({
   draft: v.pipe(v.string(), v.minLength(1)),

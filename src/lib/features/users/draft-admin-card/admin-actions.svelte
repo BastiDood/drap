@@ -8,15 +8,14 @@
 </script>
 
 <script lang="ts">
+  import { enhance } from '$app/forms';
+  import { Button } from '$lib/components/ui/button';
+  import { SenderRole } from '$lib/features/users/types';
   import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
   import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
   import XIcon from '@lucide/svelte/icons/x';
   import type { Component } from 'svelte';
   import { toast } from 'svelte-sonner';
-
-  import { Button } from '$lib/components/ui/button';
-  import { enhance } from '$app/forms';
-  import { SenderRole } from '$lib/features/users/types';
 
   const { userId, role }: Props = $props();
 

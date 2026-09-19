@@ -9,10 +9,9 @@
 </script>
 
 <script lang="ts">
-  import Loader2Icon from '@lucide/svelte/icons/loader-2';
-
   import Empty from '$lib/components/empty.svelte';
   import { createFetchDrafteesQuery } from '$lib/queries/fetch-draftees';
+  import Loader2Icon from '@lucide/svelte/icons/loader-2';
 
   import UndraftedDrawerContent from './content.svelte';
 

@@ -1,10 +1,9 @@
 <script lang="ts">
-  import LockIcon from '@lucide/svelte/icons/lock';
-  import { format } from 'date-fns';
-
+  import { resolve } from '$app/paths';
   import Empty from '$lib/components/empty.svelte';
   import { Button } from '$lib/components/ui/button';
-  import { resolve } from '$app/paths';
+  import LockIcon from '@lucide/svelte/icons/lock';
+  import { format } from 'date-fns';
 
   interface Props {
     registrationClosedAt: Date;

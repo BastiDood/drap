@@ -1,19 +1,17 @@
 <script lang="ts">
-  import ChartNoAxesColumnIcon from '@lucide/svelte/icons/chart-no-axes-column';
-  import { BarChart } from 'layerchart/svg';
-  import { format } from 'd3-format';
-  import { rollup, sort, sum } from 'd3-array';
-
+  import { assert } from '$lib/assert';
   import * as Card from '$lib/components/ui/card';
   import * as Chart from '$lib/components/ui/chart';
   import * as Empty from '$lib/components/ui/empty';
-  import { assert } from '$lib/assert';
   import { CHART_COLORS } from '$lib/constants';
   import type { LotteryOutcomeStack } from '$lib/features/drafts/types';
-
-  import { keyForRank } from './utils';
+  import ChartNoAxesColumnIcon from '@lucide/svelte/icons/chart-no-axes-column';
+  import { rollup, sort, sum } from 'd3-array';
+  import { format } from 'd3-format';
+  import { BarChart } from 'layerchart/svg';
 
   import LotteryResultsSheet from './results-sheet/index.svelte';
+  import { keyForRank } from './utils';
 
   interface Props {
     draftId: string;

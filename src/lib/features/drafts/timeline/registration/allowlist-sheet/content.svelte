@@ -5,11 +5,10 @@
 </script>
 
 <script lang="ts">
-  import Loader2Icon from '@lucide/svelte/icons/loader-2';
-  import UsersIcon from '@lucide/svelte/icons/users';
-
   import Empty from '$lib/components/empty.svelte';
   import { createFetchDraftAllowlistQuery } from '$lib/queries/fetch-draft-allowlist';
+  import Loader2Icon from '@lucide/svelte/icons/loader-2';
+  import UsersIcon from '@lucide/svelte/icons/users';
 
   import Pane from './pane.svelte';
 

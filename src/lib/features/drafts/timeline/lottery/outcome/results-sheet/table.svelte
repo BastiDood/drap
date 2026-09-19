@@ -1,8 +1,8 @@
 <script lang="ts">
-  import * as Table from '$lib/components/ui/table';
   import DateTime from '$lib/components/date-time.svelte';
-  import DesignatedLab from '$lib/users/designated-lab.svelte';
+  import * as Table from '$lib/components/ui/table';
   import type { DraftAssignmentRecord } from '$lib/features/drafts/types';
+  import DesignatedLab from '$lib/users/designated-lab.svelte';
 
   interface Props {
     assignments: DraftAssignmentRecord[];

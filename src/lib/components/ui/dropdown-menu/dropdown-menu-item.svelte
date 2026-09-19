@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
-
   import { cn } from '$lib/components/ui/utils';
+  import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
 
   interface Props extends DropdownMenuPrimitive.ItemProps {
     inset?: boolean;

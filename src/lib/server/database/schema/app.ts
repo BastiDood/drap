@@ -1,3 +1,4 @@
+import { eq, isNull, sql } from 'drizzle-orm';
 import {
   bigint,
   boolean,
@@ -13,7 +14,6 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core';
-import { eq, isNull, sql } from 'drizzle-orm';
 
 import { tstzrange } from './custom/tstzrange';
 import { ulid } from './custom/ulid';

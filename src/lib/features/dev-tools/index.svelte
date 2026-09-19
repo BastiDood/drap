@@ -1,13 +1,12 @@
 <script lang="ts">
+  import { Button } from '$lib/components/ui/button';
+  import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+  import type { schema } from '$lib/server/database/drizzle';
   import BugIcon from '@lucide/svelte/icons/bug';
   import SendIcon from '@lucide/svelte/icons/send';
   import UserCogIcon from '@lucide/svelte/icons/user-cog';
   import UserPlusIcon from '@lucide/svelte/icons/user-plus';
   import UsersIcon from '@lucide/svelte/icons/users';
-
-  import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
-  import { Button } from '$lib/components/ui/button';
-  import type { schema } from '$lib/server/database/drizzle';
 
   import DummyUserDialog from './dummy-user-creator/dialog.svelte';
   import EmailDispatcherDialog from './email-dispatcher/dialog.svelte';

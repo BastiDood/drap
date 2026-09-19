@@ -1,12 +1,10 @@
 <script lang="ts">
-  import InfoIcon from '@lucide/svelte/icons/info';
-
   import * as Alert from '$lib/components/ui/alert';
   import type { LotteryAggregate } from '$lib/features/drafts/types';
-
-  import StatCards from './stat-cards.svelte';
+  import InfoIcon from '@lucide/svelte/icons/info';
 
   import LotteryOutcomeChart from './outcome/index.svelte';
+  import StatCards from './stat-cards.svelte';
 
   interface Props {
     draftId: string;

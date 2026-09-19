@@ -1,8 +1,7 @@
 <script lang="ts">
-  import UsersIcon from '@lucide/svelte/icons/users';
-
-  import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
   import StatCardGroup from '$lib/features/drafts/timeline/stat-card-group.svelte';
+  import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
+  import UsersIcon from '@lucide/svelte/icons/users';
 
   import RegistrantsChart from './registrants/index.svelte';
 

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import AvailableDraftees from '$lib/features/drafts/draftees/available/index.svelte';
-  import InterestedDraftees from '$lib/features/drafts/draftees/interested/index.svelte';
-  import LabMembers from '$lib/features/drafts/draftees/drafted/lab-members/index.svelte';
   import { Badge } from '$lib/components/ui/badge';
   import { cn } from '$lib/components/ui/utils';
+  import AvailableDraftees from '$lib/features/drafts/draftees/available/index.svelte';
+  import LabMembers from '$lib/features/drafts/draftees/drafted/lab-members/index.svelte';
+  import InterestedDraftees from '$lib/features/drafts/draftees/interested/index.svelte';
   import type { Lab } from '$lib/features/drafts/types';
 
   interface Props {

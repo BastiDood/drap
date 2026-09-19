@@ -1,4 +1,8 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
+  import Link from '$lib/components/link.svelte';
+  import { Progress } from '$lib/components/ui/progress';
+  import { getOrdinalSuffix } from '$lib/ordinal';
   import CalendarDaysIcon from '@lucide/svelte/icons/calendar-days';
   import CheckIcon from '@lucide/svelte/icons/check';
   import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
@@ -12,11 +16,6 @@
   import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
   import UsersIcon from '@lucide/svelte/icons/users';
   import { format, fromUnixTime, getUnixTime } from 'date-fns';
-
-  import Link from '$lib/components/link.svelte';
-  import { getOrdinalSuffix } from '$lib/ordinal';
-  import { Progress } from '$lib/components/ui/progress';
-  import { resolve } from '$app/paths';
 
   const { data } = $props();
   const {

@@ -1,15 +1,7 @@
 import assert, { fail, strictEqual } from 'node:assert/strict';
 
-import * as v from 'valibot';
-import { and, asc, eq, isNotNull, lt, sql } from 'drizzle-orm';
-import { decode } from 'decode-formdata';
-import { enumerate, izip } from 'itertools';
-import { error, fail as actionFailure, redirect } from '@sveltejs/kit';
-import { MaxBufferError } from 'get-stream';
-
-import * as schema from '$lib/server/database/schema';
-import { assertOptional, assertSingle } from '$lib/server/assert';
 import { CUSTOM_AVATAR_TOO_LARGE_MESSAGE } from '$lib/features/student/registration-open/constants';
+import { assertOptional, assertSingle } from '$lib/server/assert';
 import { db } from '$lib/server/database';
 import {
   type DbConnection,
@@ -18,12 +10,12 @@ import {
   getDraftLabQuotaLabIds,
   getLabById,
 } from '$lib/server/database/drizzle';
+import * as schema from '$lib/server/database/schema';
 import {
   deleteDraftAvatarObject,
   uploadDraftAvatarFromCdn,
   uploadDraftAvatarOverride,
 } from '$lib/server/s3/draft-student-avatar';
-import { Logger } from '$lib/server/telemetry/logger';
 import {
   S3ContentTypeError,
   S3EmptyPayloadError,
@@ -31,7 +23,14 @@ import {
   S3RemoteProtocolError,
   S3TooLargePayloadError,
 } from '$lib/server/s3/util';
+import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import { error, fail as actionFailure, redirect } from '@sveltejs/kit';
+import { decode } from 'decode-formdata';
+import { and, asc, eq, isNotNull, lt, sql } from 'drizzle-orm';
+import { MaxBufferError } from 'get-stream';
+import { enumerate, izip } from 'itertools';
+import * as v from 'valibot';
 
 const SubmitFormData = v.object({
   draft: v.pipe(v.string(), v.minLength(1)),

@@ -1,8 +1,7 @@
-import { extendedTracesMiddleware } from 'inngest/experimental';
-import { Inngest } from 'inngest';
-
-import { Logger } from '$lib/server/telemetry/logger';
 import { version } from '$app/environment';
+import { Logger } from '$lib/server/telemetry/logger';
+import { Inngest } from 'inngest';
+import { extendedTracesMiddleware } from 'inngest/experimental';
 
 export const inngest = new Inngest({
   id: 'drap',

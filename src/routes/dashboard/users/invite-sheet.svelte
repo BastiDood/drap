@@ -1,13 +1,12 @@
 <script lang="ts">
-  import Loader2Icon from '@lucide/svelte/icons/loader-2';
-  import UsersIcon from '@lucide/svelte/icons/users';
-
-  import * as Sheet from '$lib/components/ui/sheet';
   import Empty from '$lib/components/empty.svelte';
-  import Invited from '$lib/users/invited.svelte';
   import { Button } from '$lib/components/ui/button';
+  import * as Sheet from '$lib/components/ui/sheet';
   import { createFetchInvitedUsersQuery } from '$lib/queries/fetch-invited-users';
   import type { schema } from '$lib/server/database/drizzle';
+  import Invited from '$lib/users/invited.svelte';
+  import Loader2Icon from '@lucide/svelte/icons/loader-2';
+  import UsersIcon from '@lucide/svelte/icons/users';
 
   import AdminForm from './admin-form.svelte';
   import FacultyForm from './faculty-form.svelte';

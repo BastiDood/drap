@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { Dialog as SheetPrimitive } from 'bits-ui';
-
   import { cn } from '$lib/components/ui/utils';
+  import { Dialog as SheetPrimitive } from 'bits-ui';
 
   let {
     ref = $bindable(null),

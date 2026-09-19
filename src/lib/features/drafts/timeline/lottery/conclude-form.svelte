@@ -1,11 +1,10 @@
 <script lang="ts">
-  import ArrowRightIcon from '@lucide/svelte/icons/arrow-right';
-  import { toast } from 'svelte-sonner';
-  import { useQueryClient } from '@tanstack/svelte-query'; // eslint-disable-line no-restricted-imports
-
+  import { enhance } from '$app/forms';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
-  import { enhance } from '$app/forms';
+  import ArrowRightIcon from '@lucide/svelte/icons/arrow-right';
+  import { useQueryClient } from '@tanstack/svelte-query'; // eslint-disable-line no-restricted-imports
+  import { toast } from 'svelte-sonner';
 
   interface Props {
     draftId: string;

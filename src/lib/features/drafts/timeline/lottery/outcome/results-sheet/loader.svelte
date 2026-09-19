@@ -1,8 +1,7 @@
 <script lang="ts">
-  import Loader2Icon from '@lucide/svelte/icons/loader-2';
-
   import Empty from '$lib/components/empty.svelte';
   import { createFetchDraftAssignmentsQuery } from '$lib/queries/fetch-draft-assignments';
+  import Loader2Icon from '@lucide/svelte/icons/loader-2';
 
   import LotteryResultsTable from './table.svelte';
 

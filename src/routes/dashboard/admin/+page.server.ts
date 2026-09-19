@@ -1,6 +1,5 @@
-import { error, redirect } from '@sveltejs/kit';
-
 import { Logger } from '$lib/server/telemetry/logger';
+import { error, redirect } from '@sveltejs/kit';
 
 import type { PageServerLoadEvent } from './$types';
 

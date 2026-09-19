@@ -1,13 +1,12 @@
 <script lang="ts">
-  import { toast } from 'svelte-sonner';
-
+  import { enhance } from '$app/forms';
   import { assert } from '$lib/assert';
   import { Badge } from '$lib/components/ui/badge';
   import { Button } from '$lib/components/ui/button';
-  import { enhance } from '$app/forms';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
   import type { schema } from '$lib/server/database/drizzle';
+  import { toast } from 'svelte-sonner';
 
   export interface User extends Pick<schema.User, 'givenName' | 'familyName'> {
     studentNumber: bigint;

@@ -11,10 +11,9 @@
 </script>
 
 <script lang="ts">
-  import UsersIcon from '@lucide/svelte/icons/users';
-
-  import DataTable from '$lib/features/drafts/draftees/data-table/index.svelte';
   import Empty from '$lib/components/empty.svelte';
+  import DataTable from '$lib/features/drafts/draftees/data-table/index.svelte';
+  import UsersIcon from '@lucide/svelte/icons/users';
 
   const { students }: Props = $props();
 </script>

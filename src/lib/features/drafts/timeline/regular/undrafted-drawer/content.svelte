@@ -9,10 +9,9 @@
 </script>
 
 <script lang="ts">
-  import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
-
-  import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
   import { Button } from '$lib/components/ui/button';
+  import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+  import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
 
   import UndraftedStudentSection from './student-section.svelte';
 

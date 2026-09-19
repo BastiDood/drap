@@ -1,19 +1,17 @@
 <script lang="ts">
+  import { Button } from '$lib/components/ui/button';
+  import * as Card from '$lib/components/ui/card';
+  import * as Empty from '$lib/components/ui/empty';
+  import * as Popover from '$lib/components/ui/popover';
+  import * as Sheet from '$lib/components/ui/sheet';
+  import type { DraftLabQuotaSnapshot } from '$lib/features/drafts/types';
   import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
   import PencilIcon from '@lucide/svelte/icons/pencil';
   import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
   import { sum } from 'd3-array';
 
-  import * as Card from '$lib/components/ui/card';
-  import * as Empty from '$lib/components/ui/empty';
-  import * as Popover from '$lib/components/ui/popover';
-  import * as Sheet from '$lib/components/ui/sheet';
-  import { Button } from '$lib/components/ui/button';
-  import type { DraftLabQuotaSnapshot } from '$lib/features/drafts/types';
-
-  import QuotaSnapshotForm from './quota-snapshot-form.svelte';
-
   import QuotaPieChart from './quota-pie-chart/index.svelte';
+  import QuotaSnapshotForm from './quota-snapshot-form.svelte';
 
   interface Props {
     draftId: string;

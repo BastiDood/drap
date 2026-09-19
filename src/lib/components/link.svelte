@@ -1,7 +1,6 @@
 <script lang="ts">
-  import type { HTMLAnchorAttributes } from 'svelte/elements';
-
   import { cn } from '$lib/components/ui/utils';
+  import type { HTMLAnchorAttributes } from 'svelte/elements';
 
   type Props = HTMLAnchorAttributes;
   const { children, class: className = '', ...rest }: Props = $props();

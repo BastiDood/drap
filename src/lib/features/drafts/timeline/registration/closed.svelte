@@ -1,13 +1,12 @@
 <script lang="ts">
+  import * as Alert from '$lib/components/ui/alert';
+  import QuotaCard from '$lib/features/drafts/timeline/quota-card.svelte';
+  import StatCardGroup from '$lib/features/drafts/timeline/stat-card-group.svelte';
+  import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
+  import type { DraftLabQuotaSnapshot } from '$lib/features/drafts/types';
   import LockIcon from '@lucide/svelte/icons/lock';
   import UserRoundPlusIcon from '@lucide/svelte/icons/user-round-plus';
   import UsersIcon from '@lucide/svelte/icons/users';
-
-  import * as Alert from '$lib/components/ui/alert';
-  import QuotaCard from '$lib/features/drafts/timeline/quota-card.svelte';
-  import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
-  import StatCardGroup from '$lib/features/drafts/timeline/stat-card-group.svelte';
-  import type { DraftLabQuotaSnapshot } from '$lib/features/drafts/types';
 
   import { AllowlistSheet } from './allowlist-sheet';
 

@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { Area, AreaChart, LinearGradient } from 'layerchart/svg';
-  import { cubicOut } from 'svelte/easing';
-  import { max } from 'd3-array';
-  import type { MotionOptions } from 'layerchart/utils/motion.svelte';
-  import { prefersReducedMotion } from 'svelte/motion';
-
-  import * as Chart from '$lib/components/ui/chart';
   import { assert } from '$lib/assert';
+  import * as Chart from '$lib/components/ui/chart';
+  import { max } from 'd3-array';
+  import { Area, AreaChart, LinearGradient } from 'layerchart/svg';
+  import type { MotionOptions } from 'layerchart/utils/motion.svelte';
+  import { cubicOut } from 'svelte/easing';
+  import { prefersReducedMotion } from 'svelte/motion';
 
   import {
     buildRegistrationTimelineData,

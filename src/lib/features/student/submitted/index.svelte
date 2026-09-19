@@ -1,6 +1,6 @@
 <script lang="ts">
-  import * as Alert from '$lib/components/ui/alert';
   import DraftAvatar from '$lib/components/draft-avatar.svelte';
+  import * as Alert from '$lib/components/ui/alert';
   import SubmissionSummary from '$lib/features/student/submission-summary.svelte';
   import type { schema } from '$lib/server/database/drizzle';
 

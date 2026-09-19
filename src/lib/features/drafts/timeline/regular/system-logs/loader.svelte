@@ -1,8 +1,7 @@
 <script lang="ts">
-  import Loader2Icon from '@lucide/svelte/icons/loader-2';
-
   import Empty from '$lib/components/empty.svelte';
   import { createFetchDraftFacultyChoicesQuery } from '$lib/queries/fetch-draft-faculty-choices';
+  import Loader2Icon from '@lucide/svelte/icons/loader-2';
 
   import Display, { type Props as DisplayProps } from './display.svelte';
 

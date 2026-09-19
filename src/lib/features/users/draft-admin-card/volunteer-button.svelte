@@ -1,7 +1,6 @@
 <script lang="ts">
-  import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
-
   import { Button, type ButtonSize } from '$lib/components/ui/button';
+  import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
 
   export interface Props {
     size?: ButtonSize;

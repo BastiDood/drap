@@ -1,5 +1,5 @@
-import * as v from 'valibot';
 import { createSubscriber } from 'svelte/reactivity';
+import * as v from 'valibot';
 
 type Timeout = ReturnType<typeof setTimeout> | null;
 type MirrorValue<Schema extends v.GenericSchema> = v.InferOutput<Schema> | null;

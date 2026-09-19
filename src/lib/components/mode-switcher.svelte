@@ -1,11 +1,10 @@
 <script>
+  import { buttonVariants } from '$lib/components/ui/button';
+  import { Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui/tooltip';
   import MonitorIcon from '@lucide/svelte/icons/monitor';
   import MoonIcon from '@lucide/svelte/icons/moon';
   import SunIcon from '@lucide/svelte/icons/sun';
   import { setMode, userPrefersMode } from 'mode-watcher';
-
-  import { buttonVariants } from '$lib/components/ui/button';
-  import { Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui/tooltip';
 
   function nextMode() {
     switch (userPrefersMode.current) {

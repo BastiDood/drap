@@ -1,6 +1,5 @@
-import { describe, expect, test } from 'vitest';
-
 import type { DraftLabQuotaSnapshot } from '$lib/features/drafts/types';
+import { describe, expect, test } from 'vitest';
 
 function calculatePercentage(snapshots: DraftLabQuotaSnapshot[], mode: 'initial' | 'lottery') {
   const totalQuota = snapshots.reduce(

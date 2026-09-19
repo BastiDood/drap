@@ -1,5 +1,5 @@
-import * as v from 'valibot';
 import { eventType } from 'inngest';
+import * as v from 'valibot';
 
 export const EmailEvent = eventType('draft/email', {
   schema: v.variant('name', [

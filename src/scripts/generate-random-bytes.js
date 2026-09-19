@@ -1,6 +1,6 @@
-import { parseArgs } from 'node:util';
-import { randomBytes } from 'node:crypto';
 import { strictEqual } from 'node:assert';
+import { randomBytes } from 'node:crypto';
+import { parseArgs } from 'node:util';
 
 const {
   positionals: [size, ...args],

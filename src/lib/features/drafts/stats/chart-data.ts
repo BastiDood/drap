@@ -1,5 +1,3 @@
-import { group, max, rollup, sort, sum, union } from 'd3-array';
-
 import { assert } from '$lib/assert';
 import { CHART_COLORS } from '$lib/constants';
 import type {
@@ -7,6 +5,7 @@ import type {
   DraftStatsMetricChartView,
   DraftStatsRecord,
 } from '$lib/features/drafts/types';
+import { group, max, rollup, sort, sum, union } from 'd3-array';
 
 export function getLocalYearBucket(date: Date) {
   return date.getFullYear();

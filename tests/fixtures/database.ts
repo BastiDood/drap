@@ -1,11 +1,10 @@
 import assert from 'node:assert/strict';
 import { env } from 'node:process';
 
-import { sql } from 'drizzle-orm';
-import { test } from '@playwright/test';
-
-import { draft, lab } from '$lib/server/database/schema';
 import { type DrizzleDatabase, init } from '$lib/server/database/drizzle';
+import { draft, lab } from '$lib/server/database/schema';
+import { test } from '@playwright/test';
+import { sql } from 'drizzle-orm';
 
 assert(env.POSTGRES_URL, 'POSTGRES_URL must be set');
 const { POSTGRES_URL } = env;

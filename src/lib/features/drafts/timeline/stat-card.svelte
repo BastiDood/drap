@@ -1,8 +1,7 @@
 <script lang="ts">
+  import * as Card from '$lib/components/ui/card';
   import type { LucideIcon } from '@lucide/svelte';
   import type { Snippet } from 'svelte';
-
-  import * as Card from '$lib/components/ui/card';
 
   interface Props {
     title: Snippet;

@@ -1,13 +1,12 @@
 <script lang="ts">
-  import { format } from 'd3-format';
-  import { PieChart } from 'layerchart/svg';
-  import { sum } from 'd3-array';
-
+  import { assert } from '$lib/assert';
   import * as Card from '$lib/components/ui/card';
   import * as Chart from '$lib/components/ui/chart';
-  import { assert } from '$lib/assert';
   import { CHART_COLORS } from '$lib/constants';
   import type { DraftLabDistributionEntry } from '$lib/features/drafts/types';
+  import { sum } from 'd3-array';
+  import { format } from 'd3-format';
+  import { PieChart } from 'layerchart/svg';
 
   interface Props {
     data: DraftLabDistributionEntry[];

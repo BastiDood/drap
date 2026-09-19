@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { createTable, FlexRender } from '@tanstack/svelte-table';
-
   import * as Table from '$lib/components/ui/table';
   import type { Lab, Student } from '$lib/features/drafts/types';
+  import { createTable, FlexRender } from '@tanstack/svelte-table';
 
   import { columns, features } from './schema';
 

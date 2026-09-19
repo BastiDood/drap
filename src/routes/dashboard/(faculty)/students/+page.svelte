@@ -1,15 +1,14 @@
 <script lang="ts">
+  import Empty from '$lib/components/empty.svelte';
+  import * as Card from '$lib/components/ui/card';
+  import PreviousPicks from '$lib/features/faculty/previous-picks/index.svelte';
+  import StatCards from '$lib/features/faculty/stat-cards/index.svelte';
   import BanIcon from '@lucide/svelte/icons/ban';
   import CircleSlashIcon from '@lucide/svelte/icons/circle-slash';
   import Clock3Icon from '@lucide/svelte/icons/clock-3';
   import InfoIcon from '@lucide/svelte/icons/info';
   import ShuffleIcon from '@lucide/svelte/icons/shuffle';
   import UserXIcon from '@lucide/svelte/icons/user-x';
-
-  import * as Card from '$lib/components/ui/card';
-  import Empty from '$lib/components/empty.svelte';
-  import PreviousPicks from '$lib/features/faculty/previous-picks/index.svelte';
-  import StatCards from '$lib/features/faculty/stat-cards/index.svelte';
 
   import RankingsForm from './rankings-form.svelte';
 

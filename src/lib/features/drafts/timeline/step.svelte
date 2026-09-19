@@ -3,13 +3,12 @@
 </script>
 
 <script lang="ts">
+  import * as Collapsible from '$lib/components/ui/collapsible';
+  import { cn } from '$lib/components/ui/utils';
   import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
   import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
   import CircleIcon from '@lucide/svelte/icons/circle';
   import type { Snippet } from 'svelte';
-
-  import * as Collapsible from '$lib/components/ui/collapsible';
-  import { cn } from '$lib/components/ui/utils';
 
   interface Props {
     title: string;

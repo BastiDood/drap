@@ -1,11 +1,10 @@
 <script lang="ts">
-  import DownloadIcon from '@lucide/svelte/icons/download';
-  import { fromUnixTime, getUnixTime, lightFormat } from 'date-fns';
-
+  import { resolve } from '$app/paths';
   import { Badge } from '$lib/components/ui/badge';
   import { Button } from '$lib/components/ui/button';
   import type { FacultyChoiceRecord } from '$lib/features/drafts/types';
-  import { resolve } from '$app/paths';
+  import DownloadIcon from '@lucide/svelte/icons/download';
+  import { fromUnixTime, getUnixTime, lightFormat } from 'date-fns';
 
   export interface Props {
     draftId: string;

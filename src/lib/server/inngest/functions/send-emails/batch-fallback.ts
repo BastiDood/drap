@@ -1,28 +1,27 @@
-import { and, eq, sql } from 'drizzle-orm';
-import { NonRetriableError } from 'inngest';
-
-import * as dbSchema from '$lib/server/database/schema';
-import { appendGmailThreadMessageIdsById } from '$lib/server/database/drizzle';
 import { assertSingle } from '$lib/server/assert';
+import { db } from '$lib/server/database';
+import { appendGmailThreadMessageIdsById } from '$lib/server/database/drizzle';
+import * as dbSchema from '$lib/server/database/schema';
+import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
+import { GmailError, GmailScopeError } from '$lib/server/google';
+import { inngest } from '$lib/server/inngest/client';
+import {
+  getRefreshedCredentials,
+  type RefreshedCredentials,
+} from '$lib/server/inngest/functions/send-emails/auth';
 import {
   createEmailMessage,
   getGmailThreadKey,
   getGmailThreadKeyString,
 } from '$lib/server/inngest/functions/send-emails/event';
-import { db } from '$lib/server/database';
 import { EmailBatchFallbackEvent } from '$lib/server/inngest/schema';
-import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
-import {
-  getRefreshedCredentials,
-  type RefreshedCredentials,
-} from '$lib/server/inngest/functions/send-emails/auth';
-import { GmailError, GmailScopeError } from '$lib/server/google';
-import { inngest } from '$lib/server/inngest/client';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import { and, eq, sql } from 'drizzle-orm';
+import { NonRetriableError } from 'inngest';
 
-import { GmailDeliveryAttempt } from './retry';
 import { ManualMetadataReconciliationRequiredError } from './errors';
+import { GmailDeliveryAttempt } from './retry';
 
 const SERVICE_NAME = 'inngest.functions.send-emails.batch-fallback';
 const logger = Logger.byName(SERVICE_NAME);

@@ -1,7 +1,7 @@
 import { createQuery } from '@tanstack/svelte-query';
 
-import type { DraftAllowlistEntries } from './schema';
 import { fetchDraftAllowlist } from './http';
+import type { DraftAllowlistEntries } from './schema';
 
 export function createFetchDraftAllowlistQuery(
   draftId: string,

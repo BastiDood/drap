@@ -7,13 +7,12 @@
 </script>
 
 <script lang="ts">
-  import ArchiveIcon from '@lucide/svelte/icons/archive';
-  import { toast } from 'svelte-sonner';
-
+  import { enhance } from '$app/forms';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
-  import { enhance } from '$app/forms';
   import { Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui/tooltip';
+  import ArchiveIcon from '@lucide/svelte/icons/archive';
+  import { toast } from 'svelte-sonner';
 
   const { labId, disabled = false, draftId }: Props = $props();
 </script>

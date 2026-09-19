@@ -6,14 +6,13 @@
 </script>
 
 <script lang="ts">
-  import PlusCircleIcon from '@lucide/svelte/icons/plus-circle';
-  import { toast } from 'svelte-sonner';
-
+  import { enhance } from '$app/forms';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
-  import { enhance } from '$app/forms';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
+  import PlusCircleIcon from '@lucide/svelte/icons/plus-circle';
+  import { toast } from 'svelte-sonner';
 
   const { onSuccess, draftId }: Props = $props();
 </script>

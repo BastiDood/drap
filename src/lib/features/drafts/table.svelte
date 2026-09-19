@@ -1,10 +1,9 @@
 <script lang="ts">
-  import ExternalLinkIcon from '@lucide/svelte/icons/external-link';
-  import { format } from 'date-fns';
-
-  import * as Table from '$lib/components/ui/table';
   import { Badge } from '$lib/components/ui/badge';
   import { Button } from '$lib/components/ui/button';
+  import * as Table from '$lib/components/ui/table';
+  import ExternalLinkIcon from '@lucide/svelte/icons/external-link';
+  import { format } from 'date-fns';
 
   import type { Draft } from './types';
 

@@ -1,8 +1,8 @@
 import { relations } from 'drizzle-orm';
 
-import { gmailThread } from './email';
-import { session } from './auth';
 import { user } from './app';
+import { session } from './auth';
+import { gmailThread } from './email';
 
 export const sessionRelations = relations(session, ({ one }) => ({
   user: one(user, { fields: [session.userId], references: [user.id] }),

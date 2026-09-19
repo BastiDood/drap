@@ -1,14 +1,13 @@
 import assert, { strictEqual } from 'node:assert/strict';
 import { MIMEType } from 'node:util';
 
-import * as v from 'valibot';
+import { Logger } from '$lib/server/telemetry/logger';
+import { Tracer } from '$lib/server/telemetry/tracer';
+import { stripPrefix } from '$lib/strings';
+import { HTTPParser } from 'http-parser-js';
 import { chunked } from 'itertools';
 import { Component, Multipart } from 'multipart-ts';
-import { HTTPParser } from 'http-parser-js';
-
-import { Logger } from '$lib/server/telemetry/logger';
-import { stripPrefix } from '$lib/strings';
-import { Tracer } from '$lib/server/telemetry/tracer';
+import * as v from 'valibot';
 
 import { type GmailFailure, parseGmailFailure } from './failure';
 import { GmailMessageMetadataResult, GmailMessageSendResult } from './schema';

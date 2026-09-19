@@ -1,17 +1,16 @@
-import { NonRetriableError } from 'inngest';
-
 import { assertDefined } from '$lib/server/assert';
 import { db } from '$lib/server/database';
-import { EmailBatchEvent, EmailEvent, EmailSeedEvent } from '$lib/server/inngest/schema';
+import { type GmailThreadKey, lockOrCreateGmailThreads } from '$lib/server/database/drizzle';
 import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
+import { inngest } from '$lib/server/inngest/client';
 import {
   getGmailThreadKey,
   getGmailThreadKeyString,
 } from '$lib/server/inngest/functions/send-emails/event';
-import { type GmailThreadKey, lockOrCreateGmailThreads } from '$lib/server/database/drizzle';
-import { inngest } from '$lib/server/inngest/client';
+import { EmailBatchEvent, EmailEvent, EmailSeedEvent } from '$lib/server/inngest/schema';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import { NonRetriableError } from 'inngest';
 
 const SERVICE_NAME = 'inngest.functions.send-emails.route';
 const logger = Logger.byName(SERVICE_NAME);

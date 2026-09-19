@@ -1,10 +1,9 @@
 <script lang="ts">
-  import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
-
+  import { Button } from '$lib/components/ui/button';
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
   import AvailableLoader from '$lib/features/drafts/draftees/available/loader.svelte';
   import DraftedLoader from '$lib/features/drafts/draftees/drafted/loader.svelte';
-  import { Button } from '$lib/components/ui/button';
+  import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
 
   interface Props {
     draftId: string;

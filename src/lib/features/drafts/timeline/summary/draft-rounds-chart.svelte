@@ -1,16 +1,15 @@
 <script lang="ts">
-  import { Area, AreaChart, LinearGradient } from 'layerchart/svg';
-  import { cubicOut } from 'svelte/easing';
-  import { cumsum } from 'd3-array';
-  import type { MotionOptions } from 'layerchart/utils/motion.svelte';
-  import { prefersReducedMotion } from 'svelte/motion';
-  import { scalePoint } from 'd3-scale';
-
+  import { assert } from '$lib/assert';
   import * as Card from '$lib/components/ui/card';
   import * as Chart from '$lib/components/ui/chart';
   import * as NativeSelect from '$lib/components/ui/native-select';
-  import { assert } from '$lib/assert';
   import type { DraftAssignmentSummary } from '$lib/features/drafts/types';
+  import { cumsum } from 'd3-array';
+  import { scalePoint } from 'd3-scale';
+  import { Area, AreaChart, LinearGradient } from 'layerchart/svg';
+  import type { MotionOptions } from 'layerchart/utils/motion.svelte';
+  import { cubicOut } from 'svelte/easing';
+  import { prefersReducedMotion } from 'svelte/motion';
 
   interface Props {
     chart: DraftAssignmentSummary['chart'];

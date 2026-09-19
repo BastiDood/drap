@@ -8,13 +8,12 @@
 </script>
 
 <script lang="ts">
-  import ArchiveRestoreIcon from '@lucide/svelte/icons/archive-restore';
-  import { toast } from 'svelte-sonner';
-
+  import { enhance } from '$app/forms';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
-  import { enhance } from '$app/forms';
   import { Tooltip, TooltipContent, TooltipTrigger } from '$lib/components/ui/tooltip';
+  import ArchiveRestoreIcon from '@lucide/svelte/icons/archive-restore';
+  import { toast } from 'svelte-sonner';
 
   const { labId, labName, disabled = false, draftId }: Props = $props();
 </script>

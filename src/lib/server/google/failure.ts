@@ -1,7 +1,6 @@
-import * as v from 'valibot';
-import type { Attributes, Span } from '@opentelemetry/api';
-
 import { Logger } from '$lib/server/telemetry/logger';
+import type { Attributes, Span } from '@opentelemetry/api';
+import * as v from 'valibot';
 
 const logger = Logger.byName('lib.server.google.failure');
 

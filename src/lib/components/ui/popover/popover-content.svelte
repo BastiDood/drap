@@ -1,8 +1,7 @@
 <script lang="ts">
-  import type { ComponentProps } from 'svelte';
-  import { Popover as PopoverPrimitive } from 'bits-ui';
-
   import { cn, type WithoutChildrenOrChild } from '$lib/components/ui/utils';
+  import { Popover as PopoverPrimitive } from 'bits-ui';
+  import type { ComponentProps } from 'svelte';
 
   import PopoverPortal from './popover-portal.svelte';
 

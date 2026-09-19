@@ -1,36 +1,35 @@
-import { and, eq, or, sql } from 'drizzle-orm';
-import type { MIMEMessage } from 'mimetext/node';
-import { NonRetriableError } from 'inngest';
-
-import * as dbSchema from '$lib/server/database/schema';
+import { assertDefined } from '$lib/server/assert';
+import { db } from '$lib/server/database';
 import {
   appendGmailThreadsMessageIdsById,
   type DrizzleTransaction,
   type GmailThreadKey,
 } from '$lib/server/database/drizzle';
-import { assertDefined } from '$lib/server/assert';
-import {
-  createEmailMessage,
-  getGmailThreadKey,
-  getGmailThreadKeyString,
-} from '$lib/server/inngest/functions/send-emails/event';
-import { db } from '$lib/server/database';
-import { EmailBatchEvent, EmailBatchFallbackEvent } from '$lib/server/inngest/schema';
+import * as dbSchema from '$lib/server/database/schema';
 import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
-import { getRefreshedCredentials } from '$lib/server/inngest/functions/send-emails/auth';
-import type { GmailBatchSendResult } from '$lib/server/google/http';
 import { GmailError, GmailScopeError } from '$lib/server/google';
 import {
   type GmailFailure,
   isRetryableGmailFailure,
   logGmailFailure,
 } from '$lib/server/google/failure';
+import type { GmailBatchSendResult } from '$lib/server/google/http';
 import { inngest } from '$lib/server/inngest/client';
+import { getRefreshedCredentials } from '$lib/server/inngest/functions/send-emails/auth';
+import {
+  createEmailMessage,
+  getGmailThreadKey,
+  getGmailThreadKeyString,
+} from '$lib/server/inngest/functions/send-emails/event';
+import { EmailBatchEvent, EmailBatchFallbackEvent } from '$lib/server/inngest/schema';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import { and, eq, or, sql } from 'drizzle-orm';
+import { NonRetriableError } from 'inngest';
+import type { MIMEMessage } from 'mimetext/node';
 
-import { GmailRetryKind, getGmailRetryTimestamp, planGmailRetry } from './retry';
 import { MissingGmailBatchResultError, MissingGmailMetadataResultError } from './errors';
+import { GmailRetryKind, getGmailRetryTimestamp, planGmailRetry } from './retry';
 
 const SERVICE_NAME = 'inngest.functions.send-emails.batch';
 const logger = Logger.byName(SERVICE_NAME);

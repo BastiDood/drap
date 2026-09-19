@@ -1,18 +1,12 @@
+import { CUSTOM_AVATAR_TOO_LARGE_MESSAGE } from '$lib/features/student/registration-open/constants';
+import { assertSingle } from '$lib/server/assert';
+import type { DrizzleDatabase } from '$lib/server/database/drizzle';
+import * as schema from '$lib/server/database/schema';
+import { expect, type Locator, type Page } from '@playwright/test';
 import { addDays, subDays } from 'date-fns';
 import { eq } from 'drizzle-orm';
-import { expect, type Locator, type Page } from '@playwright/test';
 
-import * as schema from '$lib/server/database/schema';
-import { assertSingle } from '$lib/server/assert';
-import { CUSTOM_AVATAR_TOO_LARGE_MESSAGE } from '$lib/features/student/registration-open/constants';
-import type { DrizzleDatabase } from '$lib/server/database/drizzle';
-
-import { assertLogout } from './actions/session';
-import {
-  completeStudentProfile,
-  expectStudentDashboardText,
-  submitLabPreferences,
-} from './actions/student';
+import { expectChartTooltipPoint } from './actions/charts';
 import {
   createDraft,
   finalizeDraft,
@@ -23,8 +17,6 @@ import {
   updateInitialQuota,
   updateLotteryQuota,
 } from './actions/draft';
-import { expectChartTooltipPoint } from './actions/charts';
-import { expectDrawerContents, expectSheetContents, openAllowlistSheet } from './actions/overlays';
 import {
   expectLabAssignmentMembers,
   expectNoPreviousPicks,
@@ -34,6 +26,13 @@ import {
   expectVisibleButtons,
   submitFacultySelection,
 } from './actions/faculty';
+import { expectDrawerContents, expectSheetContents, openAllowlistSheet } from './actions/overlays';
+import { assertLogout } from './actions/session';
+import {
+  completeStudentProfile,
+  expectStudentDashboardText,
+  submitLabPreferences,
+} from './actions/student';
 import { test } from './fixtures/users';
 
 const CUSTOM_AVATAR_TEST_PNG = Buffer.from(

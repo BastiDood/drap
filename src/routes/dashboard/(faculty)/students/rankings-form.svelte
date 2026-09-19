@@ -1,16 +1,15 @@
 <script lang="ts">
-  import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
-  import { SvelteSet } from 'svelte/reactivity';
-  import { toast } from 'svelte-sonner';
-
-  import * as Popover from '$lib/components/ui/popover';
-  import UserlistItem from '$lib/components/userlist-item.svelte';
+  import { enhance } from '$app/forms';
   import { assert } from '$lib/assert';
   import { Badge } from '$lib/components/ui/badge';
   import { Button } from '$lib/components/ui/button';
-  import { enhance } from '$app/forms';
+  import * as Popover from '$lib/components/ui/popover';
   import { Progress } from '$lib/components/ui/progress';
+  import UserlistItem from '$lib/components/userlist-item.svelte';
   import type { schema } from '$lib/server/database/drizzle';
+  import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
+  import { toast } from 'svelte-sonner';
+  import { SvelteSet } from 'svelte/reactivity';
 
   interface Student extends Pick<
     schema.User,

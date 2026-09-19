@@ -1,8 +1,7 @@
 <script lang="ts">
-  import ListFilterIcon from '@lucide/svelte/icons/list-filter';
-
   import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
   import { cn } from '$lib/components/ui/utils';
+  import ListFilterIcon from '@lucide/svelte/icons/list-filter';
 
   interface Props {
     header: string;

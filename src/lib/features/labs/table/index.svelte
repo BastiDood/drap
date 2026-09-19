@@ -9,12 +9,11 @@
 </script>
 
 <script lang="ts">
-  import ArchiveIcon from '@lucide/svelte/icons/archive';
-  import FlaskConicalIcon from '@lucide/svelte/icons/flask-conical';
-
+  import { Badge } from '$lib/components/ui/badge';
   import * as Tabs from '$lib/components/ui/tabs';
   import CreateLabDialog from '$lib/features/labs/create/dialog.svelte';
-  import { Badge } from '$lib/components/ui/badge';
+  import ArchiveIcon from '@lucide/svelte/icons/archive';
+  import FlaskConicalIcon from '@lucide/svelte/icons/flask-conical';
 
   import ActiveTable from './active/index.svelte';
   import ArchivedTable from './archived/index.svelte';

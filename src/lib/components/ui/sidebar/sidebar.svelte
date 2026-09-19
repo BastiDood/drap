@@ -1,8 +1,7 @@
 <script lang="ts">
-  import type { HTMLAttributes } from 'svelte/elements';
-
   import * as Sheet from '$lib/components/ui/sheet';
   import { cn, type WithElementRef } from '$lib/components/ui/utils';
+  import type { HTMLAttributes } from 'svelte/elements';
 
   import { SIDEBAR_WIDTH_MOBILE } from './constants';
   import { useSidebar } from './context.svelte';

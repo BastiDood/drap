@@ -1,42 +1,41 @@
-import type { MIMEMessage } from 'mimetext/node';
-import { NonRetriableError } from 'inngest';
-import type { Span } from '@opentelemetry/api';
-
 import { assertDefined } from '$lib/server/assert';
-import {
-  createEmailMessage,
-  getGmailThreadKey,
-  getGmailThreadKeyString,
-} from '$lib/server/inngest/functions/send-emails/event';
 import { db } from '$lib/server/database';
-import {
-  EmailBatchEvent,
-  EmailSeedEvent,
-  EmailSeedFallbackEvent,
-} from '$lib/server/inngest/schema';
+import { lockGmailThreads, seedGmailThreadsById } from '$lib/server/database/drizzle';
 import { ENABLE_EMAILS } from '$lib/server/env/drap/email';
-import {
-  getRefreshedCredentials,
-  type RefreshedCredentials,
-} from '$lib/server/inngest/functions/send-emails/auth';
-import type { GmailBatchSendResult } from '$lib/server/google/http';
 import { GmailError, GmailScopeError } from '$lib/server/google';
 import {
   type GmailFailure,
   isRetryableGmailFailure,
   logGmailFailure,
 } from '$lib/server/google/failure';
+import type { GmailBatchSendResult } from '$lib/server/google/http';
 import { inngest } from '$lib/server/inngest/client';
-import { lockGmailThreads, seedGmailThreadsById } from '$lib/server/database/drizzle';
+import {
+  getRefreshedCredentials,
+  type RefreshedCredentials,
+} from '$lib/server/inngest/functions/send-emails/auth';
+import {
+  createEmailMessage,
+  getGmailThreadKey,
+  getGmailThreadKeyString,
+} from '$lib/server/inngest/functions/send-emails/event';
+import {
+  EmailBatchEvent,
+  EmailSeedEvent,
+  EmailSeedFallbackEvent,
+} from '$lib/server/inngest/schema';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import type { Span } from '@opentelemetry/api';
+import { NonRetriableError } from 'inngest';
+import type { MIMEMessage } from 'mimetext/node';
 
-import { GmailRetryKind, getGmailRetryTimestamp, planGmailRetry } from './retry';
 import {
   ManualMetadataReconciliationRequiredError,
   MissingGmailMetadataResultError,
   MissingGmailSeedBatchResultError,
 } from './errors';
+import { GmailRetryKind, getGmailRetryTimestamp, planGmailRetry } from './retry';
 
 const SERVICE_NAME = 'inngest.functions.send-emails.seed';
 const logger = Logger.byName(SERVICE_NAME);

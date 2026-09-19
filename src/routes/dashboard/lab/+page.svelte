@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { format } from 'date-fns/format';
-
   import * as Accordion from '$lib/components/ui/accordion';
+  import { format } from 'date-fns/format';
 
   import Member from './member.svelte';
 

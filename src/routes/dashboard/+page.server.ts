@@ -1,14 +1,8 @@
 import { AssertionError } from 'node:assert/strict';
 
-import * as v from 'valibot';
-import { and, DrizzleQueryError, eq, sql } from 'drizzle-orm';
-import { DatabaseError } from 'pg';
-import { decode } from 'decode-formdata';
-import { error, fail, redirect } from '@sveltejs/kit';
-
-import * as schema from '$lib/server/database/schema';
-import { assertOptional } from '$lib/server/assert';
+import { dev } from '$app/environment';
 import { coerceNumber } from '$lib/coerce';
+import { assertOptional } from '$lib/server/assert';
 import { db } from '$lib/server/database';
 import {
   type DbConnection,
@@ -17,11 +11,16 @@ import {
   insertDummySession,
   upsertOpenIdUser,
 } from '$lib/server/database/drizzle';
-import { dev } from '$app/environment';
-import { EmailEvent } from '$lib/server/inngest/schema';
+import * as schema from '$lib/server/database/schema';
 import { inngest } from '$lib/server/inngest/client';
+import { EmailEvent } from '$lib/server/inngest/schema';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import { error, fail, redirect } from '@sveltejs/kit';
+import { decode } from 'decode-formdata';
+import { and, DrizzleQueryError, eq, sql } from 'drizzle-orm';
+import { DatabaseError } from 'pg';
+import * as v from 'valibot';
 
 const SERVICE_NAME = 'routes.dashboard.index';
 const logger = Logger.byName(SERVICE_NAME);

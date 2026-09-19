@@ -9,14 +9,13 @@
 </script>
 
 <script lang="ts">
+  import Link from '$lib/components/link.svelte';
+  import { Badge } from '$lib/components/ui/badge';
   import AtSignIcon from '@lucide/svelte/icons/at-sign';
   import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
   import KeyRoundIcon from '@lucide/svelte/icons/key-round';
   import TimerIcon from '@lucide/svelte/icons/timer';
   import UsersIcon from '@lucide/svelte/icons/users';
-
-  import Link from '$lib/components/link.svelte';
-  import { Badge } from '$lib/components/ui/badge';
 
   const { candidateCount, designated }: Props = $props();
 

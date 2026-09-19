@@ -1,9 +1,8 @@
-import { and, eq, isNotNull, isNull } from 'drizzle-orm';
-
-import * as schema from '$lib/server/database/schema';
 import { db } from '$lib/server/database';
 import { type DbConnection, getActiveDraft } from '$lib/server/database/drizzle';
+import * as schema from '$lib/server/database/schema';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import { and, eq, isNotNull, isNull } from 'drizzle-orm';
 
 const tracer = Tracer.byName('routes.dashboard.draft.layout');
 

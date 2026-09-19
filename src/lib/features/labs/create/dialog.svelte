@@ -1,8 +1,7 @@
 <script lang="ts">
-  import PlusIcon from '@lucide/svelte/icons/plus';
-
-  import * as Dialog from '$lib/components/ui/dialog';
   import { Button } from '$lib/components/ui/button';
+  import * as Dialog from '$lib/components/ui/dialog';
+  import PlusIcon from '@lucide/svelte/icons/plus';
 
   import CreateForm from './form.svelte';
 

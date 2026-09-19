@@ -1,19 +1,18 @@
 import { fail as assertFail } from 'node:assert/strict';
 
-import * as v from 'valibot';
-import { and, eq, isNotNull, isNull, sql } from 'drizzle-orm';
-import { decode } from 'decode-formdata';
-import { error, fail, redirect } from '@sveltejs/kit';
-
-import * as schema from '$lib/server/database/schema';
 import { db } from '$lib/server/database';
 import {
   type DbConnection,
   getFacultyAndStaff,
   getLabRegistry,
 } from '$lib/server/database/drizzle';
+import * as schema from '$lib/server/database/schema';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import { error, fail, redirect } from '@sveltejs/kit';
+import { decode } from 'decode-formdata';
+import { and, eq, isNotNull, isNull, sql } from 'drizzle-orm';
+import * as v from 'valibot';
 
 const AdminFormData = v.object({
   email: v.pipe(v.string(), v.email()),

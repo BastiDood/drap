@@ -1,7 +1,6 @@
 <script lang="ts">
-  import type { HTMLOptgroupAttributes } from 'svelte/elements';
-
   import type { WithElementRef } from '$lib/components/ui/utils';
+  import type { HTMLOptgroupAttributes } from 'svelte/elements';
 
   let {
     ref = $bindable(null),

@@ -21,11 +21,10 @@
 </script>
 
 <script lang="ts">
-  import XIcon from '@lucide/svelte/icons/x';
-  import type { ComponentProps, Snippet } from 'svelte';
-  import { Dialog as SheetPrimitive } from 'bits-ui';
-
   import { cn, type WithoutChildrenOrChild } from '$lib/components/ui/utils';
+  import XIcon from '@lucide/svelte/icons/x';
+  import { Dialog as SheetPrimitive } from 'bits-ui';
+  import type { ComponentProps, Snippet } from 'svelte';
 
   import SheetOverlay from './sheet-overlay.svelte';
   import SheetPortal from './sheet-portal.svelte';

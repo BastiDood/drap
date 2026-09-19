@@ -1,11 +1,10 @@
 <script lang="ts">
-  import MessageSquareTextIcon from '@lucide/svelte/icons/message-square-text';
-  import UserIcon from '@lucide/svelte/icons/user';
-  import type { LucideIcon } from '@lucide/svelte';
-  import type { Snippet } from 'svelte';
-
   import * as Avatar from '$lib/components/ui/avatar';
   import { cn } from '$lib/components/ui/utils';
+  import type { LucideIcon } from '@lucide/svelte';
+  import MessageSquareTextIcon from '@lucide/svelte/icons/message-square-text';
+  import UserIcon from '@lucide/svelte/icons/user';
+  import type { Snippet } from 'svelte';
 
   import DraftAvatar from './draft-avatar.svelte';
 

@@ -1,9 +1,8 @@
 <script lang="ts">
-  import SparklesIcon from '@lucide/svelte/icons/sparkles';
-
   import * as Alert from '$lib/components/ui/alert';
   import ConcludeForm from '$lib/features/drafts/timeline/lottery/conclude-form.svelte';
   import type { DraftLabQuotaSnapshot, DumbbellRow, Lab } from '$lib/features/drafts/types';
+  import SparklesIcon from '@lucide/svelte/icons/sparkles';
 
   import QuotaDumbbellChart from './quota-dumbbell-chart.svelte';
 

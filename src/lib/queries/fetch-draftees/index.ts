@@ -1,7 +1,7 @@
 import { createQuery } from '@tanstack/svelte-query';
 
-import type { Draftees } from './schema';
 import { fetchDraftees } from './http';
+import type { Draftees } from './schema';
 
 export function createFetchDrafteesQuery(draftId: string, select?: (data: Draftees) => Draftees) {
   return createQuery(() => ({

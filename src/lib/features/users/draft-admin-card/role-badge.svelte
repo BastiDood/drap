@@ -7,10 +7,9 @@
 </script>
 
 <script lang="ts">
+  import { Badge } from '$lib/components/ui/badge';
   import ShieldCheckIcon from '@lucide/svelte/icons/shield-check';
   import StarIcon from '@lucide/svelte/icons/star';
-
-  import { Badge } from '$lib/components/ui/badge';
 
   const { role }: Props = $props();
 </script>

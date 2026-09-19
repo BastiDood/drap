@@ -1,16 +1,15 @@
 <script lang="ts">
-  import Trash2Icon from '@lucide/svelte/icons/trash-2';
-  import { toast } from 'svelte-sonner';
-  // eslint-disable-next-line no-restricted-imports
-  import { useQueryClient } from '@tanstack/svelte-query';
-
-  import * as Tooltip from '$lib/components/ui/tooltip';
-  import UserlistItem from '$lib/components/userlist-item.svelte';
+  import { enhance } from '$app/forms';
   import { assert } from '$lib/assert';
   import { Badge } from '$lib/components/ui/badge';
   import { Button } from '$lib/components/ui/button';
-  import { enhance } from '$app/forms';
+  import * as Tooltip from '$lib/components/ui/tooltip';
+  import UserlistItem from '$lib/components/userlist-item.svelte';
   import type { schema } from '$lib/server/database/drizzle';
+  import Trash2Icon from '@lucide/svelte/icons/trash-2';
+  // eslint-disable-next-line no-restricted-imports
+  import { useQueryClient } from '@tanstack/svelte-query';
+  import { toast } from 'svelte-sonner';
 
   interface User extends Pick<
     schema.User,

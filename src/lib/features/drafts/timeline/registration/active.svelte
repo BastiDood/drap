@@ -1,12 +1,11 @@
 <script lang="ts">
-  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
-  import UsersIcon from '@lucide/svelte/icons/users';
-
   import * as Alert from '$lib/components/ui/alert';
   import QuotaCard from '$lib/features/drafts/timeline/quota-card.svelte';
-  import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
   import StatCardGroup from '$lib/features/drafts/timeline/stat-card-group.svelte';
+  import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
   import type { DraftLabQuotaSnapshot } from '$lib/features/drafts/types';
+  import TriangleAlertIcon from '@lucide/svelte/icons/triangle-alert';
+  import UsersIcon from '@lucide/svelte/icons/users';
 
   interface Props {
     draftId: string;

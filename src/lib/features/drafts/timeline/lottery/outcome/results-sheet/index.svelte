@@ -1,8 +1,7 @@
 <script lang="ts">
-  import ListChecksIcon from '@lucide/svelte/icons/list-checks';
-
-  import * as Sheet from '$lib/components/ui/sheet';
   import { Button } from '$lib/components/ui/button';
+  import * as Sheet from '$lib/components/ui/sheet';
+  import ListChecksIcon from '@lucide/svelte/icons/list-checks';
 
   import Loader from './loader.svelte';
 

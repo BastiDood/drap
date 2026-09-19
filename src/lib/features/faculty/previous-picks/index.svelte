@@ -1,11 +1,10 @@
 <script lang="ts">
-  import ClipboardListIcon from '@lucide/svelte/icons/clipboard-list';
-
+  import Empty from '$lib/components/empty.svelte';
   import * as Card from '$lib/components/ui/card';
   import * as Tabs from '$lib/components/ui/tabs';
-  import Empty from '$lib/components/empty.svelte';
   import UserlistItem from '$lib/components/userlist-item.svelte';
   import type { schema } from '$lib/server/database/drizzle';
+  import ClipboardListIcon from '@lucide/svelte/icons/clipboard-list';
 
   interface Researcher extends Pick<
     schema.User,

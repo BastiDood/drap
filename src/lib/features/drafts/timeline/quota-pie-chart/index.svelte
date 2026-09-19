@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { format } from 'd3-format';
-  import { PieChart } from 'layerchart/svg';
-  import { sum } from 'd3-array';
-
-  import * as Chart from '$lib/components/ui/chart';
   import { assert } from '$lib/assert';
+  import * as Chart from '$lib/components/ui/chart';
   import { CHART_COLORS } from '$lib/constants';
   import type { DraftLabQuotaSnapshot } from '$lib/features/drafts/types';
+  import { sum } from 'd3-array';
+  import { format } from 'd3-format';
+  import { PieChart } from 'layerchart/svg';
 
   interface Props {
     snapshots: DraftLabQuotaSnapshot[];

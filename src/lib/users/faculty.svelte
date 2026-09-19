@@ -1,14 +1,13 @@
 <script lang="ts">
+  import { enhance } from '$app/forms';
+  import { assert } from '$lib/assert';
+  import * as Avatar from '$lib/components/ui/avatar';
+  import { Button } from '$lib/components/ui/button';
+  import * as Card from '$lib/components/ui/card';
+  import type { schema } from '$lib/server/database/drizzle';
   import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
   import UserCircleIcon from '@lucide/svelte/icons/circle-user';
   import { toast } from 'svelte-sonner';
-
-  import * as Avatar from '$lib/components/ui/avatar';
-  import * as Card from '$lib/components/ui/card';
-  import { assert } from '$lib/assert';
-  import { Button } from '$lib/components/ui/button';
-  import { enhance } from '$app/forms';
-  import type { schema } from '$lib/server/database/drizzle';
 
   interface User extends Pick<
     schema.User,

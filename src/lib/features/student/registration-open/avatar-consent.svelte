@@ -1,9 +1,9 @@
 <script lang="ts">
-  import * as Card from '$lib/components/ui/card';
-  import * as NativeSelect from '$lib/components/ui/native-select';
   import Callout from '$lib/components/callout.svelte';
+  import * as Card from '$lib/components/ui/card';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
+  import * as NativeSelect from '$lib/components/ui/native-select';
 
   import { CUSTOM_AVATAR_MAX_SIZE_LABEL } from './constants';
 

@@ -1,5 +1,3 @@
-import { index, max, rollup, sum as d3sum } from 'd3-array';
-
 import type {
   DraftAssignmentCountByAttribute,
   DraftAssignmentSummary,
@@ -15,6 +13,7 @@ import type {
   LotteryStatCards,
 } from '$lib/features/drafts/types';
 import { getOrdinalSuffix } from '$lib/ordinal';
+import { index, max, rollup, sum as d3sum } from 'd3-array';
 
 function getPhaseIndex(round: number | null, maxRounds: number) {
   if (round === null) return maxRounds + 1;

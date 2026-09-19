@@ -1,15 +1,14 @@
 <script lang="ts">
+  import { enhance } from '$app/forms';
+  import { assert } from '$lib/assert';
+  import Empty from '$lib/components/empty.svelte';
+  import { Button } from '$lib/components/ui/button';
+  import type { Lab } from '$lib/features/drafts/types';
+  import { createFetchDrafteesQuery } from '$lib/queries/fetch-draftees';
   import Loader2Icon from '@lucide/svelte/icons/loader-2';
   import ShieldAlertIcon from '@lucide/svelte/icons/shield-alert';
-  import { toast } from 'svelte-sonner';
   import { useQueryClient } from '@tanstack/svelte-query'; // eslint-disable-line no-restricted-imports
-
-  import Empty from '$lib/components/empty.svelte';
-  import { assert } from '$lib/assert';
-  import { Button } from '$lib/components/ui/button';
-  import { createFetchDrafteesQuery } from '$lib/queries/fetch-draftees';
-  import { enhance } from '$app/forms';
-  import type { Lab } from '$lib/features/drafts/types';
+  import { toast } from 'svelte-sonner';
 
   import DataTable from './data-table/index.svelte';
 

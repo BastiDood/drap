@@ -1,10 +1,9 @@
 <script lang="ts">
+  import * as Empty from '$lib/components/ui/empty';
+  import { cn } from '$lib/components/ui/utils';
   import type { LucideIcon } from '@lucide/svelte';
   import type { Snippet } from 'svelte';
   import { tv, type VariantProps } from 'tailwind-variants';
-
-  import * as Empty from '$lib/components/ui/empty';
-  import { cn } from '$lib/components/ui/utils';
 
   const emptyWrapperMediaVariants = tv({
     base: 'flex shrink-0 items-center justify-center',

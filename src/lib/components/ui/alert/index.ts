@@ -1,6 +1,6 @@
 import Description from './alert-description.svelte';
-import Root from './alert.svelte';
 import Title from './alert-title.svelte';
+import Root from './alert.svelte';
 export { alertVariants, type AlertVariant, type AlertBorder } from './alert.svelte';
 
 export {

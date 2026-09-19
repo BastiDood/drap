@@ -10,15 +10,14 @@
 </script>
 
 <script lang="ts">
-  import Loader2Icon from '@lucide/svelte/icons/loader-2';
-  import { toast } from 'svelte-sonner';
-  import { useQueryClient } from '@tanstack/svelte-query'; // eslint-disable-line no-restricted-imports
-
-  import * as Table from '$lib/components/ui/table';
-  import { Button } from '$lib/components/ui/button';
   import { enhance } from '$app/forms';
+  import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
+  import * as Table from '$lib/components/ui/table';
+  import Loader2Icon from '@lucide/svelte/icons/loader-2';
+  import { useQueryClient } from '@tanstack/svelte-query'; // eslint-disable-line no-restricted-imports
+  import { toast } from 'svelte-sonner';
 
   const { draftId, mode, snapshots, onSuccess }: Props = $props();
   const queryClient = useQueryClient();

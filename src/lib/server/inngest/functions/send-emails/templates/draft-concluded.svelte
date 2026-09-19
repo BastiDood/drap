@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { ORIGIN } from '$lib/env';
   import {
     Button,
     Column,
@@ -8,8 +9,6 @@
     Section,
     Text,
   } from '@better-svelte-email/components';
-
-  import { ORIGIN } from '$lib/env';
 
   import EmailLayout from './email-layout.svelte';
 

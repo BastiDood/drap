@@ -1,12 +1,11 @@
 <script lang="ts" module>
-  import type { Snippet } from 'svelte';
-
   import {
     type CandidateSenderEntry,
     deriveSenderRole,
     type RegisteredAdmin,
   } from '$lib/features/users/types';
   import type { schema } from '$lib/server/database/drizzle';
+  import type { Snippet } from 'svelte';
 
   export interface Props {
     id?: string;

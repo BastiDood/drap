@@ -1,10 +1,9 @@
-import { addMinutes } from 'date-fns';
-import { error, redirect } from '@sveltejs/kit';
-
-import * as GOOGLE from '$lib/server/env/google';
 import { ASSERT_DOMAIN } from '$lib/server/env/drap/oauth';
-import { Logger } from '$lib/server/telemetry/logger';
+import * as GOOGLE from '$lib/server/env/google';
 import { OAUTH_SCOPE_STRING, SENDER_SCOPE_STRING } from '$lib/server/models/oauth';
+import { Logger } from '$lib/server/telemetry/logger';
+import { error, redirect } from '@sveltejs/kit';
+import { addMinutes } from 'date-fns';
 
 const SERVICE_NAME = 'routes.dashboard.oauth.login';
 const logger = Logger.byName(SERVICE_NAME);

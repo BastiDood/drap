@@ -1,21 +1,19 @@
-import type { ComponentProps } from 'svelte';
-import { createMimeMessage } from 'mimetext/node';
-import { toPlainText } from '@better-svelte-email/server';
-
 import { assertDefined } from '$lib/server/assert';
-import type { EmailEvent } from '$lib/server/inngest/schema';
 import type { GmailThreadKey } from '$lib/server/database/drizzle';
+import type { EmailEvent } from '$lib/server/inngest/schema';
+import { toPlainText } from '@better-svelte-email/server';
+import { createMimeMessage } from 'mimetext/node';
+import type { ComponentProps } from 'svelte';
 
 import type { SenderIdentity } from './auth';
 import { UnreachableEmailEventTypeError } from './errors';
-
 import DraftConcluded from './templates/draft-concluded.svelte';
 import DraftFinalization from './templates/draft-finalization.svelte';
 import LotteryIntervened from './templates/lottery-intervened.svelte';
+import { emailRenderer } from './templates/renderer';
 import RoundStarted from './templates/round-started.svelte';
 import RoundSubmitted from './templates/round-submitted.svelte';
 import UserAssigned from './templates/user-assigned.svelte';
-import { emailRenderer } from './templates/renderer';
 
 interface ThreadRenderData {
   gmailThreadId: string;

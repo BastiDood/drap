@@ -1,7 +1,6 @@
 <script lang="ts">
-  import ShuffleIcon from '@lucide/svelte/icons/shuffle';
-
   import Empty from '$lib/components/empty.svelte';
+  import ShuffleIcon from '@lucide/svelte/icons/shuffle';
 </script>
 
 <Empty media={{ icon: ShuffleIcon, size: 'md' }}>

@@ -1,13 +1,12 @@
 <script lang="ts">
+  import StatCardGroup from '$lib/features/drafts/timeline/stat-card-group.svelte';
+  import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
+  import type { LotteryStatCards } from '$lib/features/drafts/types';
   import ActivityIcon from '@lucide/svelte/icons/activity';
   import LayersIcon from '@lucide/svelte/icons/layers';
   import StarIcon from '@lucide/svelte/icons/star';
   import ThumbsDownIcon from '@lucide/svelte/icons/thumbs-down';
   import ThumbsUpIcon from '@lucide/svelte/icons/thumbs-up';
-
-  import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
-  import StatCardGroup from '$lib/features/drafts/timeline/stat-card-group.svelte';
-  import type { LotteryStatCards } from '$lib/features/drafts/types';
 
   interface Props {
     data: LotteryStatCards;

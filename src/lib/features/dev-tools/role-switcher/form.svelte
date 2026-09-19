@@ -8,15 +8,14 @@
 </script>
 
 <script lang="ts">
-  import SaveIcon from '@lucide/svelte/icons/save';
-  import { toast } from 'svelte-sonner';
-
+  import { enhance } from '$app/forms';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
   import { Checkbox } from '$lib/components/ui/checkbox';
-  import { enhance } from '$app/forms';
   import { Input } from '$lib/components/ui/input';
   import { Label } from '$lib/components/ui/label';
+  import SaveIcon from '@lucide/svelte/icons/save';
+  import { toast } from 'svelte-sonner';
 
   const { user, onSuccess }: Props = $props();
 </script>

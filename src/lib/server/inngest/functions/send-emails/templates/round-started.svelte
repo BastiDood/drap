@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { Button, Heading, Section, Text } from '@better-svelte-email/components';
-
   import { ORIGIN } from '$lib/env';
+  import { Button, Heading, Section, Text } from '@better-svelte-email/components';
 
   import EmailLayout from './email-layout.svelte';
 

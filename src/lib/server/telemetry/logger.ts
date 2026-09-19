@@ -1,10 +1,10 @@
+import { context, type Exception, type Span, SpanStatusCode, trace } from '@opentelemetry/api';
 import {
   type AnyValueMap,
   type Logger as OpenTelemetryLogger,
   logs,
   SeverityNumber,
 } from '@opentelemetry/api-logs';
-import { context, type Exception, type Span, SpanStatusCode, trace } from '@opentelemetry/api';
 
 /**
  * Traverses the full chain of error causes until a certain depth.

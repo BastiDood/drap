@@ -1,8 +1,8 @@
 <script>
+  import { resolve } from '$app/paths';
   import Logo from '$lib/assets/logo-DRAP-icon-colored.svg';
   import ModeSwitcher from '$lib/components/mode-switcher.svelte';
   import { Button } from '$lib/components/ui/button';
-  import { resolve } from '$app/paths';
   import { TooltipProvider } from '$lib/components/ui/tooltip';
 </script>
 

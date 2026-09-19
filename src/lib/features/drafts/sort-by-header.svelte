@@ -1,10 +1,9 @@
 <script lang="ts">
-  import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
-  import ArrowUpDownIcon from '@lucide/svelte/icons/arrow-up-down';
-  import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
-  import type { HTMLButtonAttributes } from 'svelte/elements';
-
   import { cn } from '$lib/components/ui/utils';
+  import ArrowDownIcon from '@lucide/svelte/icons/arrow-down';
+  import ArrowUpIcon from '@lucide/svelte/icons/arrow-up';
+  import ArrowUpDownIcon from '@lucide/svelte/icons/arrow-up-down';
+  import type { HTMLButtonAttributes } from 'svelte/elements';
 
   interface Props extends HTMLButtonAttributes {
     header: string;

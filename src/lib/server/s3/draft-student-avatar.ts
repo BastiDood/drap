@@ -1,11 +1,10 @@
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
 
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
-import { getStreamAsBuffer } from 'get-stream';
-
 import { CUSTOM_AVATAR_MAX_BYTES } from '$lib/features/student/registration-open/constants';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
+import { getStreamAsBuffer } from 'get-stream';
 
 import { assertPayloadSize, assertSecureCdnUrl, normalizeImageContentType } from './util';
 // TODO: import defer { s3 } from './client';

@@ -1,12 +1,11 @@
-import { eq } from 'drizzle-orm';
-import { error } from '@sveltejs/kit';
-
-import * as schema from '$lib/server/database/schema';
 import { assertOptional } from '$lib/server/assert';
 import { db } from '$lib/server/database';
+import * as schema from '$lib/server/database/schema';
 import { getDraftAvatarObject } from '$lib/server/s3/draft-student-avatar';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import { error } from '@sveltejs/kit';
+import { eq } from 'drizzle-orm';
 
 const SERVICE_NAME = 'routes.dashboard.avatars.draft';
 const logger = Logger.byName(SERVICE_NAME);

@@ -1,4 +1,16 @@
 <script lang="ts">
+  import { enhance } from '$app/forms';
+  import { resolve } from '$app/paths';
+  import { page } from '$app/state';
+  import { assert } from '$lib/assert';
+  import Logo from '$lib/assets/logo-DRAP-icon-colored.svg';
+  import ModeSwitcher from '$lib/components/mode-switcher.svelte';
+  import * as Avatar from '$lib/components/ui/avatar';
+  import { buttonVariants } from '$lib/components/ui/button';
+  import Button from '$lib/components/ui/button/button.svelte';
+  import * as Drawer from '$lib/components/ui/drawer';
+  import * as Sidebar from '$lib/components/ui/sidebar';
+  import type { schema } from '$lib/server/database/drizzle';
   import ClipboardListIcon from '@lucide/svelte/icons/clipboard-list';
   import ClockIcon from '@lucide/svelte/icons/clock';
   import FlaskConicalIcon from '@lucide/svelte/icons/flask-conical';
@@ -9,19 +21,6 @@
   import LogOutIcon from '@lucide/svelte/icons/log-out';
   import UsersIcon from '@lucide/svelte/icons/users';
   import { mergeProps } from 'bits-ui';
-
-  import * as Avatar from '$lib/components/ui/avatar';
-  import * as Drawer from '$lib/components/ui/drawer';
-  import * as Sidebar from '$lib/components/ui/sidebar';
-  import Button from '$lib/components/ui/button/button.svelte';
-  import Logo from '$lib/assets/logo-DRAP-icon-colored.svg';
-  import ModeSwitcher from '$lib/components/mode-switcher.svelte';
-  import { assert } from '$lib/assert';
-  import { buttonVariants } from '$lib/components/ui/button';
-  import { enhance } from '$app/forms';
-  import { page } from '$app/state';
-  import { resolve } from '$app/paths';
-  import type { schema } from '$lib/server/database/drizzle';
 
   interface Props {
     user?: schema.User;

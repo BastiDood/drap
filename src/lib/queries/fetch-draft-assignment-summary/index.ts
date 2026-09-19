@@ -1,7 +1,7 @@
 import { createQuery } from '@tanstack/svelte-query';
 
-import type { DraftAssignmentSummary } from './schema';
 import { fetchDraftAssignmentSummary } from './http';
+import type { DraftAssignmentSummary } from './schema';
 
 export function createFetchDraftAssignmentSummaryQuery(
   draftId: string,

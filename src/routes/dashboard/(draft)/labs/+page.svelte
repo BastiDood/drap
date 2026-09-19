@@ -1,8 +1,7 @@
 <script lang="ts">
-  import { format } from 'date-fns';
-
   import Callout from '$lib/components/callout.svelte';
   import { LabTable } from '$lib/features/labs';
+  import { format } from 'date-fns';
 
   const { data } = $props();
   const { draft, labs } = $derived(data);

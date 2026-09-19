@@ -1,8 +1,7 @@
-import { index, pgSchema, timestamp } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
+import { index, pgSchema, timestamp } from 'drizzle-orm/pg-core';
 
 import { user } from './app';
-
 import { ulid } from './custom/ulid';
 
 export const auth = pgSchema('auth');

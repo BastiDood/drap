@@ -1,9 +1,8 @@
 <script lang="ts">
-  import GraduationCapIcon from '@lucide/svelte/icons/graduation-cap';
-
-  import * as Drawer from '$lib/components/ui/drawer';
   import { Button } from '$lib/components/ui/button';
+  import * as Drawer from '$lib/components/ui/drawer';
   import type { Lab } from '$lib/features/drafts/types';
+  import GraduationCapIcon from '@lucide/svelte/icons/graduation-cap';
 
   import UndraftedDrawerLoader from './loader.svelte';
 

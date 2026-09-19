@@ -1,9 +1,8 @@
 <script lang="ts">
-  import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
-  import Loader2Icon from '@lucide/svelte/icons/loader-2';
-
   import Empty from '$lib/components/empty.svelte';
   import { createFetchDraftLotteryAggregateQuery } from '$lib/queries/fetch-draft-lottery-aggregate';
+  import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
+  import Loader2Icon from '@lucide/svelte/icons/loader-2';
 
   import LotteryCompleted from './completed.svelte';
 

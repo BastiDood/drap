@@ -5,9 +5,9 @@ import Footer from './sheet-footer.svelte';
 import Header from './sheet-header.svelte';
 import Overlay from './sheet-overlay.svelte';
 import Portal from './sheet-portal.svelte';
-import Root from './sheet.svelte';
 import Title from './sheet-title.svelte';
 import Trigger from './sheet-trigger.svelte';
+import Root from './sheet.svelte';
 
 export {
   Root,

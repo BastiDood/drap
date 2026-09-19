@@ -1,12 +1,11 @@
 <script lang="ts">
-  import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
-  import Loader2Icon from '@lucide/svelte/icons/loader-2';
-
-  import * as Card from '$lib/components/ui/card';
-  import DrafteesSheet from '$lib/features/drafts/timeline/registration/draftees-sheet/index.svelte';
   import Empty from '$lib/components/empty.svelte';
   import { Badge } from '$lib/components/ui/badge';
+  import * as Card from '$lib/components/ui/card';
+  import DrafteesSheet from '$lib/features/drafts/timeline/registration/draftees-sheet/index.svelte';
   import { createFetchDraftRegistrationTimestampsQuery } from '$lib/queries/fetch-draft-registration-timestamps';
+  import CircleAlertIcon from '@lucide/svelte/icons/circle-alert';
+  import Loader2Icon from '@lucide/svelte/icons/loader-2';
 
   import RegistrantsChart from './chart.svelte';
   interface Props {

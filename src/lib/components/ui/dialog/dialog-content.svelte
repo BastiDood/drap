@@ -1,9 +1,8 @@
 <script lang="ts">
-  import XIcon from '@lucide/svelte/icons/x';
-  import type { ComponentProps, Snippet } from 'svelte';
-  import { Dialog as DialogPrimitive } from 'bits-ui';
-
   import { cn, type WithoutChildrenOrChild } from '$lib/components/ui/utils';
+  import XIcon from '@lucide/svelte/icons/x';
+  import { Dialog as DialogPrimitive } from 'bits-ui';
+  import type { ComponentProps, Snippet } from 'svelte';
 
   import DialogOverlay from './dialog-overlay.svelte';
   import DialogPortal from './dialog-portal.svelte';

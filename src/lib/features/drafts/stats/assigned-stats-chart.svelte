@@ -1,14 +1,13 @@
 <script lang="ts">
-  import { cubicOut } from 'svelte/easing';
-  import { format } from 'd3-format';
-  import { LineChart } from 'layerchart/svg';
-  import type { MotionOptions } from 'layerchart/utils/motion.svelte';
-  import { prefersReducedMotion } from 'svelte/motion';
-  import { scalePoint } from 'd3-scale';
-
   import * as Card from '$lib/components/ui/card';
   import * as Chart from '$lib/components/ui/chart';
   import type { DraftStatsMetricChartView } from '$lib/features/drafts/types';
+  import { format } from 'd3-format';
+  import { scalePoint } from 'd3-scale';
+  import { LineChart } from 'layerchart/svg';
+  import type { MotionOptions } from 'layerchart/utils/motion.svelte';
+  import { cubicOut } from 'svelte/easing';
+  import { prefersReducedMotion } from 'svelte/motion';
 
   interface Props {
     chart: DraftStatsMetricChartView;

@@ -1,10 +1,10 @@
 import { cwd, env } from 'node:process';
 
 import adapter from '@sveltejs/adapter-node';
-import tailwind from '@tailwindcss/vite';
-import { configDefaults } from 'vitest/config';
-import { defineConfig, loadEnv } from 'vite';
 import { sveltekit } from '@sveltejs/kit/vite';
+import tailwind from '@tailwindcss/vite';
+import { defineConfig, loadEnv } from 'vite';
+import { configDefaults } from 'vitest/config';
 
 export default defineConfig({
   plugins: [

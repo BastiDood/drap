@@ -1,19 +1,18 @@
 import assert from 'node:assert/strict';
 
-import HttpRawRequest from 'http-raw-request';
-import { Component, Multipart } from 'multipart-ts';
-import type { MIMEMessage } from 'mimetext/node';
-import { parse } from 'valibot';
-import type { Span } from '@opentelemetry/api';
-
+import { OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET } from '$lib/server/env/google';
 import { GMAIL_METADATA_SCOPE, GMAIL_SEND_SCOPE } from '$lib/server/models/oauth';
 import { Logger } from '$lib/server/telemetry/logger';
-import { OAUTH_CLIENT_ID, OAUTH_CLIENT_SECRET } from '$lib/server/env/google';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import type { Span } from '@opentelemetry/api';
+import HttpRawRequest from 'http-raw-request';
+import type { MIMEMessage } from 'mimetext/node';
+import { Component, Multipart } from 'multipart-ts';
+import { parse } from 'valibot';
 
 import { type GmailFailure, logGmailFailure, parseGmailFailure } from './failure';
-import { GmailMessageMetadataResult, GmailMessageSendResult, TokenResponse } from './schema';
 import { parseBatchMetadataResponse, parseBatchSendResponse } from './http';
+import { GmailMessageMetadataResult, GmailMessageSendResult, TokenResponse } from './schema';
 
 const SERVICE_NAME = 'lib.server.google';
 const logger = Logger.byName(SERVICE_NAME);

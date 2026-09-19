@@ -1,13 +1,19 @@
 import assert from 'node:assert/strict';
 
-import * as v from 'valibot';
-import { and, asc, count, eq, inArray, isNull, lt, sql, sum } from 'drizzle-orm';
-import { decode } from 'decode-formdata';
-import { error, fail } from '@sveltejs/kit';
-import { repeat, roundrobin, zip } from 'itertools';
-
-import * as schema from '$lib/server/database/schema';
+import { coerceDate, coerceNullableNumber, coerceNumber } from '$lib/coerce';
+import { DraftPhase, getDraftPhase } from '$lib/features/drafts/phase';
+import {
+  buildDraftAssignmentSummary,
+  buildDraftSummaryChartData,
+  buildLotteryAggregate,
+} from '$lib/features/drafts/timeline/aggregates/builders';
+import type {
+  DraftAssignmentSummary,
+  DraftSummaryChartData,
+  LotteryAggregate,
+} from '$lib/features/drafts/types';
 import { assertDefined, assertOptional, assertSingle } from '$lib/server/assert';
+import { db } from '$lib/server/database';
 import {
   autoAcknowledgeLabsWithoutPreferences,
   type DbConnection,
@@ -23,23 +29,16 @@ import {
   getUserByEmail,
   incrementDraftRound,
 } from '$lib/server/database/drizzle';
-import {
-  buildDraftAssignmentSummary,
-  buildDraftSummaryChartData,
-  buildLotteryAggregate,
-} from '$lib/features/drafts/timeline/aggregates/builders';
-import { coerceDate, coerceNullableNumber, coerceNumber } from '$lib/coerce';
-import { db } from '$lib/server/database';
-import type {
-  DraftAssignmentSummary,
-  DraftSummaryChartData,
-  LotteryAggregate,
-} from '$lib/features/drafts/types';
-import { DraftPhase, getDraftPhase } from '$lib/features/drafts/phase';
-import { EmailEvent } from '$lib/server/inngest/schema';
+import * as schema from '$lib/server/database/schema';
 import { inngest } from '$lib/server/inngest/client';
+import { EmailEvent } from '$lib/server/inngest/schema';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import { error, fail } from '@sveltejs/kit';
+import { decode } from 'decode-formdata';
+import { and, asc, count, eq, inArray, isNull, lt, sql, sum } from 'drizzle-orm';
+import { repeat, roundrobin, zip } from 'itertools';
+import * as v from 'valibot';
 
 const enum AllowlistAddResult {
   NotAStudent = -3,

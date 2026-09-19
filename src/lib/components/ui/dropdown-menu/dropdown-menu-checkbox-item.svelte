@@ -1,10 +1,9 @@
 <script lang="ts">
+  import { cn, type WithoutChildrenOrChild } from '$lib/components/ui/utils';
   import CheckIcon from '@lucide/svelte/icons/check';
   import MinusIcon from '@lucide/svelte/icons/minus';
   import { DropdownMenu as DropdownMenuPrimitive } from 'bits-ui';
   import type { Snippet } from 'svelte';
-
-  import { cn, type WithoutChildrenOrChild } from '$lib/components/ui/utils';
 
   interface Props extends WithoutChildrenOrChild<DropdownMenuPrimitive.CheckboxItemProps> {
     children?: Snippet;

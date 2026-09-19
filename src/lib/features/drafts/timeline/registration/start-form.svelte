@@ -1,11 +1,10 @@
 <script lang="ts">
-  import CheckIcon from '@lucide/svelte/icons/check';
-  import { toast } from 'svelte-sonner';
-  import { useQueryClient } from '@tanstack/svelte-query'; // eslint-disable-line no-restricted-imports
-
+  import { enhance } from '$app/forms';
   import { assert } from '$lib/assert';
   import { Button } from '$lib/components/ui/button';
-  import { enhance } from '$app/forms';
+  import CheckIcon from '@lucide/svelte/icons/check';
+  import { useQueryClient } from '@tanstack/svelte-query'; // eslint-disable-line no-restricted-imports
+  import { toast } from 'svelte-sonner';
 
   interface Props {
     draftId: string;

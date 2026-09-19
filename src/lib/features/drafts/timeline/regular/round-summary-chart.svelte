@@ -1,15 +1,14 @@
 <script lang="ts">
-  import ChartColumnIcon from '@lucide/svelte/icons/chart-column';
-  import { BarChart } from 'layerchart/svg';
-  import { cubicOut } from 'svelte/easing';
-  import { format } from 'd3-format';
-  import { prefersReducedMotion } from 'svelte/motion';
-
+  import { assert } from '$lib/assert';
   import * as Chart from '$lib/components/ui/chart';
   import * as Empty from '$lib/components/ui/empty';
-  import { assert } from '$lib/assert';
   import { CHART_COLORS } from '$lib/constants';
   import type { DraftAssignmentSummary } from '$lib/features/drafts/types';
+  import ChartColumnIcon from '@lucide/svelte/icons/chart-column';
+  import { format } from 'd3-format';
+  import { BarChart } from 'layerchart/svg';
+  import { cubicOut } from 'svelte/easing';
+  import { prefersReducedMotion } from 'svelte/motion';
 
   interface Props {
     chart: DraftAssignmentSummary['chart'];

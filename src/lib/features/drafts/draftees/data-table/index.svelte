@@ -1,10 +1,9 @@
 <script lang="ts">
-  import { createTable, FlexRender } from '@tanstack/svelte-table';
-  import type { Snippet } from 'svelte';
-
-  import * as Table from '$lib/components/ui/table';
   import { Button } from '$lib/components/ui/button';
   import { Input } from '$lib/components/ui/input';
+  import * as Table from '$lib/components/ui/table';
+  import { createTable, FlexRender } from '@tanstack/svelte-table';
+  import type { Snippet } from 'svelte';
 
   import { columns, type ExtendedStudent, features } from './schema';
 

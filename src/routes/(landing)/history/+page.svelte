@@ -1,12 +1,11 @@
 <script lang="ts">
+  import { resolve } from '$app/paths';
+  import Callout from '$lib/components/callout.svelte';
   import CheckCircleIcon from '@lucide/svelte/icons/check-circle';
   import ClockIcon from '@lucide/svelte/icons/clock';
   import ScaleIcon from '@lucide/svelte/icons/scale';
   import SparklesIcon from '@lucide/svelte/icons/sparkles';
   import { format } from 'date-fns';
-
-  import Callout from '$lib/components/callout.svelte';
-  import { resolve } from '$app/paths';
 
   const { data } = $props();
   const { drafts } = $derived(data);

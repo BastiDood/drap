@@ -1,9 +1,8 @@
 <script lang="ts">
-  import CalendarIcon from '@lucide/svelte/icons/calendar';
-
+  import { resolve } from '$app/paths';
   import Empty from '$lib/components/empty.svelte';
   import { Button } from '$lib/components/ui/button';
-  import { resolve } from '$app/paths';
+  import CalendarIcon from '@lucide/svelte/icons/calendar';
 </script>
 
 <Empty media={{ icon: CalendarIcon, size: 'md' }}>

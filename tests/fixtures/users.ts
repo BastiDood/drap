@@ -1,13 +1,12 @@
-import { eq, sql } from 'drizzle-orm';
-import { mergeTests, type Page } from '@playwright/test';
-
-import * as schema from '$lib/server/database/schema';
 import {
   type DrizzleDatabase,
   deleteValidSession,
   insertDummySession,
   upsertOpenIdUser,
 } from '$lib/server/database/drizzle';
+import * as schema from '$lib/server/database/schema';
+import { mergeTests, type Page } from '@playwright/test';
+import { eq, sql } from 'drizzle-orm';
 
 import { testDatabase } from './database';
 import { testLabs } from './labs';

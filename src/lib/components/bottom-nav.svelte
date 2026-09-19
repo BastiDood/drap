@@ -1,12 +1,11 @@
 <script>
+  import { resolve } from '$app/paths';
+  import { page } from '$app/state';
+  import { useSidebar } from '$lib/components/ui/sidebar';
+  import { cn } from '$lib/components/ui/utils';
   import FlaskConicalIcon from '@lucide/svelte/icons/flask-conical';
   import HomeIcon from '@lucide/svelte/icons/home';
   import MenuIcon from '@lucide/svelte/icons/menu';
-
-  import { cn } from '$lib/components/ui/utils';
-  import { page } from '$app/state';
-  import { resolve } from '$app/paths';
-  import { useSidebar } from '$lib/components/ui/sidebar';
 
   const sidebar = useSidebar();
 </script>

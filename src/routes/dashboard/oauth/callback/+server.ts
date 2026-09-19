@@ -1,17 +1,15 @@
-import { Buffer } from 'node:buffer';
 import { fail } from 'node:assert/strict';
+import { Buffer } from 'node:buffer';
 import { timingSafeEqual } from 'node:crypto';
 
-import addresses from 'email-addresses';
-import { createRemoteJWKSet, customFetch, jwksCache, jwtVerify } from 'jose';
-import { error, redirect } from '@sveltejs/kit';
-import { parse } from 'valibot';
-import { sql } from 'drizzle-orm';
-
-import * as GOOGLE from '$lib/server/env/google';
-import * as schema from '$lib/server/database/schema';
-import { ASSERT_DOMAIN } from '$lib/server/env/drap/oauth';
+import { encryptSecret } from '$lib/crypto';
 import { assertSingle } from '$lib/server/assert';
+import { db } from '$lib/server/database';
+import { type DbConnection, upsertOpenIdUser } from '$lib/server/database/drizzle';
+import * as schema from '$lib/server/database/schema';
+import { ENCRYPTION_KEY } from '$lib/server/env/drap/crypto';
+import { ASSERT_DOMAIN } from '$lib/server/env/drap/oauth';
+import * as GOOGLE from '$lib/server/env/google';
 import {
   AuthorizationCode,
   GMAIL_METADATA_SCOPE,
@@ -19,12 +17,13 @@ import {
   IdToken,
   TokenResponse,
 } from '$lib/server/models/oauth';
-import { db } from '$lib/server/database';
-import { type DbConnection, upsertOpenIdUser } from '$lib/server/database/drizzle';
-import { ENCRYPTION_KEY } from '$lib/server/env/drap/crypto';
-import { encryptSecret } from '$lib/crypto';
 import { Logger } from '$lib/server/telemetry/logger';
 import { Tracer } from '$lib/server/telemetry/tracer';
+import { error, redirect } from '@sveltejs/kit';
+import { sql } from 'drizzle-orm';
+import addresses from 'email-addresses';
+import { createRemoteJWKSet, customFetch, jwksCache, jwtVerify } from 'jose';
+import { parse } from 'valibot';
 
 const SERVICE_NAME = 'routes.dashboard.oauth.callback';
 const logger = Logger.byName(SERVICE_NAME);

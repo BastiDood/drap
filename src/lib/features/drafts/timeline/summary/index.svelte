@@ -1,20 +1,19 @@
 <script lang="ts">
-  import CheckCircle2Icon from '@lucide/svelte/icons/check-circle-2';
-  import FlaskConicalIcon from '@lucide/svelte/icons/flask-conical';
-  import SparklesIcon from '@lucide/svelte/icons/sparkles';
-  import UsersIcon from '@lucide/svelte/icons/users';
-
   import * as Alert from '$lib/components/ui/alert';
   import DraftAssignments from '$lib/features/drafts/assignments/index.svelte';
   import LotteryCompleted from '$lib/features/drafts/timeline/lottery/completed.svelte';
-  import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
   import StatCardGroup from '$lib/features/drafts/timeline/stat-card-group.svelte';
+  import StatCard from '$lib/features/drafts/timeline/stat-card.svelte';
   import type {
     Draft,
     DraftAssignmentSummary,
     DraftSummaryChartData,
     LotteryAggregate,
   } from '$lib/features/drafts/types';
+  import CheckCircle2Icon from '@lucide/svelte/icons/check-circle-2';
+  import FlaskConicalIcon from '@lucide/svelte/icons/flask-conical';
+  import SparklesIcon from '@lucide/svelte/icons/sparkles';
+  import UsersIcon from '@lucide/svelte/icons/users';
 
   import DraftRoundsChart from './draft-rounds-chart.svelte';
   import FinalizeForm from './finalize-form.svelte';

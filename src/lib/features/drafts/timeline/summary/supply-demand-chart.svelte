@@ -1,12 +1,11 @@
 <script lang="ts">
-  import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
-  import { BarChart } from 'layerchart/svg';
-
+  import { assert } from '$lib/assert';
   import * as Card from '$lib/components/ui/card';
   import * as Chart from '$lib/components/ui/chart';
   import * as Popover from '$lib/components/ui/popover';
-  import { assert } from '$lib/assert';
   import type { DraftSupplyDemandEntry } from '$lib/features/drafts/types';
+  import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
+  import { BarChart } from 'layerchart/svg';
 
   interface Props {
     data: DraftSupplyDemandEntry[];

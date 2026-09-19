@@ -1,3 +1,8 @@
+import DateTime from '$lib/components/date-time.svelte';
+import MultiSelectFilterHeader from '$lib/features/drafts/multi-select-filter-header.svelte';
+import SortByHeader from '$lib/features/drafts/sort-by-header.svelte';
+import type { Lab, Student } from '$lib/features/drafts/types';
+import PreferredLab from '$lib/users/preferred-lab.svelte';
 import {
   columnFacetingFeature,
   columnFilteringFeature,
@@ -15,12 +20,6 @@ import {
   sortFn_datetime,
   tableFeatures,
 } from '@tanstack/svelte-table';
-
-import DateTime from '$lib/components/date-time.svelte';
-import MultiSelectFilterHeader from '$lib/features/drafts/multi-select-filter-header.svelte';
-import PreferredLab from '$lib/users/preferred-lab.svelte';
-import SortByHeader from '$lib/features/drafts/sort-by-header.svelte';
-import type { Lab, Student } from '$lib/features/drafts/types';
 
 import ManualLabSelection from './manual-lab-selection.svelte';
 
