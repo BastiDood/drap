@@ -10,7 +10,7 @@
   import ShuffleIcon from '@lucide/svelte/icons/shuffle';
   import UserXIcon from '@lucide/svelte/icons/user-x';
 
-  import RankingsForm from './rankings-form.svelte';
+  import RankingsForm from './rankings-form/index.svelte';
 
   const { data } = $props();
   const {

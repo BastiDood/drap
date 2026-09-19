@@ -9,7 +9,14 @@
   import type { schema } from '$lib/server/database/drizzle';
   import CircleHelpIcon from '@lucide/svelte/icons/circle-help';
   import { toast } from 'svelte-sonner';
-  import { SvelteSet } from 'svelte/reactivity';
+
+  import {
+    getSelectedIds,
+    hasSelection as hasStudentSelection,
+    isSelectionOverQuota,
+    resetSelectionState as getResetSelectionState,
+    toggleSelection as getToggledSelectionState,
+  } from './selection';
 
   interface Student extends Pick<
     schema.User,
@@ -37,35 +44,21 @@
     hasExistingSubmission = false,
   }: Props = $props();
 
-  const addedIds = new SvelteSet<string>();
-  const removedIds = new SvelteSet<string>();
-  const selectedIds = $derived.by(() => {
-    const ids: string[] = [];
-    for (const id of initialSelectedIds) if (!removedIds.has(id)) ids.push(id);
-    for (const id of addedIds) if (!initialSelectedIds.includes(id)) ids.push(id);
-    return ids;
-  });
+  let selectionState = $state({ addedIds: new Set<string>(), removedIds: new Set<string>() });
+  const selectedIds = $derived(getSelectedIds(initialSelectedIds, selectionState));
 
-  const disabled = $derived(remainingQuota - selectedIds.length < 0);
+  const disabled = $derived(isSelectionOverQuota(selectedIds, remainingQuota));
 
   function toggleSelection(id: string) {
-    if (initialSelectedIds.includes(id)) {
-      if (removedIds.has(id)) removedIds.delete(id);
-      else removedIds.add(id);
-      return;
-    }
-
-    if (addedIds.has(id)) addedIds.delete(id);
-    else addedIds.add(id);
+    selectionState = getToggledSelectionState(id, initialSelectedIds, selectionState);
   }
 
   function hasSelection(id: string) {
-    return (initialSelectedIds.includes(id) && !removedIds.has(id)) || addedIds.has(id);
+    return hasStudentSelection(id, initialSelectedIds, selectionState);
   }
 
   function resetSelectionState() {
-    addedIds.clear();
-    removedIds.clear();
+    selectionState = getResetSelectionState();
   }
 </script>
 
