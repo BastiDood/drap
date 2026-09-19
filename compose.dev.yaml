@@ -30,4 +30,4 @@ services:
 
   setup-bucket:
     environment:
-      MC_HOST_drap: http://drap:password@rustfs:9000
+      RC_HOST_drap: http://drap:password@rustfs:9000
